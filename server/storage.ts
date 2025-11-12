@@ -57,6 +57,7 @@ export interface IStorage {
   // Matches
   getMatchesByTeam(teamId: string, limit?: number): Promise<Match[]>;
   createMatch(match: InsertMatch): Promise<Match>;
+  updateTeamStandings(): Promise<void>;
 
   // News
   getAllNews(teamId?: string): Promise<any[]>;
@@ -171,8 +172,110 @@ export class DatabaseStorage implements IStorage {
   }
 
   async createMatch(insertMatch: InsertMatch): Promise<Match> {
-    const [match] = await db.insert(matches).values(insertMatch).returning();
+    // Auto-set status to COMPLETED if both scores are provided
+    const matchData = {
+      ...insertMatch,
+      status: (insertMatch.teamScore !== null && insertMatch.opponentScore !== null)
+        ? 'COMPLETED'
+        : insertMatch.status || 'SCHEDULED',
+    };
+
+    const [match] = await db.insert(matches).values(matchData).returning();
+    
+    // Update team standings if match is completed
+    if (match.status === 'COMPLETED') {
+      await this.updateTeamStandings();
+    }
+    
     return match;
+  }
+
+  async updateTeamStandings(): Promise<void> {
+    // Get all teams
+    const allTeams = await this.getAllTeams();
+    
+    // Calculate stats from completed matches only
+    const completedMatches = await db
+      .select()
+      .from(matches)
+      .where(eq(matches.status, 'COMPLETED'));
+
+    // Build stats per team
+    const teamStats: Record<string, {
+      points: number;
+      wins: number;
+      draws: number;
+      losses: number;
+      goalsFor: number;
+      goalsAgainst: number;
+    }> = {};
+
+    for (const team of allTeams) {
+      teamStats[team.id] = { points: 0, wins: 0, draws: 0, losses: 0, goalsFor: 0, goalsAgainst: 0 };
+    }
+
+    for (const match of completedMatches) {
+      if (match.teamScore === null || match.opponentScore === null) continue;
+
+      const teamId = match.teamId;
+      if (!teamStats[teamId]) continue;
+
+      teamStats[teamId].goalsFor += match.teamScore;
+      teamStats[teamId].goalsAgainst += match.opponentScore;
+
+      if (match.teamScore > match.opponentScore) {
+        teamStats[teamId].wins += 1;
+        teamStats[teamId].points += 3;
+      } else if (match.teamScore === match.opponentScore) {
+        teamStats[teamId].draws += 1;
+        teamStats[teamId].points += 1;
+      } else {
+        teamStats[teamId].losses += 1;
+      }
+    }
+
+    // Update all teams with calculated stats in batch
+    const updatePromises = Object.entries(teamStats).map(([teamId, stats]) =>
+      db
+        .update(teams)
+        .set({
+          ...stats,
+          updatedAt: new Date(),
+        })
+        .where(eq(teams.id, teamId))
+    );
+    await Promise.all(updatePromises);
+
+    // Calculate and update positions based on points
+    const rankedTeams = allTeams
+      .map(team => ({
+        id: team.id,
+        points: teamStats[team.id]?.points || 0,
+        wins: teamStats[team.id]?.wins || 0,
+        goalsFor: teamStats[team.id]?.goalsFor || 0,
+        goalsAgainst: teamStats[team.id]?.goalsAgainst || 0,
+      }))
+      .sort((a, b) => {
+        // Sort by points, then wins, then goal difference
+        if (b.points !== a.points) return b.points - a.points;
+        if (b.wins !== a.wins) return b.wins - a.wins;
+        const goalDiffA = a.goalsFor - a.goalsAgainst;
+        const goalDiffB = b.goalsFor - b.goalsAgainst;
+        if (goalDiffB !== goalDiffA) return goalDiffB - goalDiffA;
+        return b.goalsFor - a.goalsFor; // Goals scored
+      });
+
+    // Update positions in batch
+    const positionPromises = rankedTeams.map((team, i) =>
+      db
+        .update(teams)
+        .set({
+          currentPosition: i + 1,
+          updatedAt: new Date(),
+        })
+        .where(eq(teams.id, team.id))
+    );
+    await Promise.all(positionPromises);
   }
 
   // News
