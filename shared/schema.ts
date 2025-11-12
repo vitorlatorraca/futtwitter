@@ -13,6 +13,7 @@ export const playerPositionEnum = pgEnum("player_position", ["GOALKEEPER", "DEFE
 export const newsCategoryEnum = pgEnum("news_category", ["NEWS", "ANALYSIS", "BACKSTAGE", "MARKET"]);
 export const interactionTypeEnum = pgEnum("interaction_type", ["LIKE", "DISLIKE"]);
 export const journalistStatusEnum = pgEnum("journalist_status", ["PENDING", "APPROVED", "REJECTED", "SUSPENDED"]);
+export const notificationTypeEnum = pgEnum("notification_type", ["NEW_NEWS", "UPCOMING_MATCH", "BADGE_EARNED", "MATCH_RESULT"]);
 
 // ============================================
 // TABLES
@@ -161,6 +162,17 @@ export const userBadges = pgTable("user_badges", {
   earnedAt: timestamp("earned_at").notNull().defaultNow(),
 });
 
+export const notifications = pgTable("notifications", {
+  id: varchar("id", { length: 36 }).primaryKey().default(sql`gen_random_uuid()`),
+  userId: varchar("user_id", { length: 36 }).notNull(),
+  type: notificationTypeEnum("type").notNull(),
+  title: varchar("title", { length: 200 }).notNull(),
+  message: text("message").notNull(),
+  referenceId: varchar("reference_id", { length: 36 }),
+  isRead: boolean("is_read").notNull().default(false),
+  createdAt: timestamp("created_at").notNull().defaultNow(),
+});
+
 // ============================================
 // RELATIONS
 // ============================================
@@ -178,6 +190,7 @@ export const usersRelations = relations(users, ({ one, many }) => ({
   playerRatings: many(playerRatings),
   comments: many(comments),
   userBadges: many(userBadges),
+  notifications: many(notifications),
 }));
 
 export const journalistsRelations = relations(journalists, ({ one, many }) => ({
@@ -345,6 +358,10 @@ export const selectBadgeSchema = createSelectSchema(badges);
 export const insertUserBadgeSchema = createInsertSchema(userBadges).omit({ id: true, earnedAt: true });
 export const selectUserBadgeSchema = createSelectSchema(userBadges);
 
+// Notification schemas
+export const insertNotificationSchema = createInsertSchema(notifications).omit({ id: true, createdAt: true });
+export const selectNotificationSchema = createSelectSchema(notifications);
+
 // ============================================
 // TYPES
 // ============================================
@@ -380,3 +397,6 @@ export type InsertBadge = z.infer<typeof insertBadgeSchema>;
 
 export type UserBadge = typeof userBadges.$inferSelect;
 export type InsertUserBadge = z.infer<typeof insertUserBadgeSchema>;
+
+export type Notification = typeof notifications.$inferSelect;
+export type InsertNotification = z.infer<typeof insertNotificationSchema>;
