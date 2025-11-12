@@ -25,15 +25,18 @@ function requireJournalist(req: any, res: any, next: any) {
   next();
 }
 
+// Export session store for WebSocket authentication
+export const sessionStore = new PgSession({
+  pool,
+  tableName: 'user_sessions',
+  createTableIfMissing: true,
+});
+
 export async function registerRoutes(app: Express): Promise<Server> {
   // Configure session
   app.use(
     session({
-      store: new PgSession({
-        pool,
-        tableName: 'user_sessions',
-        createTableIfMissing: true,
-      }),
+      store: sessionStore,
       secret: process.env.SESSION_SECRET || 'brasileirao-secret-key-change-in-production',
       resave: false,
       saveUninitialized: false,
@@ -437,6 +440,53 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error('Check badges error:', error);
       res.status(500).json({ message: 'Erro ao verificar badges' });
+    }
+  });
+
+  // ============================================
+  // NOTIFICATION ROUTES
+  // ============================================
+
+  app.get('/api/notifications', requireAuth, async (req, res) => {
+    try {
+      const userId = req.session.userId!;
+      const notifications = await storage.getUserNotifications(userId);
+      res.json(notifications);
+    } catch (error) {
+      console.error('Get notifications error:', error);
+      res.status(500).json({ message: 'Erro ao buscar notificações' });
+    }
+  });
+
+  app.get('/api/notifications/unread-count', requireAuth, async (req, res) => {
+    try {
+      const userId = req.session.userId!;
+      const count = await storage.getUnreadNotificationCount(userId);
+      res.json({ count });
+    } catch (error) {
+      console.error('Get unread count error:', error);
+      res.status(500).json({ message: 'Erro ao buscar contador' });
+    }
+  });
+
+  app.post('/api/notifications/:id/read', requireAuth, async (req, res) => {
+    try {
+      await storage.markNotificationAsRead(req.params.id);
+      res.json({ message: 'Notificação marcada como lida' });
+    } catch (error) {
+      console.error('Mark as read error:', error);
+      res.status(500).json({ message: 'Erro ao marcar como lida' });
+    }
+  });
+
+  app.post('/api/notifications/mark-all-read', requireAuth, async (req, res) => {
+    try {
+      const userId = req.session.userId!;
+      await storage.markAllNotificationsAsRead(userId);
+      res.json({ message: 'Todas as notificações marcadas como lidas' });
+    } catch (error) {
+      console.error('Mark all as read error:', error);
+      res.status(500).json({ message: 'Erro ao marcar todas como lidas' });
     }
   });
 
