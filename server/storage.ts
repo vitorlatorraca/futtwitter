@@ -12,6 +12,7 @@ import {
   playerRatings,
   badges,
   userBadges,
+  notifications,
   type User,
   type InsertUser,
   type Journalist,
@@ -31,6 +32,8 @@ import {
   type Badge,
   type UserBadge,
   type InsertUserBadge,
+  type Notification,
+  type InsertNotification,
 } from "@shared/schema";
 
 export interface IStorage {
@@ -495,10 +498,66 @@ export class DatabaseStorage implements IStorage {
       if (shouldAward) {
         const userBadge = await this.awardBadge(userId, badge.id);
         awarded.push(userBadge);
+        
+        // Create notification for badge earned
+        await this.createNotification({
+          userId,
+          type: 'BADGE_EARNED',
+          title: 'Nova conquista desbloqueada!',
+          message: `Você ganhou o badge "${badge.name}": ${badge.description}`,
+          referenceId: badge.id,
+          isRead: false,
+        });
       }
     }
 
     return awarded;
+  }
+
+  // Notifications
+  async createNotification(notification: InsertNotification): Promise<Notification> {
+    const [newNotification] = await db.insert(notifications).values(notification).returning();
+    
+    // Publish to WebSocket if available
+    // Import is done dynamically to avoid circular dependency
+    import('./websocket').then(({ publishNotification }) => {
+      publishNotification(newNotification);
+    }).catch((err) => {
+      console.error('Failed to publish notification via WebSocket:', err);
+    });
+    
+    return newNotification;
+  }
+
+  async getUserNotifications(userId: string, limit = 50): Promise<Notification[]> {
+    return await db
+      .select()
+      .from(notifications)
+      .where(eq(notifications.userId, userId))
+      .orderBy(desc(notifications.createdAt))
+      .limit(limit);
+  }
+
+  async markNotificationAsRead(notificationId: string): Promise<void> {
+    await db
+      .update(notifications)
+      .set({ isRead: true })
+      .where(eq(notifications.id, notificationId));
+  }
+
+  async markAllNotificationsAsRead(userId: string): Promise<void> {
+    await db
+      .update(notifications)
+      .set({ isRead: true })
+      .where(and(eq(notifications.userId, userId), eq(notifications.isRead, false)));
+  }
+
+  async getUnreadNotificationCount(userId: string): Promise<number> {
+    const result = await db
+      .select()
+      .from(notifications)
+      .where(and(eq(notifications.userId, userId), eq(notifications.isRead, false)));
+    return result.length;
   }
 }
 
