@@ -440,6 +440,25 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // ============================================
+  // ADMIN ROUTES
+  // ============================================
+
+  app.post('/api/admin/standings/recalculate', requireAuth, async (req, res) => {
+    try {
+      const user = await storage.getUser(req.session.userId!);
+      if (user?.userType !== 'ADMIN') {
+        return res.status(403).json({ message: 'Acesso negado' });
+      }
+
+      await storage.updateTeamStandings();
+      res.json({ message: 'Classificação recalculada com sucesso' });
+    } catch (error) {
+      console.error('Recalculate standings error:', error);
+      res.status(500).json({ message: 'Erro ao recalcular classificação' });
+    }
+  });
+
   const httpServer = createServer(app);
 
   return httpServer;
