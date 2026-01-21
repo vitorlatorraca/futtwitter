@@ -44,6 +44,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         maxAge: 30 * 24 * 60 * 60 * 1000, // 30 days
         httpOnly: true,
         secure: process.env.NODE_ENV === 'production',
+        sameSite: process.env.NODE_ENV === 'production' ? 'lax' : 'lax',
       },
     })
   );
@@ -52,7 +53,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // AUTHENTICATION ROUTES
   // ============================================
 
-  app.post('/api/auth/register', async (req, res) => {
+  // Signup/Register handler
+  const signupHandler = async (req: any, res: any) => {
     try {
       const { name, email, password, teamId } = insertUserSchema.parse(req.body);
 
@@ -86,7 +88,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
       console.error('Registration error:', error);
       res.status(400).json({ message: error.message || 'Erro ao criar conta' });
     }
-  });
+  };
+
+  // Support both /signup and /register for compatibility
+  app.post('/api/auth/signup', signupHandler);
+  app.post('/api/auth/register', signupHandler);
 
   app.post('/api/auth/login', async (req, res) => {
     try {
