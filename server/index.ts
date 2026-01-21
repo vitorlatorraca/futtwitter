@@ -1,10 +1,43 @@
 import "dotenv/config";
 import express, { type Request, Response, NextFunction } from "express";
+import cors from "cors";
 import { registerRoutes, sessionStore } from "./routes";
 import { setupVite, serveStatic, log } from "./vite";
 import { initNotificationGateway } from "./websocket";
 
 const app = express();
+
+// Configure CORS
+const corsOptions = {
+  origin: (origin: string | undefined, callback: (err: Error | null, allow?: boolean) => void) => {
+    // Allow requests with no origin (like mobile apps or curl requests)
+    if (!origin) {
+      return callback(null, true);
+    }
+
+    const allowedOrigins = process.env.CORS_ORIGIN 
+      ? process.env.CORS_ORIGIN.split(',').map(o => o.trim())
+      : [];
+
+    // In development, allow localhost
+    if (process.env.NODE_ENV === 'development') {
+      if (origin.startsWith('http://localhost:') || origin.startsWith('http://127.0.0.1:')) {
+        return callback(null, true);
+      }
+    }
+
+    // Check if origin is in allowed list
+    if (allowedOrigins.length === 0 || allowedOrigins.includes(origin)) {
+      callback(null, true);
+    } else {
+      callback(new Error('Not allowed by CORS'));
+    }
+  },
+  credentials: true,
+  optionsSuccessStatus: 200
+};
+
+app.use(cors(corsOptions));
 
 declare module 'http' {
   interface IncomingMessage {
@@ -72,14 +105,16 @@ app.use((req, res, next) => {
   }
 
   // ALWAYS serve the app on the port specified in the environment variable PORT
-  // Other ports are firewalled. Default to 5000 if not specified.
+  // Railway injects PORT automatically. Default to 5000 if not specified.
   // this serves both the API and the client.
-  // It is the only port that is not firewalled.
   const port = parseInt(process.env.PORT || '5000', 10);
+  // In production (Railway), bind to 0.0.0.0 to accept external connections
+  // In development, use 127.0.0.1 for localhost only
+  const host = process.env.NODE_ENV === 'production' ? '0.0.0.0' : '127.0.0.1';
   server.listen({
     port,
-    host: "127.0.0.1",
+    host,
   }, () => {
-    log(`serving on port ${port}`);
+    log(`serving on ${host}:${port}`);
   });
 })();
