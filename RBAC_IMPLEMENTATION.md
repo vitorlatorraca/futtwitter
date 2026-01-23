@@ -274,8 +274,35 @@ Retorna também:
 
 ### Variáveis de ambiente
 
-- **ADMIN_EMAILS** (opcional): emails separados por vírgula para considerar como admin quando `userType` não for ADMIN.
+- **ADMIN_EMAILS** (opcional): emails separados por vírgula para considerar como admin quando `userType` não for ADMIN. Ex: `ADMIN_EMAILS=admin@exemplo.com,outro@exemplo.com`
 - **SESSION_SECRET**: já existente para sessão.
+
+### Comandos PowerShell para testar
+
+```powershell
+# Subir backend + frontend
+npm run dev:all
+```
+
+```powershell
+# Login como admin (ajustar email se usar ADMIN_EMAILS ou userType ADMIN)
+$r = Invoke-WebRequest -Uri "http://localhost:5000/api/auth/login" -Method POST -ContentType "application/json" -Body '{"email":"admin@exemplo.com","password":"senha123"}' -SessionVariable sess
+
+# Buscar usuários (admin)
+Invoke-WebRequest -Uri "http://localhost:5000/api/admin/users/search?q=torcedor" -WebSession $sess
+
+# Aprovar jornalista (admin) – troque USER_ID pelo id do usuário
+Invoke-WebRequest -Uri "http://localhost:5000/api/admin/journalists/USER_ID" -Method PATCH -ContentType "application/json" -Body '{"action":"approve"}' -WebSession $sess
+```
+
+### Checklist manual
+
+1. **Fan vê "Fan"** – Login como torcedor, aba Perfil → Informações; badge "Fan".
+2. **Fan não posta (403)** – Tentar POST /api/news → 403.
+3. **Admin promove usuário → status muda** – Admin em Perfil → Admin; buscar usuário; Promover; buscar de novo → "Pending".
+4. **Usuário aprovado vê badge "Journalist"** – Admin aprova; usuário faz logout/login (ou refetch /me); Perfil → "Journalist".
+5. **Usuário aprovado consegue postar** – POST /api/news (com sessão do aprovado) → 201.
+6. **Admin revoga → volta a Fan e não posta mais** – Admin revoga; usuário refetch /me → "Fan"; POST /api/news → 403.
 
 ## ✅ Status Final
 
