@@ -1,10 +1,20 @@
-import { createContext, useContext, useState, useEffect, ReactNode } from 'react';
+import { createContext, useContext, ReactNode } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { apiRequest, getQueryFn } from './queryClient';
-import type { User } from '@shared/schema';
+
+export interface MeUser {
+  id: string;
+  name: string;
+  email: string;
+  teamId: string | null;
+  userType: string;
+  journalistStatus?: 'APPROVED' | 'PENDING' | 'REJECTED' | 'SUSPENDED' | null;
+  isJournalist?: boolean;
+  isAdmin?: boolean;
+}
 
 interface AuthContextType {
-  user: User | null;
+  user: MeUser | null;
   isLoading: boolean;
   login: (email: string, password: string) => Promise<void>;
   logout: () => Promise<void>;
@@ -16,9 +26,9 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 export function AuthProvider({ children }: { children: ReactNode }) {
   const queryClient = useQueryClient();
 
-  const { data: user, isLoading } = useQuery<User | null>({
+  const { data: user, isLoading } = useQuery<MeUser | null>({
     queryKey: ['/api/auth/me'],
-    queryFn: getQueryFn<User | null>({ on401: 'returnNull' }),
+    queryFn: getQueryFn<MeUser | null>({ on401: 'returnNull' }),
     retry: false,
   });
 

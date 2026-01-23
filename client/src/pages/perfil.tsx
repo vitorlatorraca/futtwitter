@@ -10,7 +10,8 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Badge } from '@/components/ui/badge';
 import { useToast } from '@/hooks/use-toast';
 import { apiRequest } from '@/lib/queryClient';
-import { User, Lock, BarChart3, Award, Loader2 } from 'lucide-react';
+import type { MeUser } from '@/lib/auth-context';
+import { User, BarChart3, Award, Loader2, ShieldCheck, Search } from 'lucide-react';
 
 export default function PerfilPage() {
   const { user } = useAuth();
@@ -109,6 +110,53 @@ export default function PerfilPage() {
     queryKey: ['/api/badges'],
   });
 
+  const [adminSearchQ, setAdminSearchQ] = useState('');
+  const [adminResults, setAdminResults] = useState<Array<{ id: string; email: string; name: string; journalistStatus: string | null; isJournalist: boolean }>>([]);
+  const [lastAdminQuery, setLastAdminQuery] = useState('');
+
+  const adminSearchMutation = useMutation({
+    mutationFn: async (q: string) => {
+      const res = await apiRequest('GET', `/api/admin/users/search?q=${encodeURIComponent(q)}`);
+      return res.json() as Promise<Array<{ id: string; email: string; name: string; journalistStatus: string | null; isJournalist: boolean }>>;
+    },
+    onSuccess: (data, q) => {
+      setAdminResults(data);
+      setLastAdminQuery(q);
+    },
+    onError: (err: any) => {
+      toast({ variant: 'destructive', title: 'Erro', description: err?.message || 'Falha ao buscar usuários' });
+    },
+  });
+
+  const adminActionMutation = useMutation({
+    mutationFn: async ({ userId, action }: { userId: string; action: string }) => {
+      await apiRequest('PATCH', `/api/admin/journalists/${userId}`, { action });
+    },
+    onSuccess: (_, { action }) => {
+      toast({ title: 'Sucesso', description: `Ação "${action}" concluída.` });
+      if (lastAdminQuery) adminSearchMutation.mutate(lastAdminQuery);
+      queryClient.invalidateQueries({ queryKey: ['/api/auth/me'] });
+    },
+    onError: (err: any) => {
+      toast({ variant: 'destructive', title: 'Erro', description: err?.message || 'Falha na ação' });
+    },
+  });
+
+  const handleAdminSearch = () => {
+    const q = adminSearchQ.trim();
+    if (!q) return;
+    adminSearchMutation.mutate(q);
+  };
+
+  const statusBadge = (u: MeUser | null) => {
+    if (!u) return null;
+    if (u.isJournalist) return { label: 'Journalist', variant: 'default' as const };
+    if (u.journalistStatus === 'PENDING') return { label: 'Journalist (Pending approval)', variant: 'secondary' as const };
+    return { label: 'Fan', variant: 'outline' as const };
+  };
+
+  const sb = statusBadge(user);
+
   return (
     <div className="min-h-screen bg-background">
       <Navbar />
@@ -117,7 +165,7 @@ export default function PerfilPage() {
         <h1 className="font-display font-bold text-3xl mb-8">Meu Perfil</h1>
 
         <Tabs defaultValue="info" className="space-y-6">
-          <TabsList className="grid w-full grid-cols-3">
+          <TabsList className={`grid w-full ${user?.isAdmin ? 'grid-cols-4' : 'grid-cols-3'}`}>
             <TabsTrigger value="info" className="gap-2" data-testid="tab-info">
               <User className="h-4 w-4" />
               <span className="hidden sm:inline">Informações</span>
@@ -130,9 +178,29 @@ export default function PerfilPage() {
               <Award className="h-4 w-4" />
               <span className="hidden sm:inline">Badges</span>
             </TabsTrigger>
+            {user?.isAdmin && (
+              <TabsTrigger value="admin" className="gap-2" data-testid="tab-admin">
+                <ShieldCheck className="h-4 w-4" />
+                <span className="hidden sm:inline">Admin</span>
+              </TabsTrigger>
+            )}
           </TabsList>
 
           <TabsContent value="info" className="space-y-6">
+            {sb && (
+              <Card className="border-primary/20">
+                <CardContent className="pt-6">
+                  <div className="flex flex-wrap items-center gap-2">
+                    <Badge variant={sb.variant} className="text-xs">
+                      {sb.label}
+                    </Badge>
+                    {user?.journalistStatus === 'PENDING' && (
+                      <span className="text-sm text-muted-foreground">Aguardando aprovação do administrador.</span>
+                    )}
+                  </div>
+                </CardContent>
+              </Card>
+            )}
             <Card>
               <CardHeader>
                 <CardTitle>Dados Pessoais</CardTitle>
@@ -275,6 +343,71 @@ export default function PerfilPage() {
               ))}
             </div>
           </TabsContent>
+
+          {user?.isAdmin && (
+            <TabsContent value="admin" className="space-y-6">
+              <Card>
+                <CardHeader>
+                  <CardTitle>Gerenciar Jornalistas</CardTitle>
+                  <CardDescription>Busque por email ou nome. Promova, aprove, rejeite ou revogue.</CardDescription>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  <div className="flex gap-2">
+                    <Input
+                      placeholder="Email ou nome..."
+                      value={adminSearchQ}
+                      onChange={(e) => setAdminSearchQ(e.target.value)}
+                      onKeyDown={(e) => e.key === 'Enter' && handleAdminSearch()}
+                    />
+                    <Button onClick={handleAdminSearch} disabled={adminSearchMutation.isPending}>
+                      {adminSearchMutation.isPending ? <Loader2 className="h-4 w-4 animate-spin" /> : <Search className="h-4 w-4" />}
+                      <span className="ml-2">Buscar</span>
+                    </Button>
+                  </div>
+                  <div className="space-y-2">
+                    {adminResults.map((r) => (
+                      <div key={r.id} className="flex flex-wrap items-center justify-between gap-2 rounded-lg border p-3">
+                        <div>
+                          <span className="font-medium">{r.name}</span>
+                          <span className="text-muted-foreground text-sm ml-2">{r.email}</span>
+                          <Badge variant="outline" className="ml-2 text-xs">
+                            {r.isJournalist ? 'Journalist' : r.journalistStatus === 'PENDING' ? 'Pending' : 'Fan'}
+                          </Badge>
+                        </div>
+                        <div className="flex flex-wrap gap-1">
+                          {!r.journalistStatus && !r.isJournalist && (
+                            <Button size="sm" variant="outline" onClick={() => adminActionMutation.mutate({ userId: r.id, action: 'promote' })} disabled={adminActionMutation.isPending}>
+                              Promover
+                            </Button>
+                          )}
+                          {(r.journalistStatus === 'PENDING' || r.journalistStatus === 'REJECTED') && (
+                            <>
+                              <Button size="sm" variant="default" onClick={() => adminActionMutation.mutate({ userId: r.id, action: 'approve' })} disabled={adminActionMutation.isPending}>
+                                Aprovar
+                              </Button>
+                              {r.journalistStatus === 'PENDING' && (
+                                <Button size="sm" variant="destructive" onClick={() => adminActionMutation.mutate({ userId: r.id, action: 'reject' })} disabled={adminActionMutation.isPending}>
+                                  Rejeitar
+                                </Button>
+                              )}
+                            </>
+                          )}
+                          {(r.isJournalist || r.journalistStatus === 'REJECTED' || r.journalistStatus === 'PENDING') && (
+                            <Button size="sm" variant="secondary" onClick={() => adminActionMutation.mutate({ userId: r.id, action: 'revoke' })} disabled={adminActionMutation.isPending}>
+                              Revogar
+                            </Button>
+                          )}
+                        </div>
+                      </div>
+                    ))}
+                    {adminSearchMutation.isSuccess && adminResults.length === 0 && lastAdminQuery && (
+                      <p className="text-sm text-muted-foreground">Nenhum usuário encontrado.</p>
+                    )}
+                  </div>
+                </CardContent>
+              </Card>
+            </TabsContent>
+          )}
         </Tabs>
       </div>
     </div>
