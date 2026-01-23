@@ -26,23 +26,24 @@ export function Navbar() {
   const isActive = (path: string) => location === path;
 
   return (
-    <nav className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
+    <nav className="sticky top-0 z-50 w-full border-b border-card-border bg-surface-card/80 backdrop-blur-md supports-[backdrop-filter]:bg-surface-card/60 shadow-sm">
       <div className="container flex h-16 items-center justify-between px-4">
         {/* Logo */}
         <Link href="/dashboard" data-testid="link-logo">
-          <div className="flex items-center gap-2 text-xl font-display font-bold tracking-tight hover-elevate active-elevate-2 rounded-md px-3 py-2 cursor-pointer">
+          <div className="flex items-center gap-2 text-xl font-display font-bold tracking-tight rounded-medium px-3 py-2 cursor-pointer transition-all duration-fast hover:bg-surface-elevated hover:text-primary">
             <span className="text-2xl">⚽</span>
-            <span className="hidden sm:inline">Brasileirão</span>
+            <span className="hidden sm:inline">FUTTWITTER</span>
           </div>
         </Link>
 
         {/* Desktop Navigation */}
-        <div className="hidden md:flex items-center gap-1">
+        <div className="hidden md:flex items-center gap-1 bg-surface-card rounded-medium p-1 border border-card-border">
           {navLinks.map((link) => (
             <Link key={link.href} href={link.href} data-testid={link.testId}>
               <Button
-                variant={isActive(link.href) ? 'secondary' : 'ghost'}
-                className="font-medium"
+                variant={isActive(link.href) ? 'default' : 'ghost'}
+                className={`font-semibold ${isActive(link.href) ? '' : 'hover:bg-surface-elevated'}`}
+                size="sm"
               >
                 {link.label}
               </Button>
@@ -52,19 +53,19 @@ export function Navbar() {
 
         {/* User Menu */}
         <div className="flex items-center gap-3">
-          <div className="hidden md:flex items-center gap-2">
-            <Avatar className="h-8 w-8">
-              <AvatarFallback className="bg-primary text-primary-foreground text-sm font-semibold">
+          <div className="hidden md:flex items-center gap-3 px-3 py-1.5 rounded-medium bg-surface-elevated border border-card-border">
+            <Avatar className="h-8 w-8 ring-2 ring-primary/20">
+              <AvatarFallback className="bg-primary text-primary-foreground text-sm font-bold">
                 {user.name.slice(0, 2).toUpperCase()}
               </AvatarFallback>
             </Avatar>
-            <span className="text-sm font-medium hidden lg:inline">{user.name}</span>
+            <span className="text-sm font-semibold hidden lg:inline text-foreground">{user.name}</span>
           </div>
           <Button
             variant="ghost"
             size="icon"
             onClick={() => logout()}
-            className="hidden md:flex"
+            className="hidden md:flex hover:bg-danger/10 hover:text-danger"
             data-testid="button-logout"
           >
             <LogOut className="h-5 w-5" />
@@ -77,25 +78,25 @@ export function Navbar() {
                 <Menu className="h-6 w-6" />
               </Button>
             </SheetTrigger>
-            <SheetContent side="right" className="w-64">
+            <SheetContent side="right" className="w-64 bg-surface-card border-card-border">
               <div className="flex flex-col gap-4 mt-8">
-                <div className="flex items-center gap-3 pb-4 border-b">
-                  <Avatar className="h-10 w-10">
-                    <AvatarFallback className="bg-primary text-primary-foreground">
+                <div className="flex items-center gap-3 pb-4 border-b border-card-border">
+                  <Avatar className="h-10 w-10 ring-2 ring-primary/20">
+                    <AvatarFallback className="bg-primary text-primary-foreground font-bold">
                       {user.name.slice(0, 2).toUpperCase()}
                     </AvatarFallback>
                   </Avatar>
                   <div>
-                    <p className="font-semibold text-sm">{user.name}</p>
-                    <p className="text-xs text-muted-foreground">{user.email}</p>
+                    <p className="font-semibold text-sm text-foreground">{user.name}</p>
+                    <p className="text-xs text-foreground-secondary">{user.email}</p>
                   </div>
                 </div>
                 <div className="flex flex-col gap-2">
                   {navLinks.map((link) => (
                     <Link key={link.href} href={link.href} data-testid={link.testId}>
                       <Button
-                        variant={isActive(link.href) ? 'secondary' : 'ghost'}
-                        className="w-full justify-start font-medium"
+                        variant={isActive(link.href) ? 'default' : 'ghost'}
+                        className={`w-full justify-start font-semibold ${isActive(link.href) ? '' : 'hover:bg-surface-elevated'}`}
                         onClick={() => setIsOpen(false)}
                       >
                         {link.label}
@@ -104,7 +105,7 @@ export function Navbar() {
                   ))}
                   <Button
                     variant="ghost"
-                    className="w-full justify-start text-destructive hover:text-destructive"
+                    className="w-full justify-start text-danger hover:text-danger hover:bg-danger/10"
                     onClick={() => {
                       setIsOpen(false);
                       logout();

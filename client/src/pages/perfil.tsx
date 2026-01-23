@@ -161,8 +161,12 @@ export default function PerfilPage() {
     <div className="min-h-screen bg-background">
       <Navbar />
 
-      <div className="container px-4 py-8 max-w-4xl">
-        <h1 className="font-display font-bold text-3xl mb-8">Meu Perfil</h1>
+      <div className="container px-4 py-8 max-w-5xl mx-auto">
+        {/* Header Premium */}
+        <div className="mb-8">
+          <h1 className="font-display font-bold text-4xl mb-2 text-foreground">Meu Perfil</h1>
+          <p className="text-foreground-secondary">Gerencie suas informações e preferências</p>
+        </div>
 
         <Tabs defaultValue="info" className="space-y-6">
           <TabsList className={`grid w-full ${user?.isAdmin ? 'grid-cols-4' : 'grid-cols-3'}`}>
@@ -188,20 +192,26 @@ export default function PerfilPage() {
 
           <TabsContent value="info" className="space-y-6">
             {sb && (
-              <Card className="border-primary/20">
+              <Card className="glass-card border-primary/30 bg-gradient-to-br from-surface-card to-surface-elevated">
                 <CardContent className="pt-6">
-                  <div className="flex flex-wrap items-center gap-2">
-                    <Badge variant={sb.variant} className="text-xs">
+                  <div className="flex flex-wrap items-center gap-3">
+                    <Badge 
+                      variant={sb.variant === 'default' ? 'default' : sb.variant === 'secondary' ? 'secondary' : 'outline'} 
+                      className={`text-xs font-semibold ${
+                        sb.variant === 'default' ? 'badge-journalist' : 
+                        sb.variant === 'secondary' ? 'badge-pending' : ''
+                      }`}
+                    >
                       {sb.label}
                     </Badge>
                     {user?.journalistStatus === 'PENDING' && (
-                      <span className="text-sm text-muted-foreground">Aguardando aprovação do administrador.</span>
+                      <span className="text-sm text-foreground-secondary">Aguardando aprovação do administrador.</span>
                     )}
                   </div>
                 </CardContent>
               </Card>
             )}
-            <Card>
+            <Card className="glass-card">
               <CardHeader>
                 <CardTitle>Dados Pessoais</CardTitle>
                 <CardDescription>Atualize suas informações</CardDescription>
@@ -252,7 +262,7 @@ export default function PerfilPage() {
               </CardContent>
             </Card>
 
-            <Card>
+            <Card className="glass-card">
               <CardHeader>
                 <CardTitle>Alterar Senha</CardTitle>
                 <CardDescription>Mantenha sua conta segura</CardDescription>
@@ -304,22 +314,28 @@ export default function PerfilPage() {
 
           <TabsContent value="stats">
             <div className="grid md:grid-cols-3 gap-6">
-              <Card>
+              <Card className="glass-card-hover group">
                 <CardContent className="p-6 text-center">
-                  <div className="text-4xl font-bold text-primary mb-2">{mockStats.ratingsCount}</div>
-                  <p className="text-sm text-muted-foreground">Avaliações Feitas</p>
+                  <div className="stat-number text-primary mb-2 group-hover:scale-110 transition-transform duration-fast">
+                    {mockStats.ratingsCount}
+                  </div>
+                  <p className="stat-label">Avaliações Feitas</p>
                 </CardContent>
               </Card>
-              <Card>
+              <Card className="glass-card-hover group">
                 <CardContent className="p-6 text-center">
-                  <div className="text-4xl font-bold text-primary mb-2">{mockStats.newsLiked}</div>
-                  <p className="text-sm text-muted-foreground">Notícias Curtidas</p>
+                  <div className="stat-number text-primary mb-2 group-hover:scale-110 transition-transform duration-fast">
+                    {mockStats.newsLiked}
+                  </div>
+                  <p className="stat-label">Notícias Curtidas</p>
                 </CardContent>
               </Card>
-              <Card>
+              <Card className="glass-card-hover group">
                 <CardContent className="p-6 text-center">
-                  <div className="text-4xl font-bold text-primary mb-2">{mockStats.daysActive}</div>
-                  <p className="text-sm text-muted-foreground">Dias Ativo</p>
+                  <div className="stat-number text-primary mb-2 group-hover:scale-110 transition-transform duration-fast">
+                    {mockStats.daysActive}
+                  </div>
+                  <p className="stat-label">Dias Ativo</p>
                 </CardContent>
               </Card>
             </div>
@@ -328,13 +344,19 @@ export default function PerfilPage() {
           <TabsContent value="badges">
             <div className="grid md:grid-cols-2 gap-4">
               {badges.map((badge: any) => (
-                <Card key={badge.id} className={!badge.unlocked ? 'opacity-50' : ''}>
+                <Card 
+                  key={badge.id} 
+                  className={`glass-card-hover ${!badge.unlocked ? 'opacity-60 grayscale' : ''} transition-all duration-fast`}
+                >
                   <CardContent className="p-6 flex items-center gap-4">
                     <div className="text-4xl">{badge.icon}</div>
                     <div className="flex-1">
-                      <h3 className="font-semibold mb-1">{badge.name}</h3>
-                      <p className="text-sm text-muted-foreground mb-2">{badge.description}</p>
-                      <Badge variant={badge.unlocked ? 'default' : 'secondary'}>
+                      <h3 className="font-display font-bold text-lg mb-1 text-foreground">{badge.name}</h3>
+                      <p className="text-sm text-foreground-secondary mb-3">{badge.description}</p>
+                      <Badge 
+                        variant={badge.unlocked ? 'default' : 'outline'}
+                        className={badge.unlocked ? 'badge-journalist' : ''}
+                      >
                         {badge.unlocked ? 'Desbloqueado' : 'Bloqueado'}
                       </Badge>
                     </div>
@@ -346,9 +368,12 @@ export default function PerfilPage() {
 
           {user?.isAdmin && (
             <TabsContent value="admin" className="space-y-6">
-              <Card>
+              <Card className="glass-card border-warning/20">
                 <CardHeader>
-                  <CardTitle>Gerenciar Jornalistas</CardTitle>
+                  <CardTitle className="flex items-center gap-2">
+                    <ShieldCheck className="h-5 w-5 text-warning" />
+                    Gerenciar Jornalistas
+                  </CardTitle>
                   <CardDescription>Busque por email ou nome. Promova, aprove, rejeite ou revogue.</CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-4">
@@ -366,11 +391,17 @@ export default function PerfilPage() {
                   </div>
                   <div className="space-y-2">
                     {adminResults.map((r) => (
-                      <div key={r.id} className="flex flex-wrap items-center justify-between gap-2 rounded-lg border p-3">
+                      <div key={r.id} className="flex flex-wrap items-center justify-between gap-2 rounded-medium border border-card-border bg-surface-card p-4 hover:bg-surface-elevated transition-colors">
                         <div>
-                          <span className="font-medium">{r.name}</span>
-                          <span className="text-muted-foreground text-sm ml-2">{r.email}</span>
-                          <Badge variant="outline" className="ml-2 text-xs">
+                          <span className="font-semibold text-foreground">{r.name}</span>
+                          <span className="text-foreground-secondary text-sm ml-2">{r.email}</span>
+                          <Badge 
+                            variant={r.isJournalist ? 'default' : r.journalistStatus === 'PENDING' ? 'secondary' : 'outline'}
+                            className={`ml-2 text-xs ${
+                              r.isJournalist ? 'badge-journalist' : 
+                              r.journalistStatus === 'PENDING' ? 'badge-pending' : ''
+                            }`}
+                          >
                             {r.isJournalist ? 'Journalist' : r.journalistStatus === 'PENDING' ? 'Pending' : 'Fan'}
                           </Badge>
                         </div>

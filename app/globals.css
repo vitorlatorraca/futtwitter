@@ -4,21 +4,99 @@
 
 @layer base {
   :root {
-    --background: 220 20% 2%;
-    --foreground: 0 0% 92%;
-    --foreground-secondary: 0 0% 65%;
-    --border: 0 0% 8%;
-    --card: 0 0% 4%;
-    --card-border: 255 255 255 / 0.08;
-    --primary: 250 60% 60%;
+    /* ============================================
+       DESIGN TOKENS - FUTTWITTER PREMIUM THEME
+       Dark Mode First | Esportivo | Profissional
+       ============================================ */
+    
+    /* === BACKGROUNDS === */
+    --background: 220 15% 6%;        /* Graphite dark - não preto puro */
+    --background-secondary: 220 12% 8%; /* Charcoal */
+    --surface-card: 220 10% 10%;      /* Card surface */
+    --surface-glass: 220 10% 10% / 0.6; /* Glass effect */
+    --surface-elevated: 220 8% 12%;   /* Elevated surfaces */
+    
+    /* === FOREGROUNDS === */
+    --foreground: 0 0% 95%;           /* Texto principal - alto contraste */
+    --foreground-secondary: 0 0% 70%; /* Texto secundário */
+    --foreground-muted: 0 0% 55%;     /* Texto discreto */
+    
+    /* === BORDERS === */
+    --border: 0 0% 12%;              /* Bordas padrão */
+    --border-subtle: 0 0% 8%;        /* Bordas sutis */
+    --border-strong: 0 0% 18%;       /* Bordas destacadas */
+    
+    /* === CARDS === */
+    --card: 220 10% 10%;
+    --card-border: 0 0% 12% / 0.8;
+    --card-foreground: 0 0% 95%;
+    
+    /* === PRIMARY (Verde Futebol / Dourado) === */
+    --primary: 142 76% 36%;           /* Verde esportivo */
     --primary-foreground: 0 0% 100%;
-    --secondary: 0 0% 18%;
+    --primary-hover: 142 76% 42%;
+    --primary-active: 142 76% 30%;
+    
+    /* === ACCENT (Dourado / Amarelo) === */
+    --accent: 45 93% 47%;             /* Dourado premium */
+    --accent-foreground: 0 0% 10%;
+    --accent-hover: 45 93% 52%;
+    
+    /* === SECONDARY === */
+    --secondary: 0 0% 16%;
     --secondary-foreground: 0 0% 90%;
-    --muted: 0 0% 15%;
-    --muted-foreground: 0 0% 70%;
-    --accent: 160 70% 50%;
-    --accent-foreground: 0 0% 100%;
-    --radius: 1rem;
+    
+    /* === MUTED === */
+    --muted: 0 0% 14%;
+    --muted-foreground: 0 0% 65%;
+    
+    /* === STATUS COLORS === */
+    --success: 142 76% 36%;
+    --success-foreground: 0 0% 100%;
+    --warning: 45 93% 47%;
+    --warning-foreground: 0 0% 10%;
+    --danger: 0 72% 51%;
+    --danger-foreground: 0 0% 100%;
+    --info: 210 80% 48%;
+    --info-foreground: 0 0% 100%;
+    
+    /* === BADGES === */
+    --badge-journalist: 142 76% 36%;  /* Verde para jornalista */
+    --badge-journalist-foreground: 0 0% 100%;
+    --badge-pending: 45 93% 47%;      /* Dourado para pendente */
+    --badge-pending-foreground: 0 0% 10%;
+    --badge-fan: 210 80% 48%;         /* Azul para fan */
+    --badge-fan-foreground: 0 0% 100%;
+    --badge-verified: 142 76% 36%;    /* Verde verificado */
+    
+    /* === SHADOWS === */
+    --shadow-card: 0 8px 32px rgba(0, 0, 0, 0.4);
+    --shadow-hover: 0 12px 40px rgba(0, 0, 0, 0.5);
+    --shadow-elevated: 0 16px 48px rgba(0, 0, 0, 0.6);
+    --shadow-glow-primary: 0 0 24px rgba(142, 76%, 36%, 0.3);
+    --shadow-glow-accent: 0 0 24px rgba(45, 93%, 47%, 0.3);
+    
+    /* === BORDER RADIUS === */
+    --radius-soft: 0.75rem;          /* Cards, containers */
+    --radius-medium: 0.5rem;          /* Buttons, inputs */
+    --radius-sharp: 0.25rem;          /* Badges, chips */
+    
+    /* === SPACING (já existe no Tailwind, mas documentando) === */
+    --spacing-xs: 0.25rem;
+    --spacing-sm: 0.5rem;
+    --spacing-md: 1rem;
+    --spacing-lg: 1.5rem;
+    --spacing-xl: 2rem;
+    
+    /* === TYPOGRAPHY === */
+    --font-display: 'Inter Tight', 'Inter', system-ui, sans-serif; /* Títulos impactantes */
+    --font-body: 'Inter', system-ui, sans-serif; /* Corpo de texto */
+    --font-mono: 'JetBrains Mono', 'IBM Plex Mono', monospace; /* Dados/números */
+    
+    /* === LEGACY COMPATIBILITY === */
+    --destructive: 0 72% 51%;
+    --destructive-foreground: 0 0% 100%;
+    --ring: 142 76% 36%;
   }
 }
 
@@ -28,22 +106,24 @@
   }
   
   body {
-    @apply bg-[#05060A] text-foreground antialiased;
+    @apply bg-background text-foreground antialiased;
     position: relative;
     min-height: 100vh;
-    /* Grain/Noise texture muito leve para efeito premium */
+    font-family: var(--font-body);
+    /* Grain/Noise texture sutil para efeito premium */
     background-image: 
-      url("data:image/svg+xml,%3Csvg viewBox='0 0 400 400' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)' opacity='0.03'/%3E%3C/svg%3E");
+      url("data:image/svg+xml,%3Csvg viewBox='0 0 400 400' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)' opacity='0.02'/%3E%3C/svg%3E");
     background-size: 400px 400px;
   }
   
+  /* Gradientes sutis esportivos - verde e dourado */
   body::before {
     content: '';
     position: fixed;
     inset: 0;
     background: 
-      radial-gradient(ellipse 100% 60% at 20% 30%, rgba(109, 94, 240, 0.15) 0%, transparent 50%),
-      radial-gradient(ellipse 100% 60% at 80% 70%, rgba(47, 230, 166, 0.1) 0%, transparent 50%);
+      radial-gradient(ellipse 100% 60% at 20% 30%, hsl(142 76% 36% / 0.08) 0%, transparent 50%),
+      radial-gradient(ellipse 100% 60% at 80% 70%, hsl(45 93% 47% / 0.06) 0%, transparent 50%);
     pointer-events: none;
     z-index: -1;
   }
@@ -52,40 +132,140 @@
     content: '';
     position: fixed;
     inset: 0;
-    background: radial-gradient(ellipse 80% 50% at 50% 120%, rgba(0, 0, 0, 0.4) 0%, transparent 70%);
+    background: radial-gradient(ellipse 80% 50% at 50% 120%, rgba(0, 0, 0, 0.3) 0%, transparent 70%);
     pointer-events: none;
     z-index: -1;
+  }
+  
+  /* Tipografia Display para títulos */
+  h1, h2, h3, h4, h5, h6 {
+    font-family: var(--font-display);
+    font-weight: 700;
+    letter-spacing: -0.02em;
+  }
+  
+  /* Números e dados em mono */
+  .font-mono,
+  [data-type="number"],
+  [data-type="stat"] {
+    font-family: var(--font-mono);
+    font-variant-numeric: tabular-nums;
   }
 }
 
 @layer utilities {
+  /* === GLASS CARDS === */
   .glass-card {
-    @apply bg-white/4 backdrop-blur-md border border-white/8 rounded-2xl shadow-[0_8px_32px_0_rgba(0,0,0,0.3)];
+    @apply bg-surface-glass backdrop-blur-md border border-card-border rounded-xl;
+    box-shadow: var(--shadow-card);
+    transition: all 200ms cubic-bezier(0.4, 0, 0.2, 1);
   }
   
   .glass-card-hover {
-    @apply glass-card hover:bg-white/6 transition-all duration-200;
+    @apply glass-card;
   }
   
-  .bg-radial-glow {
-    background-image: 
-      radial-gradient(circle at 20% 30%, rgba(109, 94, 240, 0.15) 0%, transparent 50%),
-      radial-gradient(circle at 80% 70%, rgba(47, 230, 166, 0.1) 0%, transparent 50%);
+  .glass-card-hover:hover {
+    @apply bg-surface-elevated;
+    box-shadow: var(--shadow-hover);
+    transform: translateY(-2px);
   }
   
+  /* === BUTTONS === */
   .btn-primary {
-    @apply bg-[#6D5EF0] text-white hover:bg-[#7D6EFF] active:bg-[#5D4EDF] transition-colors shadow-lg shadow-[#6D5EF0]/20;
+    @apply bg-primary text-primary-foreground border border-primary/20;
+    box-shadow: var(--shadow-glow-primary);
+    transition: all 150ms cubic-bezier(0.4, 0, 0.2, 1);
+  }
+  
+  .btn-primary:hover {
+    background-color: hsl(var(--primary-hover));
+    box-shadow: var(--shadow-glow-primary), var(--shadow-hover);
+    transform: translateY(-1px);
+  }
+  
+  .btn-primary:active {
+    background-color: hsl(var(--primary-active));
+    transform: translateY(0);
   }
   
   .btn-secondary {
-    @apply border border-white/20 bg-transparent hover:bg-white/5 text-foreground transition-colors;
+    @apply border border-border-strong bg-secondary/50 hover:bg-secondary text-foreground;
+    transition: all 150ms cubic-bezier(0.4, 0, 0.2, 1);
   }
   
+  .btn-secondary:hover {
+    @apply bg-secondary border-border-strong;
+    transform: translateY(-1px);
+  }
+  
+  /* === BADGES === */
+  .badge-journalist {
+    @apply bg-badge-journalist text-white border-transparent;
+    box-shadow: 0 0 12px hsl(var(--badge-journalist) / 0.3);
+  }
+  
+  .badge-pending {
+    @apply bg-badge-pending text-badge-pending-foreground border-transparent;
+  }
+  
+  .badge-fan {
+    @apply bg-badge-fan text-white border-transparent;
+    box-shadow: 0 0 12px hsl(var(--badge-fan) / 0.3);
+  }
+  
+  .badge-verified {
+    @apply badge-journalist;
+    position: relative;
+  }
+  
+  .badge-verified::after {
+    content: '✓';
+    @apply ml-1;
+  }
+  
+  /* === CHIPS === */
   .chip {
-    @apply inline-flex items-center rounded-full border border-white/10 bg-white/5 px-3 py-1 text-xs font-medium text-foreground-secondary;
+    @apply inline-flex items-center rounded-full border border-border-subtle bg-surface-card px-3 py-1 text-xs font-medium text-foreground-secondary;
+    transition: all 150ms cubic-bezier(0.4, 0, 0.2, 1);
+  }
+  
+  .chip:hover {
+    @apply bg-surface-elevated border-border;
+  }
+  
+  /* === GRADIENTS === */
+  .bg-radial-glow {
+    background-image: 
+      radial-gradient(circle at 20% 30%, hsl(var(--primary) / 0.1) 0%, transparent 50%),
+      radial-gradient(circle at 80% 70%, hsl(var(--accent) / 0.08) 0%, transparent 50%);
   }
   
   .progress-gradient {
-    background: linear-gradient(90deg, #2FE6A6 0%, #6D5EF0 100%);
+    background: linear-gradient(90deg, hsl(var(--primary)) 0%, hsl(var(--accent)) 100%);
+  }
+  
+  /* === DATA DISPLAY === */
+  .stat-number {
+    @apply font-mono text-3xl font-bold text-foreground;
+    font-variant-numeric: tabular-nums;
+  }
+  
+  .stat-label {
+    @apply text-sm font-medium text-foreground-secondary uppercase tracking-wider;
+  }
+  
+  /* === CARDS === */
+  .card-premium {
+    @apply glass-card p-6;
+  }
+  
+  .card-premium-hover {
+    @apply card-premium glass-card-hover;
+  }
+  
+  /* === FOCUS STATES === */
+  .focus-ring {
+    @apply focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:ring-offset-background;
   }
 }

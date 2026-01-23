@@ -56,14 +56,6 @@ export default function MeuTimePage() {
   const [selectedPlayer, setSelectedPlayer] = useState<Player | null>(null);
   const [ratings, setRatings] = useState<Record<string, { rating: number; comment: string }>>({});
 
-  // Debug logs (temporary - remove in production)
-  useEffect(() => {
-    if (import.meta.env.DEV) {
-      console.log('[meu-time] User:', user);
-      console.log('[meu-time] User teamId:', user?.teamId);
-    }
-  }, [user]);
-
   const { data: teamData, isLoading: isLoadingTeam } = useQuery<ExtendedTeamData>({
     queryKey: ['/api/teams', user?.teamId, 'extended'],
     queryFn: async () => {
@@ -161,11 +153,11 @@ export default function MeuTimePage() {
     return (
       <div className="min-h-screen bg-background">
         <Navbar />
-        <div className="container px-4 py-8 max-w-7xl">
+        <div className="container px-4 py-8 max-w-7xl mx-auto">
           <div className="space-y-6">
-            <Skeleton className="h-64 rounded-xl" />
-            <Skeleton className="h-96 rounded-xl" />
-            <Skeleton className="h-96 rounded-xl" />
+            <Skeleton className="h-64 rounded-soft" />
+            <Skeleton className="h-96 rounded-soft" />
+            <Skeleton className="h-96 rounded-soft" />
           </div>
         </div>
       </div>
@@ -176,9 +168,9 @@ export default function MeuTimePage() {
     return (
       <div className="min-h-screen bg-background">
         <Navbar />
-        <div className="container px-4 py-8 max-w-7xl">
+        <div className="container px-4 py-8 max-w-7xl mx-auto">
           <div className="text-center py-16">
-            <p className="text-muted-foreground">Selecione um time para ver os detalhes</p>
+            <p className="text-foreground-secondary">Selecione um time para ver os detalhes</p>
           </div>
         </div>
       </div>
@@ -189,7 +181,7 @@ export default function MeuTimePage() {
     <div className="min-h-screen bg-background">
       <Navbar />
 
-      <div className="container px-4 py-8 max-w-7xl mx-auto">
+      <div className="container px-4 py-6 max-w-7xl mx-auto">
         {/* Team Header */}
         <TeamHeader
           team={teamData.team}
@@ -204,11 +196,11 @@ export default function MeuTimePage() {
 
         {/* Main Content Tabs */}
         <Tabs defaultValue="overview" className="space-y-6">
-          <TabsList className="grid w-full grid-cols-4 lg:w-auto lg:grid-cols-4">
-            <TabsTrigger value="overview">Visão Geral</TabsTrigger>
-            <TabsTrigger value="squad">Elenco</TabsTrigger>
-            <TabsTrigger value="performance">Desempenho</TabsTrigger>
-            <TabsTrigger value="social">Social</TabsTrigger>
+          <TabsList className="grid w-full grid-cols-4 lg:w-auto lg:grid-cols-4 bg-surface-card border-card-border">
+            <TabsTrigger value="overview" className="font-semibold">Visão Geral</TabsTrigger>
+            <TabsTrigger value="squad" className="font-semibold">Elenco</TabsTrigger>
+            <TabsTrigger value="performance" className="font-semibold">Desempenho</TabsTrigger>
+            <TabsTrigger value="social" className="font-semibold">Social</TabsTrigger>
           </TabsList>
 
           {/* Overview Tab */}
@@ -287,11 +279,11 @@ export default function MeuTimePage() {
               </div>
             ) : matches && matches.length > 0 ? (
               matches.map((match) => (
-                <div key={match.id} className="p-6 rounded-lg bg-card/40 border border-card-border space-y-4">
-                  <div className="flex items-center justify-between">
+                <div key={match.id} className="p-6 rounded-soft glass-card border-card-border space-y-4">
+                  <div className="flex items-center justify-between pb-3 border-b border-card-border">
                     <div>
-                      <p className="font-semibold text-foreground">{match.opponent}</p>
-                      <p className="text-sm text-muted-foreground">
+                      <p className="font-display font-bold text-lg text-foreground">{match.opponent}</p>
+                      <p className="text-sm text-foreground-secondary font-mono mt-1">
                         {match.teamScore !== null && match.opponentScore !== null ? (
                           <>Placar: {match.teamScore}x{match.opponentScore} • </>
                         ) : null}
@@ -300,8 +292,8 @@ export default function MeuTimePage() {
                     </div>
                   </div>
 
-                  <div className="space-y-2">
-                    <Label>Nota (0-10)</Label>
+                  <div className="space-y-3">
+                    <Label className="text-foreground font-semibold">Nota (0-10)</Label>
                     <Slider
                       min={0}
                       max={10}
@@ -310,28 +302,29 @@ export default function MeuTimePage() {
                       onValueChange={(value) => handleRatingChange(match.id, value)}
                       className="py-4"
                     />
-                    <div className="text-center font-bold text-2xl text-foreground">
+                    <div className="text-center stat-number text-primary">
                       {(ratings[match.id]?.rating || 5).toFixed(1)}
                     </div>
                   </div>
 
                   <div className="space-y-2">
-                    <Label>Comentário (opcional)</Label>
+                    <Label className="text-foreground font-semibold">Comentário (opcional)</Label>
                     <Textarea
                       placeholder="Digite seu comentário sobre a atuação..."
                       maxLength={200}
                       value={ratings[match.id]?.comment || ''}
                       onChange={(e) => handleCommentChange(match.id, e.target.value)}
+                      className="bg-surface-elevated border-card-border"
                     />
-                    <p className="text-xs text-muted-foreground text-right">
+                    <p className="text-xs text-foreground-muted text-right font-mono">
                       {ratings[match.id]?.comment?.length || 0}/200 caracteres
                     </p>
                   </div>
                 </div>
               ))
             ) : (
-              <div className="p-12 text-center rounded-lg bg-card/40 border border-card-border">
-                <p className="text-muted-foreground">Não há partidas recentes para avaliar</p>
+              <div className="p-12 text-center rounded-soft glass-card border-card-border">
+                <p className="text-foreground-secondary">Não há partidas recentes para avaliar</p>
               </div>
             )}
 

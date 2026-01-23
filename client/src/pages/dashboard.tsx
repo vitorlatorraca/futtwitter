@@ -74,7 +74,7 @@ export default function DashboardPage() {
       <Navbar />
 
       {/* Filter Bar */}
-      <div className="sticky top-16 z-40 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 border-b">
+      <div className="sticky top-16 z-40 bg-surface-card/80 backdrop-blur-md supports-[backdrop-filter]:bg-surface-card/60 border-b border-card-border shadow-sm">
         <div className="container px-4 py-3">
           <div className="flex gap-2 overflow-x-auto scrollbar-hide">
             {filters.map((filter) => (
@@ -83,7 +83,7 @@ export default function DashboardPage() {
                 variant={activeFilter === filter.id ? 'default' : 'outline'}
                 size="sm"
                 onClick={() => setActiveFilter(filter.id)}
-                className="whitespace-nowrap font-medium"
+                className="whitespace-nowrap font-semibold"
                 data-testid={filter.testId}
               >
                 {filter.label}
@@ -116,10 +116,10 @@ export default function DashboardPage() {
           ) : (
             <div className="text-center py-16">
               <div className="text-6xl mb-4">📰</div>
-              <h3 className="font-display font-semibold text-xl mb-2">
+              <h3 className="font-display font-bold text-2xl mb-2 text-foreground">
                 Nenhuma notícia ainda
               </h3>
-              <p className="text-muted-foreground">
+              <p className="text-foreground-secondary">
                 {activeFilter === 'my-team' 
                   ? 'Não há notícias do seu time no momento'
                   : 'Não há notícias disponíveis no momento'
