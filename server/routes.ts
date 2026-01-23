@@ -47,6 +47,36 @@ function requireJournalist(req: any, res: any, next: any) {
   })();
 }
 
+function isAdmin(user: { userType: string; email: string }): boolean {
+  if (user.userType === 'ADMIN') return true;
+  const emails = process.env.ADMIN_EMAILS;
+  if (!emails) return false;
+  const list = emails.split(',').map((e) => e.trim().toLowerCase());
+  return list.includes(user.email.toLowerCase());
+}
+
+function requireAdmin(req: any, res: any, next: any) {
+  (async () => {
+    try {
+      if (!req.session.userId) {
+        return res.status(401).json({ message: 'Não autenticado' });
+      }
+      const user = await storage.getUser(req.session.userId);
+      if (!user) {
+        return res.status(401).json({ message: 'Usuário não encontrado' });
+      }
+      if (!isAdmin(user)) {
+        return res.status(403).json({ message: 'Acesso negado. Apenas administradores.' });
+      }
+      (req as any).adminUser = user;
+      next();
+    } catch (error) {
+      console.error('requireAdmin error:', error);
+      return res.status(500).json({ message: 'Erro ao verificar permissões' });
+    }
+  })();
+}
+
 // Export session store for WebSocket authentication
 export const sessionStore = new PgSession({
   pool,
@@ -161,7 +191,21 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(200).json(null);
       }
 
-      res.json({ id: user.id, name: user.name, email: user.email, teamId: user.teamId, userType: user.userType });
+      const journalist = await storage.getJournalist(req.session.userId);
+      const journalistStatus = journalist?.status ?? null;
+      const isJournalist = journalist?.status === 'APPROVED';
+      const isAdminUser = isAdmin(user);
+
+      res.json({
+        id: user.id,
+        name: user.name,
+        email: user.email,
+        teamId: user.teamId,
+        userType: user.userType,
+        journalistStatus,
+        isJournalist,
+        isAdmin: isAdminUser,
+      });
     } catch (error) {
       console.error('Get me error:', error);
       res.status(500).json({ message: 'Erro ao buscar usuário' });
@@ -610,6 +654,99 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // ============================================
   // ADMIN ROUTES
   // ============================================
+
+  app.get('/api/admin/users/search', requireAuth, requireAdmin, async (req, res) => {
+    try {
+      const q = (req.query.q as string)?.trim() ?? '';
+      const results = await storage.searchUsersForAdmin(q, 10);
+      res.json(results);
+    } catch (error) {
+      console.error('Admin users search error:', error);
+      res.status(500).json({ message: 'Erro ao buscar usuários' });
+    }
+  });
+
+  const adminJournalistActionSchema = { action: ['approve', 'reject', 'revoke', 'promote'] as const };
+  app.patch('/api/admin/journalists/:userId', requireAuth, requireAdmin, async (req, res) => {
+    try {
+      const { userId } = req.params;
+      const { action } = req.body as { action?: string };
+      const adminUserId = req.session.userId!;
+
+      if (!action || !adminJournalistActionSchema.action.includes(action as any)) {
+        return res.status(400).json({ message: 'action inválida. Use approve, reject, revoke ou promote.' });
+      }
+
+      const targetUser = await storage.getUser(userId);
+      if (!targetUser) {
+        return res.status(404).json({ message: 'Usuário não encontrado' });
+      }
+
+      const journalist = await storage.getJournalist(userId);
+
+      if (action === 'promote') {
+        if (journalist) {
+          return res.status(400).json({ message: 'Usuário já possui registro de jornalista' });
+        }
+        await storage.createJournalist({
+          userId,
+          organization: 'A ser definido',
+          professionalId: 'N/A',
+        });
+        if (targetUser.userType !== 'ADMIN') {
+          await storage.updateUser(userId, { userType: 'JOURNALIST' });
+        }
+        return res.json({ message: 'Usuário promovido a jornalista (pendente)' });
+      }
+
+      if (action === 'revoke') {
+        if (!journalist) {
+          return res.status(400).json({ message: 'Usuário não é jornalista' });
+        }
+        if (userId === adminUserId && isAdmin(targetUser)) {
+          return res.status(403).json({ message: 'Não é permitido revogar seu próprio status de administrador.' });
+        }
+        await storage.deleteJournalistByUserId(userId);
+        if (targetUser.userType !== 'ADMIN') {
+          await storage.updateUser(userId, { userType: 'FAN' });
+        }
+        return res.json({ message: 'Status de jornalista revogado' });
+      }
+
+      if (action === 'approve') {
+        if (!journalist) {
+          await storage.createJournalist({
+            userId,
+            organization: 'A ser definido',
+            professionalId: 'N/A',
+          });
+          await storage.updateJournalistByUserId(userId, { status: 'APPROVED', verificationDate: new Date() });
+          if (targetUser.userType !== 'ADMIN') {
+            await storage.updateUser(userId, { userType: 'JOURNALIST' });
+          }
+          return res.json({ message: 'Jornalista aprovado' });
+        }
+        await storage.updateJournalistByUserId(userId, { status: 'APPROVED', verificationDate: new Date() });
+        if (targetUser.userType !== 'ADMIN') {
+          await storage.updateUser(userId, { userType: 'JOURNALIST' });
+        }
+        return res.json({ message: 'Jornalista aprovado' });
+      }
+
+      if (action === 'reject') {
+        if (!journalist) {
+          return res.status(400).json({ message: 'Usuário não possui registro de jornalista' });
+        }
+        await storage.updateJournalistByUserId(userId, { status: 'REJECTED' });
+        return res.json({ message: 'Jornalista rejeitado' });
+      }
+
+      res.status(400).json({ message: 'action inválida' });
+    } catch (error: any) {
+      console.error('Admin journalist action error:', error);
+      res.status(500).json({ message: error.message || 'Erro ao executar ação' });
+    }
+  });
 
   app.post('/api/admin/standings/recalculate', requireAuth, async (req, res) => {
     try {

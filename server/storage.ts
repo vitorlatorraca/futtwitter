@@ -1,5 +1,5 @@
 import { db } from "./db";
-import { eq, and, desc } from "drizzle-orm";
+import { eq, and, desc, or, ilike } from "drizzle-orm";
 import {
   users,
   journalists,
@@ -46,6 +46,8 @@ export interface IStorage {
   // Journalists
   getJournalist(userId: string): Promise<Journalist | undefined>;
   createJournalist(journalist: InsertJournalist): Promise<Journalist>;
+  updateJournalistByUserId(userId: string, data: Partial<Pick<Journalist, "status" | "verificationDate">>): Promise<Journalist | undefined>;
+  deleteJournalistByUserId(userId: string): Promise<void>;
 
   // Teams
   getAllTeams(): Promise<Team[]>;
@@ -80,6 +82,12 @@ export interface IStorage {
   createPlayerRating(rating: InsertPlayerRating): Promise<PlayerRating>;
   getPlayerRatings(playerId: string): Promise<PlayerRating[]>;
   getPlayerAverageRating(playerId: string): Promise<number | null>;
+
+  // Admin
+  searchUsersForAdmin(
+    q: string,
+    limit?: number
+  ): Promise<Array<{ id: string; email: string; name: string; journalistStatus: "APPROVED" | "PENDING" | "REJECTED" | "SUSPENDED" | null; isJournalist: boolean }>>;
 
   // Badges
   getAllBadges(): Promise<Badge[]>;
@@ -129,6 +137,22 @@ export class DatabaseStorage implements IStorage {
       .values(insertJournalist)
       .returning();
     return journalist;
+  }
+
+  async updateJournalistByUserId(
+    userId: string,
+    data: Partial<Pick<Journalist, "status" | "verificationDate">>
+  ): Promise<Journalist | undefined> {
+    const [journalist] = await db
+      .update(journalists)
+      .set({ ...data, updatedAt: new Date() })
+      .where(eq(journalists.userId, userId))
+      .returning();
+    return journalist || undefined;
+  }
+
+  async deleteJournalistByUserId(userId: string): Promise<void> {
+    await db.delete(journalists).where(eq(journalists.userId, userId));
   }
 
   // Teams
@@ -429,6 +453,35 @@ export class DatabaseStorage implements IStorage {
     
     const sum = ratings.reduce((acc, r) => acc + r.rating, 0);
     return sum / ratings.length;
+  }
+
+  // Admin
+  async searchUsersForAdmin(
+    q: string,
+    limit = 10
+  ): Promise<Array<{ id: string; email: string; name: string; journalistStatus: "APPROVED" | "PENDING" | "REJECTED" | "SUSPENDED" | null; isJournalist: boolean }>> {
+    const term = `%${q.trim()}%`;
+    if (!term || term === "%%") return [];
+
+    const rows = await db
+      .select({
+        id: users.id,
+        email: users.email,
+        name: users.name,
+        status: journalists.status,
+      })
+      .from(users)
+      .leftJoin(journalists, eq(journalists.userId, users.id))
+      .where(or(ilike(users.email, term), ilike(users.name, term)))
+      .limit(limit);
+
+    return rows.map((r) => ({
+      id: r.id,
+      email: r.email,
+      name: r.name,
+      journalistStatus: r.status ?? null,
+      isJournalist: r.status === "APPROVED",
+    }));
   }
 
   // Badges
