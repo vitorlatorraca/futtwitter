@@ -748,13 +748,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.post('/api/admin/standings/recalculate', requireAuth, async (req, res) => {
+  app.post('/api/admin/standings/recalculate', requireAuth, requireAdmin, async (req, res) => {
     try {
-      const user = await storage.getUser(req.session.userId!);
-      if (user?.userType !== 'ADMIN') {
-        return res.status(403).json({ message: 'Acesso negado' });
-      }
-
       await storage.updateTeamStandings();
       res.json({ message: 'Classificação recalculada com sucesso' });
     } catch (error) {
