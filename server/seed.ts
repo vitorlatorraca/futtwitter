@@ -55,9 +55,9 @@ async function seed() {
       await db.insert(journalists).values({
         userId: journalistUser.id,
         organization: "Brasileirão News",
-        bio: "Jornalista esportiva especializada em futebol brasileiro",
-        verified: true,
-        verificationStatus: "APPROVED",
+        professionalId: "BR-JOR-001",
+        status: "APPROVED",
+        verificationDate: new Date(),
       });
 
       console.log("✓ Created journalist user (email: jornalista@brasileirao.com, password: senha123)");

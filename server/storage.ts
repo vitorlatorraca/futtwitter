@@ -64,6 +64,7 @@ export interface IStorage {
 
   // News
   getAllNews(teamId?: string): Promise<any[]>;
+  getNewsById(id: string): Promise<News | undefined>;
   getNewsByJournalist(journalistId: string): Promise<News[]>;
   createNews(news: InsertNews): Promise<News>;
   updateNews(id: string, data: Partial<News>): Promise<News | undefined>;
@@ -318,6 +319,11 @@ export class DatabaseStorage implements IStorage {
     }
 
     return await query;
+  }
+
+  async getNewsById(id: string): Promise<News | undefined> {
+    const [newsItem] = await db.select().from(news).where(eq(news.id, id));
+    return newsItem || undefined;
   }
 
   async getNewsByJournalist(journalistId: string): Promise<News[]> {
