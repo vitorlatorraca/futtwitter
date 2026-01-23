@@ -19,10 +19,32 @@ function requireAuth(req: any, res: any, next: any) {
 
 // Middleware to check if user is a journalist
 function requireJournalist(req: any, res: any, next: any) {
-  if (req.session.userType !== 'JOURNALIST') {
-    return res.status(403).json({ message: 'Acesso negado. Apenas jornalistas.' });
-  }
-  next();
+  (async () => {
+    try {
+      if (!req.session.userId) {
+        return res.status(401).json({ message: 'Não autenticado' });
+      }
+      
+      if (req.session.userType !== 'JOURNALIST') {
+        return res.status(403).json({ message: 'Acesso negado. Apenas jornalistas.' });
+      }
+
+      // Verify journalist exists in database and is approved
+      const journalist = await storage.getJournalist(req.session.userId);
+      if (!journalist) {
+        return res.status(403).json({ message: 'Acesso negado. Registro de jornalista não encontrado.' });
+      }
+
+      if (journalist.status !== 'APPROVED') {
+        return res.status(403).json({ message: 'Acesso negado. Conta de jornalista não aprovada.' });
+      }
+
+      next();
+    } catch (error) {
+      console.error('requireJournalist error:', error);
+      return res.status(500).json({ message: 'Erro ao verificar permissões' });
+    }
+  })();
 }
 
 // Export session store for WebSocket authentication
@@ -130,13 +152,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.get('/api/auth/me', async (req, res) => {
     if (!req.session.userId) {
-      return res.status(401).json({ message: 'Não autenticado' });
+      return res.status(200).json(null);
     }
 
     try {
       const user = await storage.getUser(req.session.userId);
       if (!user) {
-        return res.status(404).json({ message: 'Usuário não encontrado' });
+        return res.status(200).json(null);
       }
 
       res.json({ id: user.id, name: user.name, email: user.email, teamId: user.teamId, userType: user.userType });
@@ -173,6 +195,47 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error('Get team error:', error);
       res.status(500).json({ message: 'Erro ao buscar time' });
+    }
+  });
+
+  // Extended team data endpoint for "Meu Time" page
+  app.get('/api/teams/:id/extended', requireAuth, async (req, res) => {
+    try {
+      const team = await storage.getTeam(req.params.id);
+      if (!team) {
+        return res.status(404).json({ message: 'Time não encontrado' });
+      }
+
+      const players = await storage.getPlayersByTeam(req.params.id);
+      const matches = await storage.getMatchesByTeam(req.params.id, 20);
+      const allTeams = await storage.getAllTeams();
+
+      // TODO: Adicionar dados de estádio, histórico, conquistas quando schema for expandido
+      res.json({
+        team,
+        players,
+        matches,
+        leagueTable: allTeams,
+        // Mock data - será substituído quando schema for expandido
+        stadium: {
+          name: 'Estádio Principal', // TODO: Buscar do schema
+          capacity: 50000, // TODO: Buscar do schema
+          pitchCondition: 'Excelente', // TODO: Buscar do schema
+          stadiumCondition: 'Boa', // TODO: Buscar do schema
+          homeFactor: 75, // TODO: Calcular baseado em histórico
+          yearBuilt: 2000, // TODO: Buscar do schema
+        },
+        clubInfo: {
+          league: 'Brasileirão Série A', // TODO: Buscar do schema
+          season: '2024', // TODO: Calcular dinamicamente
+          country: 'Brasil', // TODO: Buscar do schema
+          clubStatus: 'Profissional', // TODO: Buscar do schema
+          reputation: 4, // TODO: Calcular baseado em performance
+        },
+      });
+    } catch (error) {
+      console.error('Get extended team error:', error);
+      res.status(500).json({ message: 'Erro ao buscar dados do time' });
     }
   });
 
@@ -275,8 +338,56 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  app.patch('/api/news/:id', requireAuth, requireJournalist, async (req, res) => {
+    try {
+      const journalist = await storage.getJournalist(req.session.userId!);
+      if (!journalist) {
+        return res.status(404).json({ message: 'Jornalista não encontrado' });
+      }
+
+      // Verify the news belongs to this journalist
+      const newsItem = await storage.getNewsById(req.params.id);
+      
+      if (!newsItem) {
+        return res.status(404).json({ message: 'Notícia não encontrada' });
+      }
+
+      if (newsItem.journalistId !== journalist.id) {
+        return res.status(403).json({ message: 'Acesso negado. Você só pode editar suas próprias notícias.' });
+      }
+
+      const newsData = insertNewsSchema.partial().parse(req.body);
+      const updatedNews = await storage.updateNews(req.params.id, newsData);
+
+      if (!updatedNews) {
+        return res.status(404).json({ message: 'Notícia não encontrada' });
+      }
+
+      res.json(updatedNews);
+    } catch (error: any) {
+      console.error('Update news error:', error);
+      res.status(400).json({ message: error.message || 'Erro ao atualizar notícia' });
+    }
+  });
+
   app.delete('/api/news/:id', requireAuth, requireJournalist, async (req, res) => {
     try {
+      const journalist = await storage.getJournalist(req.session.userId!);
+      if (!journalist) {
+        return res.status(404).json({ message: 'Jornalista não encontrado' });
+      }
+
+      // Verify the news belongs to this journalist
+      const newsItem = await storage.getNewsById(req.params.id);
+      
+      if (!newsItem) {
+        return res.status(404).json({ message: 'Notícia não encontrada' });
+      }
+
+      if (newsItem.journalistId !== journalist.id) {
+        return res.status(403).json({ message: 'Acesso negado. Você só pode excluir suas próprias notícias.' });
+      }
+
       await storage.deleteNews(req.params.id);
       res.json({ message: 'Notícia excluída com sucesso' });
     } catch (error) {
