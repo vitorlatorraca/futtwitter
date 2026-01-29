@@ -165,6 +165,10 @@ export class DatabaseStorage implements IStorage {
     previousJournalistStatus: "APPROVED" | "PENDING" | "REJECTED" | "SUSPENDED" | null;
     finalJournalistStatus: "APPROVED";
   }> {
+    if (process.env.NODE_ENV !== "development") {
+      throw new Error("approveJournalistByEmail só pode ser executado em NODE_ENV=development");
+    }
+
     const normalizedEmail = email.trim().toLowerCase();
     if (!normalizedEmail) {
       throw new Error("Email inválido (vazio)");
