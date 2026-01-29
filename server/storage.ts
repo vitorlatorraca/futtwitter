@@ -48,6 +48,11 @@ export interface IStorage {
   createJournalist(journalist: InsertJournalist): Promise<Journalist>;
   updateJournalistByUserId(userId: string, data: Partial<Pick<Journalist, "status" | "verificationDate">>): Promise<Journalist | undefined>;
   deleteJournalistByUserId(userId: string): Promise<void>;
+  approveJournalistByEmail(email: string): Promise<{
+    user: User;
+    previousJournalistStatus: "APPROVED" | "PENDING" | "REJECTED" | "SUSPENDED" | null;
+    finalJournalistStatus: "APPROVED";
+  }>;
 
   // Teams
   getAllTeams(): Promise<Team[]>;
@@ -153,6 +158,64 @@ export class DatabaseStorage implements IStorage {
 
   async deleteJournalistByUserId(userId: string): Promise<void> {
     await db.delete(journalists).where(eq(journalists.userId, userId));
+  }
+
+  async approveJournalistByEmail(email: string): Promise<{
+    user: User;
+    previousJournalistStatus: "APPROVED" | "PENDING" | "REJECTED" | "SUSPENDED" | null;
+    finalJournalistStatus: "APPROVED";
+  }> {
+    const normalizedEmail = email.trim().toLowerCase();
+    if (!normalizedEmail) {
+      throw new Error("Email inválido (vazio)");
+    }
+
+    const [user] = await db
+      .select()
+      .from(users)
+      .where(ilike(users.email, normalizedEmail))
+      .limit(1);
+
+    if (!user) {
+      throw new Error(`Usuário não encontrado para o email: ${normalizedEmail}`);
+    }
+
+    const existingJournalist = await this.getJournalist(user.id);
+    const previousJournalistStatus = existingJournalist?.status ?? null;
+
+    // Idempotente: se já estiver APPROVED, não faz nada.
+    if (existingJournalist?.status === "APPROVED") {
+      return {
+        user,
+        previousJournalistStatus,
+        finalJournalistStatus: "APPROVED",
+      };
+    }
+
+    const now = new Date();
+
+    if (!existingJournalist) {
+      await db.insert(journalists).values({
+        userId: user.id,
+        organization: "A ser definido",
+        professionalId: "N/A",
+        status: "APPROVED",
+        verificationDate: now,
+      });
+    } else {
+      await this.updateJournalistByUserId(user.id, { status: "APPROVED", verificationDate: now });
+    }
+
+    // Alinhar com o fluxo existente: usuário aprovado vira JOURNALIST (mas nunca rebaixa ADMIN).
+    if (user.userType !== "ADMIN") {
+      await this.updateUser(user.id, { userType: "JOURNALIST" });
+    }
+
+    return {
+      user,
+      previousJournalistStatus,
+      finalJournalistStatus: "APPROVED",
+    };
   }
 
   // Teams
