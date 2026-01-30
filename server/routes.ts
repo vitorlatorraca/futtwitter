@@ -85,11 +85,16 @@ export const sessionStore = new PgSession({
 });
 
 export async function registerRoutes(app: Express): Promise<Server> {
+  const sessionSecret = process.env.SESSION_SECRET;
+  if (!sessionSecret) {
+    throw new Error("SESSION_SECRET must be set (required for session cookies)");
+  }
+
   // Configure session
   app.use(
     session({
       store: sessionStore,
-      secret: process.env.SESSION_SECRET || 'brasileirao-secret-key-change-in-production',
+      secret: sessionSecret,
       resave: false,
       saveUninitialized: false,
       cookie: {
@@ -447,6 +452,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.post('/api/news/:id/interaction', requireAuth, async (req, res) => {
     try {
       const { type } = req.body;
+      if (type !== 'LIKE' && type !== 'DISLIKE') {
+        return res.status(400).json({ message: "type inválido. Use LIKE ou DISLIKE." });
+      }
       const newsId = req.params.id;
       const userId = req.session.userId!;
 
@@ -632,7 +640,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.post('/api/notifications/:id/read', requireAuth, async (req, res) => {
     try {
-      await storage.markNotificationAsRead(req.params.id);
+      const userId = req.session.userId!;
+      const updated = await storage.markNotificationAsRead(userId, req.params.id);
+      if (!updated) {
+        return res.status(404).json({ message: "Notificação não encontrada" });
+      }
       res.json({ message: 'Notificação marcada como lida' });
     } catch (error) {
       console.error('Mark as read error:', error);

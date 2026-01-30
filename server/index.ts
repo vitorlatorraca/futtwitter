@@ -7,37 +7,55 @@ import { initNotificationGateway } from "./websocket";
 
 const app = express();
 
+// Railway/Neon: trust proxy in production for secure cookies
+if (process.env.NODE_ENV === "production") {
+  app.set("trust proxy", 1);
+}
+
 // Configure CORS
-const corsOptions = {
-  origin: (origin: string | undefined, callback: (err: Error | null, allow?: boolean) => void) => {
-    // Allow requests with no origin (like mobile apps or curl requests)
-    if (!origin) {
-      return callback(null, true);
-    }
+const isDev = process.env.NODE_ENV === "development";
+const corsAllowedOrigins = (process.env.CORS_ORIGIN ?? "")
+  .split(",")
+  .map((o) => o.trim())
+  .filter(Boolean);
 
-    const allowedOrigins = process.env.CORS_ORIGIN 
-      ? process.env.CORS_ORIGIN.split(',').map(o => o.trim())
-      : [];
-
-    // In development, allow localhost
-    if (process.env.NODE_ENV === 'development') {
-      if (origin.startsWith('http://localhost:') || origin.startsWith('http://127.0.0.1:')) {
+// Only enable CORS when needed:
+// - dev: allow localhost
+// - prod: only if CORS_ORIGIN is explicitly set
+if (isDev || corsAllowedOrigins.length > 0) {
+  const corsOptions = {
+    origin: (
+      origin: string | undefined,
+      callback: (err: Error | null, allow?: boolean) => void
+    ) => {
+      // Allow requests with no origin (like mobile apps or curl requests)
+      if (!origin) {
         return callback(null, true);
       }
-    }
 
-    // Check if origin is in allowed list
-    if (allowedOrigins.length === 0 || allowedOrigins.includes(origin)) {
-      callback(null, true);
-    } else {
-      callback(new Error('Not allowed by CORS'));
-    }
-  },
-  credentials: true,
-  optionsSuccessStatus: 200
-};
+      // In development, allow localhost
+      if (isDev) {
+        if (
+          origin.startsWith("http://localhost:") ||
+          origin.startsWith("http://127.0.0.1:")
+        ) {
+          return callback(null, true);
+        }
+      }
 
-app.use(cors(corsOptions));
+      // In production, only allow explicitly configured origins
+      if (corsAllowedOrigins.includes(origin)) {
+        return callback(null, true);
+      }
+
+      return callback(new Error("Not allowed by CORS"));
+    },
+    credentials: true,
+    optionsSuccessStatus: 200,
+  };
+
+  app.use(cors(corsOptions));
+}
 
 declare module 'http' {
   interface IncomingMessage {
@@ -66,7 +84,8 @@ app.use((req, res, next) => {
     const duration = Date.now() - start;
     if (path.startsWith("/api")) {
       let logLine = `${req.method} ${path} ${res.statusCode} in ${duration}ms`;
-      if (capturedJsonResponse) {
+      // Avoid logging response bodies in production (can contain sensitive data)
+      if (capturedJsonResponse && app.get("env") === "development") {
         logLine += ` :: ${JSON.stringify(capturedJsonResponse)}`;
       }
 
@@ -92,7 +111,8 @@ app.use((req, res, next) => {
     const message = err.message || "Internal Server Error";
 
     res.status(status).json({ message });
-    throw err;
+    // Do not crash the process after responding (production safety)
+    console.error(err);
   });
 
   // importantly only setup vite in development and after

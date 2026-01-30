@@ -664,11 +664,13 @@ export class DatabaseStorage implements IStorage {
       .limit(limit);
   }
 
-  async markNotificationAsRead(notificationId: string): Promise<void> {
-    await db
+  async markNotificationAsRead(userId: string, notificationId: string): Promise<boolean> {
+    const updated = await db
       .update(notifications)
       .set({ isRead: true })
-      .where(eq(notifications.id, notificationId));
+      .where(and(eq(notifications.id, notificationId), eq(notifications.userId, userId)))
+      .returning({ id: notifications.id });
+    return updated.length > 0;
   }
 
   async markAllNotificationsAsRead(userId: string): Promise<void> {
