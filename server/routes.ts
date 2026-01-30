@@ -90,6 +90,30 @@ export async function registerRoutes(app: Express): Promise<Server> {
     throw new Error("SESSION_SECRET must be set (required for session cookies)");
   }
 
+  const cookieDomain =
+    process.env.COOKIE_DOMAIN && process.env.COOKIE_DOMAIN.trim().length > 0
+      ? process.env.COOKIE_DOMAIN.trim()
+      : undefined;
+
+  const cookieSameSiteEnv = (process.env.COOKIE_SAMESITE ?? "").trim().toLowerCase();
+  const cookieSameSite =
+    cookieSameSiteEnv === "lax" || cookieSameSiteEnv === "strict" || cookieSameSiteEnv === "none"
+      ? (cookieSameSiteEnv as "lax" | "strict" | "none")
+      : ("lax" as const);
+
+  const cookieSecureEnv = (process.env.COOKIE_SECURE ?? "").trim().toLowerCase();
+  let cookieSecure =
+    cookieSecureEnv === "true"
+      ? true
+      : cookieSecureEnv === "false"
+        ? false
+        : process.env.NODE_ENV === "production";
+
+  // Browsers require Secure when SameSite=None
+  if (cookieSameSite === "none") {
+    cookieSecure = true;
+  }
+
   // Configure session
   app.use(
     session({
@@ -100,8 +124,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
       cookie: {
         maxAge: 30 * 24 * 60 * 60 * 1000, // 30 days
         httpOnly: true,
-        secure: process.env.NODE_ENV === 'production',
-        sameSite: process.env.NODE_ENV === 'production' ? 'lax' : 'lax',
+        domain: cookieDomain,
+        secure: cookieSecure,
+        sameSite: cookieSameSite,
       },
     })
   );

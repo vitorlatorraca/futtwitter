@@ -14,7 +14,7 @@ if (process.env.NODE_ENV === "production") {
 
 // Configure CORS
 const isDev = process.env.NODE_ENV === "development";
-const corsAllowedOrigins = (process.env.CORS_ORIGIN ?? "")
+const corsAllowedOrigins = (process.env.CORS_ORIGIN ?? process.env.CLIENT_URL ?? "")
   .split(",")
   .map((o) => o.trim())
   .filter(Boolean);
