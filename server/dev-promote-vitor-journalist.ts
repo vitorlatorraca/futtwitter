@@ -1,10 +1,7 @@
-import dotenv from "dotenv";
-import { eq, ilike } from "drizzle-orm";
+import { sql } from "drizzle-orm";
 import { db } from "./db";
 import { storage } from "./storage";
 import { users } from "@shared/schema";
-
-dotenv.config();
 
 function requireDevOnly() {
   if (process.env.NODE_ENV !== "development") {
@@ -12,74 +9,11 @@ function requireDevOnly() {
   }
 }
 
-function getAdminEmails(): string[] {
-  const raw = process.env.ADMIN_EMAILS;
-  if (!raw) {
-    throw new Error("ERRO: ADMIN_EMAILS não está definido");
-  }
-  return raw
-    .split(",")
-    .map((e) => e.trim().toLowerCase())
-    .filter(Boolean);
-}
-
-function getExecutorEmail(): string {
-  return (process.env.EXECUTOR_EMAIL?.trim().toLowerCase() || "admin@futtwitter.dev").trim().toLowerCase();
-}
-
-async function getTargetEmail(): Promise<string> {
-  const preferred = "vitor@futtwitter.dev";
-  const [userByPreferred] = await db
-    .select({ email: users.email })
-    .from(users)
-    .where(ilike(users.email, preferred))
-    .limit(1);
-  if (userByPreferred) return userByPreferred.email;
-
-  const targetName = "Vitor Espindula da Rocha Latorraca";
-  const matches = await db.select().from(users).where(eq(users.name, targetName));
-  if (matches.length === 1) return matches[0].email;
-
-  if (matches.length > 1) {
-    throw new Error(
-      `ERRO: múltiplos usuários com nome "${targetName}". Emails encontrados: ${matches
-        .map((u) => u.email)
-        .join(", ")}`
-    );
-  }
-
-  throw new Error(
-    `ERRO: usuário alvo não encontrado. Tente criar/usar o usuário com email "${preferred}" ou nome "${targetName}".`
-  );
-}
+const targetEmail = "vitorlatorraca5@gmail.com";
 
 async function main() {
   requireDevOnly();
 
-  const adminEmails = getAdminEmails();
-  const executorEmail = getExecutorEmail();
-
-  if (!adminEmails.includes(executorEmail)) {
-    throw new Error(
-      `ERRO: ADMIN_EMAILS não contém o executor (${executorEmail}). ADMIN_EMAILS atual: ${process.env.ADMIN_EMAILS}`
-    );
-  }
-
-  const executor = await storage.getUserByEmail(executorEmail);
-  if (!executor) {
-    throw new Error(`ERRO: executor não existe no banco: ${executorEmail}`);
-  }
-
-  const executorIsAdmin = executor.userType === "ADMIN" || adminEmails.includes(executor.email.toLowerCase());
-  if (!executorIsAdmin) {
-    throw new Error(`ERRO: executor não é ADMIN: ${executor.email} (userType=${executor.userType})`);
-  }
-
-  console.log("✅ Executor validado (ADMIN)");
-  console.log(`   - Email: ${executor.email}`);
-  console.log(`   - userType: ${executor.userType}`);
-
-  const targetEmail = await getTargetEmail();
   const targetUser = await storage.getUserByEmail(targetEmail);
   if (!targetUser) {
     throw new Error(`ERRO: usuário alvo não existe no banco: ${targetEmail}`);
@@ -96,7 +30,7 @@ async function main() {
   console.log(`   - userType atual: ${targetUser.userType}`);
   console.log(`   - journalistStatus anterior: ${before?.status ?? "null"}`);
 
-  const result = await storage.approveJournalistByEmail(targetUser.email);
+  const result = await storage.approveJournalistByEmail(targetEmail);
 
   const afterUser = await storage.getUser(targetUser.id);
   const after = await storage.getJournalist(targetUser.id);
@@ -106,6 +40,32 @@ async function main() {
   console.log(`   - status final: ${after?.status ?? "null"}`);
   console.log(`   - verificationDate: ${after?.verificationDate ? after.verificationDate.toISOString() : "null"}`);
   console.log(`   - userType final: ${afterUser?.userType ?? "null"}`);
+
+  // Validação no banco via SQL (users.user_type, journalists.status, journalists.verification_date)
+  const validation = await db.execute(sql`
+    select
+      u.email,
+      u.name,
+      u.user_type as "userType",
+      j.status as "journalistStatus",
+      j.verification_date as "verificationDate"
+    from users u
+    left join journalists j on j.user_id = u.id
+    where lower(u.email) = lower(${targetEmail})
+    limit 1;
+  `);
+
+  const row = (validation as any)?.rows?.[0];
+  console.log("\n🔎 DB CHECK (SQL)");
+  if (!row) {
+    console.log("   - Nenhuma linha retornada para o email alvo (inesperado).");
+  } else {
+    console.log(`   - email: ${row.email}`);
+    console.log(`   - name: ${row.name}`);
+    console.log(`   - users.user_type: ${row.userType}`);
+    console.log(`   - journalists.status: ${row.journalistStatus ?? "null"}`);
+    console.log(`   - journalists.verification_date: ${row.verificationDate ?? "null"}`);
+  }
 }
 
 main().catch((err) => {

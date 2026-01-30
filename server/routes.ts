@@ -24,8 +24,15 @@ function requireJournalist(req: any, res: any, next: any) {
       if (!req.session.userId) {
         return res.status(401).json({ message: 'Não autenticado' });
       }
-      
-      if (req.session.userType !== 'JOURNALIST') {
+
+      // Keep session userType in sync with DB (important when permissions change).
+      const user = await storage.getUser(req.session.userId);
+      if (!user) {
+        return res.status(401).json({ message: 'Usuário não encontrado' });
+      }
+      req.session.userType = user.userType;
+
+      if (user.userType !== 'JOURNALIST') {
         return res.status(403).json({ message: 'Acesso negado. Apenas jornalistas.' });
       }
 
@@ -220,6 +227,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
       if (!user) {
         return res.status(200).json(null);
       }
+
+      // Sync session userType with DB (e.g., after a promotion).
+      req.session.userType = user.userType;
 
       const journalist = await storage.getJournalist(req.session.userId);
       const journalistStatus = journalist?.status ?? null;

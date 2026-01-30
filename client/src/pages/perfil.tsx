@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useMutation, useQueryClient, useQuery } from '@tanstack/react-query';
 import { useAuth } from '@/lib/auth-context';
 import { Navbar } from '@/components/navbar';
@@ -18,6 +18,11 @@ export default function PerfilPage() {
   const { toast } = useToast();
   const queryClient = useQueryClient();
   const [isEditing, setIsEditing] = useState(false);
+
+  // Ensure the UI reflects permission changes (e.g., journalist approval) even with aggressive caching.
+  useEffect(() => {
+    queryClient.invalidateQueries({ queryKey: ['/api/auth/me'] });
+  }, [queryClient]);
 
   const [profileData, setProfileData] = useState({
     name: user?.name || '',
