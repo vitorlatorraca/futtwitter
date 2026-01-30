@@ -1,11 +1,21 @@
 import "dotenv/config";
 import express, { type Request, Response, NextFunction } from "express";
 import cors from "cors";
+import fs from "fs";
+import path from "path";
+import { fileURLToPath } from "url";
 import { registerRoutes, sessionStore } from "./routes";
 import { setupVite, serveStatic, log } from "./vite";
 import { initNotificationGateway } from "./websocket";
 
 const app = express();
+
+// Serve uploaded files (DEV + PROD)
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+const uploadsDir = path.resolve(__dirname, "uploads");
+fs.mkdirSync(uploadsDir, { recursive: true });
+app.use("/uploads", express.static(uploadsDir));
 
 // Railway/Neon: trust proxy in production for secure cookies
 if (process.env.NODE_ENV === "production") {

@@ -1,5 +1,6 @@
 import { db } from "./db";
 import { eq, and, desc, or, ilike } from "drizzle-orm";
+import { TEAMS_DATA } from "./teams-data";
 import {
   users,
   journalists,
@@ -58,6 +59,7 @@ export interface IStorage {
   getAllTeams(): Promise<Team[]>;
   getTeam(id: string): Promise<Team | undefined>;
   createTeam(team: InsertTeam): Promise<Team>;
+  seedTeamsIfEmpty(): Promise<{ seeded: boolean; count: number }>;
 
   // Players
   getPlayersByTeam(teamId: string): Promise<Player[]>;
@@ -70,7 +72,7 @@ export interface IStorage {
   updateTeamStandings(): Promise<void>;
 
   // News
-  getAllNews(teamId?: string): Promise<any[]>;
+  getAllNews(options?: { teamId?: string; limit?: number }): Promise<any[]>;
   getNewsById(id: string): Promise<News | undefined>;
   getNewsByJournalist(journalistId: string): Promise<News[]>;
   createNews(news: InsertNews): Promise<News>;
@@ -237,6 +239,26 @@ export class DatabaseStorage implements IStorage {
     return team;
   }
 
+  async seedTeamsIfEmpty(): Promise<{ seeded: boolean; count: number }> {
+    const existing = await db.select({ id: teams.id }).from(teams).limit(1);
+    if (existing.length > 0) {
+      return { seeded: false, count: 0 };
+    }
+
+    await db.insert(teams).values(
+      TEAMS_DATA.map((t) => ({
+        id: t.id,
+        name: t.name,
+        shortName: t.shortName,
+        logoUrl: t.logoUrl,
+        primaryColor: t.primaryColor,
+        secondaryColor: t.secondaryColor,
+      }))
+    );
+
+    return { seeded: true, count: TEAMS_DATA.length };
+  }
+
   // Players
   async getPlayersByTeam(teamId: string): Promise<Player[]> {
     return await db
@@ -374,8 +396,14 @@ export class DatabaseStorage implements IStorage {
   }
 
   // News
-  async getAllNews(teamId?: string): Promise<any[]> {
-    let query = db
+  async getAllNews(options?: { teamId?: string; limit?: number }): Promise<any[]> {
+    const teamId = options?.teamId;
+    const limit = options?.limit ?? 50;
+
+    const conditions = [eq(news.isPublished, true)];
+    if (teamId) conditions.push(eq(news.teamId, teamId));
+
+    const query = db
       .select({
         id: news.id,
         journalistId: news.journalistId,
@@ -386,10 +414,8 @@ export class DatabaseStorage implements IStorage {
         category: news.category,
         likesCount: news.likesCount,
         dislikesCount: news.dislikesCount,
-        isPublished: news.isPublished,
         publishedAt: news.publishedAt,
         createdAt: news.createdAt,
-        updatedAt: news.updatedAt,
         team: teams,
         journalist: {
           id: journalists.id,
@@ -402,12 +428,9 @@ export class DatabaseStorage implements IStorage {
       .innerJoin(teams, eq(news.teamId, teams.id))
       .innerJoin(journalists, eq(news.journalistId, journalists.id))
       .innerJoin(users, eq(journalists.userId, users.id))
-      .where(eq(news.isPublished, true))
-      .orderBy(desc(news.publishedAt));
-
-    if (teamId) {
-      query = query.where(eq(news.teamId, teamId)) as any;
-    }
+      .where(and(...conditions))
+      .orderBy(desc(news.createdAt))
+      .limit(limit);
 
     return await query;
   }
@@ -426,7 +449,12 @@ export class DatabaseStorage implements IStorage {
   }
 
   async createNews(insertNews: InsertNews): Promise<News> {
-    const [newsItem] = await db.insert(news).values(insertNews).returning();
+    // Segurança: nunca permitir que o client publique como "não publicado".
+    // (O schema já bloqueia isPublished no payload, mas garantimos aqui também.)
+    const [newsItem] = await db
+      .insert(news)
+      .values({ ...(insertNews as any), isPublished: true, publishedAt: new Date() })
+      .returning();
     return newsItem;
   }
 

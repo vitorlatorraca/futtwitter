@@ -334,7 +334,17 @@ export const selectMatchSchema = createSelectSchema(matches);
 export const insertNewsSchema = createInsertSchema(news, {
   title: z.string().min(10, "Título deve ter pelo menos 10 caracteres").max(200, "Título não pode ter mais de 200 caracteres"),
   content: z.string().min(50, "Conteúdo deve ter pelo menos 50 caracteres").max(1000, "Conteúdo não pode ter mais de 1000 caracteres"),
-}).omit({ id: true, journalistId: true, createdAt: true, updatedAt: true, likesCount: true, dislikesCount: true, publishedAt: true });
+}).omit({
+  id: true,
+  journalistId: true,
+  createdAt: true,
+  updatedAt: true,
+  likesCount: true,
+  dislikesCount: true,
+  publishedAt: true,
+  // Nunca confiar no client para publicar/despublicar: o backend decide.
+  isPublished: true,
+});
 
 export const selectNewsSchema = createSelectSchema(news);
 

@@ -5,9 +5,85 @@ import ConnectPgSimple from "connect-pg-simple";
 import { pool } from "./db";
 import { storage } from "./storage";
 import bcrypt from "bcrypt";
+import fs from "fs";
+import path from "path";
+import multer from "multer";
+import { randomBytes } from "crypto";
+import { fileURLToPath } from "url";
 import { insertUserSchema, insertNewsSchema, insertPlayerRatingSchema } from "@shared/schema";
 
 const PgSession = ConnectPgSimple(session);
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+const UPLOADS_DIR = path.resolve(__dirname, "uploads");
+const MAX_IMAGE_UPLOAD_BYTES = 5 * 1024 * 1024; // 5MB
+const ALLOWED_IMAGE_EXTENSIONS = new Set([".jpg", ".jpeg", ".png", ".webp", ".gif"]);
+const ALLOWED_IMAGE_MIME_TYPES = new Set(["image/jpeg", "image/png", "image/webp", "image/gif"]);
+fs.mkdirSync(UPLOADS_DIR, { recursive: true });
+
+const uploadImage = multer({
+  storage: multer.diskStorage({
+    destination: (_req, _file, cb) => {
+      cb(null, UPLOADS_DIR);
+    },
+    filename: (_req, file, cb) => {
+      const ext = path.extname(file.originalname).toLowerCase();
+      const unique = `${Date.now()}-${randomBytes(8).toString("hex")}${ext}`;
+      cb(null, unique);
+    },
+  }),
+  limits: { fileSize: MAX_IMAGE_UPLOAD_BYTES },
+  fileFilter: (_req, file, cb) => {
+    const ext = path.extname(file.originalname).toLowerCase();
+    if (!file.mimetype || !file.mimetype.startsWith("image/")) {
+      return cb(new Error('Tipo inválido. Envie um arquivo de imagem (image/*).'));
+    }
+    if (!ALLOWED_IMAGE_EXTENSIONS.has(ext)) {
+      return cb(
+        new Error("Extensão não permitida. Use .jpg, .jpeg, .png, .webp ou .gif."),
+      );
+    }
+    return cb(null, true);
+  },
+});
+
+function sanitizeOriginalFilename(originalName: string): string {
+  const base = path.basename(originalName || "image");
+  const sanitized = base
+    .normalize("NFKD")
+    .replace(/[^\w.\-]+/g, "_")
+    .replace(/_+/g, "_")
+    .replace(/^_+|_+$/g, "")
+    .slice(0, 120);
+  return sanitized.length > 0 ? sanitized : "image";
+}
+
+const uploadNewsImage = multer({
+  storage: multer.diskStorage({
+    destination: (_req, _file, cb) => {
+      cb(null, UPLOADS_DIR);
+    },
+    filename: (_req, file, cb) => {
+      const safeOriginalName = sanitizeOriginalFilename(file.originalname);
+      const filename = `${Date.now()}_${safeOriginalName}`;
+      cb(null, filename);
+    },
+  }),
+  limits: { fileSize: MAX_IMAGE_UPLOAD_BYTES },
+  fileFilter: (_req, file, cb) => {
+    const ext = path.extname(file.originalname).toLowerCase();
+    const mime = (file.mimetype || "").toLowerCase();
+
+    if (!ALLOWED_IMAGE_MIME_TYPES.has(mime)) {
+      return cb(new Error("Tipo inválido. Envie uma imagem (jpeg, png, webp ou gif)."));
+    }
+    if (!ALLOWED_IMAGE_EXTENSIONS.has(ext)) {
+      return cb(new Error("Extensão não permitida. Use .jpg, .jpeg, .png, .webp ou .gif."));
+    }
+    return cb(null, true);
+  },
+});
 
 // Middleware to check if user is authenticated
 function requireAuth(req: any, res: any, next: any) {
@@ -137,6 +213,17 @@ export async function registerRoutes(app: Express): Promise<Server> {
       },
     })
   );
+
+  // Ensure base data exists (idempotente).
+  // Sem times no banco, o feed (join com teams) e páginas de time quebram.
+  try {
+    const seeded = await storage.seedTeamsIfEmpty();
+    if (seeded.seeded) {
+      console.log(`✅ Seeded ${seeded.count} teams (auto)`);
+    }
+  } catch (error) {
+    console.error("❌ Falha ao seedar times automaticamente:", error);
+  }
 
   // ============================================
   // AUTHENTICATION ROUTES
@@ -345,22 +432,69 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // NEWS ROUTES
   // ============================================
 
-  app.get('/api/news', async (req, res) => {
-    try {
-      const { teamId, filter } = req.query;
-      
-      let filterTeamId: string | undefined;
-      
-      if (filter === 'my-team' && req.session.userId) {
-        const user = await storage.getUser(req.session.userId);
-        filterTeamId = user?.teamId || undefined;
-      } else if (filter === 'all') {
-        filterTeamId = undefined;
-      } else if (teamId) {
-        filterTeamId = teamId as string;
+  // ============================================
+  // UPLOADS ROUTES
+  // ============================================
+
+  app.post("/api/uploads/image", requireAuth, requireJournalist, (req, res) => {
+    uploadImage.single("file")(req as any, res as any, (err: any) => {
+      if (err) {
+        const isTooLarge = err?.code === "LIMIT_FILE_SIZE";
+        const message = isTooLarge
+          ? "Arquivo muito grande. Tamanho máximo: 5MB."
+          : err?.message || "Erro ao enviar imagem.";
+        return res.status(400).json({ message });
       }
 
-      const newsItems = await storage.getAllNews(filterTeamId);
+      const file = (req as any).file as { filename?: string } | undefined;
+      if (!file?.filename) {
+        return res.status(400).json({ message: 'Campo "file" é obrigatório.' });
+      }
+
+      return res.json({ imageUrl: `/uploads/${file.filename}` });
+    });
+  });
+
+  app.post("/api/uploads/news-image", requireJournalist, (req, res) => {
+    uploadNewsImage.single("image")(req as any, res as any, (err: any) => {
+      if (err) {
+        const isTooLarge = err?.code === "LIMIT_FILE_SIZE";
+        const message = isTooLarge
+          ? "Arquivo muito grande. Tamanho máximo: 5MB."
+          : err?.message || "Erro ao enviar imagem.";
+        return res.status(400).json({ message });
+      }
+
+      const file = (req as any).file as { filename?: string } | undefined;
+      if (!file?.filename) {
+        return res.status(400).json({ message: 'Campo "image" é obrigatório.' });
+      }
+
+      return res.json({ imageUrl: `/uploads/${file.filename}` });
+    });
+  });
+
+  app.get('/api/news', async (req, res) => {
+    try {
+      const teamIdParam = typeof req.query.teamId === "string" ? req.query.teamId.trim() : undefined;
+      const filterParam = typeof req.query.filter === "string" ? req.query.filter.trim() : undefined;
+      const limitParam = typeof req.query.limit === "string" ? parseInt(req.query.limit, 10) : undefined;
+      const limit =
+        Number.isFinite(limitParam) && (limitParam as number) > 0
+          ? Math.min(limitParam as number, 100)
+          : 50;
+
+      // Compatibilidade: o frontend novo usa ?teamId=...; o antigo usa ?filter=my-team|all|<teamId>
+      let effectiveTeamId: string | undefined = teamIdParam || undefined;
+      if (!effectiveTeamId && filterParam && filterParam !== "all" && filterParam !== "my-team") {
+        effectiveTeamId = filterParam;
+      }
+      if (!effectiveTeamId && filterParam === "my-team" && req.session.userId) {
+        const user = await storage.getUser(req.session.userId);
+        effectiveTeamId = user?.teamId || undefined;
+      }
+
+      const newsItems = await storage.getAllNews({ teamId: effectiveTeamId, limit });
 
       // Add user interaction info if logged in
       if (req.session.userId) {
@@ -415,7 +549,20 @@ export async function registerRoutes(app: Express): Promise<Server> {
         journalistId: journalist.id,
       });
 
-      res.status(201).json(newsItem);
+      // Resposta sanitizada (sem campos sensíveis / internos)
+      res.status(201).json({
+        id: newsItem.id,
+        journalistId: newsItem.journalistId,
+        teamId: newsItem.teamId,
+        title: newsItem.title,
+        content: newsItem.content,
+        category: newsItem.category,
+        imageUrl: newsItem.imageUrl,
+        createdAt: newsItem.createdAt,
+        publishedAt: newsItem.publishedAt,
+        likesCount: newsItem.likesCount,
+        dislikesCount: newsItem.dislikesCount,
+      });
     } catch (error: any) {
       console.error('Create news error:', error);
       res.status(400).json({ message: error.message || 'Erro ao criar notícia' });
