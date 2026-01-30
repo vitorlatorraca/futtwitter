@@ -6,7 +6,7 @@ import { NewsCard } from '@/components/news-card';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useToast } from '@/hooks/use-toast';
-import { apiRequest } from '@/lib/queryClient';
+import { apiRequest, getApiUrl } from '@/lib/queryClient';
 import { TEAMS_DATA } from '@/lib/team-data';
 import type { News } from '@shared/schema';
 
@@ -14,19 +14,29 @@ export default function DashboardPage() {
   const { user } = useAuth();
   const { toast } = useToast();
   const queryClient = useQueryClient();
-  const [activeFilter, setActiveFilter] = useState<string>('my-team');
+  // Feed público por padrão (não exige login).
+  const [activeFilter, setActiveFilter] = useState<string>('all');
 
   const { data: newsData, isLoading } = useQuery<News[]>({
     queryKey: ['/api/news', activeFilter, user?.teamId],
     queryFn: async () => {
       const params = new URLSearchParams();
-      params.append('filter', activeFilter);
-      
-      if (activeFilter !== 'my-team' && activeFilter !== 'all') {
+
+      if (activeFilter === 'my-team') {
+        // Meu Time deve usar explicitamente o teamId do usuário (via /api/auth/me)
+        if (!user?.teamId) return [];
+        params.append('teamId', user.teamId);
+      } else if (activeFilter !== 'all') {
+        // Filtro por time específico
         params.append('teamId', activeFilter);
       }
-      
-      const response = await fetch(`/api/news?${params.toString()}`, {
+
+      params.append('limit', '50');
+
+      const qs = params.toString();
+      const url = qs ? `/api/news?${qs}` : '/api/news';
+
+      const response = await fetch(getApiUrl(url), {
         credentials: 'include',
       });
       
@@ -36,7 +46,6 @@ export default function DashboardPage() {
       
       return response.json();
     },
-    enabled: !!user,
   });
 
   const interactionMutation = useMutation({
@@ -109,7 +118,7 @@ export default function DashboardPage() {
               <NewsCard
                 key={news.id}
                 news={news}
-                canInteract={news.team.id === user?.teamId}
+                canInteract={!!user?.teamId && news.teamId === user.teamId}
                 onInteract={handleInteraction}
               />
             ))

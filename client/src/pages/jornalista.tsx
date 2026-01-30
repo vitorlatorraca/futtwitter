@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useAuth } from '@/lib/auth-context';
 import { Navbar } from '@/components/navbar';
@@ -21,13 +21,16 @@ export default function JornalistaPage() {
   const queryClient = useQueryClient();
   const [isCreating, setIsCreating] = useState(false);
   const [editingNews, setEditingNews] = useState<News | null>(null);
+  const [imageFile, setImageFile] = useState<File | null>(null);
+  const [imagePreviewUrl, setImagePreviewUrl] = useState<string | null>(null);
+  const [isUploadingImage, setIsUploadingImage] = useState(false);
 
   const [formData, setFormData] = useState({
     teamId: '',
     category: 'NEWS',
     title: '',
     content: '',
-    imageUrl: '',
+    imageUrl: null as string | null,
   });
 
   const { data: myNews } = useQuery<News[]>({
@@ -41,6 +44,7 @@ export default function JornalistaPage() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['/api/news'] });
+      queryClient.invalidateQueries({ queryKey: ['/api/news/my-news'] });
       toast({
         title: 'Notícia publicada!',
         description: 'Sua notícia foi publicada com sucesso',
@@ -62,6 +66,7 @@ export default function JornalistaPage() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['/api/news'] });
+      queryClient.invalidateQueries({ queryKey: ['/api/news/my-news'] });
       toast({
         title: 'Notícia excluída',
         description: 'A notícia foi removida com sucesso',
@@ -75,13 +80,26 @@ export default function JornalistaPage() {
       category: 'NEWS',
       title: '',
       content: '',
-      imageUrl: '',
+      imageUrl: null,
     });
+    setImageFile(null);
     setIsCreating(false);
     setEditingNews(null);
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  useEffect(() => {
+    if (!imageFile) {
+      setImagePreviewUrl(null);
+      return;
+    }
+    const objectUrl = URL.createObjectURL(imageFile);
+    setImagePreviewUrl(objectUrl);
+    return () => {
+      URL.revokeObjectURL(objectUrl);
+    };
+  }, [imageFile]);
+
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
     if (!formData.teamId || !formData.title || !formData.content) {
@@ -93,7 +111,43 @@ export default function JornalistaPage() {
       return;
     }
 
-    createMutation.mutate(formData);
+    try {
+      let imageUrl: string | null = null;
+
+      if (imageFile) {
+        setIsUploadingImage(true);
+        const body = new FormData();
+        body.append('image', imageFile);
+
+        const uploadRes = await fetch('/api/uploads/news-image', {
+          method: 'POST',
+          body,
+          credentials: 'include',
+        });
+
+        if (!uploadRes.ok) {
+          const errorPayload = await uploadRes.json().catch(() => null);
+          const message = errorPayload?.message || `Erro no upload (HTTP ${uploadRes.status})`;
+          throw new Error(message);
+        }
+
+        const uploadJson = (await uploadRes.json()) as { imageUrl?: string };
+        if (!uploadJson?.imageUrl) {
+          throw new Error('Resposta de upload inválida (sem imageUrl).');
+        }
+        imageUrl = uploadJson.imageUrl;
+      }
+
+      createMutation.mutate({ ...formData, imageUrl });
+    } catch (error: any) {
+      toast({
+        variant: 'destructive',
+        title: 'Erro ao enviar imagem',
+        description: error?.message || 'Tente novamente',
+      });
+    } finally {
+      setIsUploadingImage(false);
+    }
   };
 
   const categoryLabels: Record<string, string> = {
@@ -204,20 +258,34 @@ export default function JornalistaPage() {
                 </div>
 
                 <div className="space-y-2">
-                  <Label htmlFor="imageUrl">URL da Imagem (opcional)</Label>
+                  <Label htmlFor="imageFile">Imagem (opcional)</Label>
                   <Input
-                    id="imageUrl"
-                    type="url"
-                    value={formData.imageUrl}
-                    onChange={(e) => setFormData({ ...formData, imageUrl: e.target.value })}
-                    placeholder="https://..."
-                    data-testid="input-image-url"
+                    id="imageFile"
+                    type="file"
+                    accept="image/*"
+                    onChange={(e) => setImageFile(e.target.files?.[0] ?? null)}
+                    data-testid="input-image-file"
                   />
+                  {imagePreviewUrl ? (
+                    <img
+                      src={imagePreviewUrl}
+                      alt="Pré-visualização da imagem"
+                      className="mt-2 max-h-48 w-auto rounded-md border"
+                    />
+                  ) : null}
                 </div>
 
                 <div className="flex gap-2">
-                  <Button type="submit" disabled={createMutation.isPending} data-testid="button-publish">
-                    {createMutation.isPending ? 'Publicando...' : 'Publicar'}
+                  <Button
+                    type="submit"
+                    disabled={createMutation.isPending || isUploadingImage}
+                    data-testid="button-publish"
+                  >
+                    {isUploadingImage
+                      ? 'Enviando imagem...'
+                      : createMutation.isPending
+                        ? 'Publicando...'
+                        : 'Publicar'}
                   </Button>
                   <Button type="button" variant="outline" onClick={resetForm} data-testid="button-cancel">
                     Cancelar

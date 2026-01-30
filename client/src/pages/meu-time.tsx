@@ -20,10 +20,10 @@ import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
 import { Button } from '@/components/ui/button';
 import { useToast } from '@/hooks/use-toast';
-import { apiRequest } from '@/lib/queryClient';
+import { apiRequest, getApiUrl } from '@/lib/queryClient';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { Loader2 } from 'lucide-react';
-import type { Team, Player, Match } from '@shared/schema';
+import type { Team, Player, Match, News } from '@shared/schema';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 
@@ -84,6 +84,25 @@ export default function MeuTimePage() {
       return response.json();
     },
     enabled: !!user?.teamId && !!selectedPlayer,
+  });
+
+  // Notícias do time (usado para a aba "Meu Time" / integração social)
+  const { data: teamNews = [] } = useQuery<News[]>({
+    queryKey: ['/api/news', 'teamId', user?.teamId],
+    queryFn: async () => {
+      if (!user?.teamId) return [];
+      const params = new URLSearchParams({ teamId: user.teamId, limit: '30' });
+      const response = await fetch(getApiUrl(`/api/news?${params.toString()}`), {
+        credentials: 'include',
+      });
+      if (!response.ok) {
+        const text = await response.text();
+        throw new Error(`Failed to fetch team news: ${text}`);
+      }
+      return response.json();
+    },
+    enabled: !!user?.teamId,
+    retry: false,
   });
 
   const ratingMutation = useMutation({
@@ -251,7 +270,7 @@ export default function MeuTimePage() {
           <TabsContent value="social" className="space-y-6">
             <SocialIntegration
               teamId={teamData.team.id}
-              news={[]}
+              news={teamNews}
               playerRatings={[]}
             />
           </TabsContent>

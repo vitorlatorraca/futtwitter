@@ -3,7 +3,7 @@ import { QueryClient, QueryFunction } from "@tanstack/react-query";
 // Get API base URL from environment variable, fallback to relative path for same-origin
 const API_BASE_URL = import.meta.env.VITE_API_URL || '';
 
-function getApiUrl(path: string): string {
+export function getApiUrl(path: string): string {
   // If path already starts with http, use it as-is
   if (path.startsWith('http://') || path.startsWith('https://')) {
     return path;
