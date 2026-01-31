@@ -33,9 +33,9 @@ export function TeamHeader({
             key={i}
             className={`h-4 w-4 ${
               i < Math.floor(rating)
-                ? 'fill-accent text-accent'
+                ? 'fill-warning text-warning'
                 : i < rating
-                ? 'fill-accent/50 text-accent/50'
+                ? 'fill-warning/50 text-warning/50'
                 : 'text-foreground-muted'
             }`}
           />
@@ -46,10 +46,9 @@ export function TeamHeader({
 
   return (
     <div
-      className="rounded-xl p-8 mb-8 relative overflow-hidden border border-card-border"
+      className="glass-card p-8 mb-8 relative overflow-hidden"
       style={{
         background: `linear-gradient(135deg, ${team.primaryColor}15 0%, ${team.secondaryColor}15 100%)`,
-        backdropFilter: 'blur(10px)',
       }}
     >
       {/* Glassmorphism overlay */}
@@ -63,6 +62,8 @@ export function TeamHeader({
               <img
                 src={team.logoUrl}
                 alt={`Escudo ${team.name}`}
+                loading="lazy"
+                decoding="async"
                 className="w-full h-full object-contain p-2"
               />
             </div>
@@ -112,30 +113,30 @@ export function TeamHeader({
 
         {/* Stats Grid */}
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-          <Card className="bg-card/60 backdrop-blur-sm border-card-border">
+          <Card className="glass-card">
             <CardContent className="p-4 text-center">
               <Trophy className="h-6 w-6 mx-auto mb-2 text-primary" />
               <p className="text-3xl font-bold text-foreground">{team.points}</p>
               <p className="text-sm text-muted-foreground font-medium">Pontos</p>
             </CardContent>
           </Card>
-          <Card className="bg-card/60 backdrop-blur-sm border-card-border">
+          <Card className="glass-card">
             <CardContent className="p-4 text-center">
-              <TrendingUp className="h-6 w-6 mx-auto mb-2 text-green-500" />
+              <TrendingUp className="h-6 w-6 mx-auto mb-2 text-success" />
               <p className="text-3xl font-bold text-foreground">{team.wins}</p>
               <p className="text-sm text-muted-foreground font-medium">Vitórias</p>
             </CardContent>
           </Card>
-          <Card className="bg-card/60 backdrop-blur-sm border-card-border">
+          <Card className="glass-card">
             <CardContent className="p-4 text-center">
-              <Shield className="h-6 w-6 mx-auto mb-2 text-yellow-500" />
+              <Shield className="h-6 w-6 mx-auto mb-2 text-warning" />
               <p className="text-3xl font-bold text-foreground">{team.draws}</p>
               <p className="text-sm text-muted-foreground font-medium">Empates</p>
             </CardContent>
           </Card>
-          <Card className="bg-card/60 backdrop-blur-sm border-card-border">
+          <Card className="glass-card">
             <CardContent className="p-4 text-center">
-              <TrendingDown className="h-6 w-6 mx-auto mb-2 text-red-500" />
+              <TrendingDown className="h-6 w-6 mx-auto mb-2 text-danger" />
               <p className="text-3xl font-bold text-foreground">{team.losses}</p>
               <p className="text-sm text-muted-foreground font-medium">Derrotas</p>
             </CardContent>

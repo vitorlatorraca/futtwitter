@@ -1,9 +1,11 @@
 import { useState, useEffect } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { useAuth } from '@/lib/auth-context';
-import { Navbar } from '@/components/navbar';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { AppShell } from '@/components/ui/app-shell';
+import { EmptyState } from '@/components/ui/empty-state';
+import { NewsCard } from '@/components/news-card';
 import { TeamHeader } from '@/components/team/team-header';
 import { StadiumCard } from '@/components/team/stadium-card';
 import { ClubKits } from '@/components/team/club-kits';
@@ -22,7 +24,7 @@ import { Button } from '@/components/ui/button';
 import { useToast } from '@/hooks/use-toast';
 import { apiRequest, getApiUrl } from '@/lib/queryClient';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
-import { Loader2 } from 'lucide-react';
+import { CalendarDays, Loader2, Newspaper } from 'lucide-react';
 import type { Team, Player, Match, News } from '@shared/schema';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
@@ -105,6 +107,27 @@ export default function MeuTimePage() {
     retry: false,
   });
 
+  const interactionMutation = useMutation({
+    mutationFn: async ({ newsId, type }: { newsId: string; type: 'LIKE' | 'DISLIKE' }) => {
+      return await apiRequest('POST', `/api/news/${newsId}/interaction`, { type });
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['/api/news'] });
+      queryClient.invalidateQueries({ queryKey: ['/api/news', 'teamId', user?.teamId] });
+    },
+    onError: (error: any) => {
+      toast({
+        variant: 'destructive',
+        title: 'Erro',
+        description: error.message || 'Não foi possível registrar sua interação',
+      });
+    },
+  });
+
+  const handleInteraction = (newsId: string, type: 'LIKE' | 'DISLIKE') => {
+    interactionMutation.mutate({ newsId, type });
+  };
+
   const ratingMutation = useMutation({
     mutationFn: async ({ playerId, matchId, rating, comment }: { playerId: string; matchId: string; rating: number; comment?: string }) => {
       return await apiRequest('POST', `/api/players/${playerId}/ratings`, { matchId, rating, comment });
@@ -170,38 +193,30 @@ export default function MeuTimePage() {
 
   if (isLoadingTeam) {
     return (
-      <div className="min-h-screen bg-background">
-        <Navbar />
-        <div className="container px-4 py-8 max-w-7xl mx-auto">
-          <div className="space-y-6">
-            <Skeleton className="h-64 rounded-soft" />
-            <Skeleton className="h-96 rounded-soft" />
-            <Skeleton className="h-96 rounded-soft" />
-          </div>
+      <AppShell>
+        <div className="space-y-6">
+          <Skeleton className="h-64 rounded-soft" />
+          <Skeleton className="h-96 rounded-soft" />
+          <Skeleton className="h-96 rounded-soft" />
         </div>
-      </div>
+      </AppShell>
     );
   }
 
   if (!teamData) {
     return (
-      <div className="min-h-screen bg-background">
-        <Navbar />
-        <div className="container px-4 py-8 max-w-7xl mx-auto">
-          <div className="text-center py-16">
-            <p className="text-foreground-secondary">Selecione um time para ver os detalhes</p>
-          </div>
-        </div>
-      </div>
+      <AppShell>
+        <EmptyState
+          title="Sem time selecionado"
+          description="Selecione um time para ver elenco, estatísticas e notícias."
+        />
+      </AppShell>
     );
   }
 
   return (
-    <div className="min-h-screen bg-background">
-      <Navbar />
-
-      <div className="container px-4 py-6 max-w-7xl mx-auto">
-        {/* Team Header */}
+    <AppShell mainClassName="py-6 sm:py-8">
+      <div className="space-y-6">
         <TeamHeader
           team={teamData.team}
           league={teamData.clubInfo.league}
@@ -213,16 +228,18 @@ export default function MeuTimePage() {
           reputation={teamData.clubInfo.reputation}
         />
 
-        {/* Main Content Tabs */}
         <Tabs defaultValue="overview" className="space-y-6">
-          <TabsList className="grid w-full grid-cols-4 lg:w-auto lg:grid-cols-4 bg-surface-card border-card-border">
-            <TabsTrigger value="overview" className="font-semibold">Visão Geral</TabsTrigger>
-            <TabsTrigger value="squad" className="font-semibold">Elenco</TabsTrigger>
-            <TabsTrigger value="performance" className="font-semibold">Desempenho</TabsTrigger>
-            <TabsTrigger value="social" className="font-semibold">Social</TabsTrigger>
-          </TabsList>
+          <div className="overflow-x-auto scrollbar-hide">
+            <TabsList className="w-max min-w-full justify-start">
+              <TabsTrigger value="overview" className="font-semibold">Visão Geral</TabsTrigger>
+              <TabsTrigger value="news" className="font-semibold">Notícias</TabsTrigger>
+              <TabsTrigger value="matches" className="font-semibold">Jogos</TabsTrigger>
+              <TabsTrigger value="squad" className="font-semibold">Elenco</TabsTrigger>
+              <TabsTrigger value="performance" className="font-semibold">Estatísticas</TabsTrigger>
+              <TabsTrigger value="social" className="font-semibold">Comunidade</TabsTrigger>
+            </TabsList>
+          </div>
 
-          {/* Overview Tab */}
           <TabsContent value="overview" className="space-y-6">
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
               <StadiumCard
@@ -248,7 +265,61 @@ export default function MeuTimePage() {
             </div>
           </TabsContent>
 
-          {/* Squad Tab */}
+          <TabsContent value="news" className="space-y-6">
+            {teamNews && teamNews.length > 0 ? (
+              <div className="space-y-6">
+                {teamNews.map((news: any) => (
+                  <NewsCard
+                    key={news.id}
+                    news={news}
+                    canInteract={!!user?.teamId && news.teamId === user.teamId}
+                    onInteract={handleInteraction}
+                  />
+                ))}
+              </div>
+            ) : (
+              <EmptyState
+                icon={Newspaper}
+                title="Sem notícias do seu time"
+                description="Assim que surgirem publicações oficiais ou análises, elas vão aparecer aqui."
+              />
+            )}
+          </TabsContent>
+
+          <TabsContent value="matches" className="space-y-6">
+            {teamData.matches && teamData.matches.length > 0 ? (
+              <div className="grid gap-3">
+                {teamData.matches.slice(0, 10).map((match) => (
+                  <div key={match.id} className="glass-card p-5 flex items-center justify-between gap-4">
+                    <div className="min-w-0">
+                      <div className="font-semibold text-foreground truncate">{match.opponent}</div>
+                      <div className="text-xs text-foreground-secondary flex items-center gap-2">
+                        <CalendarDays className="h-3.5 w-3.5" />
+                        {format(new Date(match.matchDate), "dd 'de' MMMM", { locale: ptBR })}
+                      </div>
+                    </div>
+                    <div className="text-right">
+                      {match.teamScore !== null && match.opponentScore !== null ? (
+                        <div className="font-mono text-lg font-bold text-foreground">
+                          {match.teamScore}–{match.opponentScore}
+                        </div>
+                      ) : (
+                        <div className="text-sm text-foreground-secondary">Em breve</div>
+                      )}
+                      <div className="text-xs text-foreground-muted">Últimos jogos</div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <EmptyState
+                icon={CalendarDays}
+                title="Jogos em breve"
+                description="Histórico e calendário completo serão exibidos aqui."
+              />
+            )}
+          </TabsContent>
+
           <TabsContent value="squad" className="space-y-6">
             <SquadList
               players={teamData.players}
@@ -260,13 +331,11 @@ export default function MeuTimePage() {
             />
           </TabsContent>
 
-          {/* Performance Tab */}
           <TabsContent value="performance" className="space-y-6">
             <PerformanceChart matches={teamData.matches} teamId={teamData.team.id} />
             <LeagueTable teams={teamData.leagueTable} currentTeamId={teamData.team.id} />
           </TabsContent>
 
-          {/* Social Tab */}
           <TabsContent value="social" className="space-y-6">
             <SocialIntegration
               teamId={teamData.team.id}
@@ -277,7 +346,6 @@ export default function MeuTimePage() {
         </Tabs>
       </div>
 
-      {/* Rating Modal */}
       <Dialog open={!!selectedPlayer} onOpenChange={() => setSelectedPlayer(null)}>
         <DialogContent className="sm:max-w-3xl max-h-[90vh] overflow-y-auto">
           <DialogHeader>
@@ -367,6 +435,6 @@ export default function MeuTimePage() {
           </div>
         </DialogContent>
       </Dialog>
-    </div>
+    </AppShell>
   );
 }

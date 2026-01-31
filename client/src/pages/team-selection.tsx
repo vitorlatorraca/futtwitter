@@ -2,11 +2,10 @@ import { useState } from 'react';
 import { useLocation } from 'wouter';
 import { useAuth } from '@/lib/auth-context';
 import { Button } from '@/components/ui/button';
-import { Card } from '@/components/ui/card';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { useToast } from '@/hooks/use-toast';
 import { TEAMS_DATA } from '@/lib/team-data';
-import { Loader2 } from 'lucide-react';
+import { Loader2, ShieldCheck } from 'lucide-react';
 
 export default function TeamSelectionPage() {
   const [, setLocation] = useLocation();
@@ -61,33 +60,40 @@ export default function TeamSelectionPage() {
   const team = TEAMS_DATA.find(t => t.id === selectedTeam);
 
   return (
-    <div className="min-h-screen bg-muted/30 py-12 px-4">
-      <div className="container max-w-5xl mx-auto">
-        <div className="text-center mb-12">
-          <h1 className="font-display font-bold text-3xl md:text-4xl mb-4">
-            Escolha seu time do coração
-          </h1>
-          <p className="text-muted-foreground text-lg">
-            Atenção: Você não poderá mudar depois! Escolha com carinho ⚽
-          </p>
+    <div className="min-h-screen bg-background">
+      <div className="page-container py-10 sm:py-14">
+        <div className="glass-card p-6 sm:p-8 mb-8">
+          <div className="flex items-start gap-4">
+            <div className="rounded-full border border-card-border bg-surface-elevated p-3">
+              <ShieldCheck className="h-5 w-5 text-primary" />
+            </div>
+            <div className="min-w-0">
+              <h1 className="font-display font-bold text-3xl md:text-4xl text-foreground">
+                Escolha seu time do coração
+              </h1>
+              <p className="text-foreground-secondary mt-2">
+                Atenção: esta escolha é permanente (por enquanto). Escolha com carinho ⚽
+              </p>
+            </div>
+          </div>
         </div>
 
-        <div className="grid grid-cols-4 md:grid-cols-5 lg:grid-cols-10 gap-4 md:gap-6">
+        <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-6 lg:grid-cols-8 xl:grid-cols-10 gap-3 sm:gap-4">
           {TEAMS_DATA.map((team) => (
             <button
               key={team.id}
               onClick={() => handleTeamClick(team.id)}
-              className="group flex flex-col items-center gap-2 hover-elevate active-elevate-2 rounded-lg p-3 transition-all"
+              className="glass-card-hover group flex flex-col items-center gap-2 p-3 transition-all"
               data-testid={`button-team-${team.id}`}
             >
-              <div className="relative w-full aspect-square rounded-full overflow-hidden border-2 border-border group-hover:border-primary transition-colors">
+              <div className="relative w-full aspect-square rounded-full overflow-hidden border border-card-border bg-surface-elevated group-hover:border-primary transition-colors">
                 <img
                   src={team.logoUrl}
                   alt={`Escudo do ${team.name}`}
                   className="w-full h-full object-cover"
                 />
               </div>
-              <span className="text-xs font-medium text-center leading-tight hidden md:block">
+              <span className="text-xs font-semibold text-center leading-tight hidden md:block text-foreground">
                 {team.shortName}
               </span>
             </button>
@@ -96,7 +102,7 @@ export default function TeamSelectionPage() {
       </div>
 
       <Dialog open={showConfirmDialog} onOpenChange={setShowConfirmDialog}>
-        <DialogContent className="sm:max-w-md">
+        <DialogContent className="sm:max-w-md bg-popover/90 backdrop-blur-md border-card-border">
           <DialogHeader>
             <DialogTitle className="text-center">Confirmar escolha</DialogTitle>
             <DialogDescription className="text-center pt-4">

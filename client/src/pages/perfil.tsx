@@ -1,13 +1,14 @@
 import { useEffect, useState } from 'react';
 import { useMutation, useQueryClient, useQuery } from '@tanstack/react-query';
 import { useAuth } from '@/lib/auth-context';
-import { Navbar } from '@/components/navbar';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Badge } from '@/components/ui/badge';
+import { Avatar, AvatarFallback } from '@/components/ui/avatar';
+import { AppShell } from '@/components/ui/app-shell';
 import { useToast } from '@/hooks/use-toast';
 import { apiRequest } from '@/lib/queryClient';
 import type { MeUser } from '@/lib/auth-context';
@@ -153,70 +154,77 @@ export default function PerfilPage() {
     adminSearchMutation.mutate(q);
   };
 
-  const statusBadge = (u: MeUser | null) => {
-    if (!u) return null;
-    if (u.isJournalist) return { label: 'Journalist', variant: 'default' as const };
-    if (u.journalistStatus === 'PENDING') return { label: 'Journalist (Pending approval)', variant: 'secondary' as const };
-    return { label: 'Fan', variant: 'outline' as const };
-  };
-
-  const sb = statusBadge(user);
+  const roleBadges: Array<{ label: string; variant: "default" | "secondary" | "outline"; className?: string }> = [];
+  if (user?.isAdmin) roleBadges.push({ label: "Admin", variant: "outline", className: "border-warning/30 text-warning" });
+  if (user?.isJournalist) roleBadges.push({ label: "Jornalista", variant: "default", className: "badge-journalist" });
+  else if (user?.journalistStatus === "PENDING") roleBadges.push({ label: "Jornalista (Pendente)", variant: "secondary", className: "badge-pending" });
+  else roleBadges.push({ label: "Torcedor", variant: "outline" });
 
   return (
-    <div className="min-h-screen bg-background">
-      <Navbar />
+    <AppShell>
+      <div className="space-y-6">
+        {/* Profile Hero */}
+        <div className="glass-card p-6 sm:p-8">
+          <div className="flex flex-col sm:flex-row sm:items-center gap-4 sm:gap-6">
+            <Avatar className="h-16 w-16 ring-2 ring-primary/25">
+              <AvatarFallback className="bg-primary text-primary-foreground font-bold text-xl">
+                {user?.name?.slice(0, 2).toUpperCase()}
+              </AvatarFallback>
+            </Avatar>
 
-      <div className="container px-4 py-8 max-w-5xl mx-auto">
-        {/* Header Premium */}
-        <div className="mb-8">
-          <h1 className="font-display font-bold text-4xl mb-2 text-foreground">Meu Perfil</h1>
-          <p className="text-foreground-secondary">Gerencie suas informações e preferências</p>
+            <div className="min-w-0 flex-1">
+              <div className="font-display font-bold text-2xl sm:text-3xl text-foreground truncate">
+                {user?.name}
+              </div>
+              <div className="text-sm text-foreground-secondary truncate">{user?.email}</div>
+
+              <div className="mt-4 flex flex-wrap items-center gap-2">
+                {roleBadges.map((b) => (
+                  <Badge
+                    key={b.label}
+                    variant={b.variant}
+                    className={`text-xs font-semibold ${b.className ?? ""}`}
+                  >
+                    {b.label}
+                  </Badge>
+                ))}
+                {user?.journalistStatus === "PENDING" ? (
+                  <span className="text-xs text-foreground-secondary">
+                    Aguardando aprovação do administrador.
+                  </span>
+                ) : null}
+              </div>
+            </div>
+          </div>
         </div>
 
         <Tabs defaultValue="info" className="space-y-6">
-          <TabsList className={`grid w-full ${user?.isAdmin ? 'grid-cols-4' : 'grid-cols-3'}`}>
+          <div className="overflow-x-auto scrollbar-hide">
+            <TabsList className="w-max min-w-full justify-start">
             <TabsTrigger value="info" className="gap-2" data-testid="tab-info">
               <User className="h-4 w-4" />
-              <span className="hidden sm:inline">Informações</span>
+              <span>Informações</span>
             </TabsTrigger>
             <TabsTrigger value="stats" className="gap-2" data-testid="tab-stats">
               <BarChart3 className="h-4 w-4" />
-              <span className="hidden sm:inline">Estatísticas</span>
+              <span>Estatísticas</span>
             </TabsTrigger>
             <TabsTrigger value="badges" className="gap-2" data-testid="tab-badges">
               <Award className="h-4 w-4" />
-              <span className="hidden sm:inline">Badges</span>
+              <span>Badges</span>
             </TabsTrigger>
             {user?.isAdmin && (
               <TabsTrigger value="admin" className="gap-2" data-testid="tab-admin">
                 <ShieldCheck className="h-4 w-4" />
-                <span className="hidden sm:inline">Admin</span>
+                <span>Admin</span>
               </TabsTrigger>
             )}
-          </TabsList>
+            </TabsList>
+          </div>
 
           <TabsContent value="info" className="space-y-6">
-            {sb && (
-              <Card className="glass-card border-primary/30 bg-gradient-to-br from-surface-card to-surface-elevated">
-                <CardContent className="pt-6">
-                  <div className="flex flex-wrap items-center gap-3">
-                    <Badge 
-                      variant={sb.variant === 'default' ? 'default' : sb.variant === 'secondary' ? 'secondary' : 'outline'} 
-                      className={`text-xs font-semibold ${
-                        sb.variant === 'default' ? 'badge-journalist' : 
-                        sb.variant === 'secondary' ? 'badge-pending' : ''
-                      }`}
-                    >
-                      {sb.label}
-                    </Badge>
-                    {user?.journalistStatus === 'PENDING' && (
-                      <span className="text-sm text-foreground-secondary">Aguardando aprovação do administrador.</span>
-                    )}
-                  </div>
-                </CardContent>
-              </Card>
-            )}
-            <Card className="glass-card">
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+              <Card className="glass-card">
               <CardHeader>
                 <CardTitle>Dados Pessoais</CardTitle>
                 <CardDescription>Atualize suas informações</CardDescription>
@@ -265,9 +273,9 @@ export default function PerfilPage() {
                   </Button>
                 )}
               </CardContent>
-            </Card>
+              </Card>
 
-            <Card className="glass-card">
+              <Card className="glass-card">
               <CardHeader>
                 <CardTitle>Alterar Senha</CardTitle>
                 <CardDescription>Mantenha sua conta segura</CardDescription>
@@ -314,7 +322,8 @@ export default function PerfilPage() {
                   )}
                 </Button>
               </CardContent>
-            </Card>
+              </Card>
+            </div>
           </TabsContent>
 
           <TabsContent value="stats">
@@ -382,21 +391,25 @@ export default function PerfilPage() {
                   <CardDescription>Busque por email ou nome. Promova, aprove, rejeite ou revogue.</CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-4">
-                  <div className="flex gap-2">
-                    <Input
-                      placeholder="Email ou nome..."
-                      value={adminSearchQ}
-                      onChange={(e) => setAdminSearchQ(e.target.value)}
-                      onKeyDown={(e) => e.key === 'Enter' && handleAdminSearch()}
-                    />
-                    <Button onClick={handleAdminSearch} disabled={adminSearchMutation.isPending}>
+                  <div className="flex flex-col sm:flex-row gap-2">
+                    <div className="relative flex-1">
+                      <Search className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-foreground-muted" />
+                      <Input
+                        placeholder="Email ou nome..."
+                        value={adminSearchQ}
+                        onChange={(e) => setAdminSearchQ(e.target.value)}
+                        onKeyDown={(e) => e.key === 'Enter' && handleAdminSearch()}
+                        className="pl-9"
+                      />
+                    </div>
+                    <Button onClick={handleAdminSearch} disabled={adminSearchMutation.isPending} className="sm:w-auto">
                       {adminSearchMutation.isPending ? <Loader2 className="h-4 w-4 animate-spin" /> : <Search className="h-4 w-4" />}
                       <span className="ml-2">Buscar</span>
                     </Button>
                   </div>
                   <div className="space-y-2">
                     {adminResults.map((r) => (
-                      <div key={r.id} className="flex flex-wrap items-center justify-between gap-2 rounded-medium border border-card-border bg-surface-card p-4 hover:bg-surface-elevated transition-colors">
+                      <div key={r.id} className="glass-card-hover p-4 flex flex-wrap items-center justify-between gap-2">
                         <div>
                           <span className="font-semibold text-foreground">{r.name}</span>
                           <span className="text-foreground-secondary text-sm ml-2">{r.email}</span>
@@ -407,7 +420,7 @@ export default function PerfilPage() {
                               r.journalistStatus === 'PENDING' ? 'badge-pending' : ''
                             }`}
                           >
-                            {r.isJournalist ? 'Journalist' : r.journalistStatus === 'PENDING' ? 'Pending' : 'Fan'}
+                            {r.isJournalist ? 'Jornalista' : r.journalistStatus === 'PENDING' ? 'Pendente' : 'Torcedor'}
                           </Badge>
                         </div>
                         <div className="flex flex-wrap gap-1">
@@ -446,6 +459,6 @@ export default function PerfilPage() {
           )}
         </Tabs>
       </div>
-    </div>
+    </AppShell>
   );
 }
