@@ -4,6 +4,7 @@ import session from "express-session";
 import ConnectPgSimple from "connect-pg-simple";
 import { pool } from "./db";
 import { storage } from "./storage";
+import { getSquadByTeamIdCached } from "./services/apifootball";
 import bcrypt from "bcrypt";
 import fs from "fs";
 import path from "path";
@@ -343,6 +344,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // TEAMS ROUTES
   // ============================================
 
+  const TEAM_API_FOOTBALL_IDS: Record<string, number> = {
+    corinthians: 131,
+  };
+
   app.get('/api/teams', async (req, res) => {
     try {
       const teams = await storage.getAllTeams();
@@ -366,6 +371,44 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error('Get team error:', error);
       res.status(500).json({ message: 'Erro ao buscar time' });
+    }
+  });
+
+  // Public squad endpoint (API-Football / API-SPORTS)
+  app.get("/api/teams/:slug/squad", async (req, res) => {
+    const slug = String(req.params.slug || "").trim().toLowerCase();
+    const teamNumericId = TEAM_API_FOOTBALL_IDS[slug];
+    if (!teamNumericId) {
+      return res.status(404).json({ message: "Team not supported yet" });
+    }
+
+    const seasonParam = req.query.season;
+    let season = new Date().getFullYear();
+    if (typeof seasonParam === "string" && seasonParam.trim().length > 0) {
+      const parsed = Number.parseInt(seasonParam, 10);
+      if (Number.isFinite(parsed) && parsed > 0) {
+        season = parsed;
+      }
+    }
+
+    try {
+      const { data, cached } = await getSquadByTeamIdCached(teamNumericId, season);
+      if (cached) {
+        console.log(`[api-football] cache hit: ${slug} season=${season}`);
+      }
+      return res.json({
+        team: data.team,
+        players: data.players,
+        meta: { cached, season },
+      });
+    } catch (error: any) {
+      if (error?.message === "APIFOOTBALL_API_KEY not set") {
+        console.error("[api-football] APIFOOTBALL_API_KEY not set");
+        return res.status(500).json({ message: "APIFOOTBALL_API_KEY not set" });
+      }
+
+      console.error("[api-football] Failed to fetch squad", error);
+      return res.status(502).json({ message: "Failed to fetch squad" });
     }
   });
 

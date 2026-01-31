@@ -51,12 +51,27 @@ interface ExtendedTeamData {
   };
 }
 
+interface ApiFootballSquadResponse {
+  team: { id: number; name: string; logo?: string };
+  players: Array<{
+    id: number;
+    name: string;
+    age?: number;
+    nationality?: string;
+    photo?: string;
+    position?: string;
+  }>;
+  meta: { cached: boolean; season: number };
+}
+
 export default function MeuTimePage() {
   const { user } = useAuth();
   const { toast } = useToast();
   const queryClient = useQueryClient();
   const [selectedPlayer, setSelectedPlayer] = useState<Player | null>(null);
   const [ratings, setRatings] = useState<Record<string, { rating: number; comment: string }>>({});
+
+  const isCorinthians = user?.teamId === "corinthians";
 
   const { data: teamData, isLoading: isLoadingTeam } = useQuery<ExtendedTeamData>({
     queryKey: ['/api/teams', user?.teamId, 'extended'],
@@ -72,6 +87,18 @@ export default function MeuTimePage() {
       return response.json();
     },
     enabled: !!user?.teamId,
+    retry: false,
+  });
+
+  const { data: corinthiansSquad, isLoading: isLoadingCorinthiansSquad } = useQuery<ApiFootballSquadResponse>({
+    queryKey: ["/api/teams/corinthians/squad"],
+    queryFn: async () => {
+      const res = await apiRequest("GET", "/api/teams/corinthians/squad");
+      return res.json();
+    },
+    enabled: !!user?.teamId && isCorinthians,
+    staleTime: 6 * 60 * 60 * 1000,
+    gcTime: 12 * 60 * 60 * 1000,
     retry: false,
   });
 
@@ -227,6 +254,88 @@ export default function MeuTimePage() {
           clubStatus={teamData.clubInfo.clubStatus}
           reputation={teamData.clubInfo.reputation}
         />
+
+        {isCorinthians && (
+          <section className="space-y-4">
+            <div className="flex items-end justify-between gap-4">
+              <div className="space-y-1">
+                <h2 className="text-3xl sm:text-4xl font-display font-bold text-foreground">
+                  Elenco
+                </h2>
+                <p className="text-sm text-foreground-secondary">
+                  Jogadores do Corinthians • Temporada {corinthiansSquad?.meta?.season ?? new Date().getFullYear()}
+                </p>
+              </div>
+            </div>
+
+            {isLoadingCorinthiansSquad ? (
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+                {Array.from({ length: 8 }).map((_, i) => (
+                  <div
+                    key={i}
+                    className="glass-card border border-card-border rounded-soft p-4"
+                  >
+                    <div className="flex items-center gap-3">
+                      <Skeleton className="h-12 w-12 rounded-full bg-white/10" />
+                      <div className="min-w-0 flex-1 space-y-2">
+                        <Skeleton className="h-4 w-3/4 bg-white/10" />
+                        <Skeleton className="h-3 w-1/2 bg-white/10" />
+                        <Skeleton className="h-3 w-2/5 bg-white/10" />
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            ) : corinthiansSquad?.players && corinthiansSquad.players.length > 0 ? (
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+                {corinthiansSquad.players.map((p) => {
+                  const initials = (p.name || "")
+                    .split(" ")
+                    .filter(Boolean)
+                    .slice(0, 2)
+                    .map((w) => w[0]?.toUpperCase())
+                    .join("");
+
+                  return (
+                    <div
+                      key={p.id}
+                      className="glass-card border border-card-border rounded-soft p-4 transition will-change-transform hover:-translate-y-0.5 hover:bg-white/5"
+                    >
+                      <div className="flex items-center gap-3">
+                        {p.photo ? (
+                          <img
+                            src={p.photo}
+                            alt={p.name}
+                            className="h-12 w-12 rounded-full object-cover border border-card-border bg-white/5"
+                            loading="lazy"
+                          />
+                        ) : (
+                          <div className="h-12 w-12 rounded-full grid place-items-center border border-card-border bg-white/5 text-sm font-bold text-foreground">
+                            {initials || "?"}
+                          </div>
+                        )}
+
+                        <div className="min-w-0">
+                          <div className="font-semibold text-foreground truncate">{p.name}</div>
+                          <div className="text-sm text-foreground-secondary truncate">
+                            {p.position || "—"}
+                          </div>
+                          {p.nationality ? (
+                            <div className="text-xs text-foreground-muted truncate">{p.nationality}</div>
+                          ) : null}
+                        </div>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            ) : (
+              <div className="glass-card border border-card-border rounded-soft p-6">
+                <p className="text-foreground-secondary">Elenco indisponível agora.</p>
+              </div>
+            )}
+          </section>
+        )}
 
         <Tabs defaultValue="overview" className="space-y-6">
           <div className="overflow-x-auto scrollbar-hide">
