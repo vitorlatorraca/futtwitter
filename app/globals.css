@@ -10,37 +10,37 @@
        ============================================ */
     
     /* === BACKGROUNDS === */
-    --background: 220 15% 6%;        /* Graphite dark - não preto puro */
-    --background-secondary: 220 12% 8%; /* Charcoal */
-    --surface-card: 220 10% 10%;      /* Card surface */
-    --surface-glass: 220 10% 10% / 0.6; /* Glass effect */
-    --surface-elevated: 220 8% 12%;   /* Elevated surfaces */
+    --background: 222 18% 6%;        /* Graphite dark - não preto puro */
+    --background-secondary: 222 16% 8%; /* Charcoal */
+    --surface-card: 222 14% 10%;      /* Card surface */
+    --surface-glass: 222 14% 10% / 0.62; /* Glass effect */
+    --surface-elevated: 222 14% 12%;   /* Elevated surfaces */
     
     /* === FOREGROUNDS === */
-    --foreground: 0 0% 95%;           /* Texto principal - alto contraste */
-    --foreground-secondary: 0 0% 70%; /* Texto secundário */
-    --foreground-muted: 0 0% 55%;     /* Texto discreto */
+    --foreground: 210 30% 96%;           /* Texto principal - alto contraste */
+    --foreground-secondary: 215 18% 72%; /* Texto secundário */
+    --foreground-muted: 215 12% 56%;     /* Texto discreto */
     
     /* === BORDERS === */
-    --border: 0 0% 12%;              /* Bordas padrão */
-    --border-subtle: 0 0% 8%;        /* Bordas sutis */
-    --border-strong: 0 0% 18%;       /* Bordas destacadas */
+    --border: 220 14% 14%;              /* Bordas padrão */
+    --border-subtle: 220 14% 10%;        /* Bordas sutis */
+    --border-strong: 220 14% 18%;       /* Bordas destacadas */
     
     /* === CARDS === */
-    --card: 220 10% 10%;
-    --card-border: 0 0% 12% / 0.8;
-    --card-foreground: 0 0% 95%;
+    --card: 222 14% 10%;
+    --card-border: 220 14% 16% / 0.8;
+    --card-foreground: 210 30% 96%;
     
-    /* === PRIMARY (Verde Futebol / Dourado) === */
-    --primary: 142 76% 36%;           /* Verde esportivo */
+    /* === PRIMARY (Verde Futebol) === */
+    --primary: 142 64% 44%;           /* Verde elegante */
     --primary-foreground: 0 0% 100%;
-    --primary-hover: 142 76% 42%;
-    --primary-active: 142 76% 30%;
+    --primary-hover: 142 64% 48%;
+    --primary-active: 142 64% 40%;
     
-    /* === ACCENT (Dourado / Amarelo) === */
-    --accent: 45 93% 47%;             /* Dourado premium */
-    --accent-foreground: 0 0% 10%;
-    --accent-hover: 45 93% 52%;
+    /* === ACCENT (Verde editorial / surfaces) === */
+    --accent: 150 22% 16%;
+    --accent-foreground: 150 40% 92%;
+    --accent-hover: 150 22% 20%;
     
     /* === SECONDARY === */
     --secondary: 0 0% 16%;
@@ -51,9 +51,9 @@
     --muted-foreground: 0 0% 65%;
     
     /* === STATUS COLORS === */
-    --success: 142 76% 36%;
+    --success: 142 64% 44%;
     --success-foreground: 0 0% 100%;
-    --warning: 45 93% 47%;
+    --warning: 45 90% 56%;
     --warning-foreground: 0 0% 10%;
     --danger: 0 72% 51%;
     --danger-foreground: 0 0% 100%;
@@ -61,25 +61,25 @@
     --info-foreground: 0 0% 100%;
     
     /* === BADGES === */
-    --badge-journalist: 142 76% 36%;  /* Verde para jornalista */
+    --badge-journalist: 142 64% 44%;  /* Verde para jornalista */
     --badge-journalist-foreground: 0 0% 100%;
-    --badge-pending: 45 93% 47%;      /* Dourado para pendente */
+    --badge-pending: 45 90% 56%;      /* Dourado para pendente */
     --badge-pending-foreground: 0 0% 10%;
     --badge-fan: 210 80% 48%;         /* Azul para fan */
     --badge-fan-foreground: 0 0% 100%;
-    --badge-verified: 142 76% 36%;    /* Verde verificado */
+    --badge-verified: 142 64% 44%;    /* Verde verificado */
     
     /* === SHADOWS === */
-    --shadow-card: 0 8px 32px rgba(0, 0, 0, 0.4);
-    --shadow-hover: 0 12px 40px rgba(0, 0, 0, 0.5);
-    --shadow-elevated: 0 16px 48px rgba(0, 0, 0, 0.6);
-    --shadow-glow-primary: 0 0 24px rgba(142, 76%, 36%, 0.3);
-    --shadow-glow-accent: 0 0 24px rgba(45, 93%, 47%, 0.3);
+    --shadow-card: 0 12px 40px hsl(0 0% 0% / 0.45);
+    --shadow-hover: 0 18px 60px hsl(0 0% 0% / 0.55);
+    --shadow-elevated: 0 28px 80px hsl(0 0% 0% / 0.60);
+    --shadow-glow-primary: 0 0 28px hsl(var(--primary) / 0.22);
+    --shadow-glow-accent: 0 0 28px hsl(var(--accent-foreground) / 0.08);
     
     /* === BORDER RADIUS === */
-    --radius-soft: 0.75rem;          /* Cards, containers */
-    --radius-medium: 0.5rem;          /* Buttons, inputs */
-    --radius-sharp: 0.25rem;          /* Badges, chips */
+    --radius-soft: 1rem;          /* Cards, containers */
+    --radius-medium: 0.75rem;          /* Buttons, inputs */
+    --radius-sharp: 0.5rem;          /* Badges, chips */
     
     /* === SPACING (já existe no Tailwind, mas documentando) === */
     --spacing-xs: 0.25rem;
@@ -96,7 +96,7 @@
     /* === LEGACY COMPATIBILITY === */
     --destructive: 0 72% 51%;
     --destructive-foreground: 0 0% 100%;
-    --ring: 142 76% 36%;
+    --ring: 142 64% 44%;
   }
 }
 
@@ -116,14 +116,14 @@
     background-size: 400px 400px;
   }
   
-  /* Gradientes sutis esportivos - verde e dourado */
+  /* Gradientes sutis esportivos - verde premium + dourado discreto */
   body::before {
     content: '';
     position: fixed;
     inset: 0;
     background: 
-      radial-gradient(ellipse 100% 60% at 20% 30%, hsl(142 76% 36% / 0.08) 0%, transparent 50%),
-      radial-gradient(ellipse 100% 60% at 80% 70%, hsl(45 93% 47% / 0.06) 0%, transparent 50%);
+      radial-gradient(ellipse 100% 60% at 20% 30%, hsl(var(--primary) / 0.10) 0%, transparent 50%),
+      radial-gradient(ellipse 100% 60% at 80% 70%, hsl(var(--warning) / 0.08) 0%, transparent 50%);
     pointer-events: none;
     z-index: -1;
   }

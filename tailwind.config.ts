@@ -10,6 +10,19 @@ const config: Config = {
     "./app/**/*.{js,ts,jsx,tsx,mdx}",
   ],
   theme: {
+    container: {
+      center: true,
+      padding: {
+        DEFAULT: "1rem",
+        sm: "1rem",
+        md: "1.25rem",
+        lg: "1.5rem",
+        xl: "2rem",
+      },
+      screens: {
+        "2xl": "1200px",
+      },
+    },
     extend: {
       colors: {
         // Base colors
@@ -24,10 +37,19 @@ const config: Config = {
         "surface-glass": "hsl(var(--surface-glass))",
         "surface-elevated": "hsl(var(--surface-elevated))",
         
+        // Popover (radix / shadcn)
+        popover: {
+          DEFAULT: "hsl(var(--popover))",
+          foreground: "hsl(var(--popover-foreground))",
+        },
+
         // Borders
         border: "hsl(var(--border))",
         "border-subtle": "hsl(var(--border-subtle))",
         "border-strong": "hsl(var(--border-strong))",
+
+        // Inputs (shadcn)
+        input: "hsl(var(--input))",
         
         // Cards
         card: {
@@ -83,8 +105,11 @@ const config: Config = {
         
         // Badges
         "badge-journalist": "hsl(var(--badge-journalist))",
+        "badge-journalist-foreground": "hsl(var(--badge-journalist-foreground))",
         "badge-pending": "hsl(var(--badge-pending))",
+        "badge-pending-foreground": "hsl(var(--badge-pending-foreground))",
         "badge-fan": "hsl(var(--badge-fan))",
+        "badge-fan-foreground": "hsl(var(--badge-fan-foreground))",
         "badge-verified": "hsl(var(--badge-verified))",
         
         // Legacy compatibility
@@ -103,9 +128,9 @@ const config: Config = {
         sm: "calc(var(--radius, 1rem) - 4px)",
       },
       fontFamily: {
-        sans: ["var(--font-body, var(--font-inter))", "system-ui", "sans-serif"],
-        display: ["var(--font-display, 'Inter Tight')", "Inter", "system-ui", "sans-serif"],
-        mono: ["var(--font-mono, 'JetBrains Mono')", "IBM Plex Mono", "monospace"],
+        sans: ["var(--font-body, Inter)", "system-ui", "sans-serif"],
+        display: ["var(--font-display, Inter)", "var(--font-body, Inter)", "system-ui", "sans-serif"],
+        mono: ["var(--font-mono, 'JetBrains Mono')", "ui-monospace", "SFMono-Regular", "Menlo", "monospace"],
       },
       boxShadow: {
         "card": "var(--shadow-card)",

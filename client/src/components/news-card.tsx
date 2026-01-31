@@ -71,6 +71,8 @@ export function NewsCard({ news, canInteract, onInteract }: NewsCardProps) {
             <img
               src={news.team.logoUrl}
               alt={`Escudo ${news.team.name}`}
+              loading="lazy"
+              decoding="async"
               className="w-10 h-10 rounded-full object-cover ring-2 ring-border-subtle"
             />
             {/* Badge de jornalista verificado */}
@@ -96,6 +98,8 @@ export function NewsCard({ news, canInteract, onInteract }: NewsCardProps) {
           <img
             src={news.imageUrl}
             alt={news.title}
+            loading="lazy"
+            decoding="async"
             className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
           />
           <div className="absolute inset-0 bg-gradient-to-t from-background/60 via-transparent to-transparent" />
