@@ -7,6 +7,7 @@ export interface MeUser {
   name: string;
   email: string;
   teamId: string | null;
+  avatarUrl: string | null;
   userType: string;
   journalistStatus?: 'APPROVED' | 'PENDING' | 'REJECTED' | 'SUSPENDED' | null;
   isJournalist?: boolean;

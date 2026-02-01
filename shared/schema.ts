@@ -24,6 +24,7 @@ export const users = pgTable("users", {
   email: varchar("email", { length: 255 }).notNull().unique(),
   name: varchar("name", { length: 255 }).notNull(),
   password: text("password").notNull(),
+  avatarUrl: text("avatar_url"),
   userType: userTypeEnum("user_type").notNull().default("FAN"),
   teamId: varchar("team_id", { length: 36 }),
   createdAt: timestamp("created_at").notNull().defaultNow(),

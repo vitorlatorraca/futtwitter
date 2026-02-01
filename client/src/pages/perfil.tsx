@@ -7,12 +7,13 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Badge } from '@/components/ui/badge';
-import { Avatar, AvatarFallback } from '@/components/ui/avatar';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { AppShell } from '@/components/ui/app-shell';
 import { useToast } from '@/hooks/use-toast';
-import { apiRequest } from '@/lib/queryClient';
+import { apiRequest, getApiUrl } from '@/lib/queryClient';
 import type { MeUser } from '@/lib/auth-context';
 import { User, BarChart3, Award, Loader2, ShieldCheck, Search } from 'lucide-react';
+import { AvatarUploader } from '@/components/AvatarUploader';
 
 export default function PerfilPage() {
   const { user } = useAuth();
@@ -167,6 +168,7 @@ export default function PerfilPage() {
         <div className="glass-card p-6 sm:p-8">
           <div className="flex flex-col sm:flex-row sm:items-center gap-4 sm:gap-6">
             <Avatar className="h-16 w-16 ring-2 ring-primary/25">
+              {user?.avatarUrl ? <AvatarImage src={getApiUrl(user.avatarUrl)} alt={user?.name ?? "Avatar"} /> : null}
               <AvatarFallback className="bg-primary text-primary-foreground font-bold text-xl">
                 {user?.name?.slice(0, 2).toUpperCase()}
               </AvatarFallback>
@@ -223,6 +225,16 @@ export default function PerfilPage() {
           </div>
 
           <TabsContent value="info" className="space-y-6">
+            <Card className="glass-card">
+              <CardHeader>
+                <CardTitle>Foto do Perfil</CardTitle>
+                <CardDescription>Envie ou remova seu avatar</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <AvatarUploader avatarUrl={user?.avatarUrl ?? null} disabled={!user} />
+              </CardContent>
+            </Card>
+
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
               <Card className="glass-card">
               <CardHeader>

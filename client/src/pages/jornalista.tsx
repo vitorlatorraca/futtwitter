@@ -17,6 +17,7 @@ import { apiRequest } from '@/lib/queryClient';
 import { TEAMS_DATA } from '@/lib/team-data';
 import { Edit, Eye, FileImage, Plus, ShieldCheck, Trash2, UploadCloud } from 'lucide-react';
 import type { News } from '@shared/schema';
+import { AvatarUploader } from '@/components/AvatarUploader';
 
 export default function JornalistaPage() {
   const { user } = useAuth();
@@ -309,6 +310,12 @@ export default function JornalistaPage() {
 
         <aside className="page-aside">
           <div className="sticky top-24 space-y-4">
+            <div className="glass-card p-6">
+              <div className="section-title">Foto do perfil</div>
+              <div className="mt-3">
+                <AvatarUploader avatarUrl={user?.avatarUrl ?? null} disabled={!user} />
+              </div>
+            </div>
             <div className="glass-card p-6">
               <div className="section-title">Checklist editorial</div>
               <ul className="mt-3 space-y-2 text-sm text-foreground-secondary">

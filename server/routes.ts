@@ -12,6 +12,7 @@ import multer from "multer";
 import { randomBytes } from "crypto";
 import { fileURLToPath } from "url";
 import { insertUserSchema, insertNewsSchema, insertPlayerRatingSchema } from "@shared/schema";
+import { deleteAvatarByUrl, saveAvatar } from "./services/avatarStorage";
 
 const PgSession = ConnectPgSimple(session);
 
@@ -21,6 +22,7 @@ const UPLOADS_DIR = path.resolve(__dirname, "uploads");
 const MAX_IMAGE_UPLOAD_BYTES = 5 * 1024 * 1024; // 5MB
 const ALLOWED_IMAGE_EXTENSIONS = new Set([".jpg", ".jpeg", ".png", ".webp", ".gif"]);
 const ALLOWED_IMAGE_MIME_TYPES = new Set(["image/jpeg", "image/png", "image/webp", "image/gif"]);
+const MAX_AVATAR_UPLOAD_BYTES = 2 * 1024 * 1024; // 2MB
 fs.mkdirSync(UPLOADS_DIR, { recursive: true });
 
 const uploadImage = multer({
@@ -84,6 +86,11 @@ const uploadNewsImage = multer({
     }
     return cb(null, true);
   },
+});
+
+const uploadAvatar = multer({
+  storage: multer.memoryStorage(),
+  limits: { fileSize: MAX_AVATAR_UPLOAD_BYTES },
 });
 
 // Middleware to check if user is authenticated
@@ -329,6 +336,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         name: user.name,
         email: user.email,
         teamId: user.teamId,
+        avatarUrl: user.avatarUrl ?? null,
         userType: user.userType,
         journalistStatus,
         isJournalist,
@@ -760,6 +768,70 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // ============================================
   // PROFILE ROUTES
   // ============================================
+
+  app.post("/api/profile/avatar", requireAuth, (req, res) => {
+    uploadAvatar.single("file")(req as any, res as any, async (err: any) => {
+      if (err) {
+        const isTooLarge = err?.code === "LIMIT_FILE_SIZE";
+        const message = isTooLarge
+          ? "Arquivo muito grande. Tamanho máximo: 2MB."
+          : err?.message || "Erro ao enviar avatar.";
+        return res.status(400).json({ message });
+      }
+
+      const file = (req as any).file as Express.Multer.File | undefined;
+      if (!file) {
+        return res.status(400).json({ message: 'Campo "file" é obrigatório.' });
+      }
+
+      const userId = req.session.userId!;
+
+      try {
+        const user = await storage.getUser(userId);
+        if (!user) {
+          return res.status(401).json({ message: "Usuário não encontrado" });
+        }
+
+        const oldUrl = user.avatarUrl ?? null;
+        const { avatarUrl } = await saveAvatar(file);
+
+        const updated = await storage.updateUser(userId, { avatarUrl });
+        if (!updated) {
+          // Best-effort cleanup for orphaned file
+          await deleteAvatarByUrl(avatarUrl).catch(() => undefined);
+          return res.status(404).json({ message: "Usuário não encontrado" });
+        }
+
+        if (oldUrl && oldUrl !== avatarUrl) {
+          deleteAvatarByUrl(oldUrl).catch(() => undefined);
+        }
+
+        return res.json({ avatarUrl });
+      } catch (error: any) {
+        console.error("Upload avatar error:", error);
+        return res.status(400).json({ message: error?.message || "Erro ao enviar avatar." });
+      }
+    });
+  });
+
+  app.delete("/api/profile/avatar", requireAuth, async (req, res) => {
+    try {
+      const userId = req.session.userId!;
+      const user = await storage.getUser(userId);
+      if (!user) {
+        return res.status(401).json({ message: "Usuário não encontrado" });
+      }
+
+      const oldUrl = user.avatarUrl ?? null;
+      await storage.updateUser(userId, { avatarUrl: null });
+      deleteAvatarByUrl(oldUrl).catch(() => undefined);
+
+      return res.json({ avatarUrl: null });
+    } catch (error) {
+      console.error("Remove avatar error:", error);
+      return res.status(500).json({ message: "Erro ao remover avatar" });
+    }
+  });
 
   app.put('/api/profile', requireAuth, async (req, res) => {
     try {
