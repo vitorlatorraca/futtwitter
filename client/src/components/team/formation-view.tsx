@@ -50,12 +50,36 @@ const formationPositions: Record<string, { x: number; y: number }[]> = {
   ],
 };
 
+function getPositionGroup(position: string): 'GK' | 'DF' | 'MF' | 'FW' {
+  switch (position) {
+    case 'Goalkeeper':
+      return 'GK';
+    case 'Centre-Back':
+    case 'Left-Back':
+    case 'Right-Back':
+      return 'DF';
+    case 'Defensive Midfield':
+    case 'Central Midfield':
+    case 'Attacking Midfield':
+      return 'MF';
+    case 'Left Winger':
+    case 'Right Winger':
+    case 'Centre-Forward':
+      return 'FW';
+    default:
+      if (position.toLowerCase().includes('midfield')) return 'MF';
+      if (position.toLowerCase().includes('keeper')) return 'GK';
+      if (position.toLowerCase().includes('back')) return 'DF';
+      return 'FW';
+  }
+}
+
 export function FormationView({ players, formation = DEFAULT_FORMATION, captainId }: FormationViewProps) {
   // Group players by position
-  const goalkeepers = players.filter((p) => p.position === 'GOALKEEPER');
-  const defenders = players.filter((p) => p.position === 'DEFENDER');
-  const midfielders = players.filter((p) => p.position === 'MIDFIELDER');
-  const forwards = players.filter((p) => p.position === 'FORWARD');
+  const goalkeepers = players.filter((p) => getPositionGroup(p.position) === 'GK');
+  const defenders = players.filter((p) => getPositionGroup(p.position) === 'DF');
+  const midfielders = players.filter((p) => getPositionGroup(p.position) === 'MF');
+  const forwards = players.filter((p) => getPositionGroup(p.position) === 'FW');
 
   // Select players for formation (simplified - just takes first N of each position)
   const selectedPlayers: (Player | null)[] = [];
@@ -163,7 +187,7 @@ export function FormationView({ players, formation = DEFAULT_FORMATION, captainI
                           : 'bg-primary/80 border-primary/50'
                       }`}
                     >
-                      {player.jerseyNumber}
+                      {player.shirtNumber ?? '—'}
                     </div>
                     {isCaptain && (
                       <div className="absolute -top-1 -right-1">

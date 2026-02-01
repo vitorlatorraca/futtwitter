@@ -5,7 +5,6 @@ import { Badge } from '@/components/ui/badge';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Input } from '@/components/ui/input';
 import { Users, Filter, Search, Star } from 'lucide-react';
-import { PlayerCard } from '@/components/player-card';
 import type { Player } from '@shared/schema';
 
 interface SquadListProps {
@@ -14,34 +13,60 @@ interface SquadListProps {
   onRatePlayer?: (playerId: string) => void;
 }
 
-type SortOption = 'overall' | 'age' | 'name' | 'jersey';
-type PositionFilter = 'ALL' | 'GOALKEEPER' | 'DEFENDER' | 'MIDFIELDER' | 'FORWARD';
+type SortOption = 'overall' | 'age' | 'name' | 'shirt';
+type PositionFilter = 'ALL' | 'GK' | 'DF' | 'MF' | 'FW';
 
-const positionLabels: Record<string, string> = {
-  GOALKEEPER: 'Goleiros',
-  DEFENDER: 'Defensores',
-  MIDFIELDER: 'Meio-campistas',
-  FORWARD: 'Atacantes',
+const groupLabels: Record<Exclude<PositionFilter, 'ALL'>, string> = {
+  GK: 'Goleiros',
+  DF: 'Defensores',
+  MF: 'Meio-campistas',
+  FW: 'Atacantes',
 };
+
+function getPositionGroup(position: string): Exclude<PositionFilter, 'ALL'> {
+  switch (position) {
+    case 'Goalkeeper':
+      return 'GK';
+    case 'Centre-Back':
+    case 'Left-Back':
+    case 'Right-Back':
+      return 'DF';
+    case 'Defensive Midfield':
+    case 'Central Midfield':
+    case 'Attacking Midfield':
+      return 'MF';
+    case 'Left Winger':
+    case 'Right Winger':
+    case 'Centre-Forward':
+      return 'FW';
+    default:
+      // Fallback: best-effort guess by keyword
+      if (position.toLowerCase().includes('midfield')) return 'MF';
+      if (position.toLowerCase().includes('keeper')) return 'GK';
+      if (position.toLowerCase().includes('back')) return 'DF';
+      return 'FW';
+  }
+}
 
 // TODO: Calcular overall baseado em ratings quando disponível
 const calculateOverall = (player: Player): number => {
   // Mock: Por enquanto retorna um valor baseado na posição e número da camisa
   // No futuro, isso deve vir de uma média de ratings ou stats do jogador
-  return 70 + (player.jerseyNumber % 30);
+  const shirtNumber = player.shirtNumber ?? 0;
+  return 70 + (shirtNumber % 30);
 };
 
 export function SquadList({ players, onPlayerClick, onRatePlayer }: SquadListProps) {
   const [searchQuery, setSearchQuery] = useState('');
   const [positionFilter, setPositionFilter] = useState<PositionFilter>('ALL');
-  const [sortBy, setSortBy] = useState<SortOption>('jersey');
+  const [sortBy, setSortBy] = useState<SortOption>('shirt');
 
   const filteredAndSortedPlayers = useMemo(() => {
     let filtered = [...players];
 
     // Filter by position
     if (positionFilter !== 'ALL') {
-      filtered = filtered.filter((p) => p.position === positionFilter);
+      filtered = filtered.filter((p) => getPositionGroup(p.position) === positionFilter);
     }
 
     // Filter by search query
@@ -50,8 +75,13 @@ export function SquadList({ players, onPlayerClick, onRatePlayer }: SquadListPro
       filtered = filtered.filter(
         (p) =>
           p.name.toLowerCase().includes(query) ||
-          p.nationality?.toLowerCase().includes(query) ||
-          p.jerseyNumber.toString().includes(query)
+          p.position.toLowerCase().includes(query) ||
+          p.nationalityPrimary.toLowerCase().includes(query) ||
+          (p.nationalitySecondary?.toLowerCase().includes(query) ?? false) ||
+          (p.fromClub?.toLowerCase().includes(query) ?? false) ||
+          (p.shirtNumber !== null && p.shirtNumber !== undefined
+            ? p.shirtNumber.toString().includes(query)
+            : false)
       );
     }
 
@@ -61,13 +91,15 @@ export function SquadList({ players, onPlayerClick, onRatePlayer }: SquadListPro
         case 'overall':
           return calculateOverall(b) - calculateOverall(a);
         case 'age':
-          if (!a.birthDate || !b.birthDate) return 0;
           return new Date(a.birthDate).getTime() - new Date(b.birthDate).getTime();
         case 'name':
           return a.name.localeCompare(b.name);
-        case 'jersey':
+        case 'shirt':
         default:
-          return a.jerseyNumber - b.jerseyNumber;
+          if (a.shirtNumber == null && b.shirtNumber == null) return 0;
+          if (a.shirtNumber == null) return 1;
+          if (b.shirtNumber == null) return -1;
+          return a.shirtNumber - b.shirtNumber;
       }
     });
 
@@ -77,10 +109,11 @@ export function SquadList({ players, onPlayerClick, onRatePlayer }: SquadListPro
   const groupedPlayers = useMemo(() => {
     const grouped: Record<string, Player[]> = {};
     filteredAndSortedPlayers.forEach((player) => {
-      if (!grouped[player.position]) {
-        grouped[player.position] = [];
+      const group = getPositionGroup(player.position);
+      if (!grouped[group]) {
+        grouped[group] = [];
       }
-      grouped[player.position].push(player);
+      grouped[group].push(player);
     });
     return grouped;
   }, [filteredAndSortedPlayers]);
@@ -118,25 +151,25 @@ export function SquadList({ players, onPlayerClick, onRatePlayer }: SquadListPro
               className="pl-9"
             />
           </div>
-          <Select value={positionFilter} onValueChange={(v) => setPositionFilter(v as PositionFilter)}>
+          <Select value={positionFilter} onValueChange={(v: string) => setPositionFilter(v as PositionFilter)}>
             <SelectTrigger className="w-full sm:w-[180px]">
               <Filter className="h-4 w-4 mr-2" />
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
               <SelectItem value="ALL">Todas as Posições</SelectItem>
-              <SelectItem value="GOALKEEPER">Goleiros</SelectItem>
-              <SelectItem value="DEFENDER">Defensores</SelectItem>
-              <SelectItem value="MIDFIELDER">Meio-campistas</SelectItem>
-              <SelectItem value="FORWARD">Atacantes</SelectItem>
+              <SelectItem value="GK">Goleiros</SelectItem>
+              <SelectItem value="DF">Defensores</SelectItem>
+              <SelectItem value="MF">Meio-campistas</SelectItem>
+              <SelectItem value="FW">Atacantes</SelectItem>
             </SelectContent>
           </Select>
-          <Select value={sortBy} onValueChange={(v) => setSortBy(v as SortOption)}>
+          <Select value={sortBy} onValueChange={(v: string) => setSortBy(v as SortOption)}>
             <SelectTrigger className="w-full sm:w-[180px]">
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="jersey">Número da Camisa</SelectItem>
+              <SelectItem value="shirt">Número da Camisa</SelectItem>
               <SelectItem value="overall">Overall</SelectItem>
               <SelectItem value="name">Nome</SelectItem>
               <SelectItem value="age">Idade</SelectItem>
@@ -157,7 +190,7 @@ export function SquadList({ players, onPlayerClick, onRatePlayer }: SquadListPro
               <div key={position}>
                 <div className="flex items-center justify-between mb-4">
                   <h3 className="font-display font-semibold text-lg uppercase tracking-wide text-foreground">
-                    {positionLabels[position] || position}
+                    {(groupLabels as any)[position] || position}
                   </h3>
                   <Badge variant="secondary">{positionPlayers.length}</Badge>
                 </div>
@@ -165,6 +198,10 @@ export function SquadList({ players, onPlayerClick, onRatePlayer }: SquadListPro
                   {positionPlayers.map((player) => {
                     const age = getPlayerAge(player.birthDate);
                     const overall = calculateOverall(player);
+                    const shirtNumberLabel = player.shirtNumber ?? '—';
+                    const nationalityLabel = player.nationalitySecondary
+                      ? `${player.nationalityPrimary} / ${player.nationalitySecondary}`
+                      : player.nationalityPrimary;
                     return (
                       <div
                         key={player.id}
@@ -176,20 +213,12 @@ export function SquadList({ players, onPlayerClick, onRatePlayer }: SquadListPro
                             <div className="flex items-start gap-3">
                               <div className="relative flex-shrink-0">
                                 <div className="w-16 h-16 rounded-full bg-muted flex items-center justify-center overflow-hidden border-2 border-card-border">
-                                  {player.photoUrl ? (
-                                    <img
-                                      src={player.photoUrl}
-                                      alt={player.name}
-                                      className="w-full h-full object-cover"
-                                    />
-                                  ) : (
-                                    <div className="text-xl font-bold text-muted-foreground">
-                                      {player.jerseyNumber}
-                                    </div>
-                                  )}
+                                  <div className="text-xl font-bold text-muted-foreground">
+                                    {shirtNumberLabel}
+                                  </div>
                                 </div>
                                 <Badge className="absolute -bottom-1 -right-1 h-6 w-6 rounded-full p-0 flex items-center justify-center text-xs font-bold border-2 border-background">
-                                  {player.jerseyNumber}
+                                  {shirtNumberLabel}
                                 </Badge>
                               </div>
 
@@ -199,7 +228,9 @@ export function SquadList({ players, onPlayerClick, onRatePlayer }: SquadListPro
                                 </h4>
                                 <div className="flex flex-col gap-1 text-xs text-muted-foreground">
                                   {age && <span>Idade: {age} anos</span>}
-                                  {player.nationality && <span>Nacionalidade: {player.nationality}</span>}
+                                  <span>Posição: {player.position}</span>
+                                  <span>Nacionalidade: {nationalityLabel}</span>
+                                  {player.fromClub ? <span>Origem: {player.fromClub}</span> : null}
                                 </div>
                                 <div className="flex items-center gap-1 mt-2">
                                   <Star className="h-3 w-3 fill-yellow-500 text-yellow-500" />

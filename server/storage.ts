@@ -1,5 +1,5 @@
 import { db } from "./db";
-import { eq, and, desc, or, ilike } from "drizzle-orm";
+import { eq, and, desc, or, ilike, sql } from "drizzle-orm";
 import { TEAMS_DATA } from "./teams-data";
 import {
   users,
@@ -25,7 +25,7 @@ import {
   type Match,
   type InsertMatch,
   type News,
-  type InsertNews,
+  type InsertNewsServer,
   type NewsInteraction,
   type InsertNewsInteraction,
   type PlayerRating,
@@ -75,7 +75,7 @@ export interface IStorage {
   getAllNews(options?: { teamId?: string; limit?: number }): Promise<any[]>;
   getNewsById(id: string): Promise<News | undefined>;
   getNewsByJournalist(journalistId: string): Promise<News[]>;
-  createNews(news: InsertNews): Promise<News>;
+  createNews(news: InsertNewsServer): Promise<News>;
   updateNews(id: string, data: Partial<News>): Promise<News | undefined>;
   deleteNews(id: string): Promise<void>;
 
@@ -261,11 +261,25 @@ export class DatabaseStorage implements IStorage {
 
   // Players
   async getPlayersByTeam(teamId: string): Promise<Player[]> {
+    const positionGroupOrder = sql<number>`case
+      when ${players.position} = 'Goalkeeper' then 1
+      when ${players.position} in ('Centre-Back', 'Left-Back', 'Right-Back') then 2
+      when ${players.position} in ('Defensive Midfield', 'Central Midfield', 'Attacking Midfield') then 3
+      when ${players.position} in ('Left Winger', 'Right Winger', 'Centre-Forward') then 4
+      else 9
+    end`;
+
     return await db
       .select()
       .from(players)
       .where(eq(players.teamId, teamId))
-      .orderBy(players.jerseyNumber);
+      .orderBy(
+        positionGroupOrder,
+        players.position,
+        sql`${players.shirtNumber} is null`,
+        players.shirtNumber,
+        players.name,
+      );
   }
 
   async getPlayer(id: string): Promise<Player | undefined> {
@@ -403,7 +417,7 @@ export class DatabaseStorage implements IStorage {
     const conditions = [eq(news.isPublished, true)];
     if (teamId) conditions.push(eq(news.teamId, teamId));
 
-    const query = db
+    const rows = await db
       .select({
         id: news.id,
         journalistId: news.journalistId,
@@ -417,12 +431,7 @@ export class DatabaseStorage implements IStorage {
         publishedAt: news.publishedAt,
         createdAt: news.createdAt,
         team: teams,
-        journalist: {
-          id: journalists.id,
-          user: {
-            name: users.name,
-          },
-        },
+        journalistUserName: users.name,
       })
       .from(news)
       .innerJoin(teams, eq(news.teamId, teams.id))
@@ -432,7 +441,13 @@ export class DatabaseStorage implements IStorage {
       .orderBy(desc(news.createdAt))
       .limit(limit);
 
-    return await query;
+    return rows.map(({ journalistUserName, ...r }) => ({
+      ...r,
+      journalist: {
+        id: r.journalistId,
+        user: { name: journalistUserName },
+      },
+    }));
   }
 
   async getNewsById(id: string): Promise<News | undefined> {
@@ -448,7 +463,7 @@ export class DatabaseStorage implements IStorage {
       .orderBy(desc(news.publishedAt));
   }
 
-  async createNews(insertNews: InsertNews): Promise<News> {
+  async createNews(insertNews: InsertNewsServer): Promise<News> {
     // Segurança: nunca permitir que o client publique como "não publicado".
     // (O schema já bloqueia isPublished no payload, mas garantimos aqui também.)
     const [newsItem] = await db

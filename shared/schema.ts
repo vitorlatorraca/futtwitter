@@ -1,5 +1,18 @@
 import { sql } from "drizzle-orm";
-import { pgTable, varchar, text, timestamp, integer, boolean, real, pgEnum } from "drizzle-orm/pg-core";
+import {
+  pgTable,
+  varchar,
+  text,
+  timestamp,
+  integer,
+  boolean,
+  real,
+  pgEnum,
+  date,
+  uniqueIndex,
+  json,
+  index,
+} from "drizzle-orm/pg-core";
 import { relations } from "drizzle-orm";
 import { createInsertSchema, createSelectSchema } from "drizzle-zod";
 import { z } from "zod";
@@ -9,7 +22,6 @@ import { z } from "zod";
 // ============================================
 
 export const userTypeEnum = pgEnum("user_type", ["FAN", "JOURNALIST", "ADMIN"]);
-export const playerPositionEnum = pgEnum("player_position", ["GOALKEEPER", "DEFENDER", "MIDFIELDER", "FORWARD"]);
 export const newsCategoryEnum = pgEnum("news_category", ["NEWS", "ANALYSIS", "BACKSTAGE", "MARKET"]);
 export const interactionTypeEnum = pgEnum("interaction_type", ["LIKE", "DISLIKE"]);
 export const journalistStatusEnum = pgEnum("journalist_status", ["PENDING", "APPROVED", "REJECTED", "SUSPENDED"]);
@@ -61,19 +73,37 @@ export const teams = pgTable("teams", {
   updatedAt: timestamp("updated_at").notNull().defaultNow(),
 });
 
-export const players = pgTable("players", {
-  id: varchar("id", { length: 36 }).primaryKey().default(sql`gen_random_uuid()`),
-  teamId: varchar("team_id", { length: 36 }).notNull(),
-  name: varchar("name", { length: 255 }).notNull(),
-  photoUrl: text("photo_url"),
-  position: playerPositionEnum("position").notNull(),
-  jerseyNumber: integer("jersey_number").notNull(),
-  birthDate: timestamp("birth_date"),
-  nationality: varchar("nationality", { length: 100 }),
-  isActive: boolean("is_active").notNull().default(true),
-  createdAt: timestamp("created_at").notNull().defaultNow(),
-  updatedAt: timestamp("updated_at").notNull().defaultNow(),
-});
+export const players = pgTable(
+  "players",
+  {
+    id: varchar("id", { length: 36 }).primaryKey().default(sql`gen_random_uuid()`),
+    teamId: varchar("team_id", { length: 36 })
+      .notNull()
+      .references(() => teams.id),
+    shirtNumber: integer("shirt_number"),
+    name: text("name").notNull(),
+    position: text("position").notNull(),
+    birthDate: date("birth_date", { mode: "string" }).notNull(),
+    nationalityPrimary: text("nationality_primary").notNull(),
+    nationalitySecondary: text("nationality_secondary"),
+    marketValueEur: integer("market_value_eur"),
+    fromClub: text("from_club"),
+    createdAt: timestamp("created_at").notNull().defaultNow(),
+    updatedAt: timestamp("updated_at").notNull().defaultNow(),
+  },
+  (t) => ({
+    // Unique composto recomendado: (teamId, name, birthDate)
+    teamNameBirthDateUnique: uniqueIndex("players_team_name_birth_date_unique").on(
+      t.teamId,
+      t.name,
+      t.birthDate,
+    ),
+    // Unique (teamId, shirtNumber) apenas quando shirtNumber não for null
+    teamShirtNumberUnique: uniqueIndex("players_team_shirt_number_unique")
+      .on(t.teamId, t.shirtNumber)
+      .where(sql`shirt_number is not null`),
+  }),
+);
 
 export const matches = pgTable("matches", {
   id: varchar("id", { length: 36 }).primaryKey().default(sql`gen_random_uuid()`),
@@ -173,6 +203,20 @@ export const notifications = pgTable("notifications", {
   isRead: boolean("is_read").notNull().default(false),
   createdAt: timestamp("created_at").notNull().defaultNow(),
 });
+
+// Session store table (connect-pg-simple)
+// Kept in schema to prevent drizzle-kit push from dropping it.
+export const userSessions = pgTable(
+  "user_sessions",
+  {
+    sid: varchar("sid", { length: 255 }).primaryKey(),
+    sess: json("sess").notNull(),
+    expire: timestamp("expire").notNull(),
+  },
+  (t) => ({
+    expireIdx: index("IDX_user_sessions_expire").on(t.expire),
+  }),
+);
 
 // ============================================
 // RELATIONS
@@ -394,6 +438,8 @@ export type InsertMatch = z.infer<typeof insertMatchSchema>;
 
 export type News = typeof news.$inferSelect;
 export type InsertNews = z.infer<typeof insertNewsSchema>;
+// Server-side insert type (journalistId is injected by backend, not trusted from client)
+export type InsertNewsServer = InsertNews & { journalistId: string };
 
 export type NewsInteraction = typeof newsInteractions.$inferSelect;
 export type InsertNewsInteraction = z.infer<typeof insertNewsInteractionSchema>;

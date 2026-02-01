@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useMemo, useState, type ChangeEvent } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { useAuth } from '@/lib/auth-context';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -51,33 +51,42 @@ interface ExtendedTeamData {
   };
 }
 
-interface ApiFootballSquadResponse {
-  team: { id: number; name: string; logo?: string };
-  players: Array<{
-    id: number;
-    name: string;
-    age?: number;
-    nationality?: string;
-    photo?: string;
-    position?: string;
-  }>;
-  meta: { cached: boolean; season: number };
-}
-
 export default function MeuTimePage() {
   const { user } = useAuth();
   const { toast } = useToast();
   const queryClient = useQueryClient();
   const [selectedPlayer, setSelectedPlayer] = useState<Player | null>(null);
   const [ratings, setRatings] = useState<Record<string, { rating: number; comment: string }>>({});
+  const [activeTab, setActiveTab] = useState<string>("overview");
+  const teamId = user?.teamId ?? null;
+  const season = new Date().getFullYear(); // used only for labels (DB-only mode)
 
-  const isCorinthians = user?.teamId === "corinthians";
-
-  const { data: teamData, isLoading: isLoadingTeam } = useQuery<ExtendedTeamData>({
-    queryKey: ['/api/teams', user?.teamId, 'extended'],
+  const teamsQuery = useQuery<Team[]>({
+    queryKey: ["/api/teams"],
     queryFn: async () => {
-      if (!user?.teamId) throw new Error('No team selected');
-      const response = await fetch(`/api/teams/${user.teamId}/extended`, {
+      const response = await fetch("/api/teams");
+      if (!response.ok) {
+        const text = await response.text();
+        throw new Error(`Failed to fetch teams: ${text}`);
+      }
+      return response.json();
+    },
+    staleTime: 5 * 60 * 1000,
+    gcTime: 30 * 60 * 1000,
+    retry: false,
+  });
+
+  const {
+    data: teamData,
+    isLoading: isLoadingTeam,
+    isError: isTeamError,
+    error: teamError,
+    refetch: refetchTeam,
+  } = useQuery<ExtendedTeamData>({
+    queryKey: ['/api/teams', teamId, 'extended'],
+    queryFn: async () => {
+      if (!teamId) throw new Error('No team selected');
+      const response = await fetch(`/api/teams/${teamId}/extended`, {
         credentials: 'include',
       });
       if (!response.ok) {
@@ -86,41 +95,110 @@ export default function MeuTimePage() {
       }
       return response.json();
     },
-    enabled: !!user?.teamId,
+    enabled: !!teamId,
     retry: false,
   });
 
-  const { data: corinthiansSquad, isLoading: isLoadingCorinthiansSquad } = useQuery<ApiFootballSquadResponse>({
-    queryKey: ["/api/teams/corinthians/squad"],
+  const safeTeamData: ExtendedTeamData | null = useMemo(() => {
+    if (teamData) return teamData;
+    if (!teamId) return null;
+
+    const fallbackTeam = teamsQuery.data?.find((t) => t.id === teamId) ?? null;
+    if (!fallbackTeam) return null;
+
+    return {
+      team: fallbackTeam,
+      players: [],
+      matches: [],
+      leagueTable: teamsQuery.data ?? [],
+      stadium: {
+        name: "Estádio Principal",
+        capacity: 50000,
+        pitchCondition: "Excelente",
+        stadiumCondition: "Boa",
+        homeFactor: 75,
+        yearBuilt: 2000,
+      },
+      clubInfo: {
+        league: "Brasileirão Série A",
+        season: String(new Date().getFullYear()),
+        country: "Brasil",
+        clubStatus: "Profissional",
+        reputation: 4,
+      },
+    };
+  }, [teamData, teamId, teamsQuery.data]);
+
+  const playersQuery = useQuery<Player[]>({
+    queryKey: ["/api/teams", teamId, "players"],
     queryFn: async () => {
-      const res = await apiRequest("GET", "/api/teams/corinthians/squad");
-      return res.json();
+      if (!teamId) return [];
+      const response = await fetch(`/api/teams/${teamId}/players`, {
+        credentials: "include",
+      });
+      if (!response.ok) {
+        const text = await response.text();
+        throw new Error(`Failed to fetch players: ${text}`);
+      }
+      return response.json();
     },
-    enabled: !!user?.teamId && isCorinthians,
-    staleTime: 6 * 60 * 60 * 1000,
-    gcTime: 12 * 60 * 60 * 1000,
+    enabled: !!teamId,
     retry: false,
   });
+
+  const mergedTeam: Team | null = useMemo(() => {
+    if (!safeTeamData) return null;
+
+    const base = safeTeamData.team;
+    const name = base.name;
+    const logoUrl = base.logoUrl;
+    const points = base.points;
+    const wins = base.wins;
+    const draws = base.draws;
+    const losses = base.losses;
+    const goalsFor = base.goalsFor;
+    const goalsAgainst = base.goalsAgainst;
+    const currentPosition = base.currentPosition;
+
+    return {
+      ...base,
+      name,
+      logoUrl,
+      points,
+      wins,
+      draws,
+      losses,
+      goalsFor,
+      goalsAgainst,
+      currentPosition,
+    };
+  }, [safeTeamData]);
+
+  const mergedLeagueTable: Team[] = useMemo(() => {
+    if (!safeTeamData) return [];
+    const base = safeTeamData.leagueTable ?? [];
+    return base;
+  }, [safeTeamData]);
 
   const { data: matches, isLoading: isLoadingMatches } = useQuery<Match[]>({
-    queryKey: ['/api/matches', user?.teamId],
+    queryKey: ['/api/matches', teamId],
     queryFn: async () => {
-      if (!user?.teamId) return [];
-      const response = await fetch(`/api/matches/${user.teamId}/recent?limit=10`, {
+      if (!teamId) return [];
+      const response = await fetch(`/api/matches/${teamId}/recent?limit=10`, {
         credentials: 'include',
       });
       if (!response.ok) throw new Error('Failed to fetch matches');
       return response.json();
     },
-    enabled: !!user?.teamId && !!selectedPlayer,
+    enabled: !!teamId && !!selectedPlayer,
   });
 
   // Notícias do time (usado para a aba "Meu Time" / integração social)
   const { data: teamNews = [] } = useQuery<News[]>({
-    queryKey: ['/api/news', 'teamId', user?.teamId],
+    queryKey: ['/api/news', 'teamId', teamId],
     queryFn: async () => {
-      if (!user?.teamId) return [];
-      const params = new URLSearchParams({ teamId: user.teamId, limit: '30' });
+      if (!teamId) return [];
+      const params = new URLSearchParams({ teamId, limit: '30' });
       const response = await fetch(getApiUrl(`/api/news?${params.toString()}`), {
         credentials: 'include',
       });
@@ -130,7 +208,7 @@ export default function MeuTimePage() {
       }
       return response.json();
     },
-    enabled: !!user?.teamId,
+    enabled: !!teamId,
     retry: false,
   });
 
@@ -140,7 +218,7 @@ export default function MeuTimePage() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['/api/news'] });
-      queryClient.invalidateQueries({ queryKey: ['/api/news', 'teamId', user?.teamId] });
+      queryClient.invalidateQueries({ queryKey: ['/api/news', 'teamId', teamId] });
     },
     onError: (error: any) => {
       toast({
@@ -218,7 +296,18 @@ export default function MeuTimePage() {
     }
   };
 
-  if (isLoadingTeam) {
+  if (!teamId) {
+    return (
+      <AppShell>
+        <EmptyState
+          title="Você ainda não escolheu um time"
+          description="Escolha um time para ver elenco, estatísticas, jogos e notícias."
+        />
+      </AppShell>
+    );
+  }
+
+  if (isLoadingTeam && !safeTeamData) {
     return (
       <AppShell>
         <div className="space-y-6">
@@ -230,65 +319,104 @@ export default function MeuTimePage() {
     );
   }
 
-  if (!teamData) {
+  if (!safeTeamData) {
     return (
       <AppShell>
         <EmptyState
-          title="Sem time selecionado"
-          description="Selecione um time para ver elenco, estatísticas e notícias."
+          title="Não foi possível carregar seu time"
+          description={
+            (teamError as any)?.message ||
+            (teamsQuery.error as any)?.message ||
+            "Tente novamente em alguns instantes."
+          }
+          actionLabel="Tentar novamente"
+          onAction={() => {
+            refetchTeam();
+            teamsQuery.refetch();
+          }}
         />
       </AppShell>
     );
   }
 
+  const rosterPlayers = playersQuery.data ?? safeTeamData.players;
+  const upcomingMatches = useMemo(() => {
+    const now = Date.now();
+    return (safeTeamData.matches ?? [])
+      .filter((m) => new Date(m.matchDate).getTime() >= now)
+      .sort((a, b) => new Date(a.matchDate).getTime() - new Date(b.matchDate).getTime())
+      .slice(0, 10);
+  }, [safeTeamData.matches]);
+
+  const recentMatches = useMemo(() => {
+    const now = Date.now();
+    return (safeTeamData.matches ?? [])
+      .filter((m) => new Date(m.matchDate).getTime() < now)
+      .sort((a, b) => new Date(b.matchDate).getTime() - new Date(a.matchDate).getTime())
+      .slice(0, 10);
+  }, [safeTeamData.matches]);
+
   return (
     <AppShell mainClassName="py-6 sm:py-8">
       <div className="space-y-6">
+        {isTeamError ? (
+          <div className="glass-card border border-card-border rounded-soft p-4 flex items-center justify-between gap-4">
+            <div className="text-sm text-foreground-secondary">
+              Alguns dados do time não puderam ser carregados agora. O básico foi carregado e o resto continua funcionando.
+            </div>
+            <Button variant="outline" size="sm" onClick={() => refetchTeam()}>
+              Recarregar
+            </Button>
+          </div>
+        ) : null}
+
         <TeamHeader
-          team={teamData.team}
-          league={teamData.clubInfo.league}
-          season={teamData.clubInfo.season}
-          country={teamData.clubInfo.country}
-          stadiumName={teamData.stadium.name}
-          stadiumCapacity={teamData.stadium.capacity}
-          clubStatus={teamData.clubInfo.clubStatus}
-          reputation={teamData.clubInfo.reputation}
+          team={mergedTeam ?? safeTeamData.team}
+          league={safeTeamData.clubInfo.league}
+          season={String(safeTeamData.clubInfo.season)}
+          country={safeTeamData.clubInfo.country}
+          stadiumName={safeTeamData.stadium.name}
+          stadiumCapacity={safeTeamData.stadium.capacity}
+          clubStatus={safeTeamData.clubInfo.clubStatus}
+          reputation={safeTeamData.clubInfo.reputation}
         />
 
-        {isCorinthians && (
-          <section className="space-y-4">
-            <div className="flex items-end justify-between gap-4">
-              <div className="space-y-1">
-                <h2 className="text-3xl sm:text-4xl font-display font-bold text-foreground">
-                  Elenco
-                </h2>
-                <p className="text-sm text-foreground-secondary">
-                  Jogadores do Corinthians • Temporada {corinthiansSquad?.meta?.season ?? new Date().getFullYear()}
-                </p>
-              </div>
+        <section className="space-y-4">
+          <div className="flex items-end justify-between gap-4">
+            <div className="space-y-1">
+              <h2 className="text-3xl sm:text-4xl font-display font-bold text-foreground">
+                Elenco (DB)
+              </h2>
+              <p className="text-sm text-foreground-secondary">
+                Elenco carregado do banco (seed idempotente).
+              </p>
             </div>
+            {playersQuery.isError ? (
+              <Button variant="outline" size="sm" onClick={() => playersQuery.refetch()}>
+                Tentar novamente
+              </Button>
+            ) : null}
+          </div>
 
-            {isLoadingCorinthiansSquad ? (
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
-                {Array.from({ length: 8 }).map((_, i) => (
-                  <div
-                    key={i}
-                    className="glass-card border border-card-border rounded-soft p-4"
-                  >
-                    <div className="flex items-center gap-3">
-                      <Skeleton className="h-12 w-12 rounded-full bg-white/10" />
-                      <div className="min-w-0 flex-1 space-y-2">
-                        <Skeleton className="h-4 w-3/4 bg-white/10" />
-                        <Skeleton className="h-3 w-1/2 bg-white/10" />
-                        <Skeleton className="h-3 w-2/5 bg-white/10" />
-                      </div>
+          {playersQuery.isLoading ? (
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+              {Array.from({ length: 8 }).map((_, i) => (
+                <div key={i} className="glass-card border border-card-border rounded-soft p-4">
+                  <div className="flex items-center gap-3">
+                    <Skeleton className="h-12 w-12 rounded-full bg-white/10" />
+                    <div className="min-w-0 flex-1 space-y-2">
+                      <Skeleton className="h-4 w-3/4 bg-white/10" />
+                      <Skeleton className="h-3 w-1/2 bg-white/10" />
+                      <Skeleton className="h-3 w-2/5 bg-white/10" />
                     </div>
                   </div>
-                ))}
-              </div>
-            ) : corinthiansSquad?.players && corinthiansSquad.players.length > 0 ? (
+                </div>
+              ))}
+            </div>
+          ) : rosterPlayers.length > 0 ? (
+            <div className="space-y-4">
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
-                {corinthiansSquad.players.map((p) => {
+                {rosterPlayers.map((p) => {
                   const initials = (p.name || "")
                     .split(" ")
                     .filter(Boolean)
@@ -296,48 +424,43 @@ export default function MeuTimePage() {
                     .map((w) => w[0]?.toUpperCase())
                     .join("");
 
+                  const nationality = p.nationalitySecondary
+                    ? `${p.nationalityPrimary} / ${p.nationalitySecondary}`
+                    : p.nationalityPrimary;
+
                   return (
                     <div
                       key={p.id}
                       className="glass-card border border-card-border rounded-soft p-4 transition will-change-transform hover:-translate-y-0.5 hover:bg-white/5"
                     >
                       <div className="flex items-center gap-3">
-                        {p.photo ? (
-                          <img
-                            src={p.photo}
-                            alt={p.name}
-                            className="h-12 w-12 rounded-full object-cover border border-card-border bg-white/5"
-                            loading="lazy"
-                          />
-                        ) : (
-                          <div className="h-12 w-12 rounded-full grid place-items-center border border-card-border bg-white/5 text-sm font-bold text-foreground">
-                            {initials || "?"}
-                          </div>
-                        )}
+                        <div className="h-12 w-12 rounded-full grid place-items-center border border-card-border bg-white/5 text-sm font-bold text-foreground">
+                          {p.shirtNumber ?? (initials || "?")}
+                        </div>
 
                         <div className="min-w-0">
                           <div className="font-semibold text-foreground truncate">{p.name}</div>
                           <div className="text-sm text-foreground-secondary truncate">
                             {p.position || "—"}
                           </div>
-                          {p.nationality ? (
-                            <div className="text-xs text-foreground-muted truncate">{p.nationality}</div>
-                          ) : null}
+                          <div className="text-xs text-foreground-muted truncate">{nationality}</div>
                         </div>
                       </div>
                     </div>
                   );
                 })}
               </div>
-            ) : (
-              <div className="glass-card border border-card-border rounded-soft p-6">
-                <p className="text-foreground-secondary">Elenco indisponível agora.</p>
-              </div>
-            )}
-          </section>
-        )}
+            </div>
+          ) : (
+            <div className="glass-card border border-card-border rounded-soft p-6">
+              <p className="text-foreground-secondary">
+                {playersQuery.isError ? "Não foi possível carregar o elenco agora." : "Elenco indisponível agora."}
+              </p>
+            </div>
+          )}
+        </section>
 
-        <Tabs defaultValue="overview" className="space-y-6">
+        <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
           <div className="overflow-x-auto scrollbar-hide">
             <TabsList className="w-max min-w-full justify-start">
               <TabsTrigger value="overview" className="font-semibold">Visão Geral</TabsTrigger>
@@ -352,25 +475,25 @@ export default function MeuTimePage() {
           <TabsContent value="overview" className="space-y-6">
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
               <StadiumCard
-                stadiumName={teamData.stadium.name}
-                capacity={teamData.stadium.capacity}
-                pitchCondition={teamData.stadium.pitchCondition}
-                stadiumCondition={teamData.stadium.stadiumCondition}
-                homeFactor={teamData.stadium.homeFactor}
-                yearBuilt={teamData.stadium.yearBuilt}
+                stadiumName={safeTeamData.stadium.name}
+                capacity={safeTeamData.stadium.capacity}
+                pitchCondition={safeTeamData.stadium.pitchCondition}
+                stadiumCondition={safeTeamData.stadium.stadiumCondition}
+                homeFactor={safeTeamData.stadium.homeFactor}
+                yearBuilt={safeTeamData.stadium.yearBuilt}
               />
               <FormationView
-                players={teamData.players}
+                players={rosterPlayers}
                 formation="4-3-3"
-                captainId={teamData.players[0]?.id}
+                captainId={rosterPlayers[0]?.id}
               />
             </div>
 
-            <ClubKits team={teamData.team} />
+            <ClubKits team={safeTeamData.team} />
 
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
               <Achievements />
-              <ClubHistory matches={teamData.matches} />
+              <ClubHistory matches={safeTeamData.matches} />
             </div>
           </TabsContent>
 
@@ -381,7 +504,7 @@ export default function MeuTimePage() {
                   <NewsCard
                     key={news.id}
                     news={news}
-                    canInteract={!!user?.teamId && news.teamId === user.teamId}
+                      canInteract={!!teamId && news.teamId === teamId}
                     onInteract={handleInteraction}
                   />
                 ))}
@@ -396,58 +519,102 @@ export default function MeuTimePage() {
           </TabsContent>
 
           <TabsContent value="matches" className="space-y-6">
-            {teamData.matches && teamData.matches.length > 0 ? (
-              <div className="grid gap-3">
-                {teamData.matches.slice(0, 10).map((match) => (
-                  <div key={match.id} className="glass-card p-5 flex items-center justify-between gap-4">
-                    <div className="min-w-0">
-                      <div className="font-semibold text-foreground truncate">{match.opponent}</div>
-                      <div className="text-xs text-foreground-secondary flex items-center gap-2">
-                        <CalendarDays className="h-3.5 w-3.5" />
-                        {format(new Date(match.matchDate), "dd 'de' MMMM", { locale: ptBR })}
+            <div className="space-y-4">
+              <div className="flex items-end justify-between gap-4">
+                <div>
+                  <h3 className="font-display font-bold text-2xl text-foreground">Próximos jogos</h3>
+                  <p className="text-sm text-foreground-secondary">Agenda carregada do banco.</p>
+                </div>
+              </div>
+
+              {upcomingMatches.length > 0 ? (
+                <div className="grid gap-3">
+                  {upcomingMatches.map((match) => (
+                    <div key={match.id} className="glass-card p-5 flex items-center justify-between gap-4">
+                      <div className="min-w-0">
+                        <div className="font-semibold text-foreground truncate">{match.opponent}</div>
+                        <div className="text-xs text-foreground-secondary flex items-center gap-2">
+                          <CalendarDays className="h-3.5 w-3.5" />
+                          {format(new Date(match.matchDate), "dd 'de' MMMM", { locale: ptBR })}
+                        </div>
+                      </div>
+                      <div className="text-right">
+                        <div className="text-sm text-foreground-secondary">Em breve</div>
+                        <div className="text-xs text-foreground-muted">Próximos</div>
                       </div>
                     </div>
-                    <div className="text-right">
-                      {match.teamScore !== null && match.opponentScore !== null ? (
-                        <div className="font-mono text-lg font-bold text-foreground">
-                          {match.teamScore}–{match.opponentScore}
-                        </div>
-                      ) : (
-                        <div className="text-sm text-foreground-secondary">Em breve</div>
-                      )}
-                      <div className="text-xs text-foreground-muted">Últimos jogos</div>
-                    </div>
-                  </div>
-                ))}
+                  ))}
+                </div>
+              ) : (
+                <EmptyState
+                  icon={CalendarDays}
+                  title="Sem jogos por agora"
+                  description="Quando houver jogos cadastrados no banco, eles aparecem aqui."
+                />
+              )}
+            </div>
+
+            <div className="space-y-4">
+              <div className="flex items-end justify-between gap-4">
+                <div>
+                  <h3 className="font-display font-bold text-2xl text-foreground">Últimos resultados</h3>
+                  <p className="text-sm text-foreground-secondary">Resultados carregados do banco.</p>
+                </div>
               </div>
-            ) : (
-              <EmptyState
-                icon={CalendarDays}
-                title="Jogos em breve"
-                description="Histórico e calendário completo serão exibidos aqui."
-              />
-            )}
+
+              {recentMatches.length > 0 ? (
+                <div className="grid gap-3">
+                  {recentMatches.map((match) => (
+                    <div key={match.id} className="glass-card p-5 flex items-center justify-between gap-4">
+                      <div className="min-w-0">
+                        <div className="font-semibold text-foreground truncate">{match.opponent}</div>
+                        <div className="text-xs text-foreground-secondary flex items-center gap-2">
+                          <CalendarDays className="h-3.5 w-3.5" />
+                          {format(new Date(match.matchDate), "dd 'de' MMMM", { locale: ptBR })}
+                        </div>
+                      </div>
+                      <div className="text-right">
+                        {match.teamScore !== null && match.opponentScore !== null ? (
+                          <div className="font-mono text-lg font-bold text-foreground">
+                            {match.teamScore}–{match.opponentScore}
+                          </div>
+                        ) : (
+                          <div className="text-sm text-foreground-secondary">Em breve</div>
+                        )}
+                        <div className="text-xs text-foreground-muted">Últimos jogos</div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <EmptyState
+                  icon={CalendarDays}
+                  title="Sem jogos"
+                  description="Quando houver jogos cadastrados no banco, eles aparecem aqui."
+                />
+              )}
+            </div>
           </TabsContent>
 
           <TabsContent value="squad" className="space-y-6">
             <SquadList
-              players={teamData.players}
-              onPlayerClick={(player) => setSelectedPlayer(player)}
-              onRatePlayer={(playerId) => {
-                const player = teamData.players.find(p => p.id === playerId);
+              players={rosterPlayers}
+              onPlayerClick={(player: Player) => setSelectedPlayer(player)}
+              onRatePlayer={(playerId: string) => {
+                const player = rosterPlayers.find(p => p.id === playerId);
                 if (player) setSelectedPlayer(player);
               }}
             />
           </TabsContent>
 
           <TabsContent value="performance" className="space-y-6">
-            <PerformanceChart matches={teamData.matches} teamId={teamData.team.id} />
-            <LeagueTable teams={teamData.leagueTable} currentTeamId={teamData.team.id} />
+            <PerformanceChart matches={safeTeamData.matches} teamId={safeTeamData.team.id} />
+            <LeagueTable teams={mergedLeagueTable} currentTeamId={safeTeamData.team.id} />
           </TabsContent>
 
           <TabsContent value="social" className="space-y-6">
             <SocialIntegration
-              teamId={teamData.team.id}
+              teamId={safeTeamData.team.id}
               news={teamNews}
               playerRatings={[]}
             />
@@ -495,7 +662,7 @@ export default function MeuTimePage() {
                       max={10}
                       step={0.5}
                       value={[ratings[match.id]?.rating || 5]}
-                      onValueChange={(value) => handleRatingChange(match.id, value)}
+                      onValueChange={(value: number[]) => handleRatingChange(match.id, value)}
                       className="py-4"
                     />
                     <div className="text-center stat-number text-primary">
@@ -509,7 +676,7 @@ export default function MeuTimePage() {
                       placeholder="Digite seu comentário sobre a atuação..."
                       maxLength={200}
                       value={ratings[match.id]?.comment || ''}
-                      onChange={(e) => handleCommentChange(match.id, e.target.value)}
+                      onChange={(e: ChangeEvent<HTMLTextAreaElement>) => handleCommentChange(match.id, e.target.value)}
                       className="bg-surface-elevated border-card-border"
                     />
                     <p className="text-xs text-foreground-muted text-right font-mono">

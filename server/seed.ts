@@ -187,26 +187,43 @@ Com a sequência de jogos pela frente, o Corinthians precisa manter essa consist
 
     // Seed sample players for each team
     const existingPlayers = await db.select().from(players);
-    
+
     if (existingPlayers.length === 0) {
       console.log("Seeding sample players...");
-      
-      const positions = ["GOALKEEPER", "DEFENDER", "MIDFIELDER", "FORWARD"] as const;
-      
-      for (const team of TEAMS_DATA.slice(0, 5)) { // Just first 5 teams for now
+
+      const positions = [
+        "Goalkeeper",
+        "Centre-Back",
+        "Left-Back",
+        "Right-Back",
+        "Defensive Midfield",
+        "Central Midfield",
+        "Attacking Midfield",
+        "Left Winger",
+        "Right Winger",
+        "Centre-Forward",
+      ] as const;
+
+      for (const team of TEAMS_DATA.slice(0, 5)) {
         // Add 11 players per team
         for (let i = 1; i <= 11; i++) {
           const position = positions[Math.floor(Math.random() * positions.length)];
-          
+          const day = String(Math.min(i, 28)).padStart(2, "0");
+
           await db.insert(players).values({
             teamId: team.id,
             name: `Jogador ${i} - ${team.shortName}`,
             position,
-            jerseyNumber: i,
+            shirtNumber: i,
+            birthDate: `2000-01-${day}`,
+            nationalityPrimary: "Brazil",
+            nationalitySecondary: null,
+            marketValueEur: null,
+            fromClub: null,
           });
         }
       }
-      
+
       console.log("✓ Seeded sample players for 5 teams");
     } else {
       console.log("Players already seeded, skipping...");

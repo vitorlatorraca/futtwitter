@@ -4,7 +4,6 @@ import session from "express-session";
 import ConnectPgSimple from "connect-pg-simple";
 import { pool } from "./db";
 import { storage } from "./storage";
-import { getSquadByTeamIdCached } from "./services/apifootball";
 import bcrypt from "bcrypt";
 import fs from "fs";
 import path from "path";
@@ -168,6 +167,21 @@ function requireAdmin(req: any, res: any, next: any) {
   })();
 }
 
+function parseSeasonParam(value: unknown): number {
+  const current = new Date().getFullYear();
+  if (typeof value !== "string") return current;
+  const parsed = Number.parseInt(value.trim(), 10);
+  if (!Number.isFinite(parsed) || parsed <= 0) return current;
+  return parsed;
+}
+
+function parseLimitParam(value: unknown, fallback: number, max: number): number {
+  if (typeof value !== "string") return fallback;
+  const parsed = Number.parseInt(value.trim(), 10);
+  if (!Number.isFinite(parsed) || parsed <= 0) return fallback;
+  return Math.min(parsed, max);
+}
+
 // Export session store for WebSocket authentication
 export const sessionStore = new PgSession({
   pool,
@@ -298,7 +312,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       res.json({ id: user.id, name: user.name, email: user.email, teamId: user.teamId, userType: user.userType });
     } catch (error: any) {
-      console.error('Login error:', error);
+      console.error("Login error:", error);
       res.status(500).json({ message: 'Erro ao fazer login' });
     }
   });
@@ -343,7 +357,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         isAdmin: isAdminUser,
       });
     } catch (error) {
-      console.error('Get me error:', error);
+      console.error("Me error:", error);
       res.status(500).json({ message: 'Erro ao buscar usuário' });
     }
   });
@@ -352,9 +366,160 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // TEAMS ROUTES
   // ============================================
 
-  const TEAM_API_FOOTBALL_IDS: Record<string, number> = {
-    corinthians: 131,
-  };
+  // --------------------------------------------
+  // "Meu Time" endpoints (DB-only)
+  // --------------------------------------------
+
+  app.get("/api/teams/:teamId/summary", requireAuth, async (req, res) => {
+    const teamId = String(req.params.teamId || "").trim();
+    if (!teamId) return res.status(400).json({ message: "teamId inválido" });
+
+    try {
+      const team = await storage.getTeam(teamId);
+      if (!team) return res.status(404).json({ message: "Time não encontrado" });
+
+      const season = parseSeasonParam(req.query.season);
+      return res.json({
+        available: true,
+        updatedAt: Date.now(),
+        team: {
+          name: team.name,
+          logo: team.logoUrl ?? null,
+          stadium: null,
+          country: "Brazil",
+          capacity: null,
+        },
+        league: season ? { id: 0, name: "Brasileirão Série A", season } : null,
+      });
+    } catch (error: any) {
+      console.error("[meu-time][db] /summary error:", error);
+      return res.status(500).json({ message: "Falha ao buscar resumo do time" });
+    }
+  });
+
+  app.get("/api/teams/:teamId/fixtures", requireAuth, async (req, res) => {
+    const teamId = String(req.params.teamId || "").trim();
+    if (!teamId) return res.status(400).json({ message: "teamId inválido" });
+
+    const rangeRaw = typeof req.query.range === "string" ? req.query.range.trim().toLowerCase() : "next";
+    const range = rangeRaw === "last" ? "last" : "next";
+    const limit = parseLimitParam(req.query.limit, 5, 20);
+
+    try {
+      const team = await storage.getTeam(teamId);
+      if (!team) return res.status(404).json({ message: "Time não encontrado" });
+
+      const all = await storage.getMatchesByTeam(teamId, 50);
+      const now = Date.now();
+      const filtered =
+        range === "next"
+          ? all.filter((m) => new Date(m.matchDate).getTime() >= now)
+          : all.filter((m) => new Date(m.matchDate).getTime() < now);
+
+      const fixtures = filtered
+        .sort((a, b) =>
+          range === "next"
+            ? new Date(a.matchDate).getTime() - new Date(b.matchDate).getTime()
+            : new Date(b.matchDate).getTime() - new Date(a.matchDate).getTime(),
+        )
+        .slice(0, limit)
+        .map((m, idx) => ({
+          id: idx + 1,
+          dateTime: new Date(m.matchDate).toISOString(),
+          competition: "Brasileirão Série A",
+          season: new Date(m.matchDate).getFullYear(),
+          venue: m.stadium ?? null,
+          status: m.status ?? null,
+          isHome: !!m.isHomeMatch,
+          opponent: { name: m.opponent, logo: m.opponentLogoUrl ?? null },
+          score:
+            range === "last"
+              ? { for: m.teamScore ?? null, against: m.opponentScore ?? null }
+              : null,
+        }));
+
+      return res.json({ available: true, updatedAt: Date.now(), fixtures });
+    } catch (error: any) {
+      console.error("[meu-time][db] /fixtures error:", error);
+      return res.status(500).json({ message: "Falha ao buscar jogos do time" });
+    }
+  });
+
+  app.get("/api/teams/:teamId/stats", requireAuth, async (req, res) => {
+    const teamId = String(req.params.teamId || "").trim();
+    if (!teamId) return res.status(400).json({ message: "teamId inválido" });
+
+    try {
+      const team = await storage.getTeam(teamId);
+      if (!team) return res.status(404).json({ message: "Time não encontrado" });
+
+      const season = parseSeasonParam(req.query.season);
+      const played = (team.wins ?? 0) + (team.draws ?? 0) + (team.losses ?? 0);
+      return res.json({
+        available: true,
+        updatedAt: Date.now(),
+        league: season ? { id: 0, name: "Brasileirão Série A", season } : null,
+        stats: {
+          season,
+          leagueId: 0,
+          played,
+          wins: team.wins ?? 0,
+          draws: team.draws ?? 0,
+          losses: team.losses ?? 0,
+          goalsFor: team.goalsFor ?? 0,
+          goalsAgainst: team.goalsAgainst ?? 0,
+          cleanSheets: null,
+          points: team.points ?? 0,
+        },
+      });
+    } catch (error: any) {
+      console.error("[meu-time][db] /stats error:", error);
+      return res.status(500).json({ message: "Falha ao buscar estatísticas do time" });
+    }
+  });
+
+  app.get("/api/leagues/:leagueId/standings", requireAuth, async (req, res) => {
+    const leagueId = Number.parseInt(String(req.params.leagueId || "").trim(), 10);
+    if (!Number.isFinite(leagueId) || leagueId <= 0) {
+      return res.status(400).json({ message: "leagueId inválido" });
+    }
+
+    try {
+      const season = parseSeasonParam(req.query.season);
+      const teams = await storage.getAllTeams();
+      const rows = teams
+        .slice()
+        .sort((a, b) => {
+          if ((b.points ?? 0) !== (a.points ?? 0)) return (b.points ?? 0) - (a.points ?? 0);
+          if ((b.wins ?? 0) !== (a.wins ?? 0)) return (b.wins ?? 0) - (a.wins ?? 0);
+          const gdA = (a.goalsFor ?? 0) - (a.goalsAgainst ?? 0);
+          const gdB = (b.goalsFor ?? 0) - (b.goalsAgainst ?? 0);
+          if (gdB !== gdA) return gdB - gdA;
+          return (b.goalsFor ?? 0) - (a.goalsFor ?? 0);
+        })
+        .map((t, i) => ({
+          rank: i + 1,
+          team: { id: i + 1, name: t.name, logo: t.logoUrl ?? null },
+          points: t.points ?? 0,
+          played: (t.wins ?? 0) + (t.draws ?? 0) + (t.losses ?? 0),
+          win: t.wins ?? 0,
+          draw: t.draws ?? 0,
+          lose: t.losses ?? 0,
+          goalsFor: t.goalsFor ?? 0,
+          goalsAgainst: t.goalsAgainst ?? 0,
+          goalsDiff: (t.goalsFor ?? 0) - (t.goalsAgainst ?? 0),
+        }));
+
+      return res.json({
+        updatedAt: Date.now(),
+        league: { id: leagueId, name: "Brasileirão Série A", season },
+        rows,
+      });
+    } catch (error: any) {
+      console.error("[meu-time][db] /standings error:", error);
+      return res.status(500).json({ message: "Falha ao buscar tabela da liga" });
+    }
+  });
 
   app.get('/api/teams', async (req, res) => {
     try {
@@ -382,41 +547,57 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Public squad endpoint (API-Football / API-SPORTS)
-  app.get("/api/teams/:slug/squad", async (req, res) => {
-    const slug = String(req.params.slug || "").trim().toLowerCase();
-    const teamNumericId = TEAM_API_FOOTBALL_IDS[slug];
-    if (!teamNumericId) {
-      return res.status(404).json({ message: "Team not supported yet" });
-    }
-
-    const seasonParam = req.query.season;
-    let season = new Date().getFullYear();
-    if (typeof seasonParam === "string" && seasonParam.trim().length > 0) {
-      const parsed = Number.parseInt(seasonParam, 10);
-      if (Number.isFinite(parsed) && parsed > 0) {
-        season = parsed;
-      }
-    }
+  // DB squad endpoint (no API-Football)
+  app.get("/api/teams/:teamId/players", requireAuth, async (req, res) => {
+    const teamId = String(req.params.teamId || "").trim();
+    if (!teamId) return res.status(400).json({ message: "teamId inválido" });
 
     try {
-      const { data, cached } = await getSquadByTeamIdCached(teamNumericId, season);
-      if (cached) {
-        console.log(`[api-football] cache hit: ${slug} season=${season}`);
-      }
-      return res.json({
-        team: data.team,
-        players: data.players,
-        meta: { cached, season },
-      });
-    } catch (error: any) {
-      if (error?.message === "APIFOOTBALL_API_KEY not set") {
-        console.error("[api-football] APIFOOTBALL_API_KEY not set");
-        return res.status(500).json({ message: "APIFOOTBALL_API_KEY not set" });
+      const team = await storage.getTeam(teamId);
+      if (!team) return res.status(404).json({ message: "Time não encontrado" });
+
+      const players = await storage.getPlayersByTeam(teamId);
+      return res.json(players);
+    } catch (error) {
+      console.error("Get team players error:", error);
+      return res.status(500).json({ message: "Erro ao buscar elenco" });
+    }
+  });
+
+  // Public squad endpoint (DB-only)
+  app.get("/api/teams/:slug/squad", async (req, res) => {
+    const slug = String(req.params.slug || "").trim().toLowerCase();
+    if (!slug) return res.status(400).json({ message: "Team inválido" });
+
+    const season = parseSeasonParam(req.query.season);
+
+    try {
+      const dbTeam = await storage.getTeam(slug);
+      if (!dbTeam) {
+        return res.status(404).json({ message: "Time não encontrado" });
       }
 
-      console.error("[api-football] Failed to fetch squad", error);
-      return res.status(502).json({ message: "Failed to fetch squad" });
+      const players = await storage.getPlayersByTeam(slug);
+      return res.json({
+        available: true,
+        updatedAt: Date.now(),
+        season,
+        team: { id: 0, name: dbTeam.name, logo: dbTeam.logoUrl ?? null },
+        coach: null,
+        players: players.map((p, idx) => ({
+          id: idx + 1,
+          name: p.name,
+          position: p.position ?? null,
+          age: null,
+          nationality: p.nationalitySecondary
+            ? `${p.nationalityPrimary} / ${p.nationalitySecondary}`
+            : p.nationalityPrimary,
+          photo: null,
+        })),
+      });
+    } catch (error: any) {
+      console.error("[db] Failed to fetch squad", error);
+      return res.status(500).json({ message: "Failed to fetch squad" });
     }
   });
 
@@ -428,14 +609,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(404).json({ message: 'Time não encontrado' });
       }
 
-      const players = await storage.getPlayersByTeam(req.params.id);
       const matches = await storage.getMatchesByTeam(req.params.id, 20);
       const allTeams = await storage.getAllTeams();
 
       // TODO: Adicionar dados de estádio, histórico, conquistas quando schema for expandido
       res.json({
         team,
-        players,
+        // Importante: o elenco agora vem do endpoint dedicado:
+        // GET /api/teams/:teamId/players (DB)
+        players: [],
         matches,
         leagueTable: allTeams,
         // Mock data - será substituído quando schema for expandido
@@ -456,7 +638,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         },
       });
     } catch (error) {
-      console.error('Get extended team error:', error);
+      console.error("Team extended error:", error);
       res.status(500).json({ message: 'Erro ao buscar dados do time' });
     }
   });
