@@ -31,6 +31,7 @@ export default function JornalistaPage() {
 
   const [formData, setFormData] = useState({
     teamId: '',
+    scope: 'TEAM' as 'ALL' | 'TEAM' | 'EUROPE',
     category: 'NEWS',
     title: '',
     content: '',
@@ -44,13 +45,15 @@ export default function JornalistaPage() {
 
   const saveMutation = useMutation({
     mutationFn: async (data: typeof formData) => {
+      const payload = { ...data, scope: data.scope ?? 'TEAM' };
       if (editingNews) {
-        return await apiRequest('PATCH', `/api/news/${editingNews.id}`, data);
+        return await apiRequest('PATCH', `/api/news/${editingNews.id}`, payload);
       }
-      return await apiRequest('POST', '/api/news', data);
+      return await apiRequest('POST', '/api/news', payload);
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['/api/news'] });
+      queryClient.invalidateQueries({ queryKey: ['feed'] });
       queryClient.invalidateQueries({ queryKey: ['/api/news/my-news'] });
       toast({
         title: editingNews ? 'Notícia atualizada!' : 'Notícia publicada!',
@@ -84,6 +87,7 @@ export default function JornalistaPage() {
   const resetForm = () => {
     setFormData({
       teamId: '',
+      scope: 'TEAM',
       category: 'NEWS',
       title: '',
       content: '',
@@ -109,7 +113,8 @@ export default function JornalistaPage() {
   useEffect(() => {
     if (!editingNews) return;
     setFormData({
-      teamId: editingNews.teamId,
+      teamId: editingNews.teamId ?? '',
+      scope: (editingNews as any).scope ?? 'TEAM',
       category: editingNews.category ?? 'NEWS',
       title: editingNews.title,
       content: editingNews.content,
@@ -121,11 +126,14 @@ export default function JornalistaPage() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    if (!formData.teamId || !formData.title || !formData.content) {
+    const needTeam = formData.scope === 'TEAM';
+    if ((needTeam && !formData.teamId) || !formData.title || !formData.content) {
       toast({
         variant: 'destructive',
         title: 'Erro',
-        description: 'Preencha todos os campos obrigatórios',
+        description: needTeam && !formData.teamId
+          ? 'Para publicar no feed do time, selecione um time.'
+          : 'Preencha todos os campos obrigatórios',
       });
       return;
     }
@@ -347,9 +355,31 @@ export default function JornalistaPage() {
           </DialogHeader>
 
           <form onSubmit={handleSubmit} className="space-y-6">
+            <div className="space-y-2">
+              <Label>Onde publicar *</Label>
+              <Select
+                value={formData.scope}
+                onValueChange={(value: 'ALL' | 'TEAM' | 'EUROPE') => setFormData({ ...formData, scope: value })}
+              >
+                <SelectTrigger data-testid="select-scope">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="TEAM">Meu time</SelectItem>
+                  <SelectItem value="ALL">Todos</SelectItem>
+                  <SelectItem value="EUROPE">Europa</SelectItem>
+                </SelectContent>
+              </Select>
+              <p className="text-xs text-foreground-muted">
+                {formData.scope === 'TEAM' && 'Aparece só na aba Meu time do time escolhido.'}
+                {formData.scope === 'ALL' && 'Aparece na aba Todos.'}
+                {formData.scope === 'EUROPE' && 'Aparece na aba Europa para todos.'}
+              </p>
+            </div>
+
             <div className="grid md:grid-cols-2 gap-6">
               <div className="space-y-2">
-                <Label htmlFor="team">Time *</Label>
+                <Label htmlFor="team">Time {formData.scope === 'TEAM' ? '*' : '(opcional para Todos/Europa)'}</Label>
                 <Select value={formData.teamId} onValueChange={(value) => setFormData({ ...formData, teamId: value })}>
                   <SelectTrigger data-testid="select-team">
                     <SelectValue placeholder="Selecione o time" />

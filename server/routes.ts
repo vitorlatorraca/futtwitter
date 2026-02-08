@@ -10,7 +10,7 @@ import path from "path";
 import multer from "multer";
 import { randomBytes } from "crypto";
 import { fileURLToPath } from "url";
-import { insertUserSchema, insertNewsSchema, insertPlayerRatingSchema } from "@shared/schema";
+import { insertUserSchema, insertNewsSchema, insertPlayerRatingSchema, insertCommentSchema } from "@shared/schema";
 import { deleteAvatarByUrl, saveAvatar } from "./services/avatarStorage";
 
 const PgSession = ConnectPgSimple(session);
@@ -564,6 +564,39 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // User lineups (tática ideal)
+  app.get("/api/lineups/me", requireAuth, async (req, res) => {
+    const teamId = String(req.query.teamId || "").trim();
+    if (!teamId) return res.status(400).json({ message: "teamId é obrigatório" });
+
+    try {
+      const lineup = await storage.getUserLineup(req.session.userId!, teamId);
+      return res.json(lineup ?? null);
+    } catch (error) {
+      console.error("Get lineup error:", error);
+      return res.status(500).json({ message: "Erro ao buscar tática" });
+    }
+  });
+
+  app.post("/api/lineups/me", requireAuth, async (req, res) => {
+    const teamId = String(req.body?.teamId || "").trim();
+    const formation = String(req.body?.formation || "4-3-3").trim();
+    const slots = Array.isArray(req.body?.slots) ? req.body.slots : [];
+    if (!teamId) return res.status(400).json({ message: "teamId é obrigatório" });
+
+    const validSlots = slots
+      .filter((s: any) => typeof s?.slotIndex === "number" && typeof s?.playerId === "string")
+      .map((s: any) => ({ slotIndex: s.slotIndex, playerId: s.playerId }));
+
+    try {
+      const lineup = await storage.upsertUserLineup(req.session.userId!, teamId, formation, validSlots);
+      return res.json(lineup);
+    } catch (error) {
+      console.error("Save lineup error:", error);
+      return res.status(500).json({ message: "Erro ao salvar tática" });
+    }
+  });
+
   // Public squad endpoint (DB-only)
   app.get("/api/teams/:slug/squad", async (req, res) => {
     const slug = String(req.params.slug || "").trim().toLowerCase();
@@ -604,42 +637,89 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Extended team data endpoint for "Meu Time" page
   app.get('/api/teams/:id/extended', requireAuth, async (req, res) => {
     try {
-      const team = await storage.getTeam(req.params.id);
+      const teamId = req.params.id;
+      const team = await storage.getTeam(teamId);
       if (!team) {
         return res.status(404).json({ message: 'Time não encontrado' });
       }
 
-      const matches = await storage.getMatchesByTeam(req.params.id, 20);
+      const matches = await storage.getMatchesByTeam(teamId, 20);
       const allTeams = await storage.getAllTeams();
 
-      // TODO: Adicionar dados de estádio, histórico, conquistas quando schema for expandido
+      let stadium = {
+        name: 'Estádio Principal',
+        capacity: 50000,
+        pitchCondition: 'Excelente' as const,
+        stadiumCondition: 'Boa' as const,
+        homeFactor: 75,
+        yearBuilt: 2000,
+      };
+      let clubInfo = {
+        league: 'Brasileirão Série A',
+        season: String(new Date().getFullYear()),
+        country: 'Brasil',
+        clubStatus: 'Profissional' as const,
+        reputation: 4,
+      };
+      let corinthiansClub: any = null;
+
+      const clubFile = teamId === 'corinthians' ? 'corinthians.club.json' : teamId === 'palmeiras' ? 'palmeiras.club.json' : null;
+      if (clubFile) {
+        try {
+          const clubPath = path.join(__dirname, 'data', clubFile);
+          if (fs.existsSync(clubPath)) {
+            const raw = fs.readFileSync(clubPath, 'utf-8');
+            corinthiansClub = JSON.parse(raw);
+            stadium = {
+              name: corinthiansClub.stadium?.name ?? stadium.name,
+              capacity: corinthiansClub.stadium?.capacity ?? stadium.capacity,
+              pitchCondition: 'Excelente',
+              stadiumCondition: 'Boa',
+              homeFactor: 80,
+              yearBuilt: corinthiansClub.stadium?.inaugurated ?? stadium.yearBuilt,
+            };
+            clubInfo = {
+              ...clubInfo,
+              country: corinthiansClub.country ?? clubInfo.country,
+            };
+          }
+        } catch (_) {}
+      }
+
       res.json({
         team,
-        // Importante: o elenco agora vem do endpoint dedicado:
-        // GET /api/teams/:teamId/players (DB)
         players: [],
         matches,
         leagueTable: allTeams,
-        // Mock data - será substituído quando schema for expandido
-        stadium: {
-          name: 'Estádio Principal', // TODO: Buscar do schema
-          capacity: 50000, // TODO: Buscar do schema
-          pitchCondition: 'Excelente', // TODO: Buscar do schema
-          stadiumCondition: 'Boa', // TODO: Buscar do schema
-          homeFactor: 75, // TODO: Calcular baseado em histórico
-          yearBuilt: 2000, // TODO: Buscar do schema
-        },
-        clubInfo: {
-          league: 'Brasileirão Série A', // TODO: Buscar do schema
-          season: '2024', // TODO: Calcular dinamicamente
-          country: 'Brasil', // TODO: Buscar do schema
-          clubStatus: 'Profissional', // TODO: Buscar do schema
-          reputation: 4, // TODO: Calcular baseado em performance
-        },
+        stadium,
+        clubInfo,
+        corinthiansClub: corinthiansClub ?? undefined,
       });
     } catch (error) {
       console.error("Team extended error:", error);
       res.status(500).json({ message: 'Erro ao buscar dados do time' });
+    }
+  });
+
+  app.get('/api/teams/:teamId/last-match', requireAuth, async (req, res) => {
+    try {
+      const { teamId } = req.params;
+      const data = await storage.getLastMatchWithRatings(teamId);
+      if (!data) {
+        return res.json({ match: null, players: [] });
+      }
+      res.json({
+        match: {
+          ...data.match,
+          scoreFor: data.match.teamScore,
+          scoreAgainst: data.match.opponentScore,
+          homeAway: data.match.isHomeMatch ? 'HOME' : 'AWAY',
+        },
+        players: data.players,
+      });
+    } catch (error) {
+      console.error('Last match error:', error);
+      res.status(500).json({ message: 'Erro ao buscar última partida' });
     }
   });
 
@@ -707,8 +787,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
     });
   });
 
+  // Feed: GET /api/news?scope=all|team|europe (or legacy teamId/filter)
   app.get('/api/news', async (req, res) => {
     try {
+      const scopeParam = typeof req.query.scope === "string" ? req.query.scope.trim().toLowerCase() : undefined;
       const teamIdParam = typeof req.query.teamId === "string" ? req.query.teamId.trim() : undefined;
       const filterParam = typeof req.query.filter === "string" ? req.query.filter.trim() : undefined;
       const limitParam = typeof req.query.limit === "string" ? parseInt(req.query.limit, 10) : undefined;
@@ -717,17 +799,34 @@ export async function registerRoutes(app: Express): Promise<Server> {
           ? Math.min(limitParam as number, 100)
           : 50;
 
-      // Compatibilidade: o frontend novo usa ?teamId=...; o antigo usa ?filter=my-team|all|<teamId>
-      let effectiveTeamId: string | undefined = teamIdParam || undefined;
-      if (!effectiveTeamId && filterParam && filterParam !== "all" && filterParam !== "my-team") {
-        effectiveTeamId = filterParam;
-      }
-      if (!effectiveTeamId && filterParam === "my-team" && req.session.userId) {
-        const user = await storage.getUser(req.session.userId);
-        effectiveTeamId = user?.teamId || undefined;
+      let scope: "all" | "team" | "europe" | undefined;
+      let userTeamId: string | undefined;
+
+      if (scopeParam === "all" || scopeParam === "team" || scopeParam === "europe") {
+        scope = scopeParam;
+        if (scope === "team" && req.session.userId) {
+          const user = await storage.getUser(req.session.userId);
+          userTeamId = user?.teamId ?? undefined;
+        }
+      } else {
+        // Legacy: frontend uses ?teamId=... or ?filter=my-team|all|<teamId>
+        let effectiveTeamId: string | undefined = teamIdParam || undefined;
+        if (!effectiveTeamId && filterParam && filterParam !== "all" && filterParam !== "my-team") {
+          effectiveTeamId = filterParam;
+        }
+        if (!effectiveTeamId && filterParam === "my-team" && req.session.userId) {
+          const user = await storage.getUser(req.session.userId);
+          effectiveTeamId = user?.teamId || undefined;
+        }
+        if (effectiveTeamId) {
+          scope = "team";
+          userTeamId = effectiveTeamId;
+        } else {
+          scope = "all";
+        }
       }
 
-      const newsItems = await storage.getAllNews({ teamId: effectiveTeamId, limit });
+      const newsItems = await storage.getAllNews({ scope, userTeamId, limit });
 
       // Add user interaction info if logged in
       if (req.session.userId) {
@@ -753,11 +852,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       const newsItems = await storage.getNewsByJournalist(journalist.id);
 
-      // Enrich with team data
+      // Enrich with team data (teamId can be null for EUROPE scope)
       const enrichedNews = await Promise.all(
         newsItems.map(async (newsItem) => {
-          const team = await storage.getTeam(newsItem.teamId);
-          return { ...newsItem, team };
+          const team = newsItem.teamId ? await storage.getTeam(newsItem.teamId) : null;
+          return { ...newsItem, team: team ?? null };
         })
       );
 
@@ -775,18 +874,42 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(404).json({ message: 'Jornalista não encontrado' });
       }
 
-      const newsData = insertNewsSchema.parse(req.body);
+      const me = await storage.getUser(req.session.userId!);
+      if (!me) {
+        return res.status(401).json({ message: 'Usuário não encontrado' });
+      }
+
+      const parsed = insertNewsSchema.safeParse(req.body);
+      if (!parsed.success) {
+        return res.status(400).json({ message: parsed.error.errors?.[0]?.message ?? 'Dados inválidos' });
+      }
+      const newsData = parsed.data;
+
+      const scope = (newsData.scope ?? 'ALL').toUpperCase() as 'ALL' | 'TEAM' | 'EUROPE';
+
+      if (scope === 'TEAM') {
+        if (!me.teamId) {
+          return res.status(400).json({ message: 'Para publicar no feed do time, selecione um time no seu perfil.' });
+        }
+        newsData.teamId = me.teamId;
+      } else if (scope === 'EUROPE') {
+        // Jornalista aprovado ou admin (requireJournalist já garante aprovado)
+        newsData.teamId = newsData.teamId ?? null;
+      } else {
+        newsData.teamId = newsData.teamId ?? me.teamId ?? null;
+      }
 
       const newsItem = await storage.createNews({
         ...newsData,
+        scope,
         journalistId: journalist.id,
-      });
+      } as any);
 
-      // Resposta sanitizada (sem campos sensíveis / internos)
       res.status(201).json({
         id: newsItem.id,
         journalistId: newsItem.journalistId,
-        teamId: newsItem.teamId,
+        teamId: newsItem.teamId ?? null,
+        scope: newsItem.scope,
         title: newsItem.title,
         content: newsItem.content,
         category: newsItem.category,
@@ -809,9 +932,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(404).json({ message: 'Jornalista não encontrado' });
       }
 
-      // Verify the news belongs to this journalist
       const newsItem = await storage.getNewsById(req.params.id);
-      
       if (!newsItem) {
         return res.status(404).json({ message: 'Notícia não encontrada' });
       }
@@ -820,8 +941,28 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(403).json({ message: 'Acesso negado. Você só pode editar suas próprias notícias.' });
       }
 
-      const newsData = insertNewsSchema.partial().parse(req.body);
-      const updatedNews = await storage.updateNews(req.params.id, newsData);
+      const me = await storage.getUser(req.session.userId!);
+      if (!me) {
+        return res.status(401).json({ message: 'Usuário não encontrado' });
+      }
+
+      const raw = insertNewsSchema.partial().parse(req.body);
+      const updateData: Record<string, unknown> = { ...raw };
+
+      if (raw.scope !== undefined) {
+        const scope = (String(raw.scope).toUpperCase()) as 'ALL' | 'TEAM' | 'EUROPE';
+        if (scope === 'TEAM') {
+          if (!me.teamId) {
+            return res.status(400).json({ message: 'Para publicar no feed do time, selecione um time no seu perfil.' });
+          }
+          updateData.teamId = me.teamId;
+        } else if (scope === 'EUROPE') {
+          updateData.teamId = raw.teamId ?? null;
+        }
+        updateData.scope = scope;
+      }
+
+      const updatedNews = await storage.updateNews(req.params.id, updateData as any);
 
       if (!updatedNews) {
         return res.status(404).json({ message: 'Notícia não encontrada' });
@@ -906,6 +1047,159 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error('Create interaction error:', error);
       res.status(500).json({ message: 'Erro ao registrar interação' });
+    }
+  });
+
+  // ============================================
+  // COMMENTS ON NEWS (feed) — only same-team fans can comment
+  // ============================================
+
+  app.get('/api/news/:newsId/comments', async (req, res) => {
+    try {
+      const newsId = req.params.newsId;
+      const viewerUserId = req.session?.userId ?? null;
+      const list = await storage.listCommentsByNewsId(newsId, viewerUserId);
+      return res.json(list);
+    } catch (error: any) {
+      console.error('List comments error:', error?.message ?? error);
+      if (error?.stack) console.error(error.stack);
+      return res.status(500).json({ message: 'Erro ao buscar comentários' });
+    }
+  });
+
+  app.post('/api/news/:newsId/comments', requireAuth, async (req, res) => {
+    const newsId = req.params.newsId;
+    const userId = req.session?.userId;
+    if (process.env.NODE_ENV === 'development') {
+      console.log('COMMENT REQUEST', { userId, newsId, body: req.body });
+    }
+    try {
+      if (!userId) {
+        return res.status(401).json({ message: 'Não autenticado' });
+      }
+      const parsed = insertCommentSchema.parse(req.body);
+      const content = (parsed.content ?? '').trim();
+      if (!content) {
+        return res.status(400).json({ message: 'Conteúdo do comentário é obrigatório.' });
+      }
+
+      const newsItem = await storage.getNewsById(newsId);
+      if (!newsItem) {
+        return res.status(404).json({ message: 'Publicação não encontrada.' });
+      }
+
+      const me = await storage.getUser(userId);
+      if (!me) {
+        return res.status(401).json({ message: 'Usuário não encontrado.' });
+      }
+
+      const scope = (newsItem as any).scope ?? 'ALL';
+      let canComment: boolean;
+      if (scope === 'EUROPE') {
+        canComment = true;
+      } else if (scope === 'TEAM') {
+        canComment = (me.teamId != null && me.teamId === newsItem.teamId) || isAdmin(me);
+      } else {
+        canComment = true;
+      }
+      if (!canComment) {
+        return res.status(403).json({
+          message: 'Apenas torcedores do mesmo time do autor podem comentar nesta publicação.',
+        });
+      }
+
+      const comment = await storage.createComment({ newsId, userId, content });
+      if (!comment) {
+        console.error('Create comment: storage returned no comment');
+        return res.status(500).json({ message: 'Erro ao criar comentário' });
+      }
+      return res.status(201).json({
+        id: comment.id,
+        content: comment.content,
+        createdAt: comment.createdAt,
+        author: { name: me.name, avatarUrl: me.avatarUrl ?? null },
+        likeCount: 0,
+        viewerHasLiked: false,
+      });
+    } catch (error: any) {
+      if (error?.name === 'ZodError') {
+        return res.status(400).json({ message: error.errors?.[0]?.message ?? 'Dados inválidos' });
+      }
+      console.error('Create comment error:', error?.message ?? error);
+      if (error?.stack) console.error(error.stack);
+      return res.status(500).json({ message: 'Erro ao criar comentário' });
+    }
+  });
+
+  app.post('/api/comments/:commentId/likes', requireAuth, async (req, res) => {
+    try {
+      const commentId = req.params.commentId;
+      const userId = req.session.userId!;
+
+      const comment = await storage.getComment(commentId);
+      if (!comment) {
+        return res.status(404).json({ message: 'Comentário não encontrado.' });
+      }
+
+      const newsItem = await storage.getNewsById(comment.newsId);
+      if (!newsItem) {
+        return res.status(404).json({ message: 'Publicação não encontrada.' });
+      }
+
+      const me = await storage.getUser(userId);
+      if (!me) {
+        return res.status(401).json({ message: 'Usuário não encontrado.' });
+      }
+
+      const scope = (newsItem as any).scope ?? 'ALL';
+      const canLike = scope === 'EUROPE' || (me.teamId != null && me.teamId === newsItem.teamId) || isAdmin(me);
+      if (!canLike) {
+        return res.status(403).json({
+          message: 'Apenas torcedores do mesmo time da publicação podem curtir comentários.',
+        });
+      }
+
+      await storage.addCommentLike(commentId, userId);
+      return res.status(201).json({ message: 'Curtida registrada' });
+    } catch (error) {
+      console.error('Like comment error:', error);
+      return res.status(500).json({ message: 'Erro ao curtir comentário' });
+    }
+  });
+
+  app.delete('/api/comments/:commentId/likes', requireAuth, async (req, res) => {
+    try {
+      const commentId = req.params.commentId;
+      const userId = req.session.userId!;
+
+      const comment = await storage.getComment(commentId);
+      if (!comment) {
+        return res.status(404).json({ message: 'Comentário não encontrado.' });
+      }
+
+      const newsItem = await storage.getNewsById(comment.newsId);
+      if (!newsItem) {
+        return res.status(404).json({ message: 'Publicação não encontrada.' });
+      }
+
+      const me = await storage.getUser(userId);
+      if (!me) {
+        return res.status(401).json({ message: 'Usuário não encontrado.' });
+      }
+
+      const scope = (newsItem as any).scope ?? 'ALL';
+      const canLike = scope === 'EUROPE' || (me.teamId != null && me.teamId === newsItem.teamId) || isAdmin(me);
+      if (!canLike) {
+        return res.status(403).json({
+          message: 'Apenas torcedores do mesmo time da publicação podem remover curtida.',
+        });
+      }
+
+      await storage.removeCommentLike(commentId, userId);
+      return res.json({ message: 'Curtida removida' });
+    } catch (error) {
+      console.error('Unlike comment error:', error);
+      return res.status(500).json({ message: 'Erro ao remover curtida' });
     }
   });
 

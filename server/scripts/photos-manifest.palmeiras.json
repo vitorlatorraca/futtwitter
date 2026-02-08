@@ -1,0 +1,232 @@
+{
+  "summary": {
+    "total": 30,
+    "downloaded": 10,
+    "exists": 0,
+    "missing": 20,
+    "failed": 0,
+    "generatedAt": "2026-02-04T18:48:50.017Z"
+  },
+  "entries": [
+    {
+      "playerId": "dcd11886-96b4-49b4-ad4c-f5610e026157",
+      "name": "Weverton",
+      "slug": "weverton",
+      "status": "missing"
+    },
+    {
+      "playerId": "a9a26a65-d780-4c95-9524-5ba84e76a87f",
+      "name": "Marcelo Lomba",
+      "slug": "marcelo-lomba",
+      "status": "missing"
+    },
+    {
+      "playerId": "3cd0dcd2-de2c-40ae-90f7-b3f766fb5dc2",
+      "name": "Aranha",
+      "slug": "aranha",
+      "status": "downloaded",
+      "sourceUrl": "https://upload.wikimedia.org/wikipedia/commons/5/5d/AAPP1908-1914.jpg",
+      "license": "Public domain",
+      "author": "Foto:Autor Desconhecido \n\nReprodução:Arquivo da Associação Atlética Ponte Preta",
+      "downloadedAt": "2026-02-04T18:45:20.388Z"
+    },
+    {
+      "playerId": "76004f8d-65e4-4fae-94ae-5207cc7c0b65",
+      "name": "Murilo",
+      "slug": "murilo",
+      "status": "missing"
+    },
+    {
+      "playerId": "927d93f1-58d6-495f-bd36-fb36cbe67c9d",
+      "name": "Micael",
+      "slug": "micael",
+      "status": "missing"
+    },
+    {
+      "playerId": "8c20a485-c0ec-4af7-9f73-ed8614e8892b",
+      "name": "Gustavo Gómez",
+      "slug": "gustavo-gmez",
+      "status": "missing"
+    },
+    {
+      "playerId": "ae6064fa-d726-42ec-86e7-013112f407e5",
+      "name": "Bruno Fuchs",
+      "slug": "bruno-fuchs",
+      "status": "missing"
+    },
+    {
+      "playerId": "0d2dfefb-4810-4eb1-b997-71e451f88ab2",
+      "name": "Carlos Miguel",
+      "slug": "carlos-miguel",
+      "status": "missing"
+    },
+    {
+      "playerId": "d22091d8-6762-4219-b456-713cbdaa8959",
+      "name": "Luis Benedetti",
+      "slug": "luis-benedetti",
+      "status": "downloaded",
+      "sourceUrl": "https://upload.wikimedia.org/wikipedia/commons/2/29/RC_1924.jpg",
+      "license": "Public domain",
+      "author": "Diario La Capital",
+      "downloadedAt": "2026-02-04T18:46:12.758Z"
+    },
+    {
+      "playerId": "70751fd2-8c98-4591-a95a-50c57295c382",
+      "name": "Joaquín Piquerez",
+      "slug": "joaqun-piquerez",
+      "status": "downloaded",
+      "sourceUrl": "https://upload.wikimedia.org/wikipedia/commons/2/26/Joaquin-Piquerez-Palmeiras-Athletico-jul-2022-2.jpg",
+      "license": "Public domain",
+      "author": "SOCCER DIGITAL",
+      "downloadedAt": "2026-02-04T18:46:17.775Z"
+    },
+    {
+      "playerId": "f261d201-0479-41ca-96f7-67cdc747a1ca",
+      "name": "Mauricio",
+      "slug": "mauricio",
+      "status": "missing"
+    },
+    {
+      "playerId": "6e1533ab-5e55-41e7-abbc-bd0174920a8d",
+      "name": "Raphael Veiga",
+      "slug": "raphael-veiga",
+      "status": "downloaded",
+      "sourceUrl": "https://upload.wikimedia.org/wikipedia/commons/d/db/PALMEIRAS_X_BOCA_JUNIORS_-_COPA_LIBERTADORES_2023_%2853286428161%29.jpg",
+      "license": "Public domain",
+      "author": "SOCCER DIGITAL",
+      "downloadedAt": "2026-02-04T18:46:30.684Z"
+    },
+    {
+      "playerId": "5634dde8-bed4-4a88-98c3-032c26221387",
+      "name": "Allan",
+      "slug": "allan",
+      "status": "missing"
+    },
+    {
+      "playerId": "7532c567-3473-4882-8b32-20cf7273eb35",
+      "name": "Rômulo",
+      "slug": "rmulo",
+      "status": "downloaded",
+      "sourceUrl": "https://upload.wikimedia.org/wikipedia/commons/e/ea/R%C3%B4mulo_Marques.jpg",
+      "license": "Public domain",
+      "author": "Little Savage",
+      "downloadedAt": "2026-02-04T18:46:44.789Z"
+    },
+    {
+      "playerId": "ad94c89a-3e56-41ee-8bce-7f5525bb463b",
+      "name": "Paulinho",
+      "slug": "paulinho",
+      "status": "downloaded",
+      "sourceUrl": "https://upload.wikimedia.org/wikipedia/commons/f/fb/Time_do_Internacional%2C_1953_%28Paulinho%29.jpg",
+      "license": "Public domain",
+      "author": "\nUnknownUnknown ",
+      "downloadedAt": "2026-02-04T18:46:46.217Z"
+    },
+    {
+      "playerId": "340937fa-ee19-4b6a-a047-62e6e16c5242",
+      "name": "Ramón Sosa",
+      "slug": "ramn-sosa",
+      "status": "missing"
+    },
+    {
+      "playerId": "0b119ef1-7559-4371-b344-45125b7fb0d5",
+      "name": "Bruno Rodrigues",
+      "slug": "bruno-rodrigues",
+      "status": "missing"
+    },
+    {
+      "playerId": "72a0280c-b772-4d85-8ac0-53f5bab68304",
+      "name": "Facundo Torres",
+      "slug": "facundo-torres",
+      "status": "missing"
+    },
+    {
+      "playerId": "f10e8263-5693-41ad-b8fd-835719c079df",
+      "name": "Jefté",
+      "slug": "jeft",
+      "status": "missing"
+    },
+    {
+      "playerId": "96c8c944-32f6-4e32-a30c-64532654e3b0",
+      "name": "Agustín Giay",
+      "slug": "agustn-giay",
+      "status": "missing"
+    },
+    {
+      "playerId": "891d88bc-d9e4-420c-865f-83fc52472df7",
+      "name": "Khellven",
+      "slug": "khellven",
+      "status": "missing"
+    },
+    {
+      "playerId": "484abd9f-438e-406e-904e-32306e4dc9ee",
+      "name": "Aníbal Moreno",
+      "slug": "anbal-moreno",
+      "status": "missing"
+    },
+    {
+      "playerId": "d5b73c05-8a81-4cca-a740-8f1f7b355a58",
+      "name": "Emiliano Martínez",
+      "slug": "emiliano-martnez",
+      "status": "downloaded",
+      "sourceUrl": "https://upload.wikimedia.org/wikipedia/commons/c/c0/Emiliano_Martinez_%28dinamarca%29.jpg",
+      "license": "CC0",
+      "author": "Dpansarini",
+      "downloadedAt": "2026-02-04T18:47:56.203Z"
+    },
+    {
+      "playerId": "67ab3345-21df-4f8c-bdbe-3e1dca5cc69c",
+      "name": "Lucas Evangelista",
+      "slug": "lucas-evangelista",
+      "status": "downloaded",
+      "sourceUrl": "https://upload.wikimedia.org/wikipedia/commons/e/e0/Brasileir%C3%A3o_S%C3%A9rie_A-_Bragantino_4_x_2_Coritiba_-_52151865531.jpg",
+      "license": "Public domain",
+      "author": "SOCCER DIGITAL",
+      "downloadedAt": "2026-02-04T18:48:01.142Z"
+    },
+    {
+      "playerId": "b40d4a0a-7209-4646-84b9-94a80178ebfb",
+      "name": "Figueiredo",
+      "slug": "figueiredo",
+      "status": "missing"
+    },
+    {
+      "playerId": "bac92323-a8d1-47c5-b5cb-7ee080b743fe",
+      "name": "Andreas Pereira",
+      "slug": "andreas-pereira",
+      "status": "missing"
+    },
+    {
+      "playerId": "87005d80-6a3a-4744-9152-fb96fb0ddb65",
+      "name": "Felipe Anderson",
+      "slug": "felipe-anderson",
+      "status": "missing"
+    },
+    {
+      "playerId": "a27f5031-e3ad-47a7-8f7d-83aa7ef03679",
+      "name": "Vitor Roque",
+      "slug": "vitor-roque",
+      "status": "downloaded",
+      "sourceUrl": "https://upload.wikimedia.org/wikipedia/commons/5/58/Vitor_Roque_-_S%C3%89RIE_A_-_PALMEIRAS_0_X_2_ATHLETICO_PARANAENSE_-_52192738366_%28cropped%29.jpg",
+      "license": "Public domain",
+      "author": "SOCCER DIGITAL",
+      "downloadedAt": "2026-02-04T18:48:35.434Z"
+    },
+    {
+      "playerId": "7df040fa-493e-415e-b768-58f3ccd14a37",
+      "name": "José Manuel López",
+      "slug": "jos-manuel-lpez",
+      "status": "downloaded",
+      "sourceUrl": "https://upload.wikimedia.org/wikipedia/commons/8/80/P%C3%A9rez%2C_Coll%2C_L%C3%B3pez%2C_Fern%C3%A1ndez_y_D%C3%ADaz%2C_Estadio%2C_1955-10-22_%28649%29.jpg",
+      "license": "Public domain",
+      "author": "Unknown authorUnknown author",
+      "downloadedAt": "2026-02-04T18:48:41.285Z"
+    },
+    {
+      "playerId": "73a1ce11-7d5a-4eda-b485-67e976931329",
+      "name": "Luighi",
+      "slug": "luighi",
+      "status": "missing"
+    }
+  ]
+}

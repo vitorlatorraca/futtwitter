@@ -17,50 +17,67 @@ import { Link } from 'wouter';
 import { Search, Newspaper, Lock, ArrowRight } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
+type FeedTab = 'all' | 'my-team' | 'europe';
+
 export default function DashboardPage() {
   const { user } = useAuth();
   const { toast } = useToast();
   const queryClient = useQueryClient();
-  // Feed público por padrão (não exige login).
-  const [activeFilter, setActiveFilter] = useState<string>('all');
+  const [activeFilter, setActiveFilter] = useState<FeedTab>('all');
   const [searchQ, setSearchQ] = useState<string>('');
 
-  const { data: newsData, isLoading } = useQuery<News[]>({
-    queryKey: ['/api/news', activeFilter, user?.teamId],
+  const feedAll = useQuery<News[]>({
+    queryKey: ['feed', 'all'],
     queryFn: async () => {
-      const params = new URLSearchParams();
-
-      if (activeFilter === 'my-team') {
-        // Meu Time deve usar explicitamente o teamId do usuário (via /api/auth/me)
-        if (!user?.teamId) return [];
-        params.append('teamId', user.teamId);
-      } else if (activeFilter !== 'all') {
-        // Filtro por time específico
-        params.append('teamId', activeFilter);
-      }
-
-      params.append('limit', '50');
-
-      const qs = params.toString();
-      const url = qs ? `/api/news?${qs}` : '/api/news';
-
-      const response = await fetch(getApiUrl(url), {
-        credentials: 'include',
-      });
-      
-      if (!response.ok) {
-        throw new Error('Failed to fetch news');
-      }
-      
-      return response.json();
+      const res = await fetch(getApiUrl('/api/news?scope=all&limit=50'), { credentials: 'include' });
+      if (!res.ok) throw new Error('Failed to fetch news');
+      return res.json();
     },
   });
+
+  const feedTeam = useQuery<News[]>({
+    queryKey: ['feed', 'team', user?.teamId ?? ''],
+    queryFn: async () => {
+      const res = await fetch(getApiUrl(`/api/news?scope=team&limit=50`), { credentials: 'include' });
+      if (!res.ok) throw new Error('Failed to fetch news');
+      return res.json();
+    },
+    enabled: !!user?.teamId,
+  });
+
+  const feedEurope = useQuery<News[]>({
+    queryKey: ['feed', 'europe'],
+    queryFn: async () => {
+      const res = await fetch(getApiUrl('/api/news?scope=europe&limit=50'), { credentials: 'include' });
+      if (!res.ok) throw new Error('Failed to fetch news');
+      return res.json();
+    },
+  });
+
+  const isScopeTab = activeFilter === 'all' || activeFilter === 'my-team' || activeFilter === 'europe';
+  const feedLegacyTeam = useQuery<News[]>({
+    queryKey: ['feed', 'team-id', activeFilter],
+    queryFn: async () => {
+      const res = await fetch(getApiUrl(`/api/news?teamId=${encodeURIComponent(activeFilter)}&limit=50`), { credentials: 'include' });
+      if (!res.ok) throw new Error('Failed to fetch news');
+      return res.json();
+    },
+    enabled: !isScopeTab && !!activeFilter,
+  });
+
+  const newsData = isScopeTab
+    ? (activeFilter === 'all' ? feedAll.data : activeFilter === 'my-team' ? feedTeam.data : feedEurope.data)
+    : feedLegacyTeam.data;
+  const isLoading = isScopeTab
+    ? (activeFilter === 'all' ? feedAll.isLoading : activeFilter === 'my-team' ? feedTeam.isLoading : feedEurope.isLoading)
+    : feedLegacyTeam.isLoading;
 
   const interactionMutation = useMutation({
     mutationFn: async ({ newsId, type }: { newsId: string; type: 'LIKE' | 'DISLIKE' }) => {
       return await apiRequest('POST', `/api/news/${newsId}/interaction`, { type });
     },
     onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['feed'] });
       queryClient.invalidateQueries({ queryKey: ['/api/news'] });
     },
     onError: (error: any) => {
@@ -78,7 +95,7 @@ export default function DashboardPage() {
 
   const selectedTeam =
     user?.teamId ? TEAMS_DATA.find((t) => t.id === user.teamId) : undefined;
-  const isTeamSpecific = activeFilter !== 'all' && activeFilter !== 'my-team';
+  const isTeamSpecific = activeFilter !== 'all' && activeFilter !== 'my-team' && activeFilter !== 'europe';
 
   return (
     <AppShell>
@@ -109,6 +126,15 @@ export default function DashboardPage() {
             <div className="inline-flex items-center gap-1 rounded-medium border border-card-border bg-surface-glass px-1 py-1">
               <Button
                 size="sm"
+                variant={activeFilter === "my-team" ? "default" : "ghost"}
+                onClick={() => setActiveFilter("my-team")}
+                className="font-semibold"
+                data-testid="filter-my-team"
+              >
+                Meu time
+              </Button>
+              <Button
+                size="sm"
                 variant={activeFilter === "all" ? "default" : "ghost"}
                 onClick={() => setActiveFilter("all")}
                 className="font-semibold"
@@ -118,12 +144,12 @@ export default function DashboardPage() {
               </Button>
               <Button
                 size="sm"
-                variant={activeFilter === "my-team" ? "default" : "ghost"}
-                onClick={() => setActiveFilter("my-team")}
+                variant={activeFilter === "europe" ? "default" : "ghost"}
+                onClick={() => setActiveFilter("europe")}
                 className="font-semibold"
-                data-testid="filter-my-team"
+                data-testid="filter-europe"
               >
-                Meu time
+                Europa
               </Button>
             </div>
 
@@ -187,22 +213,31 @@ export default function DashboardPage() {
                   ))}
                 </>
               ) : newsData && newsData.length > 0 ? (
-                newsData.map((news: any) => (
-                  <NewsCard
-                    key={news.id}
-                    news={news}
-                    canInteract={!!user?.teamId && news.teamId === user.teamId}
-                    onInteract={handleInteraction}
-                  />
-                ))
+                newsData.map((news: any) => {
+                  const scope = news.scope ?? 'ALL';
+                  const canInteract =
+                    scope === 'EUROPE' || (!!user?.teamId && news.teamId === user.teamId);
+                  return (
+                    <NewsCard
+                      key={news.id}
+                      news={news}
+                      canInteract={canInteract}
+                      onInteract={handleInteraction}
+                    />
+                  );
+                })
               ) : (
                 <EmptyState
                   icon={Newspaper}
                   title="Nenhuma notícia por aqui"
                   description={
                     activeFilter === "my-team"
-                      ? "Não há notícias do seu time no momento."
-                      : "Ainda não há notícias disponíveis com esse filtro."
+                      ? !user?.teamId
+                        ? "Escolha um time para ver o feed do seu clube."
+                        : "Não há notícias do seu time no momento."
+                      : activeFilter === "europe"
+                        ? "Ainda não há posts sobre Europa."
+                        : "Ainda não há posts."
                   }
                 />
               )}
@@ -257,7 +292,9 @@ export default function DashboardPage() {
                       ? "Todos"
                       : activeFilter === "my-team"
                         ? "Meu time"
-                        : "Time selecionado"}
+                        : activeFilter === "europe"
+                          ? "Europa"
+                          : "Time selecionado"}
                   </span>
                   {isTeamSpecific ? (
                     <span className="chip">

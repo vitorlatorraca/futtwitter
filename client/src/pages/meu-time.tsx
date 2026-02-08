@@ -6,8 +6,14 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { AppShell } from '@/components/ui/app-shell';
 import { EmptyState } from '@/components/ui/empty-state';
 import { NewsCard } from '@/components/news-card';
-import { TeamHeader } from '@/components/team/team-header';
 import { StadiumCard } from '@/components/team/stadium-card';
+import {
+  getClubConfig,
+  resolveTeamStats,
+  TeamHeaderCard,
+  TeamTabs,
+  TeamTrophies,
+} from '@/features/meu-time';
 import { ClubKits } from '@/components/team/club-kits';
 import { SquadList } from '@/components/team/squad-list';
 import { FormationView } from '@/components/team/formation-view';
@@ -16,11 +22,14 @@ import { LeagueTable } from '@/components/team/league-table';
 import { ClubHistory } from '@/components/team/club-history';
 import { Achievements } from '@/components/team/achievements';
 import { SocialIntegration } from '@/components/team/social-integration';
+import { CorinthiansClubSection } from '@/components/team/corinthians-club-section';
+import { LastMatchRatings } from '@/components/team/last-match-ratings';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
 import { Slider } from '@/components/ui/slider';
 import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
 import { Button } from '@/components/ui/button';
+import { Separator } from '@/components/ui/separator';
 import { useToast } from '@/hooks/use-toast';
 import { apiRequest, getApiUrl } from '@/lib/queryClient';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
@@ -49,10 +58,27 @@ interface ExtendedTeamData {
     clubStatus: 'Profissional' | 'Semi-Profissional' | 'Amador';
     reputation: number;
   };
+  corinthiansClub?: {
+    id: string;
+    name: string;
+    founded: string;
+    foundedLabel: string;
+    city: string;
+    country: string;
+    stadium: { name: string; capacity: number; inaugurated?: number };
+    nicknames: string[];
+    colors: { primary: string; secondary: string };
+    titles?: {
+      international: Array<{ name: string; count: number; years?: number[] }>;
+      national: Array<{ name: string; count: number; years?: number[] }>;
+      state: Array<{ name: string; count: number; years?: number[]; note?: string }>;
+    };
+    honours?: Array<{ name: string; count: number; years?: number[]; note?: string }>;
+  };
 }
 
 export default function MeuTimePage() {
-  const { user } = useAuth();
+  const { user, isLoading: isAuthLoading } = useAuth();
   const { toast } = useToast();
   const queryClient = useQueryClient();
   const [selectedPlayer, setSelectedPlayer] = useState<Player | null>(null);
@@ -146,6 +172,43 @@ export default function MeuTimePage() {
     retry: false,
   });
 
+  const lastMatchQuery = useQuery<{ match: { opponent: string; matchDate: string; scoreFor: number; scoreAgainst: number; homeAway: string; competition: string | null; isMock?: boolean }; players: Array<{ playerId: string; name: string; shirtNumber: number | null; rating: number; minutes: number | null }> } | null>({
+    queryKey: ['/api/teams', teamId, 'last-match'],
+    queryFn: async () => {
+      if (!teamId) return null;
+      const res = await fetch(`/api/teams/${teamId}/last-match`, { credentials: 'include' });
+      if (!res.ok) return null;
+      const data = await res.json();
+      return data.match ? data : null;
+    },
+    enabled: !!teamId,
+  });
+
+  const lineupQuery = useQuery<{ formation: string; slots: Array<{ slotIndex: number; playerId: string }> } | null>({
+    queryKey: ['/api/lineups/me', teamId],
+    queryFn: async () => {
+      if (!teamId) return null;
+      const res = await fetch(`/api/lineups/me?teamId=${encodeURIComponent(teamId)}`, { credentials: 'include' });
+      if (!res.ok) throw new Error('Failed to fetch lineup');
+      const data = await res.json();
+      return data ?? null;
+    },
+    enabled: !!teamId,
+  });
+
+  const lineupMutation = useMutation({
+    mutationFn: async ({ formation, slots }: { formation: string; slots: Array<{ slotIndex: number; playerId: string }> }) => {
+      return apiRequest('POST', '/api/lineups/me', { teamId, formation, slots });
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['/api/lineups/me', teamId] });
+      toast({ title: 'Tática salva!', description: 'Sua formação foi salva com sucesso.' });
+    },
+    onError: (err: any) => {
+      toast({ variant: 'destructive', title: 'Erro', description: err?.message ?? 'Não foi possível salvar a tática.' });
+    },
+  });
+
   const mergedTeam: Team | null = useMemo(() => {
     if (!safeTeamData) return null;
 
@@ -179,6 +242,17 @@ export default function MeuTimePage() {
     const base = safeTeamData.leagueTable ?? [];
     return base;
   }, [safeTeamData]);
+
+  const clubConfig = useMemo(() => getClubConfig(teamId), [teamId]);
+  const resolvedStats = useMemo(
+    () =>
+      resolveTeamStats(
+        teamId,
+        clubConfig,
+        safeTeamData?.team
+      ),
+    [teamId, clubConfig, safeTeamData?.team]
+  );
 
   const { data: matches, isLoading: isLoadingMatches } = useQuery<Match[]>({
     queryKey: ['/api/matches', teamId],
@@ -296,6 +370,56 @@ export default function MeuTimePage() {
     }
   };
 
+  // IMPORTANT: hooks must never be declared after any conditional return.
+  // These derived values must exist on every render (even when data is missing).
+  const rosterPlayers: Player[] = playersQuery.data ?? safeTeamData?.players ?? [];
+  const playersById = useMemo(() => new Map(rosterPlayers.map((p) => [p.id, p])), [rosterPlayers]);
+
+  const upcomingMatches = useMemo<Match[]>(() => {
+    const now = Date.now();
+    const base = safeTeamData?.matches ?? [];
+    return base
+      .filter((m) => new Date(m.matchDate).getTime() >= now)
+      .sort((a, b) => new Date(a.matchDate).getTime() - new Date(b.matchDate).getTime())
+      .slice(0, 10);
+  }, [safeTeamData?.matches]);
+
+  const recentMatches = useMemo<Match[]>(() => {
+    const now = Date.now();
+    const base = safeTeamData?.matches ?? [];
+    return base
+      .filter((m) => new Date(m.matchDate).getTime() < now)
+      .sort((a, b) => new Date(b.matchDate).getTime() - new Date(a.matchDate).getTime())
+      .slice(0, 10);
+  }, [safeTeamData?.matches]);
+
+  if (isAuthLoading) {
+    return (
+      <AppShell>
+        <div className="space-y-6">
+          <Skeleton className="h-64 rounded-soft" />
+          <Skeleton className="h-96 rounded-soft" />
+          <Skeleton className="h-96 rounded-soft" />
+        </div>
+      </AppShell>
+    );
+  }
+
+  if (!user) {
+    return (
+      <AppShell>
+        <EmptyState
+          title="Você precisa estar logado"
+          description="Faça login para ver seu time."
+          actionLabel="Ir para login"
+          onAction={() => {
+            window.location.href = "/login";
+          }}
+        />
+      </AppShell>
+    );
+  }
+
   if (!teamId) {
     return (
       <AppShell>
@@ -339,23 +463,6 @@ export default function MeuTimePage() {
     );
   }
 
-  const rosterPlayers = playersQuery.data ?? safeTeamData.players;
-  const upcomingMatches = useMemo(() => {
-    const now = Date.now();
-    return (safeTeamData.matches ?? [])
-      .filter((m) => new Date(m.matchDate).getTime() >= now)
-      .sort((a, b) => new Date(a.matchDate).getTime() - new Date(b.matchDate).getTime())
-      .slice(0, 10);
-  }, [safeTeamData.matches]);
-
-  const recentMatches = useMemo(() => {
-    const now = Date.now();
-    return (safeTeamData.matches ?? [])
-      .filter((m) => new Date(m.matchDate).getTime() < now)
-      .sort((a, b) => new Date(b.matchDate).getTime() - new Date(a.matchDate).getTime())
-      .slice(0, 10);
-  }, [safeTeamData.matches]);
-
   return (
     <AppShell mainClassName="py-6 sm:py-8">
       <div className="space-y-6">
@@ -370,109 +477,23 @@ export default function MeuTimePage() {
           </div>
         ) : null}
 
-        <TeamHeader
-          team={mergedTeam ?? safeTeamData.team}
-          league={safeTeamData.clubInfo.league}
-          season={String(safeTeamData.clubInfo.season)}
-          country={safeTeamData.clubInfo.country}
-          stadiumName={safeTeamData.stadium.name}
-          stadiumCapacity={safeTeamData.stadium.capacity}
-          clubStatus={safeTeamData.clubInfo.clubStatus}
+        <TeamHeaderCard
+          clubConfig={clubConfig}
+          stats={resolvedStats}
+          currentPosition={mergedTeam?.currentPosition ?? safeTeamData.team.currentPosition}
           reputation={safeTeamData.clubInfo.reputation}
         />
 
-        <section className="space-y-4">
-          <div className="flex items-end justify-between gap-4">
-            <div className="space-y-1">
-              <h2 className="text-3xl sm:text-4xl font-display font-bold text-foreground">
-                Elenco (DB)
-              </h2>
-              <p className="text-sm text-foreground-secondary">
-                Elenco carregado do banco (seed idempotente).
-              </p>
-            </div>
-            {playersQuery.isError ? (
-              <Button variant="outline" size="sm" onClick={() => playersQuery.refetch()}>
-                Tentar novamente
-              </Button>
-            ) : null}
-          </div>
-
-          {playersQuery.isLoading ? (
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
-              {Array.from({ length: 8 }).map((_, i) => (
-                <div key={i} className="glass-card border border-card-border rounded-soft p-4">
-                  <div className="flex items-center gap-3">
-                    <Skeleton className="h-12 w-12 rounded-full bg-white/10" />
-                    <div className="min-w-0 flex-1 space-y-2">
-                      <Skeleton className="h-4 w-3/4 bg-white/10" />
-                      <Skeleton className="h-3 w-1/2 bg-white/10" />
-                      <Skeleton className="h-3 w-2/5 bg-white/10" />
-                    </div>
-                  </div>
-                </div>
-              ))}
-            </div>
-          ) : rosterPlayers.length > 0 ? (
-            <div className="space-y-4">
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
-                {rosterPlayers.map((p) => {
-                  const initials = (p.name || "")
-                    .split(" ")
-                    .filter(Boolean)
-                    .slice(0, 2)
-                    .map((w) => w[0]?.toUpperCase())
-                    .join("");
-
-                  const nationality = p.nationalitySecondary
-                    ? `${p.nationalityPrimary} / ${p.nationalitySecondary}`
-                    : p.nationalityPrimary;
-
-                  return (
-                    <div
-                      key={p.id}
-                      className="glass-card border border-card-border rounded-soft p-4 transition will-change-transform hover:-translate-y-0.5 hover:bg-white/5"
-                    >
-                      <div className="flex items-center gap-3">
-                        <div className="h-12 w-12 rounded-full grid place-items-center border border-card-border bg-white/5 text-sm font-bold text-foreground">
-                          {p.shirtNumber ?? (initials || "?")}
-                        </div>
-
-                        <div className="min-w-0">
-                          <div className="font-semibold text-foreground truncate">{p.name}</div>
-                          <div className="text-sm text-foreground-secondary truncate">
-                            {p.position || "—"}
-                          </div>
-                          <div className="text-xs text-foreground-muted truncate">{nationality}</div>
-                        </div>
-                      </div>
-                    </div>
-                  );
-                })}
-              </div>
-            </div>
-          ) : (
-            <div className="glass-card border border-card-border rounded-soft p-6">
-              <p className="text-foreground-secondary">
-                {playersQuery.isError ? "Não foi possível carregar o elenco agora." : "Elenco indisponível agora."}
-              </p>
-            </div>
-          )}
-        </section>
-
         <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
-          <div className="overflow-x-auto scrollbar-hide">
-            <TabsList className="w-max min-w-full justify-start">
-              <TabsTrigger value="overview" className="font-semibold">Visão Geral</TabsTrigger>
-              <TabsTrigger value="news" className="font-semibold">Notícias</TabsTrigger>
-              <TabsTrigger value="matches" className="font-semibold">Jogos</TabsTrigger>
-              <TabsTrigger value="squad" className="font-semibold">Elenco</TabsTrigger>
-              <TabsTrigger value="performance" className="font-semibold">Estatísticas</TabsTrigger>
-              <TabsTrigger value="social" className="font-semibold">Comunidade</TabsTrigger>
-            </TabsList>
-          </div>
+          <TeamTabs />
 
           <TabsContent value="overview" className="space-y-6">
+            <TeamTrophies clubConfig={clubConfig} title="Taças" />
+
+            {(teamId === 'corinthians' || teamId === 'palmeiras') && safeTeamData.corinthiansClub && (
+              <CorinthiansClubSection data={safeTeamData.corinthiansClub} />
+            )}
+
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
               <StadiumCard
                 stadiumName={safeTeamData.stadium.name}
@@ -481,15 +502,68 @@ export default function MeuTimePage() {
                 stadiumCondition={safeTeamData.stadium.stadiumCondition}
                 homeFactor={safeTeamData.stadium.homeFactor}
                 yearBuilt={safeTeamData.stadium.yearBuilt}
+                stadiumImageSrc={clubConfig.stadiumImageSrc}
+                teamId={teamId ?? undefined}
+                lastMatchSection={teamId === 'corinthians' ? (
+                  <LastMatchRatings
+                    data={lastMatchQuery.data ?? null}
+                    isLoading={lastMatchQuery.isLoading}
+                  />
+                ) : undefined}
               />
               <FormationView
                 players={rosterPlayers}
-                formation="4-3-3"
-                captainId={rosterPlayers[0]?.id}
+                teamId={teamId!}
+                initialFormation={lineupQuery.data?.formation ?? '4-3-3'}
+                initialSlots={lineupQuery.data?.slots ?? []}
+                onSave={teamId ? async (formation, slots) => lineupMutation.mutateAsync({ formation, slots }) : undefined}
+                playersById={playersById}
+                getPhotoUrl={(p) => p.photoUrl ?? '/assets/players/placeholder.png'}
+                badgeUrl={clubConfig.badgeSrc ?? undefined}
               />
             </div>
 
             <ClubKits team={safeTeamData.team} />
+
+            {rosterPlayers.length > 0 && (
+              <>
+                <Separator className="my-6" />
+                <div className="space-y-4">
+                  <h2 className="text-2xl font-display font-bold text-foreground">Elenco</h2>
+                  <p className="text-sm text-muted-foreground">
+                    Clique nas posições do campo acima para escolher os jogadores da sua tática. Use o menu no slot para trocar ou remover.
+                  </p>
+                  {playersQuery.isError ? (
+                    <Button variant="outline" size="sm" onClick={() => playersQuery.refetch()}>
+                      Tentar novamente
+                    </Button>
+                  ) : null}
+                  {playersQuery.isLoading ? (
+                    <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                      {Array.from({ length: 8 }).map((_, i) => (
+                        <div key={i} className="glass-card border border-card-border rounded-soft p-4">
+                          <div className="flex items-center gap-3">
+                            <Skeleton className="h-14 w-14 rounded-full bg-white/10" />
+                            <div className="min-w-0 flex-1 space-y-2">
+                              <Skeleton className="h-4 w-3/4 bg-white/10" />
+                              <Skeleton className="h-3 w-1/2 bg-white/10" />
+                              <Skeleton className="h-3 w-2/5 bg-white/10" />
+                            </div>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  ) : (
+                    <SquadList
+                      players={rosterPlayers}
+                      onPlayerClick={setSelectedPlayer}
+                      onRatePlayer={(id) => { const p = rosterPlayers.find((x) => x.id === id); if (p) setSelectedPlayer(p); }}
+                      getPhotoUrl={(p) => p.photoUrl ?? '/assets/players/placeholder.png'}
+                    />
+                  )}
+                </div>
+              </>
+            )}
 
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
               <Achievements />
@@ -594,17 +668,6 @@ export default function MeuTimePage() {
                 />
               )}
             </div>
-          </TabsContent>
-
-          <TabsContent value="squad" className="space-y-6">
-            <SquadList
-              players={rosterPlayers}
-              onPlayerClick={(player: Player) => setSelectedPlayer(player)}
-              onRatePlayer={(playerId: string) => {
-                const player = rosterPlayers.find(p => p.id === playerId);
-                if (player) setSelectedPlayer(player);
-              }}
-            />
           </TabsContent>
 
           <TabsContent value="performance" className="space-y-6">

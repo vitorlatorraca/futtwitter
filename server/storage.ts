@@ -1,5 +1,5 @@
 import { db } from "./db";
-import { eq, and, desc, or, ilike, sql } from "drizzle-orm";
+import { eq, and, desc, or, ilike, sql, inArray } from "drizzle-orm";
 import { TEAMS_DATA } from "./teams-data";
 import {
   users,
@@ -10,10 +10,13 @@ import {
   matchPlayers,
   news,
   newsInteractions,
+  comments,
+  commentLikes,
   playerRatings,
   badges,
   userBadges,
   notifications,
+  userLineups,
   type User,
   type InsertUser,
   type Journalist,
@@ -28,6 +31,7 @@ import {
   type InsertNewsServer,
   type NewsInteraction,
   type InsertNewsInteraction,
+  type Comment,
   type PlayerRating,
   type InsertPlayerRating,
   type Badge,
@@ -70,9 +74,13 @@ export interface IStorage {
   getMatchesByTeam(teamId: string, limit?: number): Promise<Match[]>;
   createMatch(match: InsertMatch): Promise<Match>;
   updateTeamStandings(): Promise<void>;
+  getLastMatchWithRatings(teamId: string): Promise<{
+    match: { id: string; opponent: string; matchDate: Date; teamScore: number; opponentScore: number; isHomeMatch: boolean; competition: string | null; isMock: boolean };
+    players: Array<{ playerId: string; name: string; shirtNumber: number | null; rating: number; minutes: number | null }>;
+  } | null>;
 
   // News
-  getAllNews(options?: { teamId?: string; limit?: number }): Promise<any[]>;
+  getAllNews(options?: { teamId?: string; limit?: number; scope?: "all" | "team" | "europe"; userTeamId?: string }): Promise<any[]>;
   getNewsById(id: string): Promise<News | undefined>;
   getNewsByJournalist(journalistId: string): Promise<News[]>;
   createNews(news: InsertNewsServer): Promise<News>;
@@ -85,10 +93,29 @@ export interface IStorage {
   deleteNewsInteraction(userId: string, newsId: string): Promise<void>;
   recalculateNewsCounts(newsId: string): Promise<void>;
 
+  // Comments (on news)
+  getComment(commentId: string): Promise<Comment | undefined>;
+  createComment(params: { newsId: string; userId: string; content: string }): Promise<Comment>;
+  listCommentsByNewsId(newsId: string, viewerUserId?: string | null): Promise<Array<{
+    id: string;
+    content: string;
+    createdAt: Date;
+    author: { name: string; avatarUrl: string | null };
+    likeCount: number;
+    viewerHasLiked: boolean;
+  }>>;
+  hasCommentLike(commentId: string, userId: string): Promise<boolean>;
+  addCommentLike(commentId: string, userId: string): Promise<void>;
+  removeCommentLike(commentId: string, userId: string): Promise<void>;
+
   // Player Ratings
   createPlayerRating(rating: InsertPlayerRating): Promise<PlayerRating>;
   getPlayerRatings(playerId: string): Promise<PlayerRating[]>;
   getPlayerAverageRating(playerId: string): Promise<number | null>;
+
+  // User Lineups
+  getUserLineup(userId: string, teamId: string): Promise<any | undefined>;
+  upsertUserLineup(userId: string, teamId: string, formation: string, slots: Array<{ slotIndex: number; playerId: string }>): Promise<any>;
 
   // Admin
   searchUsersForAdmin(
@@ -261,11 +288,15 @@ export class DatabaseStorage implements IStorage {
 
   // Players
   async getPlayersByTeam(teamId: string): Promise<Player[]> {
-    const positionGroupOrder = sql<number>`case
+    const sectorOrder = sql<number>`case
+      when coalesce(${players.sector}, '') = 'GK' then 1
+      when coalesce(${players.sector}, '') = 'DEF' then 2
+      when coalesce(${players.sector}, '') = 'MID' then 3
+      when coalesce(${players.sector}, '') = 'FWD' then 4
       when ${players.position} = 'Goalkeeper' then 1
-      when ${players.position} in ('Centre-Back', 'Left-Back', 'Right-Back') then 2
+      when ${players.position} in ('Centre-Back', 'Left-Back', 'Right-Back', 'Wing-Back') then 2
       when ${players.position} in ('Defensive Midfield', 'Central Midfield', 'Attacking Midfield') then 3
-      when ${players.position} in ('Left Winger', 'Right Winger', 'Centre-Forward') then 4
+      when ${players.position} in ('Left Winger', 'Right Winger', 'Centre-Forward', 'Second Striker') then 4
       else 9
     end`;
 
@@ -274,7 +305,7 @@ export class DatabaseStorage implements IStorage {
       .from(players)
       .where(eq(players.teamId, teamId))
       .orderBy(
-        positionGroupOrder,
+        sectorOrder,
         players.position,
         sql`${players.shirtNumber} is null`,
         players.shirtNumber,
@@ -300,6 +331,63 @@ export class DatabaseStorage implements IStorage {
       .where(eq(matches.teamId, teamId))
       .orderBy(desc(matches.matchDate))
       .limit(limit);
+  }
+
+  async getLastMatchWithRatings(teamId: string): Promise<{
+    match: { id: string; opponent: string; matchDate: Date; teamScore: number; opponentScore: number; isHomeMatch: boolean; competition: string | null; isMock: boolean };
+    players: Array<{ playerId: string; name: string; shirtNumber: number | null; rating: number; minutes: number | null }>;
+  } | null> {
+    const [lastMatch] = await db
+      .select()
+      .from(matches)
+      .where(and(eq(matches.teamId, teamId), eq(matches.status, 'COMPLETED')))
+      .orderBy(desc(matches.matchDate))
+      .limit(1);
+    if (!lastMatch || lastMatch.teamScore === null || lastMatch.opponentScore === null) return null;
+
+    const mpList = await db
+      .select({
+        playerId: matchPlayers.playerId,
+        rating: matchPlayers.sofascoreRating,
+        minutes: matchPlayers.minutesPlayed,
+        wasStarter: matchPlayers.wasStarter,
+        name: players.name,
+        shirtNumber: players.shirtNumber,
+      })
+      .from(matchPlayers)
+      .innerJoin(players, eq(matchPlayers.playerId, players.id))
+      .where(eq(matchPlayers.matchId, lastMatch.id));
+
+    const sorted = mpList
+      .filter((m) => m.rating != null)
+      .sort((a, b) => {
+        if (a.wasStarter && !b.wasStarter) return -1;
+        if (!a.wasStarter && b.wasStarter) return 1;
+        const minA = a.minutes ?? 0;
+        const minB = b.minutes ?? 0;
+        if (minB !== minA) return minB - minA;
+        return (b.rating ?? 0) - (a.rating ?? 0);
+      });
+
+    return {
+      match: {
+        id: lastMatch.id,
+        opponent: lastMatch.opponent,
+        matchDate: lastMatch.matchDate,
+        teamScore: lastMatch.teamScore,
+        opponentScore: lastMatch.opponentScore,
+        isHomeMatch: lastMatch.isHomeMatch,
+        competition: lastMatch.competition ?? null,
+        isMock: lastMatch.isMock ?? false,
+      },
+      players: sorted.map((p) => ({
+        playerId: p.playerId,
+        name: p.name,
+        shirtNumber: p.shirtNumber,
+        rating: p.rating as number,
+        minutes: p.minutes,
+      })),
+    };
   }
 
   async createMatch(insertMatch: InsertMatch): Promise<Match> {
@@ -410,18 +498,30 @@ export class DatabaseStorage implements IStorage {
   }
 
   // News
-  async getAllNews(options?: { teamId?: string; limit?: number }): Promise<any[]> {
+  async getAllNews(options?: { teamId?: string; limit?: number; scope?: "all" | "team" | "europe"; userTeamId?: string }): Promise<any[]> {
     const teamId = options?.teamId;
     const limit = options?.limit ?? 50;
+    const scope = options?.scope;
+    const userTeamId = options?.userTeamId;
 
     const conditions = [eq(news.isPublished, true)];
-    if (teamId) conditions.push(eq(news.teamId, teamId));
+
+    if (scope === "team") {
+      conditions.push(eq(news.scope, "TEAM"));
+      if (userTeamId) conditions.push(eq(news.teamId, userTeamId));
+    } else if (scope === "europe") {
+      conditions.push(eq(news.scope, "EUROPE"));
+    } else if (scope !== "all") {
+      // Legacy: filter by teamId when no scope (e.g. old frontend)
+      if (teamId) conditions.push(eq(news.teamId, teamId));
+    }
 
     const rows = await db
       .select({
         id: news.id,
         journalistId: news.journalistId,
         teamId: news.teamId,
+        scope: news.scope,
         title: news.title,
         content: news.content,
         imageUrl: news.imageUrl,
@@ -434,7 +534,7 @@ export class DatabaseStorage implements IStorage {
         journalistUserName: users.name,
       })
       .from(news)
-      .innerJoin(teams, eq(news.teamId, teams.id))
+      .leftJoin(teams, eq(news.teamId, teams.id))
       .innerJoin(journalists, eq(news.journalistId, journalists.id))
       .innerJoin(users, eq(journalists.userId, users.id))
       .where(and(...conditions))
@@ -443,6 +543,7 @@ export class DatabaseStorage implements IStorage {
 
     return rows.map(({ journalistUserName, ...r }) => ({
       ...r,
+      team: r.team ?? null,
       journalist: {
         id: r.journalistId,
         user: { name: journalistUserName },
@@ -538,6 +639,109 @@ export class DatabaseStorage implements IStorage {
         updatedAt: new Date()
       })
       .where(eq(news.id, newsId));
+  }
+
+  // Comments (on news)
+  async getComment(commentId: string): Promise<Comment | undefined> {
+    const [c] = await db.select().from(comments).where(eq(comments.id, commentId)).limit(1);
+    return c ?? undefined;
+  }
+
+  async createComment(params: { newsId: string; userId: string; content: string }): Promise<Comment> {
+    const inserted = await db
+      .insert(comments)
+      .values({
+        newsId: params.newsId,
+        userId: params.userId,
+        content: params.content.trim(),
+        isApproved: true,
+      })
+      .returning();
+    const comment = inserted[0];
+    if (!comment) {
+      throw new Error('createComment: insert returned no row');
+    }
+    return comment;
+  }
+
+  async listCommentsByNewsId(
+    newsId: string,
+    viewerUserId?: string | null
+  ): Promise<Array<{
+    id: string;
+    content: string;
+    createdAt: Date;
+    author: { name: string; avatarUrl: string | null };
+    likeCount: number;
+    viewerHasLiked: boolean;
+  }>> {
+    const commentRows = await db
+      .select({
+        id: comments.id,
+        content: comments.content,
+        createdAt: comments.createdAt,
+        authorName: users.name,
+        authorAvatarUrl: users.avatarUrl,
+      })
+      .from(comments)
+      .innerJoin(users, eq(comments.userId, users.id))
+      .where(eq(comments.newsId, newsId))
+      .orderBy(desc(comments.createdAt));
+
+    const commentIds = commentRows.map((r) => r.id);
+    const likeCounts =
+      commentIds.length === 0
+        ? []
+        : await db
+            .select({
+              commentId: commentLikes.commentId,
+              count: sql<number>`count(*)::int`,
+            })
+            .from(commentLikes)
+            .where(inArray(commentLikes.commentId, commentIds))
+            .groupBy(commentLikes.commentId);
+
+    const countByCommentId = new Map(likeCounts.map((r) => [r.commentId, r.count]));
+
+    let viewerLikedCommentIds = new Set<string>();
+    if (viewerUserId) {
+      const viewerLikes = await db
+        .select({ commentId: commentLikes.commentId })
+        .from(commentLikes)
+        .where(eq(commentLikes.userId, viewerUserId));
+      viewerLikedCommentIds = new Set(viewerLikes.map((r) => r.commentId));
+    }
+
+    return commentRows.map((r) => ({
+      id: r.id,
+      content: r.content,
+      createdAt: r.createdAt,
+      author: { name: r.authorName, avatarUrl: r.authorAvatarUrl ?? null },
+      likeCount: countByCommentId.get(r.id) ?? 0,
+      viewerHasLiked: viewerLikedCommentIds.has(r.id),
+    }));
+  }
+
+  async hasCommentLike(commentId: string, userId: string): Promise<boolean> {
+    const [row] = await db
+      .select()
+      .from(commentLikes)
+      .where(and(eq(commentLikes.commentId, commentId), eq(commentLikes.userId, userId)))
+      .limit(1);
+    return !!row;
+  }
+
+  async addCommentLike(commentId: string, userId: string): Promise<void> {
+    await db
+      .insert(commentLikes)
+      .values({ commentId, userId })
+      .onConflictDoNothing({ target: [commentLikes.commentId, commentLikes.userId] });
+  }
+
+  async removeCommentLike(commentId: string, userId: string): Promise<void> {
+    await db
+      .delete(commentLikes)
+      .where(and(eq(commentLikes.commentId, commentId), eq(commentLikes.userId, userId)));
   }
 
   // Player Ratings
@@ -729,6 +933,45 @@ export class DatabaseStorage implements IStorage {
       .from(notifications)
       .where(and(eq(notifications.userId, userId), eq(notifications.isRead, false)));
     return result.length;
+  }
+
+  // User Lineups
+  async getUserLineup(userId: string, teamId: string): Promise<any | undefined> {
+    const [row] = await db
+      .select()
+      .from(userLineups)
+      .where(and(eq(userLineups.userId, userId), eq(userLineups.teamId, teamId)))
+      .limit(1);
+    return row || undefined;
+  }
+
+  async upsertUserLineup(
+    userId: string,
+    teamId: string,
+    formation: string,
+    slots: Array<{ slotIndex: number; playerId: string }>,
+  ): Promise<any> {
+    const now = new Date();
+    const [existing] = await db
+      .select()
+      .from(userLineups)
+      .where(and(eq(userLineups.userId, userId), eq(userLineups.teamId, teamId)))
+      .limit(1);
+
+    const payload = { formation, slots, updatedAt: now };
+    if (existing) {
+      const [updated] = await db
+        .update(userLineups)
+        .set(payload)
+        .where(eq(userLineups.id, existing.id))
+        .returning();
+      return updated!;
+    }
+    const [inserted] = await db
+      .insert(userLineups)
+      .values({ userId, teamId, formation, slots })
+      .returning();
+    return inserted!;
   }
 }
 

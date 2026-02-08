@@ -36,5 +36,14 @@ export default defineConfig({
       strict: true,
       deny: ["**/.*"],
     },
+    // When running client separately (e.g. npm run dev:client), proxy /api to backend (e.g. PORT 5002)
+    proxy: process.env.VITE_API_URL
+      ? undefined
+      : {
+          "/api": {
+            target: "http://127.0.0.1:5002",
+            changeOrigin: true,
+          },
+        },
   },
 });

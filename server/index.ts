@@ -121,8 +121,9 @@ app.use((req, res, next) => {
     const message = err.message || "Internal Server Error";
 
     res.status(status).json({ message });
-    // Do not crash the process after responding (production safety)
-    console.error(err);
+    // Log full stack in dev so we can see the real cause of 500s
+    console.error("[express] Error handler:", message);
+    if (err.stack) console.error(err.stack);
   });
 
   // importantly only setup vite in development and after
@@ -141,6 +142,18 @@ app.use((req, res, next) => {
   // In production (Railway), bind to 0.0.0.0 to accept external connections
   // In development, use 127.0.0.1 for localhost only
   const host = process.env.NODE_ENV === 'production' ? '0.0.0.0' : '127.0.0.1';
+
+  server.on('error', (err: NodeJS.ErrnoException) => {
+    if (err.code === 'EADDRINUSE') {
+      console.error('\n[express] Porta ' + port + ' em uso. Nenhum processo pode escutar nela.');
+      console.error('  Diagnosticar (ver PID na última coluna):  netstat -ano | findstr :' + port);
+      console.error('  Matar processo:  taskkill /PID <PID> /F');
+      console.error('  Ou rode:  npm run kill:5000\n');
+      process.exit(1);
+    }
+    throw err;
+  });
+
   server.listen({
     port,
     host,

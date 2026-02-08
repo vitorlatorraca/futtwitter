@@ -6,46 +6,27 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Input } from '@/components/ui/input';
 import { Users, Filter, Search, Star } from 'lucide-react';
 import type { Player } from '@shared/schema';
+import { positionToSector, SECTOR_LABELS } from '@shared/player-sector';
+
+type PlayerSector = 'GK' | 'DEF' | 'MID' | 'FWD';
 
 interface SquadListProps {
   players: Player[];
   onPlayerClick?: (player: Player) => void;
   onRatePlayer?: (playerId: string) => void;
+  /** When true, player cards are draggable (for lineup builder) */
+  draggable?: boolean;
+  /** Photo URL resolver */
+  getPhotoUrl?: (p: Player) => string;
 }
 
 type SortOption = 'overall' | 'age' | 'name' | 'shirt';
-type PositionFilter = 'ALL' | 'GK' | 'DF' | 'MF' | 'FW';
+type PositionFilter = 'ALL' | PlayerSector;
 
-const groupLabels: Record<Exclude<PositionFilter, 'ALL'>, string> = {
-  GK: 'Goleiros',
-  DF: 'Defensores',
-  MF: 'Meio-campistas',
-  FW: 'Atacantes',
-};
+const groupLabels: Record<PlayerSector, string> = SECTOR_LABELS;
 
-function getPositionGroup(position: string): Exclude<PositionFilter, 'ALL'> {
-  switch (position) {
-    case 'Goalkeeper':
-      return 'GK';
-    case 'Centre-Back':
-    case 'Left-Back':
-    case 'Right-Back':
-      return 'DF';
-    case 'Defensive Midfield':
-    case 'Central Midfield':
-    case 'Attacking Midfield':
-      return 'MF';
-    case 'Left Winger':
-    case 'Right Winger':
-    case 'Centre-Forward':
-      return 'FW';
-    default:
-      // Fallback: best-effort guess by keyword
-      if (position.toLowerCase().includes('midfield')) return 'MF';
-      if (position.toLowerCase().includes('keeper')) return 'GK';
-      if (position.toLowerCase().includes('back')) return 'DF';
-      return 'FW';
-  }
+function getPositionGroup(position: string): PlayerSector {
+  return positionToSector(position);
 }
 
 // TODO: Calcular overall baseado em ratings quando disponível
@@ -56,7 +37,11 @@ const calculateOverall = (player: Player): number => {
   return 70 + (shirtNumber % 30);
 };
 
-export function SquadList({ players, onPlayerClick, onRatePlayer }: SquadListProps) {
+function getPhotoUrlFallback(p: Player): string {
+  return p.photoUrl ?? '/assets/players/placeholder.png';
+}
+
+export function SquadList({ players, onPlayerClick, onRatePlayer, draggable, getPhotoUrl = getPhotoUrlFallback }: SquadListProps) {
   const [searchQuery, setSearchQuery] = useState('');
   const [positionFilter, setPositionFilter] = useState<PositionFilter>('ALL');
   const [sortBy, setSortBy] = useState<SortOption>('shirt');
@@ -110,9 +95,7 @@ export function SquadList({ players, onPlayerClick, onRatePlayer }: SquadListPro
     const grouped: Record<string, Player[]> = {};
     filteredAndSortedPlayers.forEach((player) => {
       const group = getPositionGroup(player.position);
-      if (!grouped[group]) {
-        grouped[group] = [];
-      }
+      if (!grouped[group]) grouped[group] = [];
       grouped[group].push(player);
     });
     return grouped;
@@ -159,9 +142,9 @@ export function SquadList({ players, onPlayerClick, onRatePlayer }: SquadListPro
             <SelectContent>
               <SelectItem value="ALL">Todas as Posições</SelectItem>
               <SelectItem value="GK">Goleiros</SelectItem>
-              <SelectItem value="DF">Defensores</SelectItem>
-              <SelectItem value="MF">Meio-campistas</SelectItem>
-              <SelectItem value="FW">Atacantes</SelectItem>
+              <SelectItem value="DEF">Defensores</SelectItem>
+              <SelectItem value="MID">Meio-campistas</SelectItem>
+              <SelectItem value="FWD">Atacantes</SelectItem>
             </SelectContent>
           </Select>
           <Select value={sortBy} onValueChange={(v: string) => setSortBy(v as SortOption)}>
@@ -205,17 +188,27 @@ export function SquadList({ players, onPlayerClick, onRatePlayer }: SquadListPro
                     return (
                       <div
                         key={player.id}
-                        className="relative"
+                        className={draggable ? 'relative cursor-grab active:cursor-grabbing' : 'relative'}
                         onClick={() => onPlayerClick?.(player)}
+                        draggable={!!draggable}
+                        onDragStart={(e) => {
+                          if (draggable) {
+                            e.dataTransfer.setData('playerId', player.id);
+                            e.dataTransfer.effectAllowed = 'copy';
+                          }
+                        }}
                       >
-                        <Card className="overflow-hidden hover:shadow-lg transition-all cursor-pointer border-card-border hover:border-primary/50">
+                        <Card className={`overflow-hidden hover:shadow-lg transition-all border-card-border hover:border-primary/50 ${draggable ? 'cursor-grab' : 'cursor-pointer'}`}>
                           <CardContent className="p-4 space-y-3">
                             <div className="flex items-start gap-3">
                               <div className="relative flex-shrink-0">
                                 <div className="w-16 h-16 rounded-full bg-muted flex items-center justify-center overflow-hidden border-2 border-card-border">
-                                  <div className="text-xl font-bold text-muted-foreground">
-                                    {shirtNumberLabel}
-                                  </div>
+                                  <img
+                                    src={getPhotoUrl(player)}
+                                    alt=""
+                                    className="w-full h-full object-cover"
+                                    onError={(e) => { (e.target as HTMLImageElement).src = '/assets/players/placeholder.png'; }}
+                                  />
                                 </div>
                                 <Badge className="absolute -bottom-1 -right-1 h-6 w-6 rounded-full p-0 flex items-center justify-center text-xs font-bold border-2 border-background">
                                   {shirtNumberLabel}

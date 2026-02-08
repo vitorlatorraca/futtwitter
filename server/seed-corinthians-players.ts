@@ -3,6 +3,7 @@ import { db } from "./db";
 import { players as playersTable, teams } from "@shared/schema";
 import { eq, ilike, or } from "drizzle-orm";
 import { TEAMS_DATA } from "./teams-data";
+import { positionToSector, slugify } from "@shared/player-sector";
 
 type RawPlayer = {
   shirtNumber: number | null;
@@ -118,6 +119,8 @@ async function seedCorinthiansPlayers() {
   let upserts = 0;
   for (const p of players) {
     const marketValueEur = parseMarketValueEur(p.marketValueRaw);
+    const sector = positionToSector(p.position);
+    const slug = slugify(p.name);
 
     await db
       .insert(playersTable)
@@ -131,6 +134,8 @@ async function seedCorinthiansPlayers() {
         nationalitySecondary: p.nationalitySecondary,
         marketValueEur,
         fromClub: p.fromClub,
+        sector,
+        slug,
       })
       .onConflictDoUpdate({
         target: [playersTable.teamId, playersTable.name, playersTable.birthDate],
@@ -141,6 +146,8 @@ async function seedCorinthiansPlayers() {
           nationalitySecondary: p.nationalitySecondary,
           marketValueEur,
           fromClub: p.fromClub,
+          sector,
+          slug,
           updatedAt: now,
         },
       });

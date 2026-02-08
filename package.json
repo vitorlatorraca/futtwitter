@@ -7,7 +7,9 @@
     "dev": "npm run db:push && npx cross-env NODE_ENV=development PORT=5000 npx tsx server/index.ts",
     "dev:server": "npm run db:push && npx cross-env NODE_ENV=development PORT=5000 npx tsx server/index.ts",
     "dev:client": "vite --config vite.config.ts",
-    "dev:all": "npx concurrently \"npm run dev:server\" \"npm run dev:client\"",
+    "dev:all": "npm run dev:server",
+    "kill:5000": "powershell -NoProfile -Command \"$lines = netstat -ano | findstr ':5000' | findstr 'LISTENING'; if ($lines) { $lines | ForEach-Object { $p = $_.Trim().Split()[-1]; if ($p -match '^\\d+$') { taskkill /PID $p /F 2>$null } } }; exit 0\"",
+    "dev:clean": "npm run kill:5000 && npm run dev:server",
     "build": "vite build && esbuild server/index.ts --platform=node --packages=external --bundle --format=esm --outdir=dist",
     "start": "cross-env NODE_ENV=production node dist/index.js",
     "check": "tsc -p tsconfig.check.json",
@@ -15,7 +17,14 @@
     "db:prepare": "drizzle-kit push",
     "test:maurinho": "npx cross-env NODE_ENV=development npx tsx server/test-maurinho-approval.ts",
     "dev:promote:vitor": "cross-env NODE_ENV=development tsx server/dev-promote-vitor-journalist.ts",
-    "dev:verify:news-feed": "npx cross-env NODE_ENV=development npx tsx server/dev-verify-news-feed.ts"
+    "dev:verify:news-feed": "npx cross-env NODE_ENV=development npx tsx server/dev-verify-news-feed.ts",
+    "seed:corinthians": "npx tsx server/seed-corinthians-players.ts",
+    "seed:corinthians-last-match": "npx tsx server/seed-corinthians-last-match.ts",
+    "seed:palmeiras": "npx tsx server/seed-palmeiras-players.ts",
+    "fetch:corinthians-photos": "npx tsx server/scripts/fetch-corinthians-photos.ts",
+    "fetch:palmeiras-photos": "npx tsx server/scripts/fetch-team-photos.ts --teamId=palmeiras --teamSlug=palmeiras",
+    "fetch:corinthians-stadium": "npx tsx server/scripts/fetch-corinthians-stadium.ts",
+    "db:backfill-news-scope": "npx tsx server/scripts/backfill-news-scope.ts"
   },
   "dependencies": {
     "@hookform/resolvers": "^3.10.0",

@@ -26,6 +26,8 @@ export const newsCategoryEnum = pgEnum("news_category", ["NEWS", "ANALYSIS", "BA
 export const interactionTypeEnum = pgEnum("interaction_type", ["LIKE", "DISLIKE"]);
 export const journalistStatusEnum = pgEnum("journalist_status", ["PENDING", "APPROVED", "REJECTED", "SUSPENDED"]);
 export const notificationTypeEnum = pgEnum("notification_type", ["NEW_NEWS", "UPCOMING_MATCH", "BADGE_EARNED", "MATCH_RESULT"]);
+/** Feed scope: ALL = Todos, TEAM = Meu time (teamId required), EUROPE = Aba Europa */
+export const postScopeEnum = pgEnum("post_scope", ["ALL", "TEAM", "EUROPE"]);
 
 // ============================================
 // TABLES
@@ -88,6 +90,9 @@ export const players = pgTable(
     nationalitySecondary: text("nationality_secondary"),
     marketValueEur: integer("market_value_eur"),
     fromClub: text("from_club"),
+    photoUrl: text("photo_url"),
+    sector: varchar("sector", { length: 10 }),
+    slug: text("slug"),
     createdAt: timestamp("created_at").notNull().defaultNow(),
     updatedAt: timestamp("updated_at").notNull().defaultNow(),
   },
@@ -117,6 +122,8 @@ export const matches = pgTable("matches", {
   stadium: varchar("stadium", { length: 255 }),
   championshipRound: integer("championship_round"),
   status: varchar("status", { length: 50 }).notNull().default("SCHEDULED"),
+  competition: text("competition"),
+  isMock: boolean("is_mock").notNull().default(false),
   createdAt: timestamp("created_at").notNull().defaultNow(),
   updatedAt: timestamp("updated_at").notNull().defaultNow(),
 });
@@ -128,13 +135,15 @@ export const matchPlayers = pgTable("match_players", {
   participated: boolean("participated").notNull().default(true),
   wasStarter: boolean("was_starter").notNull().default(false),
   minutesPlayed: integer("minutes_played"),
+  sofascoreRating: real("sofascore_rating"),
   createdAt: timestamp("created_at").notNull().defaultNow(),
 });
 
 export const news = pgTable("news", {
   id: varchar("id", { length: 36 }).primaryKey().default(sql`gen_random_uuid()`),
   journalistId: varchar("journalist_id", { length: 36 }).notNull(),
-  teamId: varchar("team_id", { length: 36 }).notNull(),
+  teamId: varchar("team_id", { length: 36 }),
+  scope: postScopeEnum("scope").notNull().default("ALL"),
   title: varchar("title", { length: 200 }).notNull(),
   content: text("content").notNull(),
   imageUrl: text("image_url"),
@@ -169,12 +178,36 @@ export const playerRatings = pgTable("player_ratings", {
 
 export const comments = pgTable("comments", {
   id: varchar("id", { length: 36 }).primaryKey().default(sql`gen_random_uuid()`),
-  userId: varchar("user_id", { length: 36 }).notNull(),
+  newsId: varchar("news_id", { length: 36 })
+    .notNull()
+    .references(() => news.id, { onDelete: "cascade" }),
+  userId: varchar("user_id", { length: 36 })
+    .notNull()
+    .references(() => users.id, { onDelete: "cascade" }),
   content: text("content").notNull(),
-  isApproved: boolean("is_approved").notNull().default(false),
+  isApproved: boolean("is_approved").notNull().default(true),
   createdAt: timestamp("created_at").notNull().defaultNow(),
   updatedAt: timestamp("updated_at").notNull().defaultNow(),
 });
+
+export const commentLikes = pgTable(
+  "comment_likes",
+  {
+    id: varchar("id", { length: 36 }).primaryKey().default(sql`gen_random_uuid()`),
+    commentId: varchar("comment_id", { length: 36 })
+      .notNull()
+      .references(() => comments.id, { onDelete: "cascade" }),
+    userId: varchar("user_id", { length: 36 })
+      .notNull()
+      .references(() => users.id, { onDelete: "cascade" }),
+    createdAt: timestamp("created_at").notNull().defaultNow(),
+  },
+  (t) => ({
+    commentUserUnique: uniqueIndex("comment_likes_comment_user_unique").on(t.commentId, t.userId),
+    commentIdIdx: index("comment_likes_comment_id_idx").on(t.commentId),
+    userIdIdx: index("comment_likes_user_id_idx").on(t.userId),
+  })
+);
 
 export const badges = pgTable("badges", {
   id: varchar("id", { length: 36 }).primaryKey().default(sql`gen_random_uuid()`),
@@ -203,6 +236,26 @@ export const notifications = pgTable("notifications", {
   isRead: boolean("is_read").notNull().default(false),
   createdAt: timestamp("created_at").notNull().defaultNow(),
 });
+
+export const userLineups = pgTable(
+  "user_lineups",
+  {
+    id: varchar("id", { length: 36 }).primaryKey().default(sql`gen_random_uuid()`),
+    userId: varchar("user_id", { length: 36 })
+      .notNull()
+      .references(() => users.id),
+    teamId: varchar("team_id", { length: 36 })
+      .notNull()
+      .references(() => teams.id),
+    formation: varchar("formation", { length: 20 }).notNull(),
+    slots: json("slots").$type<Array<{ slotIndex: number; playerId: string }>>().notNull(),
+    createdAt: timestamp("created_at").notNull().defaultNow(),
+    updatedAt: timestamp("updated_at").notNull().defaultNow(),
+  },
+  (t) => ({
+    userTeamUnique: uniqueIndex("user_lineups_user_team_unique").on(t.userId, t.teamId),
+  }),
+);
 
 // Session store table (connect-pg-simple)
 // Kept in schema to prevent drizzle-kit push from dropping it.
@@ -236,6 +289,7 @@ export const usersRelations = relations(users, ({ one, many }) => ({
   comments: many(comments),
   userBadges: many(userBadges),
   notifications: many(notifications),
+  userLineups: many(userLineups),
 }));
 
 export const journalistsRelations = relations(journalists, ({ one, many }) => ({
@@ -251,6 +305,7 @@ export const teamsRelations = relations(teams, ({ many }) => ({
   players: many(players),
   news: many(news),
   matches: many(matches),
+  userLineups: many(userLineups),
 }));
 
 export const playersRelations = relations(players, ({ one, many }) => ({
@@ -292,6 +347,7 @@ export const newsRelations = relations(news, ({ one, many }) => ({
     references: [teams.id],
   }),
   interactions: many(newsInteractions),
+  comments: many(comments),
 }));
 
 export const newsInteractionsRelations = relations(newsInteractions, ({ one }) => ({
@@ -320,10 +376,37 @@ export const playerRatingsRelations = relations(playerRatings, ({ one }) => ({
   }),
 }));
 
-export const commentsRelations = relations(comments, ({ one }) => ({
+export const commentsRelations = relations(comments, ({ one, many }) => ({
   user: one(users, {
     fields: [comments.userId],
     references: [users.id],
+  }),
+  news: one(news, {
+    fields: [comments.newsId],
+    references: [news.id],
+  }),
+  likes: many(commentLikes),
+}));
+
+export const commentLikesRelations = relations(commentLikes, ({ one }) => ({
+  comment: one(comments, {
+    fields: [commentLikes.commentId],
+    references: [comments.id],
+  }),
+  user: one(users, {
+    fields: [commentLikes.userId],
+    references: [users.id],
+  }),
+}));
+
+export const userLineupsRelations = relations(userLineups, ({ one }) => ({
+  user: one(users, {
+    fields: [userLineups.userId],
+    references: [users.id],
+  }),
+  team: one(teams, {
+    fields: [userLineups.teamId],
+    references: [teams.id],
   }),
 }));
 
@@ -379,6 +462,7 @@ export const selectMatchSchema = createSelectSchema(matches);
 export const insertNewsSchema = createInsertSchema(news, {
   title: z.string().min(10, "Título deve ter pelo menos 10 caracteres").max(200, "Título não pode ter mais de 200 caracteres"),
   content: z.string().min(50, "Conteúdo deve ter pelo menos 50 caracteres").max(1000, "Conteúdo não pode ter mais de 1000 caracteres"),
+  scope: z.enum(["ALL", "TEAM", "EUROPE"]).optional().default("ALL"),
 }).omit({
   id: true,
   journalistId: true,
@@ -405,6 +489,16 @@ export const insertPlayerRatingSchema = createInsertSchema(playerRatings, {
 
 export const selectPlayerRatingSchema = createSelectSchema(playerRatings);
 
+// Comment schemas (newsId and userId set server-side)
+export const insertCommentSchema = createInsertSchema(comments, {
+  content: z.string().min(1, "Comentário não pode ser vazio").max(2000, "Comentário muito longo"),
+}).omit({ id: true, newsId: true, userId: true, isApproved: true, createdAt: true, updatedAt: true });
+export const selectCommentSchema = createSelectSchema(comments);
+
+// Comment like schemas
+export const insertCommentLikeSchema = createInsertSchema(commentLikes).omit({ id: true, createdAt: true });
+export const selectCommentLikeSchema = createSelectSchema(commentLikes);
+
 // Badge schemas
 export const insertBadgeSchema = createInsertSchema(badges).omit({ id: true, createdAt: true });
 export const selectBadgeSchema = createSelectSchema(badges);
@@ -416,6 +510,13 @@ export const selectUserBadgeSchema = createSelectSchema(userBadges);
 // Notification schemas
 export const insertNotificationSchema = createInsertSchema(notifications).omit({ id: true, createdAt: true });
 export const selectNotificationSchema = createSelectSchema(notifications);
+
+// User lineup schemas
+export const insertUserLineupSchema = createInsertSchema(userLineups, {
+  formation: z.string().min(1, "Formação é obrigatória"),
+  slots: z.array(z.object({ slotIndex: z.number(), playerId: z.string() })),
+}).omit({ id: true, createdAt: true, updatedAt: true });
+export const selectUserLineupSchema = createSelectSchema(userLineups);
 
 // ============================================
 // TYPES
@@ -448,6 +549,10 @@ export type PlayerRating = typeof playerRatings.$inferSelect;
 export type InsertPlayerRating = z.infer<typeof insertPlayerRatingSchema>;
 
 export type Comment = typeof comments.$inferSelect;
+export type InsertComment = z.infer<typeof insertCommentSchema>;
+
+export type CommentLike = typeof commentLikes.$inferSelect;
+export type InsertCommentLike = z.infer<typeof insertCommentLikeSchema>;
 
 export type Badge = typeof badges.$inferSelect;
 export type InsertBadge = z.infer<typeof insertBadgeSchema>;
@@ -457,3 +562,6 @@ export type InsertUserBadge = z.infer<typeof insertUserBadgeSchema>;
 
 export type Notification = typeof notifications.$inferSelect;
 export type InsertNotification = z.infer<typeof insertNotificationSchema>;
+
+export type UserLineup = typeof userLineups.$inferSelect;
+export type InsertUserLineup = z.infer<typeof insertUserLineupSchema>;
