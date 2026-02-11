@@ -9,21 +9,20 @@ import { NewsCard } from '@/components/news-card';
 import { StadiumCard } from '@/components/team/stadium-card';
 import {
   getClubConfig,
-  resolveTeamStats,
   TeamHeaderCard,
   TeamTabs,
-  TeamTrophies,
 } from '@/features/meu-time';
-import { ClubKits } from '@/components/team/club-kits';
 import { SquadList } from '@/components/team/squad-list';
 import { FormationView } from '@/components/team/formation-view';
 import { PerformanceChart } from '@/components/team/performance-chart';
 import { LeagueTable } from '@/components/team/league-table';
-import { ClubHistory } from '@/components/team/club-history';
-import { Achievements } from '@/components/team/achievements';
 import { SocialIntegration } from '@/components/team/social-integration';
-import { CorinthiansClubSection } from '@/components/team/corinthians-club-section';
 import { LastMatchRatings } from '@/components/team/last-match-ratings';
+import { FeaturedMatch, type FeaturedMatchData } from '@/components/team/featured-match';
+import { NextMatchCard } from '@/components/team/next-match-card';
+import { RecentForm } from '@/components/team/recent-form';
+import { StandingsSummary } from '@/components/team/standings-summary';
+import { FanRatings, type FanRatingPlayer } from '@/components/team/fan-ratings';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
 import { Slider } from '@/components/ui/slider';
 import { Textarea } from '@/components/ui/textarea';
@@ -172,8 +171,44 @@ export default function MeuTimePage() {
     retry: false,
   });
 
-  const lastMatchQuery = useQuery<{ match: { opponent: string; matchDate: string; scoreFor: number; scoreAgainst: number; homeAway: string; competition: string | null; isMock?: boolean }; players: Array<{ playerId: string; name: string; shirtNumber: number | null; rating: number; minutes: number | null }> } | null>({
-    queryKey: ['/api/teams', teamId, 'last-match'],
+  const upcomingMatchQuery = useQuery<{
+    id: string;
+    opponent: string;
+    opponentLogoUrl: string | null;
+    matchDate: string;
+    stadium: string | null;
+    competition: string | null;
+    isHomeMatch: boolean;
+    broadcastChannel: string | null;
+  } | null>({
+    queryKey: ['/api/teams', teamId, 'upcoming-match'],
+    queryFn: async () => {
+      if (!teamId) return null;
+      const res = await fetch(`/api/teams/${teamId}/upcoming-match`, { credentials: 'include' });
+      if (!res.ok) return null;
+      const data = await res.json();
+      return data;
+    },
+    enabled: !!teamId,
+  });
+
+  const lastMatchQuery = useQuery<{
+    match: {
+      id: string;
+      opponent: string;
+      opponentLogoUrl?: string | null;
+      matchDate: string;
+      scoreFor: number;
+      scoreAgainst: number;
+      homeAway: string;
+      competition: string | null;
+      championshipRound?: number | null;
+      status?: string;
+      isMock?: boolean;
+    };
+    players: Array<{ playerId: string; name: string; shirtNumber: number | null; rating: number; minutes: number | null }>;
+  } | null>({
+    queryKey: ['myTeamOverview', teamId, 'last-match'],
     queryFn: async () => {
       if (!teamId) return null;
       const res = await fetch(`/api/teams/${teamId}/last-match`, { credentials: 'include' });
@@ -182,6 +217,57 @@ export default function MeuTimePage() {
       return data.match ? data : null;
     },
     enabled: !!teamId,
+  });
+
+  const lastMatchId = lastMatchQuery.data?.match?.id ?? null;
+  const matchLineupQuery = useQuery<{
+    formation: string;
+    starters: Array<{ playerId: string; name: string; shirtNumber: number | null; position: string; minutesPlayed: number | null }>;
+    substitutes: Array<{ playerId: string; name: string; shirtNumber: number | null; position: string; minutesPlayed: number | null; minuteEntered: number | null }>;
+  } | null>({
+    queryKey: ['lineup', lastMatchId],
+    queryFn: async () => {
+      if (!lastMatchId) return null;
+      const res = await fetch(`/api/matches/${lastMatchId}/lineup`, { credentials: 'include' });
+      if (!res.ok) return null;
+      const data = await res.json();
+      if (import.meta.env.DEV) {
+        console.debug('[Meu Time] lineup fetch', {
+          matchId: lastMatchId,
+          startersCount: data?.starters?.length ?? 0,
+          subsCount: data?.substitutes?.length ?? 0,
+          payload: data,
+        });
+      }
+      return data;
+    },
+    enabled: !!lastMatchId,
+  });
+
+  const matchRatingsQuery = useQuery<Array<{ playerId: string; avgRating: number; voteCount: number }>>({
+    queryKey: ['ratings', lastMatchId],
+    queryFn: async () => {
+      if (!lastMatchId) return [];
+      const res = await fetch(`/api/matches/${lastMatchId}/ratings`, { credentials: 'include' });
+      if (!res.ok) return [];
+      const data = await res.json();
+      if (import.meta.env.DEV) {
+        console.debug('[Meu Time] ratings fetch', { matchId: lastMatchId, ratingsLength: data?.length ?? 0, payload: data });
+      }
+      return data;
+    },
+    enabled: !!lastMatchId,
+  });
+
+  const myRatingsQuery = useQuery<Array<{ playerId: string; rating: number }>>({
+    queryKey: ['myRatings', lastMatchId],
+    queryFn: async () => {
+      if (!lastMatchId) return [];
+      const res = await fetch(`/api/matches/${lastMatchId}/my-ratings`, { credentials: 'include' });
+      if (!res.ok) return [];
+      return res.json();
+    },
+    enabled: !!lastMatchId && !!user,
   });
 
   const lineupQuery = useQuery<{ formation: string; slots: Array<{ slotIndex: number; playerId: string }> } | null>({
@@ -244,15 +330,6 @@ export default function MeuTimePage() {
   }, [safeTeamData]);
 
   const clubConfig = useMemo(() => getClubConfig(teamId), [teamId]);
-  const resolvedStats = useMemo(
-    () =>
-      resolveTeamStats(
-        teamId,
-        clubConfig,
-        safeTeamData?.team
-      ),
-    [teamId, clubConfig, safeTeamData?.team]
-  );
 
   const { data: matches, isLoading: isLoadingMatches } = useQuery<Match[]>({
     queryKey: ['/api/matches', teamId],
@@ -317,6 +394,45 @@ export default function MeuTimePage() {
         title: 'Erro',
         description: error.message || 'Não foi possível salvar a avaliação',
       });
+    },
+  });
+
+  const fanRatingMutation = useMutation({
+    mutationFn: async ({ playerId, matchId, rating }: { playerId: string; matchId: string; rating: number }) => {
+      const res = await apiRequest('POST', '/api/ratings', { playerId, matchId, rating });
+      return res.json() as Promise<{ playerId: string; matchId: string; rating: number; voteCount: number }>;
+    },
+    onMutate: async ({ playerId, matchId, rating }) => {
+      if (!lastMatchId || matchId !== lastMatchId) return {};
+      await queryClient.cancelQueries({ queryKey: ['myRatings', lastMatchId] });
+      const prevMy = queryClient.getQueryData<Array<{ playerId: string; rating: number }>>(['myRatings', lastMatchId]);
+      queryClient.setQueryData(['myRatings', lastMatchId], (old: Array<{ playerId: string; rating: number }> | undefined) => {
+        const list = old ?? [];
+        const without = list.filter((r) => r.playerId !== playerId);
+        return [...without, { playerId, rating }];
+      });
+      return { prevMy };
+    },
+    onError: (err: unknown, _vars, context) => {
+      if (lastMatchId && context?.prevMy != null) {
+        queryClient.setQueryData(['myRatings', lastMatchId], context.prevMy);
+      }
+      const message = err instanceof Error ? err.message : '';
+      const is409 = message.startsWith('409:');
+      if (lastMatchId && is409) {
+        queryClient.invalidateQueries({ queryKey: ['myRatings', lastMatchId] });
+      }
+    },
+    onSuccess: (_data, { matchId: mId }) => {
+      if (lastMatchId && mId === lastMatchId) {
+        queryClient.invalidateQueries({ queryKey: ['ratings', lastMatchId] });
+      }
+    },
+    onSettled: () => {
+      if (lastMatchId) {
+        queryClient.invalidateQueries({ queryKey: ['ratings', lastMatchId] });
+        queryClient.invalidateQueries({ queryKey: ['myRatings', lastMatchId] });
+      }
     },
   });
 
@@ -393,6 +509,74 @@ export default function MeuTimePage() {
       .slice(0, 10);
   }, [safeTeamData?.matches]);
 
+  const featuredMatchData = useMemo<FeaturedMatchData | null>(() => {
+    const last = lastMatchQuery.data?.match;
+    if (!last || !mergedTeam || !teamId) return null;
+    return {
+      id: last.id,
+      competition: last.competition ?? null,
+      championshipRound: last.championshipRound ?? null,
+      matchDate: last.matchDate,
+      teamScore: last.scoreFor,
+      opponentScore: last.scoreAgainst,
+      status: last.status ?? 'COMPLETED',
+      isHomeMatch: last.homeAway === 'HOME',
+      opponent: last.opponent,
+      opponentLogoUrl: last.opponentLogoUrl ?? null,
+      teamId,
+      teamName: mergedTeam.name,
+      teamLogoUrl: mergedTeam.logoUrl ?? null,
+    };
+  }, [lastMatchQuery.data?.match, mergedTeam, teamId]);
+
+  const recentFormMatches = useMemo(() => {
+    const base = safeTeamData?.matches ?? [];
+    const completed = base.filter(
+      (m) => m.status === 'COMPLETED' && m.teamScore != null && m.opponentScore != null
+    );
+    return completed
+      .sort((a, b) => new Date(b.matchDate).getTime() - new Date(a.matchDate).getTime())
+      .slice(0, 5)
+      .map((m) => ({
+        id: m.id,
+        opponent: m.opponent,
+        teamScore: m.teamScore,
+        opponentScore: m.opponentScore,
+        matchDate: m.matchDate,
+        isHomeMatch: m.isHomeMatch,
+        competition: m.competition ?? null,
+      }));
+  }, [safeTeamData?.matches]);
+
+  const fanRatingsPlayers = useMemo<FanRatingPlayer[]>(() => {
+    const lineup = matchLineupQuery.data;
+    const ratingsByPlayer = new Map(matchRatingsQuery.data?.map((r) => [r.playerId, { average: r.avgRating, count: r.voteCount }]) ?? []);
+    const myByPlayer = new Map(myRatingsQuery.data?.map((r) => [r.playerId, r.rating]) ?? []);
+    if (!lineup) return [];
+    const starters: FanRatingPlayer[] = lineup.starters.map((s) => ({
+      playerId: s.playerId,
+      name: s.name,
+      shirtNumber: s.shirtNumber,
+      isStarter: true,
+      position: s.position ?? null,
+      averageRating: ratingsByPlayer.get(s.playerId)?.average ?? null,
+      voteCount: ratingsByPlayer.get(s.playerId)?.count ?? 0,
+      userRating: myByPlayer.get(s.playerId) ?? null,
+    }));
+    const substitutes: FanRatingPlayer[] = lineup.substitutes.map((s) => ({
+      playerId: s.playerId,
+      name: s.name,
+      shirtNumber: s.shirtNumber,
+      isStarter: false,
+      position: s.position ?? null,
+      minuteEntered: s.minuteEntered,
+      averageRating: ratingsByPlayer.get(s.playerId)?.average ?? null,
+      voteCount: ratingsByPlayer.get(s.playerId)?.count ?? 0,
+      userRating: myByPlayer.get(s.playerId) ?? null,
+    }));
+    return [...starters, ...substitutes];
+  }, [matchLineupQuery.data, matchRatingsQuery.data, myRatingsQuery.data]);
+
   if (isAuthLoading) {
     return (
       <AppShell>
@@ -464,10 +648,10 @@ export default function MeuTimePage() {
   }
 
   return (
-    <AppShell mainClassName="py-6 sm:py-8">
-      <div className="space-y-6">
+    <AppShell mainClassName="py-6 sm:py-8 md:py-10 px-4 sm:px-6 max-w-4xl mx-auto">
+      <div className="space-y-10">
         {isTeamError ? (
-          <div className="glass-card border border-card-border rounded-soft p-4 flex items-center justify-between gap-4">
+          <div className="rounded-2xl bg-card/80 border border-card-border/80 p-4 flex items-center justify-between gap-4 shadow-sm">
             <div className="text-sm text-foreground-secondary">
               Alguns dados do time não puderam ser carregados agora. O básico foi carregado e o resto continua funcionando.
             </div>
@@ -479,19 +663,69 @@ export default function MeuTimePage() {
 
         <TeamHeaderCard
           clubConfig={clubConfig}
-          stats={resolvedStats}
           currentPosition={mergedTeam?.currentPosition ?? safeTeamData.team.currentPosition}
           reputation={safeTeamData.clubInfo.reputation}
+          team={mergedTeam ?? safeTeamData?.team}
         />
+
+        <section aria-label="Próximo jogo">
+          <NextMatchCard
+            data={upcomingMatchQuery.data}
+            isLoading={upcomingMatchQuery.isLoading}
+            teamId={teamId ?? ''}
+            teamName={mergedTeam?.name ?? clubConfig.displayName}
+            onVerDetalhes={() => setActiveTab('matches')}
+          />
+        </section>
 
         <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
           <TeamTabs />
 
-          <TabsContent value="overview" className="space-y-6">
-            <TeamTrophies clubConfig={clubConfig} title="Taças" />
+          <TabsContent value="overview" className="space-y-10">
+            {/* 1) Última partida */}
+            <section aria-label="Última partida">
+              <FeaturedMatch
+                data={featuredMatchData}
+                isLoading={lastMatchQuery.isLoading}
+                teamId={teamId ?? ''}
+                teamName={mergedTeam?.name ?? clubConfig.displayName}
+              />
+            </section>
 
-            {(teamId === 'corinthians' || teamId === 'palmeiras') && safeTeamData.corinthiansClub && (
-              <CorinthiansClubSection data={safeTeamData.corinthiansClub} />
+            {/* 2) Forma recente + Situação */}
+            <section aria-label="Contexto do time">
+              <div className="rounded-2xl bg-gradient-to-br from-card to-card/60 border border-card-border/80 p-6 sm:p-8 shadow-sm grid grid-cols-1 md:grid-cols-2 gap-8 md:gap-12">
+                <RecentForm
+                  matches={recentFormMatches}
+                  isLoading={!safeTeamData}
+                  teamId={teamId ?? ''}
+                  limit={5}
+                />
+                <StandingsSummary
+                  teams={mergedLeagueTable}
+                  currentTeamId={safeTeamData?.team.id ?? ''}
+                  isLoading={!safeTeamData}
+                />
+              </div>
+            </section>
+
+            {/* 3) Notas da torcida */}
+            {lastMatchId && (
+              <section aria-label="Notas da torcida">
+                <div className="rounded-2xl bg-gradient-to-br from-card to-card/60 border border-card-border/80 p-6 sm:p-8 shadow-sm">
+                  <FanRatings
+                    players={fanRatingsPlayers}
+                    formation={matchLineupQuery.data?.formation ?? '4-2-3-1'}
+                    matchId={lastMatchId}
+                    isLoading={matchLineupQuery.isLoading}
+                    onVote={async (playerId, rating) => {
+                      await fanRatingMutation.mutateAsync({ playerId, matchId: lastMatchId!, rating });
+                    }}
+                    isVoting={fanRatingMutation.isPending}
+                    isLoggedIn={!!user}
+                  />
+                </div>
+              </section>
             )}
 
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
@@ -519,11 +753,8 @@ export default function MeuTimePage() {
                 onSave={teamId ? async (formation, slots) => lineupMutation.mutateAsync({ formation, slots }) : undefined}
                 playersById={playersById}
                 getPhotoUrl={(p) => p.photoUrl ?? '/assets/players/placeholder.png'}
-                badgeUrl={clubConfig.badgeSrc ?? undefined}
               />
             </div>
-
-            <ClubKits team={safeTeamData.team} />
 
             {rosterPlayers.length > 0 && (
               <>
@@ -565,10 +796,6 @@ export default function MeuTimePage() {
               </>
             )}
 
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-              <Achievements />
-              <ClubHistory matches={safeTeamData.matches} />
-            </div>
           </TabsContent>
 
           <TabsContent value="news" className="space-y-6">
