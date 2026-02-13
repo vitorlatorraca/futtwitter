@@ -13,7 +13,7 @@ type AppShellProps = {
 
 export function AppShell({ children, showNav = true, className, mainClassName }: AppShellProps) {
   return (
-    <div className={cn("min-h-screen bg-background text-foreground", className)}>
+    <div className={cn("min-h-screen bg-[#0B0F14] text-foreground", className)}>
       {showNav ? <Navbar /> : null}
       <main className={cn("page-container py-6 sm:py-8", mainClassName)}>{children}</main>
     </div>

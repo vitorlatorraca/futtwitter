@@ -1,24 +1,17 @@
 import { useState, useCallback } from 'react';
+import { getTeamCrestFromTeam } from '@/lib/teamCrests';
 
-const PLACEHOLDER_BADGE = '/assets/teams/placeholder-badge.svg';
-
-function getBadgeCandidates(teamId: string | null, badgeSrc?: string | null): string[] {
-  if (badgeSrc) return [badgeSrc];
-  if (!teamId) return [PLACEHOLDER_BADGE];
-  return [
-    `/assets/teams/${teamId}/badge.svg`,
-    `/assets/teams/${teamId}/badge.png`,
-    PLACEHOLDER_BADGE,
-  ];
-}
+const DEFAULT_CREST = '/assets/crests/default.png';
 
 export interface TeamBadgeProps {
   teamId: string | null;
   teamName: string;
+  /** @deprecated Ignored - crest resolved only via getTeamCrest(slug) */
   badgeSrc?: string | null;
+  /** @deprecated Ignored - Corinthians always uses corinthians.png */
+  logoUrl?: string | null;
   className?: string;
   size?: 'sm' | 'md' | 'lg';
-  /** When true, wraps the image in a glass ring style container */
   glassRing?: boolean;
 }
 
@@ -31,22 +24,15 @@ const sizeClasses = {
 export function TeamBadge({
   teamId,
   teamName,
-  badgeSrc,
   className = '',
   size = 'lg',
   glassRing = true,
 }: TeamBadgeProps) {
-  const candidates = getBadgeCandidates(teamId, badgeSrc);
-  const [currentIndex, setCurrentIndex] = useState(0);
-  const src = candidates[currentIndex] ?? PLACEHOLDER_BADGE;
+  const crestUrl = getTeamCrestFromTeam(teamId, teamName);
+  const [ errored, setErrored ] = useState(false);
+  const src = errored ? DEFAULT_CREST : crestUrl;
 
-  const handleError = useCallback(() => {
-    setCurrentIndex((prev) => {
-      const next = prev + 1;
-      if (next >= candidates.length) return prev;
-      return next;
-    });
-  }, [candidates.length]);
+  const handleError = useCallback(() => setErrored(true), []);
 
   const sizeClass = sizeClasses[size];
 

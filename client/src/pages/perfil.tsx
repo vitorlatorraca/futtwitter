@@ -3,6 +3,7 @@ import { useMutation, useQueryClient, useQuery } from '@tanstack/react-query';
 import { useAuth } from '@/lib/auth-context';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Panel } from '@/components/ui-premium';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -165,7 +166,7 @@ export default function PerfilPage() {
     <AppShell>
       <div className="space-y-6">
         {/* Profile Hero */}
-        <div className="glass-card p-6 sm:p-8">
+        <Panel className="p-6 sm:p-8" padding="none">
           <div className="flex flex-col sm:flex-row sm:items-center gap-4 sm:gap-6">
             <Avatar className="h-16 w-16 ring-2 ring-primary/25">
               {user?.avatarUrl ? <AvatarImage src={getApiUrl(user.avatarUrl)} alt={user?.name ?? "Avatar"} /> : null}
@@ -198,7 +199,7 @@ export default function PerfilPage() {
               </div>
             </div>
           </div>
-        </div>
+        </Panel>
 
         <Tabs defaultValue="info" className="space-y-6">
           <div className="overflow-x-auto scrollbar-hide">
@@ -225,7 +226,7 @@ export default function PerfilPage() {
           </div>
 
           <TabsContent value="info" className="space-y-6">
-            <Card className="glass-card">
+            <Card className="rounded-2xl border border-white/5 bg-card">
               <CardHeader>
                 <CardTitle>Foto do Perfil</CardTitle>
                 <CardDescription>Envie ou remova seu avatar</CardDescription>
@@ -236,7 +237,7 @@ export default function PerfilPage() {
             </Card>
 
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-              <Card className="glass-card">
+              <Card className="rounded-2xl border border-white/5 bg-card">
               <CardHeader>
                 <CardTitle>Dados Pessoais</CardTitle>
                 <CardDescription>Atualize suas informações</CardDescription>
@@ -287,7 +288,7 @@ export default function PerfilPage() {
               </CardContent>
               </Card>
 
-              <Card className="glass-card">
+              <Card className="rounded-2xl border border-white/5 bg-card">
               <CardHeader>
                 <CardTitle>Alterar Senha</CardTitle>
                 <CardDescription>Mantenha sua conta segura</CardDescription>
@@ -340,7 +341,7 @@ export default function PerfilPage() {
 
           <TabsContent value="stats">
             <div className="grid md:grid-cols-3 gap-6">
-              <Card className="glass-card-hover group">
+              <Card className="rounded-2xl border border-white/5 bg-card hover:border-white/10 transition-colors group">
                 <CardContent className="p-6 text-center">
                   <div className="stat-number text-primary mb-2 group-hover:scale-110 transition-transform duration-fast">
                     {mockStats.ratingsCount}
@@ -348,7 +349,7 @@ export default function PerfilPage() {
                   <p className="stat-label">Avaliações Feitas</p>
                 </CardContent>
               </Card>
-              <Card className="glass-card-hover group">
+              <Card className="rounded-2xl border border-white/5 bg-card hover:border-white/10 transition-colors group">
                 <CardContent className="p-6 text-center">
                   <div className="stat-number text-primary mb-2 group-hover:scale-110 transition-transform duration-fast">
                     {mockStats.newsLiked}
@@ -356,7 +357,7 @@ export default function PerfilPage() {
                   <p className="stat-label">Notícias Curtidas</p>
                 </CardContent>
               </Card>
-              <Card className="glass-card-hover group">
+              <Card className="rounded-2xl border border-white/5 bg-card hover:border-white/10 transition-colors group">
                 <CardContent className="p-6 text-center">
                   <div className="stat-number text-primary mb-2 group-hover:scale-110 transition-transform duration-fast">
                     {mockStats.daysActive}
@@ -372,7 +373,7 @@ export default function PerfilPage() {
               {badges.map((badge: any) => (
                 <Card 
                   key={badge.id} 
-                  className={`glass-card-hover ${!badge.unlocked ? 'opacity-60 grayscale' : ''} transition-all duration-fast`}
+                  className={`rounded-2xl border border-white/5 bg-card hover:border-white/10 transition-colors ${!badge.unlocked ? 'opacity-60 grayscale' : ''}`}
                 >
                   <CardContent className="p-6 flex items-center gap-4">
                     <div className="text-4xl">{badge.icon}</div>
@@ -394,7 +395,7 @@ export default function PerfilPage() {
 
           {user?.isAdmin && (
             <TabsContent value="admin" className="space-y-6">
-              <Card className="glass-card border-warning/20">
+              <Card className="rounded-2xl border border-warning/20 bg-card">
                 <CardHeader>
                   <CardTitle className="flex items-center gap-2">
                     <ShieldCheck className="h-5 w-5 text-warning" />
@@ -421,7 +422,7 @@ export default function PerfilPage() {
                   </div>
                   <div className="space-y-2">
                     {adminResults.map((r) => (
-                      <div key={r.id} className="glass-card-hover p-4 flex flex-wrap items-center justify-between gap-2">
+                      <div key={r.id} className="rounded-xl border border-white/5 bg-card p-4 flex flex-wrap items-center justify-between gap-2 hover:border-white/10 transition-colors">
                         <div>
                           <span className="font-semibold text-foreground">{r.name}</span>
                           <span className="text-foreground-secondary text-sm ml-2">{r.email}</span>

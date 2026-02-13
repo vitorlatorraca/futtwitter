@@ -17,7 +17,9 @@ export function Navbar() {
 
   const navLinks = [
     { label: 'Feed', href: '/dashboard', testId: 'link-feed' },
+    { label: 'Vai e Vem', href: '/vai-e-vem', testId: 'link-vai-e-vem' },
     { label: 'Meu Time', href: '/meu-time', testId: 'link-meu-time' },
+    { label: 'Jogos', href: '/jogos', testId: 'link-jogos' },
     { label: 'Perfil', href: '/perfil', testId: 'link-perfil' },
   ];
 

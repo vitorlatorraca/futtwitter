@@ -12,6 +12,8 @@ import DashboardPage from "@/pages/dashboard";
 import MeuTimePage from "@/pages/meu-time";
 import PerfilPage from "@/pages/perfil";
 import JornalistaPage from "@/pages/jornalista";
+import JogosParaSeDivertirPage from "@/pages/jogos-para-se-divertir";
+import VaiEVemPage from "@/pages/vai-e-vem";
 import NotFound from "@/pages/not-found";
 
 function ProtectedRoute({ component: Component }: { component: () => JSX.Element }) {
@@ -70,6 +72,8 @@ function Router() {
       <Route path="/selecionar-time" component={TeamSelectionPage} />
       <Route path="/dashboard" component={() => <ProtectedRoute component={DashboardPage} />} />
       <Route path="/meu-time" component={() => <ProtectedRoute component={MeuTimePage} />} />
+      <Route path="/jogos" component={() => <ProtectedRoute component={JogosParaSeDivertirPage} />} />
+      <Route path="/vai-e-vem" component={() => <ProtectedRoute component={VaiEVemPage} />} />
       <Route path="/perfil" component={() => <ProtectedRoute component={PerfilPage} />} />
       <Route path="/jornalista" component={() => <ProtectedRoute component={JornalistaPage} />} />
       <Route component={NotFound} />

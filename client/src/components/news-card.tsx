@@ -3,6 +3,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Card, CardContent, CardFooter, CardHeader } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
+import { Crest } from '@/components/ui-premium';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { Tooltip, TooltipContent, TooltipTrigger, TooltipProvider } from '@/components/ui/tooltip';
 import { ThumbsUp, ThumbsDown, MessageCircle, ChevronDown, ChevronUp, Loader2, Heart, Globe } from 'lucide-react';
@@ -156,23 +157,17 @@ export function NewsCard({ news, canInteract, onInteract }: NewsCardProps) {
 
   const scope = news.scope ?? 'ALL';
   const teamName = news.team?.name ?? 'Europa';
-  const teamLogoUrl = news.team?.logoUrl;
+  const teamId = news.team?.id ?? news.teamId;
 
   return (
-    <Card className="overflow-hidden glass-card-hover group" data-testid={`news-card-${news.id}`}>
-      <CardHeader className="p-6 pb-4 border-b border-card-border">
+    <Card className="overflow-hidden rounded-2xl border border-white/5 bg-card shadow-sm hover:border-white/10 transition-colors group" data-testid={`news-card-${news.id}`}>
+      <CardHeader className="p-6 pb-4 border-b border-white/5">
         <div className="flex items-center gap-3">
           <div className="relative">
-            {teamLogoUrl ? (
-              <img
-                src={teamLogoUrl}
-                alt={`Escudo ${teamName}`}
-                loading="lazy"
-                decoding="async"
-                className="w-10 h-10 rounded-full object-cover ring-2 ring-border-subtle"
-              />
+            {teamId ? (
+              <Crest slug={teamId} alt={teamName} size="md" ring />
             ) : (
-              <div className="w-10 h-10 rounded-full bg-muted flex items-center justify-center ring-2 ring-border-subtle">
+              <div className="w-10 h-10 rounded-full bg-muted flex items-center justify-center ring-2 ring-white/5">
                 <Globe className="h-5 w-5 text-muted-foreground" />
               </div>
             )}
@@ -226,14 +221,14 @@ export function NewsCard({ news, canInteract, onInteract }: NewsCardProps) {
           </p>
         </div>
 
-        <div className="flex items-center justify-between pt-2 border-t border-card-border">
+        <div className="flex items-center justify-between pt-2 border-t border-white/5">
           <div className="flex items-center gap-2 text-xs text-foreground-muted font-mono">
             <span>{format(new Date(news.publishedAt), "dd 'de' MMMM 'às' HH:mm", { locale: ptBR })}</span>
           </div>
         </div>
       </CardContent>
 
-      <CardFooter className="p-6 pt-0 flex flex-col gap-3 border-t border-card-border">
+      <CardFooter className="p-6 pt-0 flex flex-col gap-3 border-t border-white/5">
         <div className="flex flex-wrap items-center gap-2">
           <InteractionButton type="LIKE" count={news.likesCount} icon={ThumbsUp} />
           <InteractionButton type="DISLIKE" count={news.dislikesCount} icon={ThumbsDown} />
@@ -295,7 +290,7 @@ export function NewsCard({ news, canInteract, onInteract }: NewsCardProps) {
             ) : (
               <ul className="space-y-3">
                 {commentsList.map((c) => (
-                  <li key={c.id} className="flex gap-3 rounded-medium border border-card-border bg-muted/30 p-3">
+                  <li key={c.id} className="flex gap-3 rounded-xl border border-white/5 bg-muted/30 p-3">
                     <Avatar className="h-8 w-8 shrink-0">
                       {c.author.avatarUrl ? (
                         <img src={c.author.avatarUrl} alt="" className="h-full w-full object-cover" />

@@ -33,10 +33,10 @@ export interface ClubConfig {
   league: string;
   seasonLabel: string;
   stadiumName: string;
+  /** Head coach name (optional) */
+  coach?: string;
   /** URL for stadium hero image, fallback: /assets/stadiums/placeholder.jpg */
   stadiumImageSrc?: string;
-  /** Override badge URL; if not set, resolved from /assets/teams/{teamId}/badge.svg */
-  badgeSrc?: string;
   theme: ClubTheme;
   stats: ClubStats;
   /** 0-5 stars (or 0-100 if you prefer, normalized in UI) */

@@ -56,7 +56,7 @@ export default function LoginPage() {
       <div className="page-container py-10 sm:py-14">
         <div className="grid lg:grid-cols-2 gap-10 items-stretch">
           {/* Brand panel */}
-          <div className="hidden lg:flex glass-card p-10 flex-col justify-between">
+          <div className="hidden lg:flex rounded-2xl border border-white/5 bg-card p-10 flex-col justify-between">
             <div className="space-y-6">
               <div className="flex items-center gap-3">
                 <div className="h-10 w-10 rounded-full bg-surface-elevated border border-card-border flex items-center justify-center">
@@ -89,7 +89,7 @@ export default function LoginPage() {
 
           {/* Form */}
           <div className="flex items-center justify-center">
-            <Card className="glass-card w-full max-w-md">
+            <Card className="rounded-2xl border border-white/5 bg-card w-full max-w-md">
               <CardHeader className="space-y-2">
                 <div className="flex items-center gap-2">
                   <span className="text-2xl">⚽</span>

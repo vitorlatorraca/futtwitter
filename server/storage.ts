@@ -1,5 +1,5 @@
 import { db } from "./db";
-import { eq, and, desc, or, ilike, sql, inArray } from "drizzle-orm";
+import { eq, and, desc, or, ilike, sql, inArray, gt } from "drizzle-orm";
 import { TEAMS_DATA } from "./teams-data";
 import {
   users,
@@ -17,6 +17,8 @@ import {
   userBadges,
   notifications,
   userLineups,
+  transfers,
+  transferVotes,
   type User,
   type InsertUser,
   type Journalist,
@@ -39,6 +41,10 @@ import {
   type InsertUserBadge,
   type Notification,
   type InsertNotification,
+  type Transfer,
+  type InsertTransfer,
+  type TransferVote,
+  type InsertTransferVote,
 } from "@shared/schema";
 
 export interface IStorage {
@@ -71,11 +77,13 @@ export interface IStorage {
   createPlayer(player: InsertPlayer): Promise<Player>;
 
   // Matches
+  getMatch(id: string): Promise<Match | undefined>;
   getMatchesByTeam(teamId: string, limit?: number): Promise<Match[]>;
+  getNextMatch(teamId: string): Promise<Match | undefined>;
   createMatch(match: InsertMatch): Promise<Match>;
   updateTeamStandings(): Promise<void>;
   getLastMatchWithRatings(teamId: string): Promise<{
-    match: { id: string; opponent: string; matchDate: Date; teamScore: number; opponentScore: number; isHomeMatch: boolean; competition: string | null; isMock: boolean };
+    match: { id: string; opponent: string; opponentLogoUrl: string | null; matchDate: Date; teamScore: number; opponentScore: number; isHomeMatch: boolean; competition: string | null; championshipRound: number | null; status: string; isMock: boolean };
     players: Array<{ playerId: string; name: string; shirtNumber: number | null; rating: number; minutes: number | null }>;
   } | null>;
 
@@ -110,8 +118,18 @@ export interface IStorage {
 
   // Player Ratings
   createPlayerRating(rating: InsertPlayerRating): Promise<PlayerRating>;
+  upsertPlayerRating(userId: string, playerId: string, matchId: string, rating: number, comment?: string): Promise<PlayerRating>;
   getPlayerRatings(playerId: string): Promise<PlayerRating[]>;
   getPlayerAverageRating(playerId: string): Promise<number | null>;
+  getRatingsByMatch(matchId: string): Promise<Array<{ playerId: string; average: number; count: number }>>;
+  getUserRatingsForMatch(userId: string, matchId: string): Promise<Array<{ playerId: string; rating: number; comment: string | null }>>;
+  getUserRatingForPlayerInMatch(userId: string, matchId: string, playerId: string): Promise<{ rating: number } | null>;
+  getMatchLineup(matchId: string): Promise<{
+    matchId: string;
+    formation: string;
+    starters: Array<{ playerId: string; name: string; shirtNumber: number | null; position: string; minutesPlayed: number | null }>;
+    substitutes: Array<{ playerId: string; name: string; shirtNumber: number | null; position: string; minutesPlayed: number | null; minuteEntered: number | null }>;
+  } | null>;
 
   // User Lineups
   getUserLineup(userId: string, teamId: string): Promise<any | undefined>;
@@ -128,6 +146,22 @@ export interface IStorage {
   getUserBadges(userId: string): Promise<any[]>;
   awardBadge(userId: string, badgeId: string): Promise<UserBadge>;
   checkAndAwardBadges(userId: string): Promise<UserBadge[]>;
+
+  // Transfers (Vai e Vem)
+  getTransfers(filters: { status?: string; q?: string; teamId?: string; viewerUserId?: string | null }): Promise<any[]>;
+  getTransferById(id: string): Promise<Transfer | undefined>;
+  createTransfer(transfer: InsertTransfer): Promise<Transfer>;
+  getUserTransferVote(transferId: string, userId: string): Promise<TransferVote | undefined>;
+  createTransferVote(transferId: string, userId: string, vote: "UP" | "DOWN"): Promise<TransferVote>;
+}
+
+/** Formation slot order by position: GK, DEF, MID, FWD (for 4-2-3-1) */
+function positionOrderForLineup(pos: string): number {
+  const p = (pos || "").toUpperCase();
+  if (p.includes("GOAL") || p === "GK") return 0;
+  if (p.includes("DEF") || p === "CB" || p === "LB" || p === "RB" || p === "WB") return 1;
+  if (p.includes("MID") || p === "DM" || p === "CM" || p === "AM" || p === "LM" || p === "RM") return 2;
+  return 3;
 }
 
 export class DatabaseStorage implements IStorage {
@@ -324,6 +358,11 @@ export class DatabaseStorage implements IStorage {
   }
 
   // Matches
+  async getMatch(id: string): Promise<Match | undefined> {
+    const [match] = await db.select().from(matches).where(eq(matches.id, id)).limit(1);
+    return match;
+  }
+
   async getMatchesByTeam(teamId: string, limit = 10): Promise<Match[]> {
     return await db
       .select()
@@ -333,8 +372,19 @@ export class DatabaseStorage implements IStorage {
       .limit(limit);
   }
 
+  async getNextMatch(teamId: string): Promise<Match | undefined> {
+    const now = new Date();
+    const [match] = await db
+      .select()
+      .from(matches)
+      .where(and(eq(matches.teamId, teamId), gt(matches.matchDate, now)))
+      .orderBy(matches.matchDate)
+      .limit(1);
+    return match ?? undefined;
+  }
+
   async getLastMatchWithRatings(teamId: string): Promise<{
-    match: { id: string; opponent: string; matchDate: Date; teamScore: number; opponentScore: number; isHomeMatch: boolean; competition: string | null; isMock: boolean };
+    match: { id: string; opponent: string; opponentLogoUrl: string | null; matchDate: Date; teamScore: number; opponentScore: number; isHomeMatch: boolean; competition: string | null; championshipRound: number | null; status: string; isMock: boolean };
     players: Array<{ playerId: string; name: string; shirtNumber: number | null; rating: number; minutes: number | null }>;
   } | null> {
     const [lastMatch] = await db
@@ -373,11 +423,14 @@ export class DatabaseStorage implements IStorage {
       match: {
         id: lastMatch.id,
         opponent: lastMatch.opponent,
+        opponentLogoUrl: lastMatch.opponentLogoUrl ?? null,
         matchDate: lastMatch.matchDate,
         teamScore: lastMatch.teamScore,
         opponentScore: lastMatch.opponentScore,
         isHomeMatch: lastMatch.isHomeMatch,
         competition: lastMatch.competition ?? null,
+        championshipRound: lastMatch.championshipRound ?? null,
+        status: lastMatch.status,
         isMock: lastMatch.isMock ?? false,
       },
       players: sorted.map((p) => ({
@@ -387,6 +440,93 @@ export class DatabaseStorage implements IStorage {
         rating: p.rating as number,
         minutes: p.minutes,
       })),
+    };
+  }
+
+  async getMatchLineup(matchId: string): Promise<{
+    matchId: string;
+    formation: string;
+    starters: Array<{ playerId: string; name: string; shirtNumber: number | null; position: string; minutesPlayed: number | null }>;
+    substitutes: Array<{ playerId: string; name: string; shirtNumber: number | null; position: string; minutesPlayed: number | null; minuteEntered: number | null }>;
+  } | null> {
+    const [match] = await db.select().from(matches).where(eq(matches.id, matchId)).limit(1);
+    if (!match) return null;
+
+    const mpList = await db
+      .select({
+        playerId: matchPlayers.playerId,
+        wasStarter: matchPlayers.wasStarter,
+        minutesPlayed: matchPlayers.minutesPlayed,
+        name: players.name,
+        shirtNumber: players.shirtNumber,
+        position: players.position,
+      })
+      .from(matchPlayers)
+      .innerJoin(players, eq(matchPlayers.playerId, players.id))
+      .where(eq(matchPlayers.matchId, matchId));
+
+    const starters = mpList
+      .filter((m) => m.wasStarter)
+      .sort((a, b) => {
+        const orderA = positionOrderForLineup(a.position);
+        const orderB = positionOrderForLineup(b.position);
+        if (orderA !== orderB) return orderA - orderB;
+        return (a.shirtNumber ?? 99) - (b.shirtNumber ?? 99);
+      })
+      .map((p) => ({
+        playerId: p.playerId,
+        name: p.name,
+        shirtNumber: p.shirtNumber,
+        position: p.position,
+        minutesPlayed: p.minutesPlayed,
+      }));
+
+    const substitutes = mpList
+      .filter((m) => !m.wasStarter)
+      .sort((a, b) => (b.minutesPlayed ?? 0) - (a.minutesPlayed ?? 0))
+      .map((p) => ({
+        playerId: p.playerId,
+        name: p.name,
+        shirtNumber: p.shirtNumber,
+        position: p.position,
+        minutesPlayed: p.minutesPlayed,
+        minuteEntered: p.minutesPlayed != null ? 90 - p.minutesPlayed : null,
+      }));
+
+    // Fallback: when match exists but no match_players (e.g. seed not run), build demo lineup from team roster
+    let finalStarters = starters;
+    if (starters.length === 0) {
+      const roster = await db
+        .select({ playerId: players.id, name: players.name, shirtNumber: players.shirtNumber, position: players.position })
+        .from(players)
+        .where(eq(players.teamId, match.teamId));
+      finalStarters = roster
+        .sort((a, b) => {
+          const orderA = positionOrderForLineup(a.position);
+          const orderB = positionOrderForLineup(b.position);
+          if (orderA !== orderB) return orderA - orderB;
+          return (a.shirtNumber ?? 99) - (b.shirtNumber ?? 99);
+        })
+        .slice(0, 11)
+        .map((p) => ({
+          playerId: p.playerId,
+          name: p.name,
+          shirtNumber: p.shirtNumber,
+          position: p.position,
+          minutesPlayed: null as number | null,
+        }));
+      if (process.env.NODE_ENV !== 'production') {
+        console.debug('[getMatchLineup] fallback demo lineup', { matchId, startersCount: finalStarters.length });
+      }
+    } else if (process.env.NODE_ENV !== 'production') {
+      console.debug('[getMatchLineup]', { matchId, startersCount: starters.length, subsCount: substitutes.length });
+    }
+
+    return {
+      matchId,
+      formation: "4-2-3-1",
+      starters: finalStarters,
+      substitutes,
     };
   }
 
@@ -753,6 +893,70 @@ export class DatabaseStorage implements IStorage {
     return rating;
   }
 
+  async upsertPlayerRating(userId: string, playerId: string, matchId: string, rating: number, comment?: string): Promise<PlayerRating> {
+    const existing = await db
+      .select()
+      .from(playerRatings)
+      .where(
+        and(
+          eq(playerRatings.userId, userId),
+          eq(playerRatings.playerId, playerId),
+          eq(playerRatings.matchId, matchId)
+        )
+      )
+      .limit(1);
+    if (existing.length > 0) {
+      const [updated] = await db
+        .update(playerRatings)
+        .set({ rating, comment: comment ?? existing[0].comment, updatedAt: new Date() })
+        .where(eq(playerRatings.id, existing[0].id))
+        .returning();
+      return updated;
+    }
+    const [created] = await db
+      .insert(playerRatings)
+      .values({ userId, playerId, matchId, rating, comment: comment ?? null })
+      .returning();
+    return created;
+  }
+
+  async getRatingsByMatch(matchId: string): Promise<Array<{ playerId: string; average: number; count: number }>> {
+    const rows = await db
+      .select({
+        playerId: playerRatings.playerId,
+        average: sql<number>`round(avg(${playerRatings.rating})::numeric, 2)`,
+        count: sql<number>`count(*)::int`,
+      })
+      .from(playerRatings)
+      .where(eq(playerRatings.matchId, matchId))
+      .groupBy(playerRatings.playerId);
+    return rows.map((r) => ({ playerId: r.playerId, average: Number(r.average), count: Number(r.count) }));
+  }
+
+  async getUserRatingsForMatch(userId: string, matchId: string): Promise<Array<{ playerId: string; rating: number; comment: string | null }>> {
+    const rows = await db
+      .select({ playerId: playerRatings.playerId, rating: playerRatings.rating, comment: playerRatings.comment })
+      .from(playerRatings)
+      .where(and(eq(playerRatings.userId, userId), eq(playerRatings.matchId, matchId)));
+    return rows.map((r) => ({ playerId: r.playerId, rating: r.rating, comment: r.comment }));
+  }
+
+  /** Returns existing rating if user already rated this player in this match; null otherwise. */
+  async getUserRatingForPlayerInMatch(userId: string, matchId: string, playerId: string): Promise<{ rating: number } | null> {
+    const [row] = await db
+      .select({ rating: playerRatings.rating })
+      .from(playerRatings)
+      .where(
+        and(
+          eq(playerRatings.userId, userId),
+          eq(playerRatings.matchId, matchId),
+          eq(playerRatings.playerId, playerId)
+        )
+      )
+      .limit(1);
+    return row ?? null;
+  }
+
   async getPlayerRatings(playerId: string): Promise<PlayerRating[]> {
     return await db
       .select()
@@ -972,6 +1176,148 @@ export class DatabaseStorage implements IStorage {
       .values({ userId, teamId, formation, slots })
       .returning();
     return inserted!;
+  }
+
+  // Transfers (Vai e Vem)
+  async getTransfers(filters: { status?: string; q?: string; teamId?: string; viewerUserId?: string | null }): Promise<any[]> {
+    const conditions = [];
+    if (filters.status && ["RUMOR", "NEGOCIACAO", "FECHADO"].includes(filters.status)) {
+      conditions.push(eq(transfers.status, filters.status as "RUMOR" | "NEGOCIACAO" | "FECHADO"));
+    }
+    if (filters.q && filters.q.trim()) {
+      conditions.push(ilike(transfers.playerName, `%${filters.q.trim()}%`));
+    }
+    if (filters.teamId && filters.teamId.trim()) {
+      conditions.push(
+        or(
+          eq(transfers.fromTeamId, filters.teamId.trim()),
+          eq(transfers.toTeamId, filters.teamId.trim())
+        )!
+      );
+    }
+
+    const result = await db
+      .select({
+        id: transfers.id,
+        playerName: transfers.playerName,
+        playerPhotoUrl: transfers.playerPhotoUrl,
+        positionAbbrev: transfers.positionAbbrev,
+        fromTeamId: transfers.fromTeamId,
+        toTeamId: transfers.toTeamId,
+        status: transfers.status,
+        updatedAt: transfers.updatedAt,
+        feeText: transfers.feeText,
+        notes: transfers.notes,
+      })
+      .from(transfers)
+      .where(conditions.length > 0 ? and(...conditions) : undefined)
+      .orderBy(desc(transfers.updatedAt))
+      .limit(100);
+
+    const allTeamIds = new Set<string>();
+    for (const r of result) {
+      if (r.fromTeamId) allTeamIds.add(r.fromTeamId);
+      if (r.toTeamId) allTeamIds.add(r.toTeamId);
+    }
+    const teamList =
+      allTeamIds.size > 0
+        ? await db.select().from(teams).where(inArray(teams.id, Array.from(allTeamIds)))
+        : [];
+    const teamMap = new Map(teamList.map((t) => [t.id, { id: t.id, name: t.name, slug: t.id }]));
+
+    const transferIds = result.map((r) => r.id);
+    const voteCounts =
+      transferIds.length > 0
+        ? await db
+            .select({
+              transferId: transferVotes.transferId,
+              vote: transferVotes.vote,
+              count: sql<number>`count(*)::int`,
+            })
+            .from(transferVotes)
+            .where(inArray(transferVotes.transferId, transferIds))
+            .groupBy(transferVotes.transferId, transferVotes.vote)
+        : [];
+
+    const voteMap = new Map<string, { up: number; down: number }>();
+    for (const id of transferIds) {
+      voteMap.set(id, { up: 0, down: 0 });
+    }
+    for (const v of voteCounts) {
+      const m = voteMap.get(v.transferId)!;
+      if (v.vote === "UP") m.up = v.count;
+      else m.down = v.count;
+    }
+
+    let viewerVotesMap = new Map<string, "UP" | "DOWN">();
+    if (filters.viewerUserId) {
+      const viewerVotes = await db
+        .select({ transferId: transferVotes.transferId, vote: transferVotes.vote })
+        .from(transferVotes)
+        .where(
+          and(
+            eq(transferVotes.userId, filters.viewerUserId),
+            inArray(transferVotes.transferId, transferIds)
+          )
+        );
+      viewerVotesMap = new Map(viewerVotes.map((v) => [v.transferId, v.vote]));
+    }
+
+    return result.map((r) => {
+      const votes = voteMap.get(r.id)!;
+      const total = votes.up + votes.down;
+      const upPercent = total > 0 ? Math.round((votes.up / total) * 100) : 0;
+      const downPercent = total > 0 ? Math.round((votes.down / total) * 100) : 0;
+      const fromTeam = r.fromTeamId ? teamMap.get(r.fromTeamId) : null;
+      const toTeam = r.toTeamId ? teamMap.get(r.toTeamId) : null;
+      return {
+        id: r.id,
+        playerName: r.playerName,
+        playerPhotoUrl: r.playerPhotoUrl,
+        positionAbbrev: r.positionAbbrev,
+        fromTeam: fromTeam ?? null,
+        toTeam: toTeam ?? null,
+        status: r.status,
+        updatedAt: r.updatedAt,
+        feeText: r.feeText,
+        notes: r.notes,
+        upPercent,
+        downPercent,
+        voteCount: total,
+        viewerVote: viewerVotesMap.get(r.id) ?? null,
+      };
+    });
+  }
+
+  async getTransferById(id: string): Promise<Transfer | undefined> {
+    const [row] = await db.select().from(transfers).where(eq(transfers.id, id)).limit(1);
+    return row ?? undefined;
+  }
+
+  async createTransfer(insertTransfer: InsertTransfer): Promise<Transfer> {
+    const [t] = await db.insert(transfers).values(insertTransfer).returning();
+    return t;
+  }
+
+  async getUserTransferVote(transferId: string, userId: string): Promise<TransferVote | undefined> {
+    const [row] = await db
+      .select()
+      .from(transferVotes)
+      .where(and(eq(transferVotes.transferId, transferId), eq(transferVotes.userId, userId)))
+      .limit(1);
+    return row ?? undefined;
+  }
+
+  async createTransferVote(
+    transferId: string,
+    userId: string,
+    vote: "UP" | "DOWN"
+  ): Promise<TransferVote> {
+    const [v] = await db
+      .insert(transferVotes)
+      .values({ transferId, userId, vote })
+      .returning();
+    return v;
   }
 }
 

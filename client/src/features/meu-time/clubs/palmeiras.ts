@@ -8,8 +8,8 @@ export const palmeirasConfig: ClubConfig = {
   league: 'Brasileirão Série A',
   seasonLabel: String(new Date().getFullYear()),
   stadiumName: 'Allianz Parque',
+  coach: 'Abel Ferreira',
   stadiumImageSrc: '/assets/stadiums/placeholder.jpg',
-  badgeSrc: '/assets/teams/palmeiras/badge.svg',
   theme: {
     primary: '#006437',
     secondary: '#FFFFFF',

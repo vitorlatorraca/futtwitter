@@ -4,11 +4,11 @@ import { useAuth } from '@/lib/auth-context';
 import { NewsCard } from '@/components/news-card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Skeleton } from '@/components/ui/skeleton';
 import { AppShell } from '@/components/ui/app-shell';
 import { PageHeader } from '@/components/ui/page';
 import { EmptyState } from '@/components/ui/empty-state';
 import { TeamPicker } from '@/components/ui/team-picker';
+import { Panel, SectionHeader, Crest, LoadingSkeleton } from '@/components/ui-premium';
 import { useToast } from '@/hooks/use-toast';
 import { apiRequest, getApiUrl } from '@/lib/queryClient';
 import { TEAMS_DATA } from '@/lib/team-data';
@@ -120,10 +120,10 @@ export default function DashboardPage() {
       />
 
       {/* Filters */}
-      <div className="sticky top-16 z-40 py-4 border-b border-card-border bg-background/60 backdrop-blur-md supports-[backdrop-filter]:bg-background/40">
+      <div className="sticky top-16 z-40 py-4 border-b border-white/5 bg-[#0B0F14]/80 backdrop-blur-md">
         <div className="flex flex-col gap-3">
           <div className="flex flex-wrap items-center gap-2">
-            <div className="inline-flex items-center gap-1 rounded-medium border border-card-border bg-surface-glass px-1 py-1">
+            <div className="inline-flex items-center gap-1 rounded-full border border-white/5 bg-card px-1 py-1">
               <Button
                 size="sm"
                 variant={activeFilter === "my-team" ? "default" : "ghost"}
@@ -190,26 +190,10 @@ export default function DashboardPage() {
               {isLoading ? (
                 <>
                   {[1, 2, 3].map((i) => (
-                    <div key={i} className="glass-card p-6">
-                      <div className="flex items-center gap-3">
-                        <Skeleton className="h-10 w-10 rounded-full" />
-                        <div className="flex-1 space-y-2">
-                          <Skeleton className="h-4 w-40" />
-                          <Skeleton className="h-3 w-56" />
-                        </div>
-                        <Skeleton className="h-6 w-20 rounded-full" />
-                      </div>
-                      <div className="mt-5 space-y-3">
-                        <Skeleton className="h-6 w-5/6" />
-                        <Skeleton className="h-4 w-full" />
-                        <Skeleton className="h-4 w-11/12" />
-                        <Skeleton className="h-4 w-9/12" />
-                      </div>
-                      <div className="mt-6 flex gap-2">
-                        <Skeleton className="h-9 w-28 rounded-medium" />
-                        <Skeleton className="h-9 w-28 rounded-medium" />
-                      </div>
-                    </div>
+                    <Panel key={i}>
+                      <LoadingSkeleton variant="row" />
+                      <LoadingSkeleton variant="text" className="mt-4" />
+                    </Panel>
                   ))}
                 </>
               ) : newsData && newsData.length > 0 ? (
@@ -246,48 +230,42 @@ export default function DashboardPage() {
 
           <aside className="page-aside">
             <div className="sticky top-24 space-y-4">
-              <div className="glass-card p-6">
-                <div className="flex items-center justify-between gap-3">
-                  <div className="min-w-0">
-                    <div className="section-title">Seu time</div>
-                    <div className="section-subtitle">Atalhos e contexto rápido.</div>
-                  </div>
-                  <Link href="/meu-time">
-                    <Button variant="outline" size="sm" className="gap-2">
-                      Ver
-                      <ArrowRight className="h-4 w-4" />
-                    </Button>
-                  </Link>
-                </div>
-
+              <Panel>
+                <SectionHeader
+                  title="Seu time"
+                  subtitle="Atalhos e contexto rápido."
+                  action={
+                    <Link href="/meu-time">
+                      <Button variant="outline" size="sm" className="gap-2">
+                        Ver
+                        <ArrowRight className="h-4 w-4" />
+                      </Button>
+                    </Link>
+                  }
+                />
                 <div className="mt-5 flex items-center gap-3">
                   {selectedTeam ? (
                     <>
-                      <img
-                        src={selectedTeam.logoUrl}
-                        alt=""
-                        className="h-10 w-10 rounded-full border border-card-border bg-surface-elevated"
-                        aria-hidden="true"
-                      />
+                      <Crest slug={selectedTeam.id} alt={selectedTeam.name} size="md" ring />
                       <div className="min-w-0">
                         <div className="font-semibold text-foreground truncate">{selectedTeam.name}</div>
-                        <div className="text-xs text-foreground-secondary">
+                        <div className="text-xs text-muted-foreground">
                           Use “Meu time” para ver só as notícias dele.
                         </div>
                       </div>
                     </>
                   ) : (
-                    <div className="text-sm text-foreground-secondary">
+                    <div className="text-sm text-muted-foreground">
                       Selecione um time para personalizar seu feed.
                     </div>
                   )}
                 </div>
-              </div>
+              </Panel>
 
-              <div className={cn("glass-card p-6", isTeamSpecific && "border-primary/20")}>
-                <div className="section-title">Filtro atual</div>
+              <Panel className={cn(isTeamSpecific && "border-primary/20")}>
+                <SectionHeader title="Filtro atual" />
                 <div className="mt-3 flex flex-wrap gap-2">
-                  <span className="chip">
+                  <span className="inline-flex items-center rounded-full border border-white/5 bg-muted/60 px-3 py-1 text-xs font-semibold text-foreground">
                     {activeFilter === "all"
                       ? "Todos"
                       : activeFilter === "my-team"
@@ -297,12 +275,12 @@ export default function DashboardPage() {
                           : "Time selecionado"}
                   </span>
                   {isTeamSpecific ? (
-                    <span className="chip">
+                    <span className="inline-flex items-center rounded-full border border-white/5 bg-muted/60 px-3 py-1 text-xs font-semibold text-foreground">
                       {(TEAMS_DATA.find((t) => t.id === activeFilter)?.name) ?? "Time"}
                     </span>
                   ) : null}
                 </div>
-              </div>
+              </Panel>
             </div>
           </aside>
         </div>

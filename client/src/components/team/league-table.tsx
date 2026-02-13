@@ -1,6 +1,7 @@
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Trophy, TrendingUp, TrendingDown, Minus } from 'lucide-react';
+import { getTeamCrest } from '@/lib/teamCrests';
 import type { Team } from '@shared/schema';
 
 interface LeagueTableProps {
@@ -83,7 +84,7 @@ export function LeagueTable({ teams, currentTeamId }: LeagueTableProps) {
                     <td className="p-3">
                       <div className="flex items-center gap-3">
                         <img
-                          src={team.logoUrl}
+                          src={getTeamCrest(team.id)}
                           alt={team.name}
                           className="w-8 h-8 object-contain"
                         />

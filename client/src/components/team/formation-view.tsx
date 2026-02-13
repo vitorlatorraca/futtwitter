@@ -19,6 +19,7 @@ import { Trophy, Save, Loader2, Plus, MoreVertical } from 'lucide-react';
 import type { Player } from '@shared/schema';
 import { PlayerPicker } from '@/components/team/PlayerPicker';
 import { FORMATION_SLOT_CONFIG, getSlotConfig } from '@/components/team/formation-slots';
+import { getTeamCrest } from '@/lib/teamCrests';
 
 const FORMATIONS = ['4-3-3', '4-4-2', '3-5-2', '4-2-3-1'] as const;
 
@@ -79,8 +80,7 @@ function getPhotoUrlFallback(p: Player): string {
   return '/assets/players/placeholder.png';
 }
 
-const CORINTHIANS_BADGE_SRC = '/assets/teams/corinthians/badge.svg';
-const PLACEHOLDER_BADGE_SRC = '/assets/teams/placeholder-badge.svg';
+const PLACEHOLDER_BADGE_SRC = '/assets/crests/placeholder.svg';
 
 export function FormationView({
   players,
@@ -95,7 +95,7 @@ export function FormationView({
   badgeUrl,
 }: FormationViewProps) {
   const isCompact = compactSlots || teamId === 'corinthians';
-  const escudo = badgeUrl ?? (teamId === 'corinthians' ? CORINTHIANS_BADGE_SRC : undefined);
+  const escudo = badgeUrl ?? getTeamCrest(teamId);
   const [formation, setFormation] = useState(initialFormation);
   const [slots, setSlots] = useState<LineupSlot[]>(initialSlots);
   const [saving, setSaving] = useState(false);

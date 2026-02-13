@@ -28,6 +28,8 @@ export const journalistStatusEnum = pgEnum("journalist_status", ["PENDING", "APP
 export const notificationTypeEnum = pgEnum("notification_type", ["NEW_NEWS", "UPCOMING_MATCH", "BADGE_EARNED", "MATCH_RESULT"]);
 /** Feed scope: ALL = Todos, TEAM = Meu time (teamId required), EUROPE = Aba Europa */
 export const postScopeEnum = pgEnum("post_scope", ["ALL", "TEAM", "EUROPE"]);
+export const transferStatusEnum = pgEnum("transfer_status", ["RUMOR", "NEGOCIACAO", "FECHADO"]);
+export const transferVoteEnum = pgEnum("transfer_vote", ["UP", "DOWN"]);
 
 // ============================================
 // TABLES
@@ -124,6 +126,8 @@ export const matches = pgTable("matches", {
   status: varchar("status", { length: 50 }).notNull().default("SCHEDULED"),
   competition: text("competition"),
   isMock: boolean("is_mock").notNull().default(false),
+  /** Optional broadcast channel(s), e.g. "ESPN", "Globo", "Premiere" */
+  broadcastChannel: varchar("broadcast_channel", { length: 255 }),
   createdAt: timestamp("created_at").notNull().defaultNow(),
   updatedAt: timestamp("updated_at").notNull().defaultNow(),
 });
@@ -165,16 +169,22 @@ export const newsInteractions = pgTable("news_interactions", {
   updatedAt: timestamp("updated_at").notNull().defaultNow(),
 });
 
-export const playerRatings = pgTable("player_ratings", {
-  id: varchar("id", { length: 36 }).primaryKey().default(sql`gen_random_uuid()`),
-  userId: varchar("user_id", { length: 36 }).notNull(),
-  playerId: varchar("player_id", { length: 36 }).notNull(),
-  matchId: varchar("match_id", { length: 36 }).notNull(),
-  rating: real("rating").notNull(),
-  comment: varchar("comment", { length: 200 }),
-  createdAt: timestamp("created_at").notNull().defaultNow(),
-  updatedAt: timestamp("updated_at").notNull().defaultNow(),
-});
+export const playerRatings = pgTable(
+  "player_ratings",
+  {
+    id: varchar("id", { length: 36 }).primaryKey().default(sql`gen_random_uuid()`),
+    userId: varchar("user_id", { length: 36 }).notNull(),
+    playerId: varchar("player_id", { length: 36 }).notNull(),
+    matchId: varchar("match_id", { length: 36 }).notNull(),
+    rating: real("rating").notNull(),
+    comment: varchar("comment", { length: 200 }),
+    createdAt: timestamp("created_at").notNull().defaultNow(),
+    updatedAt: timestamp("updated_at").notNull().defaultNow(),
+  },
+  (t) => ({
+    userMatchPlayerUnique: uniqueIndex("player_ratings_user_match_player_unique").on(t.userId, t.matchId, t.playerId),
+  })
+);
 
 export const comments = pgTable("comments", {
   id: varchar("id", { length: 36 }).primaryKey().default(sql`gen_random_uuid()`),
@@ -269,6 +279,41 @@ export const userSessions = pgTable(
   (t) => ({
     expireIdx: index("IDX_user_sessions_expire").on(t.expire),
   }),
+);
+
+export const transfers = pgTable("transfers", {
+  id: varchar("id", { length: 36 }).primaryKey().default(sql`gen_random_uuid()`),
+  playerName: text("player_name").notNull(),
+  playerPhotoUrl: text("player_photo_url"),
+  positionAbbrev: varchar("position_abbrev", { length: 10 }).notNull(),
+  fromTeamId: varchar("from_team_id", { length: 36 }).references(() => teams.id),
+  toTeamId: varchar("to_team_id", { length: 36 }).references(() => teams.id),
+  status: transferStatusEnum("status").notNull(),
+  updatedAt: timestamp("updated_at").notNull().defaultNow(),
+  createdAt: timestamp("created_at").notNull().defaultNow(),
+  sourceLabel: text("source_label"),
+  sourceUrl: text("source_url"),
+  feeText: text("fee_text"),
+  notes: text("notes"),
+});
+
+export const transferVotes = pgTable(
+  "transfer_votes",
+  {
+    id: varchar("id", { length: 36 }).primaryKey().default(sql`gen_random_uuid()`),
+    transferId: varchar("transfer_id", { length: 36 })
+      .notNull()
+      .references(() => transfers.id, { onDelete: "cascade" }),
+    userId: varchar("user_id", { length: 36 })
+      .notNull()
+      .references(() => users.id, { onDelete: "cascade" }),
+    vote: transferVoteEnum("vote").notNull(),
+    createdAt: timestamp("created_at").notNull().defaultNow(),
+  },
+  (t) => ({
+    transferUserUnique: uniqueIndex("transfer_votes_transfer_user_unique").on(t.transferId, t.userId),
+    transferIdIdx: index("transfer_votes_transfer_id_idx").on(t.transferId),
+  })
 );
 
 // ============================================
@@ -410,6 +455,29 @@ export const userLineupsRelations = relations(userLineups, ({ one }) => ({
   }),
 }));
 
+export const transfersRelations = relations(transfers, ({ one, many }) => ({
+  fromTeam: one(teams, {
+    fields: [transfers.fromTeamId],
+    references: [teams.id],
+  }),
+  toTeam: one(teams, {
+    fields: [transfers.toTeamId],
+    references: [teams.id],
+  }),
+  votes: many(transferVotes),
+}));
+
+export const transferVotesRelations = relations(transferVotes, ({ one }) => ({
+  transfer: one(transfers, {
+    fields: [transferVotes.transferId],
+    references: [transfers.id],
+  }),
+  user: one(users, {
+    fields: [transferVotes.userId],
+    references: [users.id],
+  }),
+}));
+
 export const badgesRelations = relations(badges, ({ many }) => ({
   userBadges: many(userBadges),
 }));
@@ -518,6 +586,14 @@ export const insertUserLineupSchema = createInsertSchema(userLineups, {
 }).omit({ id: true, createdAt: true, updatedAt: true });
 export const selectUserLineupSchema = createSelectSchema(userLineups);
 
+// Transfer schemas
+export const insertTransferSchema = createInsertSchema(transfers).omit({ id: true, createdAt: true, updatedAt: true });
+export const selectTransferSchema = createSelectSchema(transfers);
+
+// Transfer vote schemas
+export const insertTransferVoteSchema = createInsertSchema(transferVotes).omit({ id: true, createdAt: true });
+export const selectTransferVoteSchema = createSelectSchema(transferVotes);
+
 // ============================================
 // TYPES
 // ============================================
@@ -565,3 +641,9 @@ export type InsertNotification = z.infer<typeof insertNotificationSchema>;
 
 export type UserLineup = typeof userLineups.$inferSelect;
 export type InsertUserLineup = z.infer<typeof insertUserLineupSchema>;
+
+export type Transfer = typeof transfers.$inferSelect;
+export type InsertTransfer = z.infer<typeof insertTransferSchema>;
+
+export type TransferVote = typeof transferVotes.$inferSelect;
+export type InsertTransferVote = z.infer<typeof insertTransferVoteSchema>;

@@ -1,6 +1,5 @@
 import { useState, useMemo } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Input } from '@/components/ui/input';
@@ -10,8 +9,11 @@ import { positionToSector, SECTOR_LABELS } from '@shared/player-sector';
 
 type PlayerSector = 'GK' | 'DEF' | 'MID' | 'FWD';
 
+/** Player with optional overall from DB (players.overall or equivalent) */
+type PlayerWithOverall = Player & { overall?: number | null };
+
 interface SquadListProps {
-  players: Player[];
+  players: PlayerWithOverall[];
   onPlayerClick?: (player: Player) => void;
   onRatePlayer?: (playerId: string) => void;
   /** When true, player cards are draggable (for lineup builder) */
@@ -20,7 +22,7 @@ interface SquadListProps {
   getPhotoUrl?: (p: Player) => string;
 }
 
-type SortOption = 'overall' | 'age' | 'name' | 'shirt';
+type SortOption = 'overall' | 'name' | 'shirt';
 type PositionFilter = 'ALL' | PlayerSector;
 
 const groupLabels: Record<PlayerSector, string> = SECTOR_LABELS;
@@ -29,16 +31,95 @@ function getPositionGroup(position: string): PlayerSector {
   return positionToSector(position);
 }
 
-// TODO: Calcular overall baseado em ratings quando disponível
-const calculateOverall = (player: Player): number => {
-  // Mock: Por enquanto retorna um valor baseado na posição e número da camisa
-  // No futuro, isso deve vir de uma média de ratings ou stats do jogador
-  const shirtNumber = player.shirtNumber ?? 0;
-  return 70 + (shirtNumber % 30);
-};
+/** Overall from DB when available; otherwise "—" for display */
+function getOverallDisplay(player: PlayerWithOverall): number | string {
+  const v = player.overall;
+  if (v != null && typeof v === 'number' && !Number.isNaN(v)) return v;
+  return '—';
+}
+
+/** For sorting by overall when DB has no overall field (fallback order) */
+function getOverallSortValue(player: PlayerWithOverall): number {
+  const v = player.overall;
+  if (v != null && typeof v === 'number') return v;
+  return (player.shirtNumber ?? 0) % 30;
+}
 
 function getPhotoUrlFallback(p: Player): string {
   return p.photoUrl ?? '/assets/players/placeholder.png';
+}
+
+function getInitials(name: string): string {
+  return name
+    .trim()
+    .split(/\s+/)
+    .slice(0, 2)
+    .map((s) => s[0])
+    .join('')
+    .toUpperCase() || '?';
+}
+
+/** Minimal premium card: photo, name, position, overall only. Clicável (hover). */
+function SquadPlayerCard({
+  player,
+  draggable,
+  getPhotoUrl,
+  onPlayerClick,
+  onDragStart,
+}: {
+  player: PlayerWithOverall;
+  draggable: boolean;
+  getPhotoUrl: (p: Player) => string;
+  onPlayerClick?: (player: Player) => void;
+  onDragStart?: (e: React.DragEvent) => void;
+}) {
+  const [imgError, setImgError] = useState(false);
+  const photoUrl = getPhotoUrl(player);
+  const showPlaceholder = imgError || !player.photoUrl;
+  const overallDisplay = getOverallDisplay(player);
+
+  return (
+    <div
+      className={draggable ? 'relative cursor-grab active:cursor-grabbing' : 'relative'}
+      onClick={() => onPlayerClick?.(player)}
+      draggable={draggable}
+      onDragStart={onDragStart}
+    >
+      <Card className="overflow-hidden transition-all border-card-border hover:shadow-lg hover:border-primary/50 focus-within:ring-2 focus-within:ring-primary/20 focus-within:ring-offset-2 focus-within:ring-offset-background outline-none group cursor-pointer">
+        <CardContent className="p-4 flex flex-col items-center text-center gap-3">
+          <div className="w-20 h-20 rounded-full bg-muted flex items-center justify-center overflow-hidden border-2 border-card-border flex-shrink-0">
+            {showPlaceholder ? (
+              <span className="text-xl font-bold text-muted-foreground select-none" aria-hidden>
+                {getInitials(player.name)}
+              </span>
+            ) : (
+              <img
+                src={photoUrl}
+                alt=""
+                className="w-full h-full object-cover"
+                onError={() => setImgError(true)}
+              />
+            )}
+          </div>
+          <div className="min-w-0 w-full space-y-1">
+            <h4 className="font-semibold text-sm truncate text-foreground">
+              {player.name}
+            </h4>
+            <p className="text-xs text-muted-foreground truncate">
+              {player.position}
+            </p>
+            <div className="flex items-center justify-center gap-1 mt-1">
+              <Star className="h-3.5 w-3.5 fill-yellow-500 text-yellow-500 flex-shrink-0" aria-hidden />
+              <span className="text-sm font-bold text-foreground tabular-nums">
+                {overallDisplay}
+              </span>
+              <span className="sr-only">Overall</span>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+    </div>
+  );
 }
 
 export function SquadList({ players, onPlayerClick, onRatePlayer, draggable, getPhotoUrl = getPhotoUrlFallback }: SquadListProps) {
@@ -74,9 +155,7 @@ export function SquadList({ players, onPlayerClick, onRatePlayer, draggable, get
     filtered.sort((a, b) => {
       switch (sortBy) {
         case 'overall':
-          return calculateOverall(b) - calculateOverall(a);
-        case 'age':
-          return new Date(a.birthDate).getTime() - new Date(b.birthDate).getTime();
+          return getOverallSortValue(b) - getOverallSortValue(a);
         case 'name':
           return a.name.localeCompare(b.name);
         case 'shirt':
@@ -92,7 +171,7 @@ export function SquadList({ players, onPlayerClick, onRatePlayer, draggable, get
   }, [players, positionFilter, searchQuery, sortBy]);
 
   const groupedPlayers = useMemo(() => {
-    const grouped: Record<string, Player[]> = {};
+    const grouped: Record<string, PlayerWithOverall[]> = {};
     filteredAndSortedPlayers.forEach((player) => {
       const group = getPositionGroup(player.position);
       if (!grouped[group]) grouped[group] = [];
@@ -100,18 +179,6 @@ export function SquadList({ players, onPlayerClick, onRatePlayer, draggable, get
     });
     return grouped;
   }, [filteredAndSortedPlayers]);
-
-  const getPlayerAge = (birthDate: string | null | undefined): number | null => {
-    if (!birthDate) return null;
-    const today = new Date();
-    const birth = new Date(birthDate);
-    let age = today.getFullYear() - birth.getFullYear();
-    const monthDiff = today.getMonth() - birth.getMonth();
-    if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birth.getDate())) {
-      age--;
-    }
-    return age;
-  };
 
   return (
     <Card className="bg-card/60 backdrop-blur-sm border-card-border">
@@ -147,7 +214,7 @@ export function SquadList({ players, onPlayerClick, onRatePlayer, draggable, get
               <SelectItem value="FWD">Atacantes</SelectItem>
             </SelectContent>
           </Select>
-          <Select value={sortBy} onValueChange={(v: string) => setSortBy(v as SortOption)}>
+            <Select value={sortBy} onValueChange={(v: string) => setSortBy(v as SortOption)}>
             <SelectTrigger className="w-full sm:w-[180px]">
               <SelectValue />
             </SelectTrigger>
@@ -155,7 +222,6 @@ export function SquadList({ players, onPlayerClick, onRatePlayer, draggable, get
               <SelectItem value="shirt">Número da Camisa</SelectItem>
               <SelectItem value="overall">Overall</SelectItem>
               <SelectItem value="name">Nome</SelectItem>
-              <SelectItem value="age">Idade</SelectItem>
             </SelectContent>
           </Select>
         </div>
@@ -177,80 +243,20 @@ export function SquadList({ players, onPlayerClick, onRatePlayer, draggable, get
                   </h3>
                   <Badge variant="secondary">{positionPlayers.length}</Badge>
                 </div>
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
-                  {positionPlayers.map((player) => {
-                    const age = getPlayerAge(player.birthDate);
-                    const overall = calculateOverall(player);
-                    const shirtNumberLabel = player.shirtNumber ?? '—';
-                    const nationalityLabel = player.nationalitySecondary
-                      ? `${player.nationalityPrimary} / ${player.nationalitySecondary}`
-                      : player.nationalityPrimary;
-                    return (
-                      <div
-                        key={player.id}
-                        className={draggable ? 'relative cursor-grab active:cursor-grabbing' : 'relative'}
-                        onClick={() => onPlayerClick?.(player)}
-                        draggable={!!draggable}
-                        onDragStart={(e) => {
-                          if (draggable) {
-                            e.dataTransfer.setData('playerId', player.id);
-                            e.dataTransfer.effectAllowed = 'copy';
-                          }
-                        }}
-                      >
-                        <Card className={`overflow-hidden hover:shadow-lg transition-all border-card-border hover:border-primary/50 ${draggable ? 'cursor-grab' : 'cursor-pointer'}`}>
-                          <CardContent className="p-4 space-y-3">
-                            <div className="flex items-start gap-3">
-                              <div className="relative flex-shrink-0">
-                                <div className="w-16 h-16 rounded-full bg-muted flex items-center justify-center overflow-hidden border-2 border-card-border">
-                                  <img
-                                    src={getPhotoUrl(player)}
-                                    alt=""
-                                    className="w-full h-full object-cover"
-                                    onError={(e) => { (e.target as HTMLImageElement).src = '/assets/players/placeholder.png'; }}
-                                  />
-                                </div>
-                                <Badge className="absolute -bottom-1 -right-1 h-6 w-6 rounded-full p-0 flex items-center justify-center text-xs font-bold border-2 border-background">
-                                  {shirtNumberLabel}
-                                </Badge>
-                              </div>
-
-                              <div className="flex-1 min-w-0">
-                                <h4 className="font-semibold text-base truncate mb-1 text-foreground">
-                                  {player.name}
-                                </h4>
-                                <div className="flex flex-col gap-1 text-xs text-muted-foreground">
-                                  {age && <span>Idade: {age} anos</span>}
-                                  <span>Posição: {player.position}</span>
-                                  <span>Nacionalidade: {nationalityLabel}</span>
-                                  {player.fromClub ? <span>Origem: {player.fromClub}</span> : null}
-                                </div>
-                                <div className="flex items-center gap-1 mt-2">
-                                  <Star className="h-3 w-3 fill-yellow-500 text-yellow-500" />
-                                  <span className="text-sm font-bold text-foreground">{overall}</span>
-                                  <span className="text-xs text-muted-foreground">Overall</span>
-                                </div>
-                              </div>
-                            </div>
-
-                            {onRatePlayer && (
-                              <Button
-                                variant="outline"
-                                size="sm"
-                                className="w-full font-medium"
-                                onClick={(e) => {
-                                  e.stopPropagation();
-                                  onRatePlayer(player.id);
-                                }}
-                              >
-                                Avaliar
-                              </Button>
-                            )}
-                          </CardContent>
-                        </Card>
-                      </div>
-                    );
-                  })}
+                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+                  {positionPlayers.map((player) => (
+                    <SquadPlayerCard
+                      key={player.id}
+                      player={player}
+                      draggable={!!draggable}
+                      getPhotoUrl={getPhotoUrl}
+                      onPlayerClick={onPlayerClick}
+                      onDragStart={draggable ? (e) => {
+                        e.dataTransfer.setData('playerId', player.id);
+                        e.dataTransfer.effectAllowed = 'copy';
+                      } : undefined}
+                    />
+                  ))}
                 </div>
               </div>
             ))}

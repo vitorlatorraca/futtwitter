@@ -190,6 +190,7 @@ npm run dev
 - `npm run build` - Build for production
 - `npm run start` - Start production server
 - `npm run lint` - Run ESLint
+- `npm run seed:transfers` - Seed demo transfers for "Vai e Vem" (ver `docs/VAI_E_VEM.md`)
 
 ### Project Structure
 

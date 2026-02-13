@@ -701,6 +701,29 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  app.get('/api/teams/:teamId/upcoming-match', requireAuth, async (req, res) => {
+    try {
+      const { teamId } = req.params;
+      const match = await storage.getNextMatch(teamId);
+      if (!match) {
+        return res.json(null);
+      }
+      res.json({
+        id: match.id,
+        opponent: match.opponent,
+        opponentLogoUrl: match.opponentLogoUrl ?? null,
+        matchDate: match.matchDate,
+        stadium: match.stadium ?? null,
+        competition: match.competition ?? null,
+        isHomeMatch: match.isHomeMatch,
+        broadcastChannel: match.broadcastChannel ?? null,
+      });
+    } catch (error) {
+      console.error('Upcoming match error:', error);
+      res.status(500).json({ message: 'Erro ao buscar próximo jogo' });
+    }
+  });
+
   app.get('/api/teams/:teamId/last-match', requireAuth, async (req, res) => {
     try {
       const { teamId } = req.params;
@@ -726,6 +749,109 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // ============================================
   // MATCHES ROUTES
   // ============================================
+
+  app.get('/api/matches/:id', async (req, res) => {
+    try {
+      const match = await storage.getMatch(req.params.id);
+      if (!match) {
+        return res.status(404).json({ message: 'Partida não encontrada' });
+      }
+      res.json(match);
+    } catch (error) {
+      console.error('Get match error:', error);
+      res.status(500).json({ message: 'Erro ao buscar partida' });
+    }
+  });
+
+  app.get('/api/matches/:id/lineup', async (req, res) => {
+    const matchId = req.params.id;
+    try {
+      const lineup = await storage.getMatchLineup(matchId);
+      if (!lineup) {
+        return res.status(404).json({ message: 'Escalação não encontrada' });
+      }
+      if (process.env.NODE_ENV !== 'production') {
+        console.debug('[GET /api/matches/:id/lineup]', { matchId, startersCount: lineup.starters?.length ?? 0, substitutesCount: lineup.substitutes?.length ?? 0 });
+      }
+      res.json(lineup);
+    } catch (error) {
+      console.error('Get match lineup error:', error);
+      res.status(500).json({ message: 'Erro ao buscar escalaçao' });
+    }
+  });
+
+  app.get('/api/matches/:id/ratings', async (req, res) => {
+    const matchId = req.params.id;
+    try {
+      const ratings = await storage.getRatingsByMatch(matchId);
+      const payload = ratings.map((r) => ({
+        playerId: r.playerId,
+        avgRating: r.average,
+        voteCount: r.count,
+      }));
+      if (process.env.NODE_ENV !== 'production') {
+        console.debug('[GET /api/matches/:id/ratings]', { matchId, playersWithAvgRating: payload.length });
+      }
+      res.json(payload);
+    } catch (error) {
+      console.error('Get match ratings error:', error);
+      res.status(500).json({ message: 'Erro ao buscar notas' });
+    }
+  });
+
+  app.get('/api/matches/:id/my-ratings', requireAuth, async (req, res) => {
+    try {
+      const userId = req.session.userId!;
+      const ratings = await storage.getUserRatingsForMatch(userId, req.params.id);
+      const payload = ratings.map((r) => ({ playerId: r.playerId, rating: r.rating }));
+      res.json(payload);
+    } catch (error) {
+      console.error('Get my ratings error:', error);
+      res.status(500).json({ message: 'Erro ao buscar suas notas' });
+    }
+  });
+
+  app.post('/api/ratings', requireAuth, async (req, res) => {
+    try {
+      const userId = req.session.userId!;
+      const { matchId, playerId, rating } = req.body ?? {};
+      if (!matchId || !playerId || typeof rating !== 'number') {
+        return res.status(400).json({ message: 'matchId, playerId e rating são obrigatórios' });
+      }
+      if (rating < 0 || rating > 10) {
+        return res.status(400).json({ message: 'A nota deve estar entre 0 e 10.' });
+      }
+      const r = Math.min(10, Math.max(0, rating));
+      const step = Math.round(r * 2) / 2;
+      const match = await storage.getMatch(matchId);
+      if (!match) {
+        return res.status(404).json({ message: 'Partida não encontrada' });
+      }
+      const player = await storage.getPlayer(playerId);
+      if (!player) {
+        return res.status(404).json({ message: 'Jogador não encontrado' });
+      }
+      const existing = await storage.getUserRatingForPlayerInMatch(userId, matchId, playerId);
+      if (existing) {
+        return res.status(409).json({ message: 'Você já avaliou este jogador nesta partida.' });
+      }
+      const created = await storage.createPlayerRating({ userId, playerId, matchId, rating: step });
+      const byMatch = await storage.getRatingsByMatch(matchId);
+      const thisPlayer = byMatch.find((x) => x.playerId === playerId);
+      res.status(201).json({
+        playerId: created.playerId,
+        matchId: created.matchId,
+        rating: created.rating,
+        voteCount: thisPlayer?.count ?? 0,
+      });
+    } catch (error: any) {
+      console.error('Create rating error:', error);
+      if (error?.code === '23505') {
+        return res.status(409).json({ message: 'Você já avaliou este jogador nesta partida.' });
+      }
+      res.status(400).json({ message: error?.message ?? 'Erro ao salvar nota' });
+    }
+  });
 
   app.get('/api/matches/:teamId/recent', async (req, res) => {
     try {
@@ -1540,6 +1666,63 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error('Recalculate standings error:', error);
       res.status(500).json({ message: 'Erro ao recalcular classificação' });
+    }
+  });
+
+  // ============================================
+  // TRANSFERS (Vai e Vem)
+  // ============================================
+
+  app.get('/api/transfers', async (req, res) => {
+    try {
+      const status = typeof req.query.status === 'string' ? req.query.status.trim() : undefined;
+      const q = typeof req.query.q === 'string' ? req.query.q.trim() : undefined;
+      const teamId = typeof req.query.teamId === 'string' ? req.query.teamId.trim() : undefined;
+      const viewerUserId = req.session?.userId ?? null;
+
+      const items = await storage.getTransfers({ status, q, teamId, viewerUserId });
+      res.json(items);
+    } catch (error) {
+      console.error('Get transfers error:', error);
+      res.status(500).json({ message: 'Erro ao buscar transferências' });
+    }
+  });
+
+  app.post('/api/transfers/:id/vote', requireAuth, async (req, res) => {
+    try {
+      const transferId = req.params.id;
+      const { vote } = req.body ?? {};
+      if (vote !== 'UP' && vote !== 'DOWN') {
+        return res.status(400).json({ message: 'vote deve ser UP ou DOWN' });
+      }
+      const userId = req.session.userId!;
+
+      const transfer = await storage.getTransferById(transferId);
+      if (!transfer) {
+        return res.status(404).json({ message: 'Transferência não encontrada' });
+      }
+
+      const existing = await storage.getUserTransferVote(transferId, userId);
+      if (existing) {
+        return res.status(409).json({ message: 'Você já votou neste item.' });
+      }
+
+      await storage.createTransferVote(transferId, userId, vote);
+
+      const items = await storage.getTransfers({ viewerUserId: userId });
+      const updated = items.find((i) => i.id === transferId);
+      if (!updated) {
+        return res.status(500).json({ message: 'Erro ao retornar dados atualizados' });
+      }
+      res.json({
+        upPercent: updated.upPercent,
+        downPercent: updated.downPercent,
+        voteCount: updated.voteCount,
+        viewerVote: updated.viewerVote,
+      });
+    } catch (error) {
+      console.error('Transfer vote error:', error);
+      res.status(500).json({ message: 'Erro ao registrar voto' });
     }
   });
 

@@ -118,6 +118,18 @@ const config: Config = {
           foreground: "hsl(var(--destructive-foreground))",
         },
         ring: "hsl(var(--ring))",
+        
+        // Meu Time / Sofascore-like
+        "meu-time": {
+          page: "#0B0F14",
+          panel: "#10161D",
+          elevated: "#141C24",
+          accent: "#7C5CFF",
+          "accent-hover": "#8B6CFF",
+          success: "#22C55E",
+          warning: "#EAB308",
+          danger: "#EF4444",
+        },
       },
       borderRadius: {
         soft: "var(--radius-soft, 0.75rem)",

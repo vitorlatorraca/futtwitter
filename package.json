@@ -20,11 +20,15 @@
     "dev:verify:news-feed": "npx cross-env NODE_ENV=development npx tsx server/dev-verify-news-feed.ts",
     "seed:corinthians": "npx tsx server/seed-corinthians-players.ts",
     "seed:corinthians-last-match": "npx tsx server/seed-corinthians-last-match.ts",
+    "seed:corinthians-last5": "npx tsx server/scripts/seed-corinthians-last5.ts",
+    "seed:corinthians-upcoming": "npx tsx server/scripts/seed-corinthians-upcoming.ts",
+    "seed:transfers": "npx tsx server/scripts/seed-transfers-demo.ts",
     "seed:palmeiras": "npx tsx server/seed-palmeiras-players.ts",
     "fetch:corinthians-photos": "npx tsx server/scripts/fetch-corinthians-photos.ts",
     "fetch:palmeiras-photos": "npx tsx server/scripts/fetch-team-photos.ts --teamId=palmeiras --teamSlug=palmeiras",
     "fetch:corinthians-stadium": "npx tsx server/scripts/fetch-corinthians-stadium.ts",
-    "db:backfill-news-scope": "npx tsx server/scripts/backfill-news-scope.ts"
+    "db:backfill-news-scope": "npx tsx server/scripts/backfill-news-scope.ts",
+    "test:lineup-order": "npx tsx client/src/lib/lineupOrder.test.ts"
   },
   "dependencies": {
     "@hookform/resolvers": "^3.10.0",

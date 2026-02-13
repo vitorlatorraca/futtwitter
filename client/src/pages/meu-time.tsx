@@ -7,22 +7,24 @@ import { AppShell } from '@/components/ui/app-shell';
 import { EmptyState } from '@/components/ui/empty-state';
 import { NewsCard } from '@/components/news-card';
 import { StadiumCard } from '@/components/team/stadium-card';
+import { getClubConfig, TeamTabs } from '@/features/meu-time';
 import {
-  getClubConfig,
-  TeamHeaderCard,
-  TeamTabs,
-} from '@/features/meu-time';
+  TeamHeaderPanel,
+  MatchesSidebar,
+  NextMatchHero,
+  LastMatchCard,
+  StandingsMini,
+  RecentFormMini,
+  FanRatingsCompact,
+  TopRatedMini,
+  type FanRatingPlayerCompact,
+} from '@/features/my-team-v2';
 import { SquadList } from '@/components/team/squad-list';
 import { FormationView } from '@/components/team/formation-view';
 import { PerformanceChart } from '@/components/team/performance-chart';
 import { LeagueTable } from '@/components/team/league-table';
 import { SocialIntegration } from '@/components/team/social-integration';
 import { LastMatchRatings } from '@/components/team/last-match-ratings';
-import { FeaturedMatch, type FeaturedMatchData } from '@/components/team/featured-match';
-import { NextMatchCard } from '@/components/team/next-match-card';
-import { RecentForm } from '@/components/team/recent-form';
-import { StandingsSummary } from '@/components/team/standings-summary';
-import { FanRatings, type FanRatingPlayer } from '@/components/team/fan-ratings';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
 import { Slider } from '@/components/ui/slider';
 import { Textarea } from '@/components/ui/textarea';
@@ -509,26 +511,6 @@ export default function MeuTimePage() {
       .slice(0, 10);
   }, [safeTeamData?.matches]);
 
-  const featuredMatchData = useMemo<FeaturedMatchData | null>(() => {
-    const last = lastMatchQuery.data?.match;
-    if (!last || !mergedTeam || !teamId) return null;
-    return {
-      id: last.id,
-      competition: last.competition ?? null,
-      championshipRound: last.championshipRound ?? null,
-      matchDate: last.matchDate,
-      teamScore: last.scoreFor,
-      opponentScore: last.scoreAgainst,
-      status: last.status ?? 'COMPLETED',
-      isHomeMatch: last.homeAway === 'HOME',
-      opponent: last.opponent,
-      opponentLogoUrl: last.opponentLogoUrl ?? null,
-      teamId,
-      teamName: mergedTeam.name,
-      teamLogoUrl: mergedTeam.logoUrl ?? null,
-    };
-  }, [lastMatchQuery.data?.match, mergedTeam, teamId]);
-
   const recentFormMatches = useMemo(() => {
     const base = safeTeamData?.matches ?? [];
     const completed = base.filter(
@@ -548,28 +530,25 @@ export default function MeuTimePage() {
       }));
   }, [safeTeamData?.matches]);
 
-  const fanRatingsPlayers = useMemo<FanRatingPlayer[]>(() => {
+  const fanRatingsPlayersCompact = useMemo<FanRatingPlayerCompact[]>(() => {
     const lineup = matchLineupQuery.data;
     const ratingsByPlayer = new Map(matchRatingsQuery.data?.map((r) => [r.playerId, { average: r.avgRating, count: r.voteCount }]) ?? []);
     const myByPlayer = new Map(myRatingsQuery.data?.map((r) => [r.playerId, r.rating]) ?? []);
     if (!lineup) return [];
-    const starters: FanRatingPlayer[] = lineup.starters.map((s) => ({
+    const starters: FanRatingPlayerCompact[] = lineup.starters.map((s) => ({
       playerId: s.playerId,
       name: s.name,
-      shirtNumber: s.shirtNumber,
       isStarter: true,
       position: s.position ?? null,
       averageRating: ratingsByPlayer.get(s.playerId)?.average ?? null,
       voteCount: ratingsByPlayer.get(s.playerId)?.count ?? 0,
       userRating: myByPlayer.get(s.playerId) ?? null,
     }));
-    const substitutes: FanRatingPlayer[] = lineup.substitutes.map((s) => ({
+    const substitutes: FanRatingPlayerCompact[] = lineup.substitutes.map((s) => ({
       playerId: s.playerId,
       name: s.name,
-      shirtNumber: s.shirtNumber,
       isStarter: false,
       position: s.position ?? null,
-      minuteEntered: s.minuteEntered,
       averageRating: ratingsByPlayer.get(s.playerId)?.average ?? null,
       voteCount: ratingsByPlayer.get(s.playerId)?.count ?? 0,
       userRating: myByPlayer.get(s.playerId) ?? null,
@@ -648,10 +627,10 @@ export default function MeuTimePage() {
   }
 
   return (
-    <AppShell mainClassName="py-6 sm:py-8 md:py-10 px-4 sm:px-6 max-w-4xl mx-auto">
-      <div className="space-y-10">
+    <AppShell mainClassName="py-4 sm:py-6 px-4 sm:px-6 min-h-screen">
+      <div className="max-w-[1600px] mx-auto">
         {isTeamError ? (
-          <div className="rounded-2xl bg-card/80 border border-card-border/80 p-4 flex items-center justify-between gap-4 shadow-sm">
+          <div className="rounded-2xl border border-white/5 bg-card p-4 flex items-center justify-between gap-4 mb-4">
             <div className="text-sm text-foreground-secondary">
               Alguns dados do time não puderam ser carregados agora. O básico foi carregado e o resto continua funcionando.
             </div>
@@ -661,60 +640,52 @@ export default function MeuTimePage() {
           </div>
         ) : null}
 
-        <TeamHeaderCard
-          clubConfig={clubConfig}
-          currentPosition={mergedTeam?.currentPosition ?? safeTeamData.team.currentPosition}
-          reputation={safeTeamData.clubInfo.reputation}
-          team={mergedTeam ?? safeTeamData?.team}
-        />
-
-        <section aria-label="Próximo jogo">
-          <NextMatchCard
-            data={upcomingMatchQuery.data}
-            isLoading={upcomingMatchQuery.isLoading}
-            teamId={teamId ?? ''}
-            teamName={mergedTeam?.name ?? clubConfig.displayName}
-            onVerDetalhes={() => setActiveTab('matches')}
-          />
-        </section>
-
-        <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
+        <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-4">
           <TeamTabs />
 
-          <TabsContent value="overview" className="space-y-10">
-            {/* 1) Última partida */}
-            <section aria-label="Última partida">
-              <FeaturedMatch
-                data={featuredMatchData}
-                isLoading={lastMatchQuery.isLoading}
-                teamId={teamId ?? ''}
-                teamName={mergedTeam?.name ?? clubConfig.displayName}
-              />
-            </section>
-
-            {/* 2) Forma recente + Situação */}
-            <section aria-label="Contexto do time">
-              <div className="rounded-2xl bg-gradient-to-br from-card to-card/60 border border-card-border/80 p-6 sm:p-8 shadow-sm grid grid-cols-1 md:grid-cols-2 gap-8 md:gap-12">
-                <RecentForm
-                  matches={recentFormMatches}
-                  isLoading={!safeTeamData}
+          <TabsContent value="overview" className="mt-4">
+            {/* Layout 3 colunas: desktop | 1 coluna: mobile */}
+            <div className="grid grid-cols-1 lg:grid-cols-[320px_1fr_320px] gap-4 lg:gap-6">
+              {/* COLUNA ESQUERDA - Matches */}
+              <div className="order-2 lg:order-1 space-y-4">
+                <MatchesSidebar
+                  matches={safeTeamData?.matches ?? []}
                   teamId={teamId ?? ''}
-                  limit={5}
-                />
-                <StandingsSummary
-                  teams={mergedLeagueTable}
-                  currentTeamId={safeTeamData?.team.id ?? ''}
+                  teamName={mergedTeam?.name ?? clubConfig.displayName}
                   isLoading={!safeTeamData}
                 />
               </div>
-            </section>
 
-            {/* 3) Notas da torcida */}
-            {lastMatchId && (
-              <section aria-label="Notas da torcida">
-                <div className="rounded-2xl bg-gradient-to-br from-card to-card/60 border border-card-border/80 p-6 sm:p-8 shadow-sm">
-                  <FanRatings
-                    players={fanRatingsPlayers}
+              {/* COLUNA CENTRAL - Main */}
+              <div className="order-1 lg:order-2 space-y-4">
+                <TeamHeaderPanel
+                  clubConfig={clubConfig}
+                  currentPosition={mergedTeam?.currentPosition ?? safeTeamData?.team.currentPosition}
+                />
+                <NextMatchHero
+                  data={upcomingMatchQuery.data}
+                  isLoading={upcomingMatchQuery.isLoading}
+                  teamId={teamId ?? ''}
+                  teamName={mergedTeam?.name ?? clubConfig.displayName}
+                />
+                <LastMatchCard
+                  data={lastMatchQuery.data?.match ? {
+                    id: lastMatchQuery.data.match.id,
+                    opponent: lastMatchQuery.data.match.opponent,
+                    opponentLogoUrl: lastMatchQuery.data.match.opponentLogoUrl,
+                    matchDate: lastMatchQuery.data.match.matchDate,
+                    scoreFor: lastMatchQuery.data.match.scoreFor,
+                    scoreAgainst: lastMatchQuery.data.match.scoreAgainst,
+                    homeAway: lastMatchQuery.data.match.homeAway,
+                    competition: lastMatchQuery.data.match.competition ?? null,
+                  } : null}
+                  isLoading={lastMatchQuery.isLoading}
+                  teamId={teamId ?? ''}
+                  teamName={mergedTeam?.name ?? clubConfig.displayName}
+                />
+                {lastMatchId && (
+                  <FanRatingsCompact
+                    players={fanRatingsPlayersCompact}
                     formation={matchLineupQuery.data?.formation ?? '4-2-3-1'}
                     matchId={lastMatchId}
                     isLoading={matchLineupQuery.isLoading}
@@ -724,11 +695,43 @@ export default function MeuTimePage() {
                     isVoting={fanRatingMutation.isPending}
                     isLoggedIn={!!user}
                   />
-                </div>
-              </section>
-            )}
+                )}
+              </div>
 
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+              {/* COLUNA DIREITA - Contexto */}
+              <div className="order-3 space-y-4">
+                <StandingsMini
+                  teams={mergedLeagueTable}
+                  currentTeamId={safeTeamData?.team.id ?? ''}
+                  isLoading={!safeTeamData}
+                />
+                <RecentFormMini
+                  matches={recentFormMatches}
+                  isLoading={!safeTeamData}
+                  limit={5}
+                />
+                {matchRatingsQuery.data && matchRatingsQuery.data.length > 0 && (
+                  <TopRatedMini
+                    players={matchRatingsQuery.data
+                      .sort((a, b) => b.avgRating - a.avgRating)
+                      .slice(0, 3)
+                      .map((r) => {
+                        const starter = matchLineupQuery.data?.starters.find((s) => s.playerId === r.playerId)
+                          ?? matchLineupQuery.data?.substitutes.find((s) => s.playerId === r.playerId);
+                        return {
+                          playerId: r.playerId,
+                          name: starter?.name ?? '—',
+                          position: starter?.position ?? null,
+                          averageRating: r.avgRating,
+                          voteCount: r.voteCount,
+                        };
+                      })}
+                  />
+                )}
+              </div>
+            </div>
+
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mt-8">
               <StadiumCard
                 stadiumName={safeTeamData.stadium.name}
                 capacity={safeTeamData.stadium.capacity}
@@ -772,7 +775,7 @@ export default function MeuTimePage() {
                   {playersQuery.isLoading ? (
                     <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-4 gap-4">
                       {Array.from({ length: 8 }).map((_, i) => (
-                        <div key={i} className="glass-card border border-card-border rounded-soft p-4">
+                        <div key={i} className="rounded-2xl border border-white/5 bg-card p-4">
                           <div className="flex items-center gap-3">
                             <Skeleton className="h-14 w-14 rounded-full bg-white/10" />
                             <div className="min-w-0 flex-1 space-y-2">
@@ -831,7 +834,7 @@ export default function MeuTimePage() {
               {upcomingMatches.length > 0 ? (
                 <div className="grid gap-3">
                   {upcomingMatches.map((match) => (
-                    <div key={match.id} className="glass-card p-5 flex items-center justify-between gap-4">
+                    <div key={match.id} className="rounded-2xl border border-white/5 bg-card p-5 flex items-center justify-between gap-4">
                       <div className="min-w-0">
                         <div className="font-semibold text-foreground truncate">{match.opponent}</div>
                         <div className="text-xs text-foreground-secondary flex items-center gap-2">
@@ -866,7 +869,7 @@ export default function MeuTimePage() {
               {recentMatches.length > 0 ? (
                 <div className="grid gap-3">
                   {recentMatches.map((match) => (
-                    <div key={match.id} className="glass-card p-5 flex items-center justify-between gap-4">
+                    <div key={match.id} className="rounded-2xl border border-white/5 bg-card p-5 flex items-center justify-between gap-4">
                       <div className="min-w-0">
                         <div className="font-semibold text-foreground truncate">{match.opponent}</div>
                         <div className="text-xs text-foreground-secondary flex items-center gap-2">
@@ -932,7 +935,7 @@ export default function MeuTimePage() {
               </div>
             ) : matches && matches.length > 0 ? (
               matches.map((match) => (
-                <div key={match.id} className="p-6 rounded-soft glass-card border-card-border space-y-4">
+                <div key={match.id} className="p-6 rounded-2xl border border-white/5 bg-card space-y-4">
                   <div className="flex items-center justify-between pb-3 border-b border-card-border">
                     <div>
                       <p className="font-display font-bold text-lg text-foreground">{match.opponent}</p>
@@ -976,7 +979,7 @@ export default function MeuTimePage() {
                 </div>
               ))
             ) : (
-              <div className="p-12 text-center rounded-soft glass-card border-card-border">
+              <div className="p-12 text-center rounded-2xl border border-white/5 bg-card">
                 <p className="text-foreground-secondary">Não há partidas recentes para avaliar</p>
               </div>
             )}

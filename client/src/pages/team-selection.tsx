@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { useToast } from '@/hooks/use-toast';
 import { TEAMS_DATA } from '@/lib/team-data';
+import { Crest } from '@/components/ui-premium';
 import { Loader2, ShieldCheck } from 'lucide-react';
 
 export default function TeamSelectionPage() {
@@ -62,7 +63,7 @@ export default function TeamSelectionPage() {
   return (
     <div className="min-h-screen bg-background">
       <div className="page-container py-10 sm:py-14">
-        <div className="glass-card p-6 sm:p-8 mb-8">
+        <div className="rounded-2xl border border-white/5 bg-card p-6 sm:p-8 mb-8">
           <div className="flex items-start gap-4">
             <div className="rounded-full border border-card-border bg-surface-elevated p-3">
               <ShieldCheck className="h-5 w-5 text-primary" />
@@ -83,15 +84,11 @@ export default function TeamSelectionPage() {
             <button
               key={team.id}
               onClick={() => handleTeamClick(team.id)}
-              className="glass-card-hover group flex flex-col items-center gap-2 p-3 transition-all"
+              className="rounded-2xl border border-white/5 bg-card hover:border-white/10 transition-colors group flex flex-col items-center gap-2 p-3 transition-all"
               data-testid={`button-team-${team.id}`}
             >
-              <div className="relative w-full aspect-square rounded-full overflow-hidden border border-card-border bg-surface-elevated group-hover:border-primary transition-colors">
-                <img
-                  src={team.logoUrl}
-                  alt={`Escudo do ${team.name}`}
-                  className="w-full h-full object-cover"
-                />
+              <div className="relative w-full aspect-square rounded-full overflow-hidden border border-white/5 bg-card flex items-center justify-center p-2 group-hover:border-primary transition-colors">
+                <Crest slug={team.id} alt={team.name} size="lg" className="w-full h-full" />
               </div>
               <span className="text-xs font-semibold text-center leading-tight hidden md:block text-foreground">
                 {team.shortName}
@@ -108,12 +105,8 @@ export default function TeamSelectionPage() {
             <DialogDescription className="text-center pt-4">
               {team && (
                 <div className="flex flex-col items-center gap-4">
-                  <div className="w-24 h-24 rounded-full overflow-hidden border-2" style={{ borderColor: team.primaryColor }}>
-                    <img
-                      src={team.logoUrl}
-                      alt={`Escudo do ${team.name}`}
-                      className="w-full h-full object-cover"
-                    />
+                  <div className="w-24 h-24 rounded-full overflow-hidden border-2 flex items-center justify-center p-2" style={{ borderColor: team.primaryColor }}>
+                    <Crest slug={team.id} alt={team.name} size="lg" className="w-full h-full" />
                   </div>
                   <div>
                     <p className="font-display font-bold text-xl mb-2">{team.name}</p>

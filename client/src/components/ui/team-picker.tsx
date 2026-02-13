@@ -4,6 +4,7 @@ import { Check, ChevronDown } from "lucide-react";
 
 import { TEAMS_DATA, type TeamData } from "@/lib/team-data";
 import { cn } from "@/lib/utils";
+import { Crest } from "@/components/ui-premium";
 import { Button } from "@/components/ui/button";
 import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from "@/components/ui/command";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
@@ -50,12 +51,7 @@ export function TeamPicker({ value, onValueChange, className }: TeamPickerProps)
                   }}
                   className="gap-2"
                 >
-                  <img
-                    src={team.logoUrl}
-                    alt=""
-                    className="h-5 w-5 rounded-full"
-                    aria-hidden="true"
-                  />
+                  <Crest slug={team.id} alt={team.name} size="xs" />
                   <span className="flex-1 truncate">{team.name}</span>
                   <Check className={cn("h-4 w-4", value === team.id ? "opacity-100" : "opacity-0")} />
                 </CommandItem>

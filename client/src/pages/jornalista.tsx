@@ -9,6 +9,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Badge } from '@/components/ui/badge';
 import { AppShell } from '@/components/ui/app-shell';
+import { Panel, SectionHeader, Crest } from '@/components/ui-premium';
 import { PageHeader } from '@/components/ui/page';
 import { EmptyState } from '@/components/ui/empty-state';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
@@ -218,17 +219,15 @@ export default function JornalistaPage() {
 
       <div className="page-grid">
         <div className="lg:col-span-8 space-y-4">
-          <div className="flex items-baseline justify-between gap-4">
-            <div>
-              <div className="section-title">Minhas Publicações</div>
-              <div className="section-subtitle">Seus cards, do jeito premium que um feed merece.</div>
-            </div>
-          </div>
+            <SectionHeader
+              title="Minhas Publicações"
+              subtitle="Seus cards, do jeito premium que um feed merece."
+            />
 
           {isLoadingMyNews ? (
             <div className="grid gap-4">
               {[1, 2, 3].map((i) => (
-                <div key={i} className="glass-card p-6">
+                <Panel key={i}>
                   <div className="flex items-center justify-between gap-3">
                     <div className="flex items-center gap-2">
                       <div className="h-6 w-24 rounded-full bg-surface-elevated border border-card-border" />
@@ -244,13 +243,13 @@ export default function JornalistaPage() {
                     <div className="h-3 w-full rounded bg-surface-elevated border border-card-border" />
                     <div className="h-3 w-11/12 rounded bg-surface-elevated border border-card-border" />
                   </div>
-                </div>
+                </Panel>
               ))}
             </div>
           ) : myNews && myNews.length > 0 ? (
             <div className="grid gap-4">
               {myNews.map((news: any) => (
-                <Card key={news.id} className="glass-card-hover">
+                <Card key={news.id} className="rounded-2xl border border-white/5 bg-card hover:border-white/10 transition-colors">
                   <CardContent className="p-6">
                     <div className="flex items-start justify-between gap-4">
                       <div className="flex-1 min-w-0">
@@ -318,21 +317,21 @@ export default function JornalistaPage() {
 
         <aside className="page-aside">
           <div className="sticky top-24 space-y-4">
-            <div className="glass-card p-6">
-              <div className="section-title">Foto do perfil</div>
+            <Panel>
+              <SectionHeader title="Foto do perfil" />
               <div className="mt-3">
                 <AvatarUploader avatarUrl={user?.avatarUrl ?? null} disabled={!user} />
               </div>
-            </div>
-            <div className="glass-card p-6">
-              <div className="section-title">Checklist editorial</div>
+            </Panel>
+            <Panel>
+              <SectionHeader title="Checklist editorial" />
               <ul className="mt-3 space-y-2 text-sm text-foreground-secondary">
                 <li>• Título curto, forte, sem clickbait</li>
                 <li>• Primeiro parágrafo com contexto</li>
                 <li>• Imagem em 16:9 (png/jpg/webp)</li>
                 <li>• Categoria correta (Notícia/Análise/Bastidores/Mercado)</li>
               </ul>
-            </div>
+            </Panel>
           </div>
         </aside>
       </div>
@@ -388,7 +387,7 @@ export default function JornalistaPage() {
                     {TEAMS_DATA.map((team) => (
                       <SelectItem key={team.id} value={team.id}>
                         <div className="flex items-center gap-2">
-                          <img src={team.logoUrl} alt="" className="w-5 h-5 rounded-full" aria-hidden="true" />
+                          <Crest slug={team.id} alt={team.name} size="xs" />
                           {team.name}
                         </div>
                       </SelectItem>
@@ -441,7 +440,7 @@ export default function JornalistaPage() {
               <p className="text-xs text-foreground-muted text-right font-mono">{formData.content.length}/1000</p>
             </div>
 
-            <div className="glass-card p-4">
+            <Panel padding="sm" className="mt-2">
               <div className="flex items-center justify-between gap-3">
                 <div className="flex items-center gap-2">
                   <FileImage className="h-4 w-4 text-foreground-secondary" />
@@ -480,7 +479,7 @@ export default function JornalistaPage() {
                   )}
                 </div>
               </div>
-            </div>
+            </Panel>
 
             <DialogFooter className="gap-2">
               <Button type="button" variant="outline" onClick={resetForm} data-testid="button-cancel">

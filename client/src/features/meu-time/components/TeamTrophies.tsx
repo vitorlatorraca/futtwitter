@@ -20,7 +20,7 @@ function TrophyCard({ item }: { item: ClubTrophy }) {
     item.yearsDisplay ?? (item.years?.length ? item.years.slice(-5).join(', ') : null);
 
   return (
-    <Card className="glass-card border-card-border overflow-hidden transition-all duration-fast hover:border-primary/30">
+    <Card className="rounded-2xl border border-white/5 bg-card overflow-hidden transition-all duration-fast hover:border-primary/30">
       <CardContent className="p-4 flex flex-row sm:flex-col gap-4 sm:gap-3">
         <div className="flex-shrink-0 w-14 h-14 sm:w-16 sm:h-16 rounded-lg bg-card flex items-center justify-center overflow-hidden border border-card-border">
           <img

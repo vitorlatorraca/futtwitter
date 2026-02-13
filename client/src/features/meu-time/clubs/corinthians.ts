@@ -8,8 +8,8 @@ export const corinthiansConfig: ClubConfig = {
   league: 'Brasileirão Série A',
   seasonLabel: String(new Date().getFullYear()),
   stadiumName: 'Neo Química Arena',
+  coach: 'Dorival Jr',
   stadiumImageSrc: '/assets/stadiums/corinthians/neo-quimica-arena.jpg',
-  badgeSrc: '/assets/teams/corinthians/badge.svg',
   theme: {
     primary: '#000000',
     secondary: '#FFFFFF',
