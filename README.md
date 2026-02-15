@@ -182,11 +182,20 @@ npm install
 npm run dev
 ```
 
-3. Open [http://localhost:3000](http://localhost:3000) in your browser.
+3. Open [http://localhost:5000](http://localhost:5000) in your browser.
+
+**Se a porta 5000 estiver em uso** (ex.: processo node/tsx travado de execução anterior):
+```bash
+npm run kill:5000    # Mata o processo que usa a porta 5000
+npm run dev          # Ou use dev:clean para matar + subir em um comando
+# Alternativa: npm run dev:clean
+```
 
 ### Available Scripts
 
-- `npm run dev` - Start development server
+- `npm run dev` - Start development server (db:push + server na porta 5000)
+- `npm run dev:clean` - Mata porta 5000 e sobe o server (use quando "Porta em uso")
+- `npm run kill:5000` - Mata o processo que escuta na porta 5000 (Windows)
 - `npm run build` - Build for production
 - `npm run start` - Start production server
 - `npm run lint` - Run ESLint

@@ -10,6 +10,9 @@ import SignupPage from "@/pages/signup";
 import TeamSelectionPage from "@/pages/team-selection";
 import DashboardPage from "@/pages/dashboard";
 import MeuTimePage from "@/pages/meu-time";
+import MeuTimeElencoPage from "@/pages/meu-time-elenco";
+import MeuTimeComunidadeTopicPage from "@/pages/meu-time-comunidade";
+import { MatchesPage } from "@/features/team/matches";
 import PerfilPage from "@/pages/perfil";
 import JornalistaPage from "@/pages/jornalista";
 import JogosParaSeDivertirPage from "@/pages/jogos-para-se-divertir";
@@ -72,6 +75,9 @@ function Router() {
       <Route path="/selecionar-time" component={TeamSelectionPage} />
       <Route path="/dashboard" component={() => <ProtectedRoute component={DashboardPage} />} />
       <Route path="/meu-time" component={() => <ProtectedRoute component={MeuTimePage} />} />
+      <Route path="/meu-time/elenco" component={() => <ProtectedRoute component={MeuTimeElencoPage} />} />
+      <Route path="/meu-time/comunidade/:topicId" component={() => <ProtectedRoute component={MeuTimeComunidadeTopicPage} />} />
+      <Route path="/meu-time/jogos" component={() => <ProtectedRoute component={MatchesPage} />} />
       <Route path="/jogos" component={() => <ProtectedRoute component={JogosParaSeDivertirPage} />} />
       <Route path="/vai-e-vem" component={() => <ProtectedRoute component={VaiEVemPage} />} />
       <Route path="/perfil" component={() => <ProtectedRoute component={PerfilPage} />} />

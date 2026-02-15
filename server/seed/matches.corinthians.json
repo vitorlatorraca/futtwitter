@@ -1,0 +1,99 @@
+{
+  "teamId": "corinthians",
+  "season": "2026",
+  "matches": [
+    {
+      "competition": "Brasileirão Betano",
+      "date": "2026-02-15",
+      "time": "18:30",
+      "home": "São Bernardo",
+      "away": "Corinthians",
+      "status": "SCHEDULED",
+      "homeScore": null,
+      "awayScore": null,
+      "venue": null
+    },
+    {
+      "competition": "Paulista Série A1",
+      "date": "2026-02-10",
+      "time": "18:00",
+      "home": "Corinthians",
+      "away": "RB Bragantino",
+      "status": "FT",
+      "homeScore": 2,
+      "awayScore": 0,
+      "venue": "Neo Química Arena",
+      "teamRating": 7.6
+    },
+    {
+      "competition": "Paulista Série A1",
+      "date": "2026-02-08",
+      "time": "18:00",
+      "home": "Corinthians",
+      "away": "Palmeiras",
+      "status": "FT",
+      "homeScore": 0,
+      "awayScore": 1,
+      "venue": "Neo Química Arena",
+      "teamRating": 6.4
+    },
+    {
+      "competition": "Paulista Série A1",
+      "date": "2026-02-05",
+      "time": "18:00",
+      "home": "Corinthians",
+      "away": "Capivariano",
+      "status": "FT",
+      "homeScore": 3,
+      "awayScore": 0,
+      "venue": "Neo Química Arena",
+      "teamRating": 7.8
+    },
+    {
+      "competition": "Supercopa do Brasil",
+      "date": "2026-02-04",
+      "time": "21:00",
+      "home": "Athletico",
+      "away": "Corinthians",
+      "status": "POSTPONED",
+      "homeScore": null,
+      "awayScore": null,
+      "venue": null
+    },
+    {
+      "competition": "Paulista Série A1",
+      "date": "2026-02-01",
+      "time": "18:00",
+      "home": "Flamengo",
+      "away": "Corinthians",
+      "status": "FT",
+      "homeScore": 0,
+      "awayScore": 2,
+      "venue": null,
+      "teamRating": 7.3
+    },
+    {
+      "competition": "Brasileirão Betano",
+      "date": "2026-02-01",
+      "time": "18:00",
+      "home": "Corinthians",
+      "away": "Capivariano",
+      "status": "POSTPONED",
+      "homeScore": null,
+      "awayScore": null,
+      "venue": null
+    },
+    {
+      "competition": "Paulista Série A1",
+      "date": "2026-01-28",
+      "time": "18:00",
+      "home": "Corinthians",
+      "away": "Bahia",
+      "status": "FT",
+      "homeScore": 1,
+      "awayScore": 2,
+      "venue": "Neo Química Arena",
+      "teamRating": 6.7
+    }
+  ]
+}

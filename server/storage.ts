@@ -1,5 +1,5 @@
 import { db } from "./db";
-import { eq, and, desc, or, ilike, sql, inArray, gt } from "drizzle-orm";
+import { eq, and, desc, or, ilike, sql, inArray, gt, lt } from "drizzle-orm";
 import { TEAMS_DATA } from "./teams-data";
 import {
   users,
@@ -8,6 +8,9 @@ import {
   players,
   matches,
   matchPlayers,
+  competitions,
+  fixtures,
+  teamMatchRatings,
   news,
   newsInteractions,
   comments,
@@ -19,6 +22,9 @@ import {
   userLineups,
   transfers,
   transferVotes,
+  transferRumors,
+  transferRumorVotes,
+  transferRumorComments,
   type User,
   type InsertUser,
   type Journalist,
@@ -29,6 +35,9 @@ import {
   type InsertPlayer,
   type Match,
   type InsertMatch,
+  type Competition,
+  type Fixture,
+  type InsertFixture,
   type News,
   type InsertNewsServer,
   type NewsInteraction,
@@ -45,6 +54,10 @@ import {
   type InsertTransfer,
   type TransferVote,
   type InsertTransferVote,
+  type TransferRumor,
+  type InsertTransferRumor,
+  type TransferRumorComment,
+  type InsertTransferRumorComment,
 } from "@shared/schema";
 
 export interface IStorage {
@@ -75,6 +88,7 @@ export interface IStorage {
   getPlayersByTeam(teamId: string): Promise<Player[]>;
   getPlayer(id: string): Promise<Player | undefined>;
   createPlayer(player: InsertPlayer): Promise<Player>;
+  searchPlayers(q: string, limit?: number): Promise<Array<Player & { teamName?: string }>>;
 
   // Matches
   getMatch(id: string): Promise<Match | undefined>;
@@ -86,6 +100,12 @@ export interface IStorage {
     match: { id: string; opponent: string; opponentLogoUrl: string | null; matchDate: Date; teamScore: number; opponentScore: number; isHomeMatch: boolean; competition: string | null; championshipRound: number | null; status: string; isMock: boolean };
     players: Array<{ playerId: string; name: string; shirtNumber: number | null; rating: number; minutes: number | null }>;
   } | null>;
+
+  // Fixtures (Jogos do Meu Time)
+  getFixturesByTeam(teamId: string, options?: { type?: "upcoming" | "recent" | "all"; limit?: number; competitionId?: string; season?: string }): Promise<Array<Fixture & { competition: { name: string; logoUrl: string | null }; teamRating: number | null }>>;
+  getFixtureById(id: string): Promise<(Fixture & { competition: Competition }) | undefined>;
+  createFixture(fixture: InsertFixture): Promise<Fixture>;
+  updateFixture(id: string, data: Partial<Pick<Fixture, "status" | "homeScore" | "awayScore" | "kickoffAt" | "round" | "venue">>): Promise<Fixture | undefined>;
 
   // News
   getAllNews(options?: { teamId?: string; limit?: number; scope?: "all" | "team" | "europe"; userTeamId?: string }): Promise<any[]>;
@@ -151,8 +171,28 @@ export interface IStorage {
   getTransfers(filters: { status?: string; q?: string; teamId?: string; viewerUserId?: string | null }): Promise<any[]>;
   getTransferById(id: string): Promise<Transfer | undefined>;
   createTransfer(transfer: InsertTransfer): Promise<Transfer>;
-  getUserTransferVote(transferId: string, userId: string): Promise<TransferVote | undefined>;
-  createTransferVote(transferId: string, userId: string, vote: "UP" | "DOWN"): Promise<TransferVote>;
+  upsertTransferVote(
+    transferId: string,
+    userId: string,
+    side: "SELLING" | "BUYING",
+    vote: "LIKE" | "DISLIKE" | "CLEAR"
+  ): Promise<{ selling: { likes: number; dislikes: number }; buying: { likes: number; dislikes: number }; userVoteSelling: "LIKE" | "DISLIKE" | null; userVoteBuying: "LIKE" | "DISLIKE" | null }>;
+
+  // Transfer Rumors (Vai e Vem - schema transfer_rumors)
+  getTransferRumors(filters: { status?: string; q?: string; teamId?: string; createdByUserId?: string; viewerUserId?: string | null; limit?: number; offset?: number }): Promise<any[]>;
+  getTransferRumorsByAuthor(userId: string): Promise<any[]>;
+  getTransferRumorById(id: string): Promise<any | undefined>;
+  createTransferRumor(insert: InsertTransferRumor): Promise<TransferRumor>;
+  updateTransferRumor(id: string, data: Partial<Pick<TransferRumor, "status" | "feeAmount" | "feeCurrency" | "contractUntil" | "sourceName" | "sourceUrl" | "note">>): Promise<TransferRumor | undefined>;
+  deleteTransferRumor(id: string): Promise<boolean>;
+  upsertTransferRumorVote(
+    rumorId: string,
+    userId: string,
+    side: "SELLING" | "BUYING",
+    vote: "LIKE" | "DISLIKE" | "CLEAR"
+  ): Promise<{ selling: { likes: number; dislikes: number }; buying: { likes: number; dislikes: number }; userVoteSelling: "LIKE" | "DISLIKE" | null; userVoteBuying: "LIKE" | "DISLIKE" | null }>;
+  listTransferRumorComments(rumorId: string): Promise<Array<{ id: string; content: string; createdAt: Date; author: { name: string; avatarUrl: string | null } }>>;
+  createTransferRumorComment(rumorId: string, userId: string, content: string): Promise<TransferRumorComment>;
 }
 
 /** Formation slot order by position: GK, DEF, MID, FWD (for 4-2-3-1) */
@@ -357,6 +397,46 @@ export class DatabaseStorage implements IStorage {
     return player;
   }
 
+  async searchPlayers(q: string, limit = 10): Promise<Array<Player & { teamName?: string }>> {
+    const term = q.trim();
+    if (!term) return [];
+    const rows = await db
+      .select({
+        id: players.id,
+        teamId: players.teamId,
+        shirtNumber: players.shirtNumber,
+        name: players.name,
+        fullName: players.fullName,
+        knownName: players.knownName,
+        position: players.position,
+        birthDate: players.birthDate,
+        nationalityPrimary: players.nationalityPrimary,
+        nationalitySecondary: players.nationalitySecondary,
+        nationalityCountryId: players.nationalityCountryId,
+        primaryPosition: players.primaryPosition,
+        secondaryPositions: players.secondaryPositions,
+        heightCm: players.heightCm,
+        preferredFoot: players.preferredFoot,
+        marketValueEur: players.marketValueEur,
+        fromClub: players.fromClub,
+        photoUrl: players.photoUrl,
+        sector: players.sector,
+        slug: players.slug,
+        createdAt: players.createdAt,
+        updatedAt: players.updatedAt,
+        teamName: teams.name,
+      })
+      .from(players)
+      .leftJoin(teams, eq(players.teamId, teams.id))
+      .where(ilike(players.name, `%${term}%`))
+      .orderBy(players.name)
+      .limit(limit);
+    return rows.map((r) => ({
+      ...r,
+      teamName: r.teamName ?? undefined,
+    })) as Array<Player & { teamName?: string }>;
+  }
+
   // Matches
   async getMatch(id: string): Promise<Match | undefined> {
     const [match] = await db.select().from(matches).where(eq(matches.id, id)).limit(1);
@@ -441,6 +521,112 @@ export class DatabaseStorage implements IStorage {
         minutes: p.minutes,
       })),
     };
+  }
+
+  // Fixtures (Jogos do Meu Time) — inclui teamRating quando disponível
+  async getFixturesByTeam(
+    teamId: string,
+    options?: { type?: "upcoming" | "recent" | "all"; limit?: number; competitionId?: string; season?: string }
+  ): Promise<Array<Fixture & { competition: { name: string; logoUrl: string | null }; teamRating: number | null }>> {
+    const limit = options?.limit ?? 20;
+    const now = new Date();
+    const conditions = [eq(fixtures.teamId, teamId)];
+    if (options?.competitionId) conditions.push(eq(fixtures.competitionId, options.competitionId));
+    if (options?.season) conditions.push(eq(fixtures.season, options.season));
+
+    const selectWithRating = {
+      fixture: fixtures,
+      competitionName: competitions.name,
+      competitionLogoUrl: competitions.logoUrl,
+      teamRating: teamMatchRatings.rating,
+    };
+
+    if (options?.type === "upcoming") {
+      const rows = await db
+        .select(selectWithRating)
+        .from(fixtures)
+        .innerJoin(competitions, eq(fixtures.competitionId, competitions.id))
+        .leftJoin(
+          teamMatchRatings,
+          and(eq(teamMatchRatings.fixtureId, fixtures.id), eq(teamMatchRatings.teamId, teamId))
+        )
+        .where(and(...conditions, gt(fixtures.kickoffAt, now)))
+        .orderBy(fixtures.kickoffAt)
+        .limit(limit);
+      return rows.map((r) => ({
+        ...r.fixture,
+        competition: { name: r.competitionName, logoUrl: r.competitionLogoUrl ?? null },
+        teamRating: r.teamRating != null ? Number(r.teamRating) : null,
+      }));
+    }
+    if (options?.type === "recent") {
+      const rows = await db
+        .select(selectWithRating)
+        .from(fixtures)
+        .innerJoin(competitions, eq(fixtures.competitionId, competitions.id))
+        .leftJoin(
+          teamMatchRatings,
+          and(eq(teamMatchRatings.fixtureId, fixtures.id), eq(teamMatchRatings.teamId, teamId))
+        )
+        .where(and(...conditions, lt(fixtures.kickoffAt, now)))
+        .orderBy(desc(fixtures.kickoffAt))
+        .limit(limit);
+      return rows.map((r) => ({
+        ...r.fixture,
+        competition: { name: r.competitionName, logoUrl: r.competitionLogoUrl ?? null },
+        teamRating: r.teamRating != null ? Number(r.teamRating) : null,
+      }));
+    }
+    // Sofascore-style: upcoming first (asc), then recent past (desc)
+    const rows = await db
+      .select(selectWithRating)
+      .from(fixtures)
+      .innerJoin(competitions, eq(fixtures.competitionId, competitions.id))
+      .leftJoin(
+        teamMatchRatings,
+        and(eq(teamMatchRatings.fixtureId, fixtures.id), eq(teamMatchRatings.teamId, teamId))
+      )
+      .where(and(...conditions))
+      .orderBy(
+        sql`(${fixtures.kickoffAt} > now()) desc`,
+        sql`case when ${fixtures.kickoffAt} > now() then ${fixtures.kickoffAt} end asc nulls last`,
+        sql`case when ${fixtures.kickoffAt} <= now() then ${fixtures.kickoffAt} end desc nulls first`
+      )
+      .limit(limit);
+    return rows.map((r) => ({
+      ...r.fixture,
+      competition: { name: r.competitionName, logoUrl: r.competitionLogoUrl ?? null },
+      teamRating: r.teamRating != null ? Number(r.teamRating) : null,
+    }));
+  }
+
+  async getFixtureById(id: string): Promise<(Fixture & { competition: Competition }) | undefined> {
+    const [row] = await db
+      .select()
+      .from(fixtures)
+      .innerJoin(competitions, eq(fixtures.competitionId, competitions.id))
+      .where(eq(fixtures.id, id))
+      .limit(1);
+    if (!row) return undefined;
+    const { competitions: comp, ...fix } = row;
+    return { ...fix, competition: comp } as any;
+  }
+
+  async createFixture(insertFixture: InsertFixture): Promise<Fixture> {
+    const [f] = await db.insert(fixtures).values(insertFixture).returning();
+    return f;
+  }
+
+  async updateFixture(
+    id: string,
+    data: Partial<Pick<Fixture, "status" | "homeScore" | "awayScore" | "kickoffAt" | "round" | "venue">>
+  ): Promise<Fixture | undefined> {
+    const [updated] = await db
+      .update(fixtures)
+      .set({ ...data, updatedAt: new Date() })
+      .where(eq(fixtures.id, id))
+      .returning();
+    return updated ?? undefined;
   }
 
   async getMatchLineup(matchId: string): Promise<{
@@ -1205,6 +1391,7 @@ export class DatabaseStorage implements IStorage {
         fromTeamId: transfers.fromTeamId,
         toTeamId: transfers.toTeamId,
         status: transfers.status,
+        createdByJournalistId: transfers.createdByJournalistId,
         updatedAt: transfers.updatedAt,
         feeText: transfers.feeText,
         notes: transfers.notes,
@@ -1215,44 +1402,77 @@ export class DatabaseStorage implements IStorage {
       .limit(100);
 
     const allTeamIds = new Set<string>();
+    const journalistIds = new Set<string>();
     for (const r of result) {
       if (r.fromTeamId) allTeamIds.add(r.fromTeamId);
       if (r.toTeamId) allTeamIds.add(r.toTeamId);
+      if (r.createdByJournalistId) journalistIds.add(r.createdByJournalistId);
     }
+
     const teamList =
       allTeamIds.size > 0
         ? await db.select().from(teams).where(inArray(teams.id, Array.from(allTeamIds)))
         : [];
-    const teamMap = new Map(teamList.map((t) => [t.id, { id: t.id, name: t.name, slug: t.id }]));
+    const teamMap = new Map(teamList.map((t) => [t.id, { id: t.id, name: t.name, shortName: t.shortName, slug: t.id }]));
+
+    // Author (journalist + user name)
+    let authorMap = new Map<string, { id: string; name: string; avatarUrl: string | null; badge: string }>();
+    if (journalistIds.size > 0) {
+      const authorRows = await db
+        .select({
+          journalistId: journalists.id,
+          name: users.name,
+          avatarUrl: users.avatarUrl,
+        })
+        .from(journalists)
+        .innerJoin(users, eq(journalists.userId, users.id))
+        .where(inArray(journalists.id, Array.from(journalistIds)));
+      for (const a of authorRows) {
+        authorMap.set(a.journalistId, {
+          id: a.journalistId,
+          name: a.name,
+          avatarUrl: a.avatarUrl ?? null,
+          badge: "Jornalista",
+        });
+      }
+    }
 
     const transferIds = result.map((r) => r.id);
+
+    // Vote counts by transfer + side + vote
     const voteCounts =
       transferIds.length > 0
         ? await db
             .select({
               transferId: transferVotes.transferId,
+              side: transferVotes.side,
               vote: transferVotes.vote,
               count: sql<number>`count(*)::int`,
             })
             .from(transferVotes)
             .where(inArray(transferVotes.transferId, transferIds))
-            .groupBy(transferVotes.transferId, transferVotes.vote)
+            .groupBy(transferVotes.transferId, transferVotes.side, transferVotes.vote)
         : [];
 
-    const voteMap = new Map<string, { up: number; down: number }>();
+    const voteMap = new Map<string, { selling: { likes: number; dislikes: number }; buying: { likes: number; dislikes: number } }>();
     for (const id of transferIds) {
-      voteMap.set(id, { up: 0, down: 0 });
+      voteMap.set(id, {
+        selling: { likes: 0, dislikes: 0 },
+        buying: { likes: 0, dislikes: 0 },
+      });
     }
     for (const v of voteCounts) {
       const m = voteMap.get(v.transferId)!;
-      if (v.vote === "UP") m.up = v.count;
-      else m.down = v.count;
+      const sideKey = v.side === "SELLING" ? "selling" : "buying";
+      if (v.vote === "LIKE") m[sideKey].likes = v.count;
+      else m[sideKey].dislikes = v.count;
     }
 
-    let viewerVotesMap = new Map<string, "UP" | "DOWN">();
-    if (filters.viewerUserId) {
+    // Viewer votes by transfer + side
+    let viewerVotesMap = new Map<string, { selling: "LIKE" | "DISLIKE" | null; buying: "LIKE" | "DISLIKE" | null }>();
+    if (filters.viewerUserId && transferIds.length > 0) {
       const viewerVotes = await db
-        .select({ transferId: transferVotes.transferId, vote: transferVotes.vote })
+        .select({ transferId: transferVotes.transferId, side: transferVotes.side, vote: transferVotes.vote })
         .from(transferVotes)
         .where(
           and(
@@ -1260,16 +1480,22 @@ export class DatabaseStorage implements IStorage {
             inArray(transferVotes.transferId, transferIds)
           )
         );
-      viewerVotesMap = new Map(viewerVotes.map((v) => [v.transferId, v.vote]));
+      for (const id of transferIds) {
+        viewerVotesMap.set(id, { selling: null, buying: null });
+      }
+      for (const v of viewerVotes) {
+        const entry = viewerVotesMap.get(v.transferId)!;
+        if (v.side === "SELLING") entry.selling = v.vote;
+        else entry.buying = v.vote;
+      }
     }
 
     return result.map((r) => {
       const votes = voteMap.get(r.id)!;
-      const total = votes.up + votes.down;
-      const upPercent = total > 0 ? Math.round((votes.up / total) * 100) : 0;
-      const downPercent = total > 0 ? Math.round((votes.down / total) * 100) : 0;
+      const viewerVotes = viewerVotesMap.get(r.id) ?? { selling: null, buying: null };
       const fromTeam = r.fromTeamId ? teamMap.get(r.fromTeamId) : null;
       const toTeam = r.toTeamId ? teamMap.get(r.toTeamId) : null;
+      const author = r.createdByJournalistId ? authorMap.get(r.createdByJournalistId) ?? null : null;
       return {
         id: r.id,
         playerName: r.playerName,
@@ -1281,10 +1507,17 @@ export class DatabaseStorage implements IStorage {
         updatedAt: r.updatedAt,
         feeText: r.feeText,
         notes: r.notes,
-        upPercent,
-        downPercent,
-        voteCount: total,
-        viewerVote: viewerVotesMap.get(r.id) ?? null,
+        author,
+        selling: {
+          likes: votes.selling.likes,
+          dislikes: votes.selling.dislikes,
+          userVote: viewerVotes.selling,
+        },
+        buying: {
+          likes: votes.buying.likes,
+          dislikes: votes.buying.dislikes,
+          userVote: viewerVotes.buying,
+        },
       };
     });
   }
@@ -1299,25 +1532,400 @@ export class DatabaseStorage implements IStorage {
     return t;
   }
 
-  async getUserTransferVote(transferId: string, userId: string): Promise<TransferVote | undefined> {
-    const [row] = await db
-      .select()
-      .from(transferVotes)
-      .where(and(eq(transferVotes.transferId, transferId), eq(transferVotes.userId, userId)))
-      .limit(1);
-    return row ?? undefined;
-  }
-
-  async createTransferVote(
+  async upsertTransferVote(
     transferId: string,
     userId: string,
-    vote: "UP" | "DOWN"
-  ): Promise<TransferVote> {
-    const [v] = await db
-      .insert(transferVotes)
-      .values({ transferId, userId, vote })
+    side: "SELLING" | "BUYING",
+    vote: "LIKE" | "DISLIKE" | "CLEAR"
+  ): Promise<{
+    selling: { likes: number; dislikes: number };
+    buying: { likes: number; dislikes: number };
+    userVoteSelling: "LIKE" | "DISLIKE" | null;
+    userVoteBuying: "LIKE" | "DISLIKE" | null;
+  }> {
+    if (vote === "CLEAR") {
+      await db
+        .delete(transferVotes)
+        .where(
+          and(
+            eq(transferVotes.transferId, transferId),
+            eq(transferVotes.userId, userId),
+            eq(transferVotes.side, side)
+          )
+        );
+    } else {
+      await db
+        .insert(transferVotes)
+        .values({ transferId, userId, side, vote })
+        .onConflictDoUpdate({
+          target: [transferVotes.transferId, transferVotes.userId, transferVotes.side],
+          set: { vote },
+        });
+    }
+
+    // Recompute aggregates
+    const counts = await db
+      .select({
+        side: transferVotes.side,
+        vote: transferVotes.vote,
+        count: sql<number>`count(*)::int`,
+      })
+      .from(transferVotes)
+      .where(eq(transferVotes.transferId, transferId))
+      .groupBy(transferVotes.side, transferVotes.vote);
+
+    const selling = { likes: 0, dislikes: 0 };
+    const buying = { likes: 0, dislikes: 0 };
+    for (const c of counts) {
+      const target = c.side === "SELLING" ? selling : buying;
+      if (c.vote === "LIKE") target.likes = c.count;
+      else target.dislikes = c.count;
+    }
+
+    const viewerVotes = await db
+      .select({ side: transferVotes.side, vote: transferVotes.vote })
+      .from(transferVotes)
+      .where(and(eq(transferVotes.transferId, transferId), eq(transferVotes.userId, userId)));
+
+    let userVoteSelling: "LIKE" | "DISLIKE" | null = null;
+    let userVoteBuying: "LIKE" | "DISLIKE" | null = null;
+    for (const v of viewerVotes) {
+      if (v.side === "SELLING") userVoteSelling = v.vote;
+      else userVoteBuying = v.vote;
+    }
+
+    return {
+      selling,
+      buying,
+      userVoteSelling,
+      userVoteBuying,
+    };
+  }
+
+  // Transfer Rumors (Vai e Vem - schema transfer_rumors)
+  async getTransferRumors(filters: { status?: string; q?: string; teamId?: string; createdByUserId?: string; viewerUserId?: string | null; limit?: number; offset?: number }): Promise<any[]> {
+    const conditions: any[] = [];
+    if (filters.status && ["RUMOR", "NEGOTIATING", "DONE", "CANCELLED"].includes(filters.status)) {
+      conditions.push(eq(transferRumors.status, filters.status as "RUMOR" | "NEGOTIATING" | "DONE" | "CANCELLED"));
+    } else if (!filters.createdByUserId) {
+      // Public list ("Todos"): exclude CANCELLED. Mine (createdByUserId) shows all.
+      conditions.push(inArray(transferRumors.status, ["RUMOR", "NEGOTIATING", "DONE"]));
+    }
+    if (filters.q && filters.q.trim()) {
+      conditions.push(ilike(players.name, `%${filters.q.trim()}%`));
+    }
+    if (filters.teamId && filters.teamId.trim()) {
+      conditions.push(
+        or(
+          eq(transferRumors.fromTeamId, filters.teamId.trim()),
+          eq(transferRumors.toTeamId, filters.teamId.trim())
+        )!
+      );
+    }
+    if (filters.createdByUserId && filters.createdByUserId.trim()) {
+      conditions.push(eq(transferRumors.createdByUserId, filters.createdByUserId.trim()));
+    }
+
+    const result = await db
+      .select({
+        id: transferRumors.id,
+        playerId: transferRumors.playerId,
+        fromTeamId: transferRumors.fromTeamId,
+        toTeamId: transferRumors.toTeamId,
+        status: transferRumors.status,
+        feeAmount: transferRumors.feeAmount,
+        feeCurrency: transferRumors.feeCurrency,
+        contractUntil: transferRumors.contractUntil,
+        sourceUrl: transferRumors.sourceUrl,
+        sourceName: transferRumors.sourceName,
+        note: transferRumors.note,
+        createdByUserId: transferRumors.createdByUserId,
+        createdAt: transferRumors.createdAt,
+        updatedAt: transferRumors.updatedAt,
+        playerName: players.name,
+        playerPhotoUrl: players.photoUrl,
+        playerPosition: players.position,
+      })
+      .from(transferRumors)
+      .innerJoin(players, eq(transferRumors.playerId, players.id))
+      .where(and(...conditions))
+      .orderBy(desc(transferRumors.createdAt))
+      .limit(filters.limit ?? 100)
+      .offset(filters.offset ?? 0);
+
+    const allTeamIds = new Set<string>();
+    const authorIds = new Set<string>();
+    for (const r of result) {
+      allTeamIds.add(r.fromTeamId);
+      allTeamIds.add(r.toTeamId);
+      authorIds.add(r.createdByUserId);
+    }
+
+    const teamList =
+      allTeamIds.size > 0
+        ? await db.select().from(teams).where(inArray(teams.id, Array.from(allTeamIds)))
+        : [];
+    const teamMap = new Map(teamList.map((t) => [t.id, { id: t.id, name: t.name, shortName: t.shortName, slug: t.id, logoUrl: t.logoUrl ?? null }]));
+
+    const authorRows =
+      authorIds.size > 0
+        ? await db
+            .select({ id: users.id, name: users.name, avatarUrl: users.avatarUrl })
+            .from(users)
+            .where(inArray(users.id, Array.from(authorIds)))
+        : [];
+    const authorMap = new Map(authorRows.map((a) => [a.id, { id: a.id, name: a.name, avatarUrl: a.avatarUrl ?? null, badge: "Jornalista" }]));
+
+    const rumorIds = result.map((r) => r.id);
+    const voteCounts =
+      rumorIds.length > 0
+        ? await db
+            .select({
+              rumorId: transferRumorVotes.rumorId,
+              side: transferRumorVotes.side,
+              vote: transferRumorVotes.vote,
+              count: sql<number>`count(*)::int`,
+            })
+            .from(transferRumorVotes)
+            .where(inArray(transferRumorVotes.rumorId, rumorIds))
+            .groupBy(transferRumorVotes.rumorId, transferRumorVotes.side, transferRumorVotes.vote)
+        : [];
+
+    const voteMap = new Map<string, { selling: { likes: number; dislikes: number }; buying: { likes: number; dislikes: number } }>();
+    for (const id of rumorIds) {
+      voteMap.set(id, { selling: { likes: 0, dislikes: 0 }, buying: { likes: 0, dislikes: 0 } });
+    }
+    for (const v of voteCounts) {
+      const m = voteMap.get(v.rumorId)!;
+      const sideKey = v.side === "SELLING" ? "selling" : "buying";
+      if (v.vote === "LIKE") m[sideKey].likes = v.count;
+      else m[sideKey].dislikes = v.count;
+    }
+
+    let viewerVotesMap = new Map<string, { selling: "LIKE" | "DISLIKE" | null; buying: "LIKE" | "DISLIKE" | null }>();
+    if (filters.viewerUserId && rumorIds.length > 0) {
+      const viewerVotes = await db
+        .select({ rumorId: transferRumorVotes.rumorId, side: transferRumorVotes.side, vote: transferRumorVotes.vote })
+        .from(transferRumorVotes)
+        .where(
+          and(
+            eq(transferRumorVotes.userId, filters.viewerUserId),
+            inArray(transferRumorVotes.rumorId, rumorIds)
+          )
+        );
+      for (const id of rumorIds) {
+        viewerVotesMap.set(id, { selling: null, buying: null });
+      }
+      for (const v of viewerVotes) {
+        const entry = viewerVotesMap.get(v.rumorId)!;
+        if (v.side === "SELLING") entry.selling = v.vote;
+        else entry.buying = v.vote;
+      }
+    }
+
+    return result.map((r) => {
+      const votes = voteMap.get(r.id)!;
+      const viewerVotes = viewerVotesMap.get(r.id) ?? { selling: null, buying: null };
+      return {
+        id: r.id,
+        player: { id: r.playerId, name: r.playerName, photoUrl: r.playerPhotoUrl, position: r.playerPosition },
+        fromTeam: teamMap.get(r.fromTeamId) ?? null,
+        toTeam: teamMap.get(r.toTeamId) ?? null,
+        status: r.status,
+        feeAmount: r.feeAmount,
+        feeCurrency: r.feeCurrency,
+        sourceName: r.sourceName,
+        sourceUrl: r.sourceUrl,
+        note: r.note,
+        createdAt: r.createdAt,
+        updatedAt: r.updatedAt,
+        author: authorMap.get(r.createdByUserId) ?? null,
+        selling: { likes: votes.selling.likes, dislikes: votes.selling.dislikes, userVote: viewerVotes.selling },
+        buying: { likes: votes.buying.likes, dislikes: votes.buying.dislikes, userVote: viewerVotes.buying },
+      };
+    });
+  }
+
+  async getTransferRumorById(id: string): Promise<any | undefined> {
+    const [r] = await db
+      .select({
+        id: transferRumors.id,
+        playerId: transferRumors.playerId,
+        fromTeamId: transferRumors.fromTeamId,
+        toTeamId: transferRumors.toTeamId,
+        status: transferRumors.status,
+        feeAmount: transferRumors.feeAmount,
+        feeCurrency: transferRumors.feeCurrency,
+        contractUntil: transferRumors.contractUntil,
+        sourceUrl: transferRumors.sourceUrl,
+        sourceName: transferRumors.sourceName,
+        note: transferRumors.note,
+        createdByUserId: transferRumors.createdByUserId,
+        createdAt: transferRumors.createdAt,
+        updatedAt: transferRumors.updatedAt,
+        playerName: players.name,
+        playerPhotoUrl: players.photoUrl,
+        playerPosition: players.position,
+      })
+      .from(transferRumors)
+      .innerJoin(players, eq(transferRumors.playerId, players.id))
+      .where(eq(transferRumors.id, id))
+      .limit(1);
+    if (!r) return undefined;
+
+    const [fromTeam, toTeam] = await Promise.all([
+      db.select().from(teams).where(eq(teams.id, r.fromTeamId)).limit(1),
+      db.select().from(teams).where(eq(teams.id, r.toTeamId)).limit(1),
+    ]);
+    const [author] = await db.select({ name: users.name, avatarUrl: users.avatarUrl }).from(users).where(eq(users.id, r.createdByUserId)).limit(1);
+
+    const voteCounts = await db
+      .select({ side: transferRumorVotes.side, vote: transferRumorVotes.vote, count: sql<number>`count(*)::int` })
+      .from(transferRumorVotes)
+      .where(eq(transferRumorVotes.rumorId, id))
+      .groupBy(transferRumorVotes.side, transferRumorVotes.vote);
+
+    const selling = { likes: 0, dislikes: 0 };
+    const buying = { likes: 0, dislikes: 0 };
+    for (const v of voteCounts) {
+      const target = v.side === "SELLING" ? selling : buying;
+      if (v.vote === "LIKE") target.likes = v.count;
+      else target.dislikes = v.count;
+    }
+
+    return {
+      id: r.id,
+      createdByUserId: r.createdByUserId,
+      player: { id: r.playerId, name: r.playerName, photoUrl: r.playerPhotoUrl, position: r.playerPosition },
+      fromTeam: fromTeam[0] ? { id: fromTeam[0].id, name: fromTeam[0].name, shortName: fromTeam[0].shortName } : null,
+      toTeam: toTeam[0] ? { id: toTeam[0].id, name: toTeam[0].name, shortName: toTeam[0].shortName } : null,
+      status: r.status,
+      feeAmount: r.feeAmount,
+      feeCurrency: r.feeCurrency,
+      sourceName: r.sourceName,
+      sourceUrl: r.sourceUrl,
+      note: r.note,
+      createdAt: r.createdAt,
+      author: author ? { id: r.createdByUserId, name: author.name, avatarUrl: author.avatarUrl ?? null, badge: "Jornalista" } : null,
+      selling,
+      buying,
+    };
+  }
+
+  async getTransferRumorsByAuthor(userId: string): Promise<any[]> {
+    return this.getTransferRumors({
+      createdByUserId: userId,
+      viewerUserId: null,
+    });
+  }
+
+  async createTransferRumor(insert: InsertTransferRumor): Promise<TransferRumor> {
+    const [t] = await db.insert(transferRumors).values(insert).returning();
+    return t;
+  }
+
+  async updateTransferRumor(
+    id: string,
+    data: Partial<Pick<TransferRumor, "status" | "feeAmount" | "feeCurrency" | "contractUntil" | "sourceName" | "sourceUrl" | "note">>
+  ): Promise<TransferRumor | undefined> {
+    const [updated] = await db
+      .update(transferRumors)
+      .set({ ...data, updatedAt: new Date() })
+      .where(eq(transferRumors.id, id))
       .returning();
-    return v;
+    return updated ?? undefined;
+  }
+
+  async deleteTransferRumor(id: string): Promise<boolean> {
+    const deleted = await db
+      .delete(transferRumors)
+      .where(eq(transferRumors.id, id))
+      .returning({ id: transferRumors.id });
+    return deleted.length > 0;
+  }
+
+  async upsertTransferRumorVote(
+    rumorId: string,
+    userId: string,
+    side: "SELLING" | "BUYING",
+    vote: "LIKE" | "DISLIKE" | "CLEAR"
+  ): Promise<{ selling: { likes: number; dislikes: number }; buying: { likes: number; dislikes: number }; userVoteSelling: "LIKE" | "DISLIKE" | null; userVoteBuying: "LIKE" | "DISLIKE" | null }> {
+    if (vote === "CLEAR") {
+      await db
+        .delete(transferRumorVotes)
+        .where(and(eq(transferRumorVotes.rumorId, rumorId), eq(transferRumorVotes.userId, userId), eq(transferRumorVotes.side, side)));
+    } else {
+      await db
+        .insert(transferRumorVotes)
+        .values({ rumorId, userId, side, vote })
+        .onConflictDoUpdate({
+          target: [transferRumorVotes.rumorId, transferRumorVotes.userId, transferRumorVotes.side],
+          set: { vote },
+        });
+    }
+
+    const counts = await db
+      .select({
+        side: transferRumorVotes.side,
+        vote: transferRumorVotes.vote,
+        count: sql<number>`count(*)::int`,
+      })
+      .from(transferRumorVotes)
+      .where(eq(transferRumorVotes.rumorId, rumorId))
+      .groupBy(transferRumorVotes.side, transferRumorVotes.vote);
+
+    const selling = { likes: 0, dislikes: 0 };
+    const buying = { likes: 0, dislikes: 0 };
+    for (const c of counts) {
+      const target = c.side === "SELLING" ? selling : buying;
+      if (c.vote === "LIKE") target.likes = c.count;
+      else target.dislikes = c.count;
+    }
+
+    const viewerVotes = await db
+      .select({ side: transferRumorVotes.side, vote: transferRumorVotes.vote })
+      .from(transferRumorVotes)
+      .where(and(eq(transferRumorVotes.rumorId, rumorId), eq(transferRumorVotes.userId, userId)));
+
+    let userVoteSelling: "LIKE" | "DISLIKE" | null = null;
+    let userVoteBuying: "LIKE" | "DISLIKE" | null = null;
+    for (const v of viewerVotes) {
+      if (v.side === "SELLING") userVoteSelling = v.vote;
+      else userVoteBuying = v.vote;
+    }
+
+    return { selling, buying, userVoteSelling, userVoteBuying };
+  }
+
+  async listTransferRumorComments(rumorId: string): Promise<Array<{ id: string; content: string; createdAt: Date; author: { name: string; avatarUrl: string | null } }>> {
+    const rows = await db
+      .select({
+        id: transferRumorComments.id,
+        content: transferRumorComments.content,
+        createdAt: transferRumorComments.createdAt,
+        userName: users.name,
+        userAvatarUrl: users.avatarUrl,
+      })
+      .from(transferRumorComments)
+      .innerJoin(users, eq(transferRumorComments.userId, users.id))
+      .where(and(eq(transferRumorComments.rumorId, rumorId), eq(transferRumorComments.isDeleted, false)))
+      .orderBy(desc(transferRumorComments.createdAt))
+      .limit(100);
+
+    return rows.map((r) => ({
+      id: r.id,
+      content: r.content,
+      createdAt: r.createdAt,
+      author: { name: r.userName, avatarUrl: r.userAvatarUrl ?? null },
+    }));
+  }
+
+  async createTransferRumorComment(rumorId: string, userId: string, content: string): Promise<TransferRumorComment> {
+    const [c] = await db
+      .insert(transferRumorComments)
+      .values({ rumorId, userId, content })
+      .returning();
+    return c!;
   }
 }
 

@@ -1,4 +1,4 @@
-import { useMemo, useState, type ChangeEvent } from 'react';
+import { useMemo, useState, useEffect, type ChangeEvent } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { useAuth } from '@/lib/auth-context';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -6,34 +6,31 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { AppShell } from '@/components/ui/app-shell';
 import { EmptyState } from '@/components/ui/empty-state';
 import { NewsCard } from '@/components/news-card';
-import { StadiumCard } from '@/components/team/stadium-card';
 import { getClubConfig, TeamTabs } from '@/features/meu-time';
+import { TransfersBoard } from '@/features/transfers';
 import {
-  TeamHeaderPanel,
-  MatchesSidebar,
   NextMatchHero,
-  LastMatchCard,
-  StandingsMini,
-  RecentFormMini,
-  FanRatingsCompact,
+  PerformanceCard,
   TopRatedMini,
-  type FanRatingPlayerCompact,
+  LastMatchRatingsCard,
+  TransfersPreviewMini,
+  ElencoPreviewMini,
 } from '@/features/my-team-v2';
-import { SquadList } from '@/components/team/squad-list';
-import { FormationView } from '@/components/team/formation-view';
+import { MatchesCard } from '@/features/team/matches';
+import { LineupSection, resolvePlayerPhoto } from '@/features/my-team-v2';
 import { PerformanceChart } from '@/components/team/performance-chart';
 import { LeagueTable } from '@/components/team/league-table';
-import { SocialIntegration } from '@/components/team/social-integration';
-import { LastMatchRatings } from '@/components/team/last-match-ratings';
+import { ForumTab } from '@/features/forum';
+import { ClassificacaoTab } from '@/features/meu-time';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
 import { Slider } from '@/components/ui/slider';
 import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
 import { Button } from '@/components/ui/button';
-import { Separator } from '@/components/ui/separator';
 import { useToast } from '@/hooks/use-toast';
 import { apiRequest, getApiUrl } from '@/lib/queryClient';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { useLocation } from 'wouter';
 import { CalendarDays, Loader2, Newspaper } from 'lucide-react';
 import type { Team, Player, Match, News } from '@shared/schema';
 import { format } from 'date-fns';
@@ -84,8 +81,31 @@ export default function MeuTimePage() {
   const queryClient = useQueryClient();
   const [selectedPlayer, setSelectedPlayer] = useState<Player | null>(null);
   const [ratings, setRatings] = useState<Record<string, { rating: number; comment: string }>>({});
-  const [activeTab, setActiveTab] = useState<string>("overview");
+  const [activeTab, setActiveTab] = useState<string>(() => {
+    if (typeof window !== 'undefined') {
+      const p = new URLSearchParams(window.location.search);
+      const t = p.get('tab');
+      if (t && ['overview', 'classificacao', 'news', 'matches', 'performance', 'vai-e-vem', 'comunidade'].includes(t)) return t;
+    }
+    return 'overview';
+  });
   const teamId = user?.teamId ?? null;
+
+  const [location] = useLocation();
+  useEffect(() => {
+    const p = new URLSearchParams(window.location.search);
+    const t = p.get('tab');
+    if (t && ['overview', 'classificacao', 'news', 'matches', 'performance', 'vai-e-vem', 'comunidade'].includes(t)) {
+      setActiveTab(t);
+    }
+  }, [location]);
+
+  const handleTabChange = (v: string) => {
+    setActiveTab(v);
+    const url = new URL(window.location.href);
+    url.searchParams.set('tab', v);
+    window.history.replaceState({}, '', url.toString());
+  };
   const season = new Date().getFullYear(); // used only for labels (DB-only mode)
 
   const teamsQuery = useQuery<Team[]>({
@@ -194,82 +214,28 @@ export default function MeuTimePage() {
     enabled: !!teamId,
   });
 
-  const lastMatchQuery = useQuery<{
-    match: {
-      id: string;
-      opponent: string;
-      opponentLogoUrl?: string | null;
-      matchDate: string;
-      scoreFor: number;
-      scoreAgainst: number;
-      homeAway: string;
-      competition: string | null;
-      championshipRound?: number | null;
-      status?: string;
-      isMock?: boolean;
-    };
-    players: Array<{ playerId: string; name: string; shirtNumber: number | null; rating: number; minutes: number | null }>;
-  } | null>({
-    queryKey: ['myTeamOverview', teamId, 'last-match'],
+  const topRatedQuery = useQuery<{
+    players: Array<{
+      playerId: string;
+      name: string;
+      photoUrl: string | null;
+      position: string | null;
+      shirtNumber: number | null;
+      avgRating: number;
+      matchesPlayed: number;
+    }>;
+    lastNMatches?: number;
+  }>({
+    queryKey: ['/api/teams', teamId, 'top-rated'],
     queryFn: async () => {
-      if (!teamId) return null;
-      const res = await fetch(`/api/teams/${teamId}/last-match`, { credentials: 'include' });
-      if (!res.ok) return null;
-      const data = await res.json();
-      return data.match ? data : null;
-    },
-    enabled: !!teamId,
-  });
-
-  const lastMatchId = lastMatchQuery.data?.match?.id ?? null;
-  const matchLineupQuery = useQuery<{
-    formation: string;
-    starters: Array<{ playerId: string; name: string; shirtNumber: number | null; position: string; minutesPlayed: number | null }>;
-    substitutes: Array<{ playerId: string; name: string; shirtNumber: number | null; position: string; minutesPlayed: number | null; minuteEntered: number | null }>;
-  } | null>({
-    queryKey: ['lineup', lastMatchId],
-    queryFn: async () => {
-      if (!lastMatchId) return null;
-      const res = await fetch(`/api/matches/${lastMatchId}/lineup`, { credentials: 'include' });
-      if (!res.ok) return null;
-      const data = await res.json();
-      if (import.meta.env.DEV) {
-        console.debug('[Meu Time] lineup fetch', {
-          matchId: lastMatchId,
-          startersCount: data?.starters?.length ?? 0,
-          subsCount: data?.substitutes?.length ?? 0,
-          payload: data,
-        });
-      }
-      return data;
-    },
-    enabled: !!lastMatchId,
-  });
-
-  const matchRatingsQuery = useQuery<Array<{ playerId: string; avgRating: number; voteCount: number }>>({
-    queryKey: ['ratings', lastMatchId],
-    queryFn: async () => {
-      if (!lastMatchId) return [];
-      const res = await fetch(`/api/matches/${lastMatchId}/ratings`, { credentials: 'include' });
-      if (!res.ok) return [];
-      const data = await res.json();
-      if (import.meta.env.DEV) {
-        console.debug('[Meu Time] ratings fetch', { matchId: lastMatchId, ratingsLength: data?.length ?? 0, payload: data });
-      }
-      return data;
-    },
-    enabled: !!lastMatchId,
-  });
-
-  const myRatingsQuery = useQuery<Array<{ playerId: string; rating: number }>>({
-    queryKey: ['myRatings', lastMatchId],
-    queryFn: async () => {
-      if (!lastMatchId) return [];
-      const res = await fetch(`/api/matches/${lastMatchId}/my-ratings`, { credentials: 'include' });
-      if (!res.ok) return [];
+      if (!teamId) return { players: [] };
+      const res = await fetch(`/api/teams/${teamId}/top-rated?limit=5&lastN=5`, {
+        credentials: 'include',
+      });
+      if (!res.ok) return { players: [] };
       return res.json();
     },
-    enabled: !!lastMatchId && !!user,
+    enabled: !!teamId,
   });
 
   const lineupQuery = useQuery<{ formation: string; slots: Array<{ slotIndex: number; playerId: string }> } | null>({
@@ -332,6 +298,21 @@ export default function MeuTimePage() {
   }, [safeTeamData]);
 
   const clubConfig = useMemo(() => getClubConfig(teamId), [teamId]);
+
+  const lineupInitial = useMemo(() => {
+    const fromApi = lineupQuery.data;
+    if (fromApi) return { formation: fromApi.formation, slots: fromApi.slots };
+    if (teamId && typeof window !== 'undefined') {
+      try {
+        const raw = localStorage.getItem(`futtwitter:lineup:${teamId}`);
+        if (raw) {
+          const parsed = JSON.parse(raw) as { formation?: string; slots?: Array<{ slotIndex: number; playerId: string }> };
+          return { formation: parsed.formation ?? '4-3-3', slots: parsed.slots ?? [] };
+        }
+      } catch { /* ignore */ }
+    }
+    return { formation: '4-3-3', slots: [] };
+  }, [lineupQuery.data, teamId]);
 
   const { data: matches, isLoading: isLoadingMatches } = useQuery<Match[]>({
     queryKey: ['/api/matches', teamId],
@@ -396,45 +377,6 @@ export default function MeuTimePage() {
         title: 'Erro',
         description: error.message || 'Não foi possível salvar a avaliação',
       });
-    },
-  });
-
-  const fanRatingMutation = useMutation({
-    mutationFn: async ({ playerId, matchId, rating }: { playerId: string; matchId: string; rating: number }) => {
-      const res = await apiRequest('POST', '/api/ratings', { playerId, matchId, rating });
-      return res.json() as Promise<{ playerId: string; matchId: string; rating: number; voteCount: number }>;
-    },
-    onMutate: async ({ playerId, matchId, rating }) => {
-      if (!lastMatchId || matchId !== lastMatchId) return {};
-      await queryClient.cancelQueries({ queryKey: ['myRatings', lastMatchId] });
-      const prevMy = queryClient.getQueryData<Array<{ playerId: string; rating: number }>>(['myRatings', lastMatchId]);
-      queryClient.setQueryData(['myRatings', lastMatchId], (old: Array<{ playerId: string; rating: number }> | undefined) => {
-        const list = old ?? [];
-        const without = list.filter((r) => r.playerId !== playerId);
-        return [...without, { playerId, rating }];
-      });
-      return { prevMy };
-    },
-    onError: (err: unknown, _vars, context) => {
-      if (lastMatchId && context?.prevMy != null) {
-        queryClient.setQueryData(['myRatings', lastMatchId], context.prevMy);
-      }
-      const message = err instanceof Error ? err.message : '';
-      const is409 = message.startsWith('409:');
-      if (lastMatchId && is409) {
-        queryClient.invalidateQueries({ queryKey: ['myRatings', lastMatchId] });
-      }
-    },
-    onSuccess: (_data, { matchId: mId }) => {
-      if (lastMatchId && mId === lastMatchId) {
-        queryClient.invalidateQueries({ queryKey: ['ratings', lastMatchId] });
-      }
-    },
-    onSettled: () => {
-      if (lastMatchId) {
-        queryClient.invalidateQueries({ queryKey: ['ratings', lastMatchId] });
-        queryClient.invalidateQueries({ queryKey: ['myRatings', lastMatchId] });
-      }
     },
   });
 
@@ -530,32 +472,6 @@ export default function MeuTimePage() {
       }));
   }, [safeTeamData?.matches]);
 
-  const fanRatingsPlayersCompact = useMemo<FanRatingPlayerCompact[]>(() => {
-    const lineup = matchLineupQuery.data;
-    const ratingsByPlayer = new Map(matchRatingsQuery.data?.map((r) => [r.playerId, { average: r.avgRating, count: r.voteCount }]) ?? []);
-    const myByPlayer = new Map(myRatingsQuery.data?.map((r) => [r.playerId, r.rating]) ?? []);
-    if (!lineup) return [];
-    const starters: FanRatingPlayerCompact[] = lineup.starters.map((s) => ({
-      playerId: s.playerId,
-      name: s.name,
-      isStarter: true,
-      position: s.position ?? null,
-      averageRating: ratingsByPlayer.get(s.playerId)?.average ?? null,
-      voteCount: ratingsByPlayer.get(s.playerId)?.count ?? 0,
-      userRating: myByPlayer.get(s.playerId) ?? null,
-    }));
-    const substitutes: FanRatingPlayerCompact[] = lineup.substitutes.map((s) => ({
-      playerId: s.playerId,
-      name: s.name,
-      isStarter: false,
-      position: s.position ?? null,
-      averageRating: ratingsByPlayer.get(s.playerId)?.average ?? null,
-      voteCount: ratingsByPlayer.get(s.playerId)?.count ?? 0,
-      userRating: myByPlayer.get(s.playerId) ?? null,
-    }));
-    return [...starters, ...substitutes];
-  }, [matchLineupQuery.data, matchRatingsQuery.data, myRatingsQuery.data]);
-
   if (isAuthLoading) {
     return (
       <AppShell>
@@ -627,7 +543,7 @@ export default function MeuTimePage() {
   }
 
   return (
-    <AppShell mainClassName="py-4 sm:py-6 px-4 sm:px-6 min-h-screen">
+    <AppShell mainClassName="py-4 sm:py-6 px-4 sm:px-6 min-h-screen bg-gradient-to-b from-zinc-950 to-black">
       <div className="max-w-[1600px] mx-auto">
         {isTeamError ? (
           <div className="rounded-2xl border border-white/5 bg-card p-4 flex items-center justify-between gap-4 mb-4">
@@ -640,165 +556,102 @@ export default function MeuTimePage() {
           </div>
         ) : null}
 
-        <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-4">
-          <TeamTabs />
+        <Tabs value={activeTab} onValueChange={handleTabChange} className="space-y-4">
+          <TeamTabs
+            clubConfig={clubConfig}
+            currentPosition={mergedTeam?.currentPosition ?? safeTeamData?.team.currentPosition}
+          />
 
           <TabsContent value="overview" className="mt-4">
-            {/* Layout 3 colunas: desktop | 1 coluna: mobile */}
-            <div className="grid grid-cols-1 lg:grid-cols-[320px_1fr_320px] gap-4 lg:gap-6">
-              {/* COLUNA ESQUERDA - Matches */}
-              <div className="order-2 lg:order-1 space-y-4">
-                <MatchesSidebar
-                  matches={safeTeamData?.matches ?? []}
-                  teamId={teamId ?? ''}
-                  teamName={mergedTeam?.name ?? clubConfig.displayName}
-                  isLoading={!safeTeamData}
-                />
-              </div>
-
-              {/* COLUNA CENTRAL - Main */}
-              <div className="order-1 lg:order-2 space-y-4">
-                <TeamHeaderPanel
-                  clubConfig={clubConfig}
-                  currentPosition={mergedTeam?.currentPosition ?? safeTeamData?.team.currentPosition}
-                />
+            {/* Grid premium: 3 col desktop, 2 tablet, 1 mobile. Ritmo vertical consistente (gap-5). */}
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-[380px_1fr_380px] gap-5 max-w-[1280px] auto-rows-auto">
+              {/* 1. Próximo jogo — mobile 1º, desktop col1 row1 */}
+              <div className="min-h-[110px] order-1 lg:col-start-1 lg:row-start-1">
                 <NextMatchHero
                   data={upcomingMatchQuery.data}
                   isLoading={upcomingMatchQuery.isLoading}
                   teamId={teamId ?? ''}
                   teamName={mergedTeam?.name ?? clubConfig.displayName}
                 />
-                <LastMatchCard
-                  data={lastMatchQuery.data?.match ? {
-                    id: lastMatchQuery.data.match.id,
-                    opponent: lastMatchQuery.data.match.opponent,
-                    opponentLogoUrl: lastMatchQuery.data.match.opponentLogoUrl,
-                    matchDate: lastMatchQuery.data.match.matchDate,
-                    scoreFor: lastMatchQuery.data.match.scoreFor,
-                    scoreAgainst: lastMatchQuery.data.match.scoreAgainst,
-                    homeAway: lastMatchQuery.data.match.homeAway,
-                    competition: lastMatchQuery.data.match.competition ?? null,
-                  } : null}
-                  isLoading={lastMatchQuery.isLoading}
+              </div>
+
+              {/* 2. Performance (Situação + Forma) — mobile 2º, desktop col3 row1 */}
+              <div className="order-2 lg:col-start-3 lg:row-start-1">
+                <PerformanceCard
+                  teams={mergedLeagueTable}
+                  currentTeamId={safeTeamData?.team.id ?? ''}
+                  formMatches={recentFormMatches}
+                  isLoading={!safeTeamData}
+                  formLimit={5}
+                />
+              </div>
+
+              {/* 3. Jogos — mobile 3º, desktop col1 row2 */}
+              <div className="min-h-[200px] order-3 lg:col-start-1 lg:row-start-2">
+                <MatchesCard
                   teamId={teamId ?? ''}
                   teamName={mergedTeam?.name ?? clubConfig.displayName}
                 />
-                {lastMatchId && (
-                  <FanRatingsCompact
-                    players={fanRatingsPlayersCompact}
-                    formation={matchLineupQuery.data?.formation ?? '4-2-3-1'}
-                    matchId={lastMatchId}
-                    isLoading={matchLineupQuery.isLoading}
-                    onVote={async (playerId, rating) => {
-                      await fanRatingMutation.mutateAsync({ playerId, matchId: lastMatchId!, rating });
-                    }}
-                    isVoting={fanRatingMutation.isPending}
-                    isLoggedIn={!!user}
-                  />
-                )}
               </div>
 
-              {/* COLUNA DIREITA - Contexto */}
-              <div className="order-3 space-y-4">
-                <StandingsMini
-                  teams={mergedLeagueTable}
-                  currentTeamId={safeTeamData?.team.id ?? ''}
-                  isLoading={!safeTeamData}
+              {/* 4. Tática / Escalação — mobile 4º, desktop col2 row1-2, full width para novo layout */}
+              <div className="order-4 lg:col-start-2 lg:col-span-2 lg:row-start-1 lg:row-span-2 min-h-[400px]">
+                <LineupSection
+                  players={rosterPlayers}
+                  teamId={teamId!}
+                  initialFormation={lineupInitial.formation}
+                  initialSlots={lineupInitial.slots}
+                  onSave={teamId ? async (formation, slots) => lineupMutation.mutateAsync({ formation, slots }) : undefined}
+                  getPhotoUrl={(p) => p.photoUrl ?? resolvePlayerPhoto(p.name, p.photoUrl, teamId)}
                 />
-                <RecentFormMini
-                  matches={recentFormMatches}
-                  isLoading={!safeTeamData}
-                  limit={5}
-                />
-                {matchRatingsQuery.data && matchRatingsQuery.data.length > 0 && (
+              </div>
+
+              {/* 5. Top avaliados — mobile 5º, desktop col3 row2 */}
+              <div className="min-h-[200px] order-5 lg:col-start-3 lg:row-start-2">
+                {topRatedQuery.data?.players && topRatedQuery.data.players.length > 0 ? (
                   <TopRatedMini
-                    players={matchRatingsQuery.data
-                      .sort((a, b) => b.avgRating - a.avgRating)
-                      .slice(0, 3)
-                      .map((r) => {
-                        const starter = matchLineupQuery.data?.starters.find((s) => s.playerId === r.playerId)
-                          ?? matchLineupQuery.data?.substitutes.find((s) => s.playerId === r.playerId);
-                        return {
-                          playerId: r.playerId,
-                          name: starter?.name ?? '—',
-                          position: starter?.position ?? null,
-                          averageRating: r.avgRating,
-                          voteCount: r.voteCount,
-                        };
-                      })}
+                    players={topRatedQuery.data.players.map((p) => ({
+                      playerId: p.playerId,
+                      name: p.name,
+                      position: p.position,
+                      photoUrl: p.photoUrl,
+                      averageRating: p.avgRating,
+                      matchesPlayed: p.matchesPlayed,
+                    }))}
+                    lastNMatches={topRatedQuery.data.lastNMatches ?? 5}
+                    getPhotoUrl={(id) => playersById.get(id)?.photoUrl ?? '/assets/players/placeholder.png'}
                   />
+                ) : (
+                  <div className="rounded-2xl border border-[rgba(255,255,255,0.06)] bg-[#10161D] p-4 shadow-sm transition-all duration-200 hover:border-white/[0.08]">
+                    <h3 className="text-sm font-semibold text-foreground mb-2">Top avaliados (últimos 5 jogos)</h3>
+                    <p className="text-xs text-muted-foreground">Média das notas nos últimos jogos. Dados disponíveis quando houver partidas com estatísticas.</p>
+                  </div>
                 )}
+              </div>
+
+              {/* 6. Última partida — notas — mobile 6º, desktop col3 row3 */}
+              <div className="min-h-[200px] order-6 lg:col-start-3 lg:row-start-3">
+                <LastMatchRatingsCard teamId={teamId} />
               </div>
             </div>
 
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mt-8">
-              <StadiumCard
-                stadiumName={safeTeamData.stadium.name}
-                capacity={safeTeamData.stadium.capacity}
-                pitchCondition={safeTeamData.stadium.pitchCondition}
-                stadiumCondition={safeTeamData.stadium.stadiumCondition}
-                homeFactor={safeTeamData.stadium.homeFactor}
-                yearBuilt={safeTeamData.stadium.yearBuilt}
-                stadiumImageSrc={clubConfig.stadiumImageSrc}
-                teamId={teamId ?? undefined}
-                lastMatchSection={teamId === 'corinthians' ? (
-                  <LastMatchRatings
-                    data={lastMatchQuery.data ?? null}
-                    isLoading={lastMatchQuery.isLoading}
-                  />
-                ) : undefined}
+            {/* SEGUNDA FAIXA: Vai e Vem + Elenco preview — mesmo gap vertical */}
+            <div className="mt-5 grid grid-cols-1 md:grid-cols-2 gap-5 max-w-[1280px]">
+              <TransfersPreviewMini
+                teamId={teamId}
+                teamName={clubConfig?.displayName ?? mergedTeam?.name ?? 'seu time'}
+                onViewAll={() => handleTabChange('vai-e-vem')}
               />
-              <FormationView
+              <ElencoPreviewMini
                 players={rosterPlayers}
-                teamId={teamId!}
-                initialFormation={lineupQuery.data?.formation ?? '4-3-3'}
-                initialSlots={lineupQuery.data?.slots ?? []}
-                onSave={teamId ? async (formation, slots) => lineupMutation.mutateAsync({ formation, slots }) : undefined}
-                playersById={playersById}
                 getPhotoUrl={(p) => p.photoUrl ?? '/assets/players/placeholder.png'}
+                isLoading={playersQuery.isLoading && rosterPlayers.length === 0}
               />
             </div>
+          </TabsContent>
 
-            {rosterPlayers.length > 0 && (
-              <>
-                <Separator className="my-6" />
-                <div className="space-y-4">
-                  <h2 className="text-2xl font-display font-bold text-foreground">Elenco</h2>
-                  <p className="text-sm text-muted-foreground">
-                    Clique nas posições do campo acima para escolher os jogadores da sua tática. Use o menu no slot para trocar ou remover.
-                  </p>
-                  {playersQuery.isError ? (
-                    <Button variant="outline" size="sm" onClick={() => playersQuery.refetch()}>
-                      Tentar novamente
-                    </Button>
-                  ) : null}
-                  {playersQuery.isLoading ? (
-                    <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-4 gap-4">
-                      {Array.from({ length: 8 }).map((_, i) => (
-                        <div key={i} className="rounded-2xl border border-white/5 bg-card p-4">
-                          <div className="flex items-center gap-3">
-                            <Skeleton className="h-14 w-14 rounded-full bg-white/10" />
-                            <div className="min-w-0 flex-1 space-y-2">
-                              <Skeleton className="h-4 w-3/4 bg-white/10" />
-                              <Skeleton className="h-3 w-1/2 bg-white/10" />
-                              <Skeleton className="h-3 w-2/5 bg-white/10" />
-                            </div>
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                  ) : (
-                    <SquadList
-                      players={rosterPlayers}
-                      onPlayerClick={setSelectedPlayer}
-                      onRatePlayer={(id) => { const p = rosterPlayers.find((x) => x.id === id); if (p) setSelectedPlayer(p); }}
-                      getPhotoUrl={(p) => p.photoUrl ?? '/assets/players/placeholder.png'}
-                    />
-                  )}
-                </div>
-              </>
-            )}
-
+          <TabsContent value="classificacao" className="space-y-6">
+            <ClassificacaoTab userTeamId={teamId} />
           </TabsContent>
 
           <TabsContent value="news" className="space-y-6">
@@ -823,80 +676,19 @@ export default function MeuTimePage() {
           </TabsContent>
 
           <TabsContent value="matches" className="space-y-6">
-            <div className="space-y-4">
-              <div className="flex items-end justify-between gap-4">
-                <div>
-                  <h3 className="font-display font-bold text-2xl text-foreground">Próximos jogos</h3>
-                  <p className="text-sm text-foreground-secondary">Agenda carregada do banco.</p>
-                </div>
-              </div>
-
-              {upcomingMatches.length > 0 ? (
-                <div className="grid gap-3">
-                  {upcomingMatches.map((match) => (
-                    <div key={match.id} className="rounded-2xl border border-white/5 bg-card p-5 flex items-center justify-between gap-4">
-                      <div className="min-w-0">
-                        <div className="font-semibold text-foreground truncate">{match.opponent}</div>
-                        <div className="text-xs text-foreground-secondary flex items-center gap-2">
-                          <CalendarDays className="h-3.5 w-3.5" />
-                          {format(new Date(match.matchDate), "dd 'de' MMMM", { locale: ptBR })}
-                        </div>
-                      </div>
-                      <div className="text-right">
-                        <div className="text-sm text-foreground-secondary">Em breve</div>
-                        <div className="text-xs text-foreground-muted">Próximos</div>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              ) : (
-                <EmptyState
-                  icon={CalendarDays}
-                  title="Sem jogos por agora"
-                  description="Quando houver jogos cadastrados no banco, eles aparecem aqui."
-                />
-              )}
-            </div>
-
-            <div className="space-y-4">
-              <div className="flex items-end justify-between gap-4">
-                <div>
-                  <h3 className="font-display font-bold text-2xl text-foreground">Últimos resultados</h3>
-                  <p className="text-sm text-foreground-secondary">Resultados carregados do banco.</p>
-                </div>
-              </div>
-
-              {recentMatches.length > 0 ? (
-                <div className="grid gap-3">
-                  {recentMatches.map((match) => (
-                    <div key={match.id} className="rounded-2xl border border-white/5 bg-card p-5 flex items-center justify-between gap-4">
-                      <div className="min-w-0">
-                        <div className="font-semibold text-foreground truncate">{match.opponent}</div>
-                        <div className="text-xs text-foreground-secondary flex items-center gap-2">
-                          <CalendarDays className="h-3.5 w-3.5" />
-                          {format(new Date(match.matchDate), "dd 'de' MMMM", { locale: ptBR })}
-                        </div>
-                      </div>
-                      <div className="text-right">
-                        {match.teamScore !== null && match.opponentScore !== null ? (
-                          <div className="font-mono text-lg font-bold text-foreground">
-                            {match.teamScore}–{match.opponentScore}
-                          </div>
-                        ) : (
-                          <div className="text-sm text-foreground-secondary">Em breve</div>
-                        )}
-                        <div className="text-xs text-foreground-muted">Últimos jogos</div>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              ) : (
-                <EmptyState
-                  icon={CalendarDays}
-                  title="Sem jogos"
-                  description="Quando houver jogos cadastrados no banco, eles aparecem aqui."
-                />
-              )}
+            <div className="flex flex-col items-center justify-center py-12 rounded-2xl border border-white/5 bg-card">
+              <CalendarDays className="h-12 w-12 text-muted-foreground mb-4" />
+              <h3 className="font-display font-bold text-xl text-foreground mb-2">Jogos do seu time</h3>
+              <p className="text-sm text-foreground-secondary text-center max-w-md mb-6">
+                Veja todos os jogos, próximas partidas e resultados na página completa.
+              </p>
+              <a
+                href="/meu-time/jogos"
+                className="inline-flex items-center gap-2 rounded-lg bg-primary px-6 py-2.5 text-sm font-semibold text-primary-foreground hover:bg-primary/90 transition-colors"
+              >
+                Ver todos os jogos
+                <span aria-hidden>→</span>
+              </a>
             </div>
           </TabsContent>
 
@@ -905,11 +697,19 @@ export default function MeuTimePage() {
             <LeagueTable teams={mergedLeagueTable} currentTeamId={safeTeamData.team.id} />
           </TabsContent>
 
-          <TabsContent value="social" className="space-y-6">
-            <SocialIntegration
-              teamId={safeTeamData.team.id}
-              news={teamNews}
-              playerRatings={[]}
+          <TabsContent value="vai-e-vem" className="space-y-6">
+            <TransfersBoard
+              scope="team"
+              teamId={teamId ?? undefined}
+              teamName={clubConfig?.displayName ?? mergedTeam?.name ?? 'seu time'}
+              hideHeader
+            />
+          </TabsContent>
+
+          <TabsContent value="comunidade" className="space-y-6">
+            <ForumTab
+              teamId={teamId ?? ''}
+              clubConfig={clubConfig}
             />
           </TabsContent>
         </Tabs>

@@ -1,0 +1,182 @@
+{
+  "matched": [
+    {
+      "playerId": "4bc03359-ab85-4fe9-874d-6dba044c5aa5",
+      "name": "Alex Santana",
+      "file": "alex-santana.jpg",
+      "url": "/assets/players/corinthians/alex-santana.jpg"
+    },
+    {
+      "playerId": "44fc2572-10cf-4ad1-89d8-4f14d121a1ff",
+      "name": "André Ramalho",
+      "file": "andre-ramalho.jpg",
+      "url": "/assets/players/corinthians/andre-ramalho.jpg"
+    },
+    {
+      "playerId": "c67408bc-e4e9-43c5-9825-b053fa31680a",
+      "name": "Gabriel Paulista",
+      "file": "gabriel-paulista.jpg",
+      "url": "/assets/players/corinthians/gabriel-paulista.jpg"
+    },
+    {
+      "playerId": "22ed9807-403d-4bbd-93db-d8ff3b14644d",
+      "name": "Gui Negão",
+      "file": "gui-negao.jpg",
+      "url": "/assets/players/corinthians/gui-negao.jpg"
+    },
+    {
+      "playerId": "ae9606de-2556-4159-b2bf-bb3195923d6b",
+      "name": "Gustavo Henrique",
+      "file": "gustavo-henrique.jpg",
+      "url": "/assets/players/corinthians/gustavo-henrique.jpg"
+    },
+    {
+      "playerId": "c6b50308-48ac-4902-9844-956c65c5fd87",
+      "name": "Hugo Souza",
+      "file": "hugo-souza.png",
+      "url": "/assets/players/corinthians/hugo-souza.png"
+    },
+    {
+      "playerId": "fb31e24c-5e8d-40a5-9fdd-5e8d8beac28f",
+      "name": "José Martínez",
+      "file": "jose-martinez.jpg",
+      "url": "/assets/players/corinthians/jose-martinez.jpg"
+    },
+    {
+      "playerId": "d71196d0-ba11-4b23-9ac7-e8f1802cdee0",
+      "name": "Kaio César",
+      "file": "kaio-cesar.jpg",
+      "url": "/assets/players/corinthians/kaio-cesar.jpg"
+    },
+    {
+      "playerId": "85230720-0399-4b8c-8b43-8c06eda92991",
+      "name": "Matheus Bidu",
+      "file": "matheus-bidu.jpg",
+      "url": "/assets/players/corinthians/matheus-bidu.jpg"
+    },
+    {
+      "playerId": "5da0693c-a10b-4202-bc78-024498faec2d",
+      "name": "Matheuzinho",
+      "file": "matheuzinho.jpg",
+      "url": "/assets/players/corinthians/matheuzinho.jpg"
+    },
+    {
+      "playerId": "65ae90fb-bae3-4858-a55d-b8f307b3a55e",
+      "name": "Memphis Depay",
+      "file": "memphis-depay.jpg",
+      "url": "/assets/players/corinthians/memphis-depay.jpg"
+    },
+    {
+      "playerId": "ee8c871c-f0c5-4c75-8ed4-52c0066b5088",
+      "name": "Pedro Raul",
+      "file": "pedro-raul.jpg",
+      "url": "/assets/players/corinthians/pedro-raul.jpg"
+    },
+    {
+      "playerId": "d5df6f88-c026-471b-96ea-681e6ac7f664",
+      "name": "Renato Santos",
+      "file": "renato-santos.jpg",
+      "url": "/assets/players/corinthians/renato-santos.jpg"
+    },
+    {
+      "playerId": "bece630c-aa89-4821-ba99-19dfa4a3e225",
+      "name": "Rodrigo Garro",
+      "file": "rodrigo-garro.jpg",
+      "url": "/assets/players/corinthians/rodrigo-garro.jpg"
+    },
+    {
+      "playerId": "157ff3c1-771c-4008-b998-de4b7e4441f5",
+      "name": "Yuri Alberto",
+      "file": "yuri-alberto.jpg",
+      "url": "/assets/players/corinthians/yuri-alberto.jpg"
+    }
+  ],
+  "unmatched": [
+    {
+      "file": "carrillo.jpg",
+      "normalizedFromFile": "carrillo"
+    }
+  ],
+  "missing": [
+    {
+      "playerId": "530b98ca-20c7-4fc0-8e51-336ad640bdfe",
+      "name": "Breno Bidon"
+    },
+    {
+      "playerId": "7d7f1a70-2412-4bcb-a21e-3199eb77d0ac",
+      "name": "Charles"
+    },
+    {
+      "playerId": "8162066a-1f75-4ea9-a53e-e2310b32a233",
+      "name": "Matheus Pereira"
+    },
+    {
+      "playerId": "e6e7737c-394e-471e-aa71-bd4231c380e2",
+      "name": "Tchoca"
+    },
+    {
+      "playerId": "792c5238-c3b9-4821-bb30-115f601b2a46",
+      "name": "Cacá"
+    },
+    {
+      "playerId": "930e27ad-bd9a-414d-b865-009092364d8d",
+      "name": "Hugo"
+    },
+    {
+      "playerId": "b3d46868-c775-490a-92f0-366d4c2597f4",
+      "name": "Pedro Milans"
+    },
+    {
+      "playerId": "098be926-280f-4f29-8d8a-dd28e14a1350",
+      "name": "Léo Mana"
+    },
+    {
+      "playerId": "7aba17d0-25b6-4d28-9cb4-822172603e8e",
+      "name": "Raniele"
+    },
+    {
+      "playerId": "d6092412-2483-4a6f-af5e-4ba359c7c984",
+      "name": "André Carrillo"
+    },
+    {
+      "playerId": "46b173a8-d40a-4fa1-a210-2aefb82c7faf",
+      "name": "André"
+    },
+    {
+      "playerId": "c09b1b69-37d0-42fc-94a9-ebfc98b82951",
+      "name": "Bahia"
+    },
+    {
+      "playerId": "b66f1144-763e-4957-9573-321b26ec2e67",
+      "name": "Vitinho"
+    },
+    {
+      "playerId": "9e81b060-ae1d-4404-95ec-ac563c195aa0",
+      "name": "Kayke"
+    },
+    {
+      "playerId": "65dc6254-1560-473a-b9b2-6ab73520dd3f",
+      "name": "Dieguinho"
+    },
+    {
+      "playerId": "27c76c7a-5b45-4446-aac7-03bd502cbe6b",
+      "name": "Matheus Donelli"
+    },
+    {
+      "playerId": "bb9735fd-46c6-4fbe-97b3-d1ebbbd109bc",
+      "name": "Felipe Longo"
+    },
+    {
+      "playerId": "8da4dfae-cf46-4026-971a-43d6ca2dbfbe",
+      "name": "Kauê"
+    }
+  ],
+  "ambiguous": [],
+  "summary": {
+    "matched": 15,
+    "unmatched": 1,
+    "missing": 18,
+    "ambiguous": 0,
+    "updated": 0
+  }
+}

@@ -1,31 +1,12 @@
 'use client';
 
-import { useState, useMemo } from 'react';
 import { AppShell } from '@/components/ui/app-shell';
-import { TransferFilters } from '@/features/transfers/TransferFilters';
-import { TransferList } from '@/features/transfers/TransferList';
-import { useTransfers } from '@/features/transfers/api';
-import { Panel, SectionHeader } from '@/components/ui-premium';
+import { TransfersBoard } from '@/features/transfers';
 import { typography } from '@/lib/ui';
 import { cn } from '@/lib/utils';
 import { ArrowLeftRight } from 'lucide-react';
 
 export default function VaiEVemPage() {
-  const [status, setStatus] = useState<'RUMOR' | 'NEGOCIACAO' | 'FECHADO' | 'all'>('all');
-  const [searchQ, setSearchQ] = useState('');
-  const [teamId, setTeamId] = useState('');
-
-  const filters = useMemo(
-    () => ({
-      status: status === 'all' ? undefined : status,
-      q: searchQ.trim() || undefined,
-      teamId: teamId || undefined,
-    }),
-    [status, searchQ, teamId]
-  );
-
-  const { data: items = [], isLoading } = useTransfers(filters);
-
   return (
     <AppShell mainClassName="py-4 sm:py-6 md:py-8 px-3 sm:px-4 max-w-4xl mx-auto">
       <div className="space-y-6">
@@ -39,20 +20,7 @@ export default function VaiEVemPage() {
           </p>
         </header>
 
-        <Panel padding="sm">
-          <TransferFilters
-            status={status}
-            onStatusChange={setStatus}
-            searchQ={searchQ}
-            onSearchChange={setSearchQ}
-            teamId={teamId}
-            onTeamChange={setTeamId}
-          />
-        </Panel>
-
-        <Panel padding="none">
-          <TransferList items={items} isLoading={isLoading} />
-        </Panel>
+        <TransfersBoard scope="all" hideHeader />
       </div>
     </AppShell>
   );

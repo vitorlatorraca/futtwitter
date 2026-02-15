@@ -16,9 +16,14 @@ import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, D
 import { useToast } from '@/hooks/use-toast';
 import { apiRequest } from '@/lib/queryClient';
 import { TEAMS_DATA } from '@/lib/team-data';
-import { Edit, Eye, FileImage, Plus, ShieldCheck, Trash2, UploadCloud } from 'lucide-react';
+import { ArrowLeftRight, Edit, Eye, FileImage, Plus, ShieldCheck, Trash2, UploadCloud } from 'lucide-react';
 import type { News } from '@shared/schema';
 import { AvatarUploader } from '@/components/AvatarUploader';
+import {
+  CreateTransferRumorDialog,
+  MyTransferRumorsCard,
+  type TransferRumorItem,
+} from '@/features/journalist-transfer-rumors';
 
 export default function JornalistaPage() {
   const { user } = useAuth();
@@ -26,6 +31,8 @@ export default function JornalistaPage() {
   const queryClient = useQueryClient();
   const [isCreating, setIsCreating] = useState(false);
   const [editingNews, setEditingNews] = useState<News | null>(null);
+  const [isCreateRumorOpen, setIsCreateRumorOpen] = useState(false);
+  const [editingRumor, setEditingRumor] = useState<TransferRumorItem | null>(null);
   const [imageFile, setImageFile] = useState<File | null>(null);
   const [imagePreviewUrl, setImagePreviewUrl] = useState<string | null>(null);
   const [isUploadingImage, setIsUploadingImage] = useState(false);
@@ -203,17 +210,31 @@ export default function JornalistaPage() {
         title="Painel do Jornalista"
         description="Publique notícias com qualidade editorial. Edite, revise e mantenha seu feed impecável."
         actions={
-          <Button
-            onClick={() => {
-              setEditingNews(null);
-              setIsCreating(true);
-            }}
-            data-testid="button-new-news"
-            className="gap-2"
-          >
-            <Plus className="h-4 w-4" />
-            Nova Notícia
-          </Button>
+          <div className="flex flex-wrap gap-2">
+            <Button
+              onClick={() => {
+                setEditingNews(null);
+                setIsCreating(true);
+              }}
+              data-testid="button-new-news"
+              className="gap-2"
+            >
+              <Plus className="h-4 w-4" />
+              Nova Notícia
+            </Button>
+            <Button
+              variant="outline"
+              onClick={() => {
+                setEditingRumor(null);
+                setIsCreateRumorOpen(true);
+              }}
+              data-testid="button-new-rumor"
+              className="gap-2"
+            >
+              <ArrowLeftRight className="h-4 w-4" />
+              Nova Negociação
+            </Button>
+          </div>
         }
       />
 
@@ -313,6 +334,17 @@ export default function JornalistaPage() {
               }}
             />
           )}
+
+          <MyTransferRumorsCard
+            onNewClick={() => {
+              setEditingRumor(null);
+              setIsCreateRumorOpen(true);
+            }}
+            onEditClick={(rumor) => {
+              setEditingRumor(rumor);
+              setIsCreateRumorOpen(true);
+            }}
+          />
         </div>
 
         <aside className="page-aside">
@@ -500,6 +532,15 @@ export default function JornalistaPage() {
           </form>
         </DialogContent>
       </Dialog>
+
+      <CreateTransferRumorDialog
+        open={isCreateRumorOpen}
+        onOpenChange={(open) => {
+          setIsCreateRumorOpen(open);
+          if (!open) setEditingRumor(null);
+        }}
+        editingRumor={editingRumor}
+      />
     </AppShell>
   );
 }

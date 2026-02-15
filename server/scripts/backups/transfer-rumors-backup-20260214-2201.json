@@ -1,0 +1,200 @@
+{
+  "exportedAt": "2026-02-15T03:01:26.406Z",
+  "preserveId": "c54bea26-e73b-46e2-a92f-8c2b1fad82f0",
+  "preserveRecord": {
+    "id": "c54bea26-e73b-46e2-a92f-8c2b1fad82f0",
+    "playerId": "c67408bc-e4e9-43c5-9825-b053fa31680a",
+    "playerName": "Gabriel Paulista",
+    "fromTeam": "Atlético Mineiro",
+    "toTeam": "Cruzeiro",
+    "status": "RUMOR",
+    "createdAt": "2026-02-15T02:46:32.357Z",
+    "createdByUserId": "f776ac8c-ed71-41a6-973e-b177903878cf",
+    "createdByName": "Vitor Espindula da Rocha Latorraca"
+  },
+  "toDelete": [
+    {
+      "id": "050e149e-4188-4f15-b298-d8b630ab53d7",
+      "playerName": "Rodrigo Garro",
+      "fromTeam": "Corinthians",
+      "toTeam": "São Paulo"
+    },
+    {
+      "id": "e8d4f601-21b1-4447-b248-13a51529941c",
+      "playerName": "Yuri Alberto",
+      "fromTeam": "Corinthians",
+      "toTeam": "Flamengo"
+    },
+    {
+      "id": "71ae4c97-41db-4c4a-9b22-e9f312ee2268",
+      "playerName": "Matheus Pereira",
+      "fromTeam": "Corinthians",
+      "toTeam": "Palmeiras"
+    },
+    {
+      "id": "d4a4f8cf-84c5-481d-962d-9548714cdc90",
+      "playerName": "Hugo Souza",
+      "fromTeam": "Flamengo",
+      "toTeam": "Corinthians"
+    },
+    {
+      "id": "d1f83592-3e47-4cc7-b876-6f2d357ef8d0",
+      "playerName": "Weverton",
+      "fromTeam": "Palmeiras",
+      "toTeam": "Bragantino"
+    },
+    {
+      "id": "c3b7a306-777b-4ec1-847a-e9237f2de4dc",
+      "playerName": "Luiz Araújo",
+      "fromTeam": "São Paulo",
+      "toTeam": "Corinthians"
+    },
+    {
+      "id": "c3106215-cd7b-46e1-b214-88e2bf593249",
+      "playerName": "Gustavo Henrique",
+      "fromTeam": "Corinthians",
+      "toTeam": "Santos"
+    },
+    {
+      "id": "9cd685b4-bb90-4c9d-a695-d7e3c0420c47",
+      "playerName": "Marcos Leonardo",
+      "fromTeam": "Santos",
+      "toTeam": "Corinthians"
+    },
+    {
+      "id": "27e8b283-b984-4a4e-a581-6d0821a23736",
+      "playerName": "Matheuzinho",
+      "fromTeam": "Corinthians",
+      "toTeam": "Flamengo"
+    },
+    {
+      "id": "12d8c71a-f7e8-476d-9a3e-a3f77bb83e3f",
+      "playerName": "Guilherme Arana",
+      "fromTeam": "Atlético Mineiro",
+      "toTeam": "Corinthians"
+    }
+  ],
+  "allRecords": [
+    {
+      "id": "050e149e-4188-4f15-b298-d8b630ab53d7",
+      "playerId": "bece630c-aa89-4821-ba99-19dfa4a3e225",
+      "playerName": "Rodrigo Garro",
+      "fromTeam": "Corinthians",
+      "toTeam": "São Paulo",
+      "status": "RUMOR",
+      "createdAt": "2026-02-14T23:40:11.298Z",
+      "createdByUserId": "b6bc7465-63aa-4631-b45a-fbbf6b4d6fcb",
+      "createdByName": "Maria Silva"
+    },
+    {
+      "id": "e8d4f601-21b1-4447-b248-13a51529941c",
+      "playerId": "157ff3c1-771c-4008-b998-de4b7e4441f5",
+      "playerName": "Yuri Alberto",
+      "fromTeam": "Corinthians",
+      "toTeam": "Flamengo",
+      "status": "NEGOTIATING",
+      "createdAt": "2026-02-14T23:40:11.393Z",
+      "createdByUserId": "e726f165-96f9-4bbc-a480-170942ee46cd",
+      "createdByName": "João Santos"
+    },
+    {
+      "id": "71ae4c97-41db-4c4a-9b22-e9f312ee2268",
+      "playerId": "8162066a-1f75-4ea9-a53e-e2310b32a233",
+      "playerName": "Matheus Pereira",
+      "fromTeam": "Corinthians",
+      "toTeam": "Palmeiras",
+      "status": "DONE",
+      "createdAt": "2026-02-14T23:40:11.475Z",
+      "createdByUserId": "8ef15aee-eef0-45b1-aeed-e37205bedd8b",
+      "createdByName": "Ana Costa"
+    },
+    {
+      "id": "d4a4f8cf-84c5-481d-962d-9548714cdc90",
+      "playerId": "65016c00-947c-40ee-8a6c-5ad5ff40ee99",
+      "playerName": "Hugo Souza",
+      "fromTeam": "Flamengo",
+      "toTeam": "Corinthians",
+      "status": "DONE",
+      "createdAt": "2026-02-14T23:40:11.653Z",
+      "createdByUserId": "b6bc7465-63aa-4631-b45a-fbbf6b4d6fcb",
+      "createdByName": "Maria Silva"
+    },
+    {
+      "id": "d1f83592-3e47-4cc7-b876-6f2d357ef8d0",
+      "playerId": "dcd11886-96b4-49b4-ad4c-f5610e026157",
+      "playerName": "Weverton",
+      "fromTeam": "Palmeiras",
+      "toTeam": "Bragantino",
+      "status": "RUMOR",
+      "createdAt": "2026-02-14T23:40:11.782Z",
+      "createdByUserId": "e726f165-96f9-4bbc-a480-170942ee46cd",
+      "createdByName": "João Santos"
+    },
+    {
+      "id": "c3b7a306-777b-4ec1-847a-e9237f2de4dc",
+      "playerId": "b329c7fc-a78d-4240-9d9b-2d49c8e83ce3",
+      "playerName": "Luiz Araújo",
+      "fromTeam": "São Paulo",
+      "toTeam": "Corinthians",
+      "status": "RUMOR",
+      "createdAt": "2026-02-14T23:40:11.988Z",
+      "createdByUserId": "8ef15aee-eef0-45b1-aeed-e37205bedd8b",
+      "createdByName": "Ana Costa"
+    },
+    {
+      "id": "c3106215-cd7b-46e1-b214-88e2bf593249",
+      "playerId": "ae9606de-2556-4159-b2bf-bb3195923d6b",
+      "playerName": "Gustavo Henrique",
+      "fromTeam": "Corinthians",
+      "toTeam": "Santos",
+      "status": "NEGOTIATING",
+      "createdAt": "2026-02-14T23:40:12.079Z",
+      "createdByUserId": "b6bc7465-63aa-4631-b45a-fbbf6b4d6fcb",
+      "createdByName": "Maria Silva"
+    },
+    {
+      "id": "9cd685b4-bb90-4c9d-a695-d7e3c0420c47",
+      "playerId": "7b87ddd7-7fd8-4fd8-b2a3-309a85000dad",
+      "playerName": "Marcos Leonardo",
+      "fromTeam": "Santos",
+      "toTeam": "Corinthians",
+      "status": "RUMOR",
+      "createdAt": "2026-02-14T23:40:12.233Z",
+      "createdByUserId": "e726f165-96f9-4bbc-a480-170942ee46cd",
+      "createdByName": "João Santos"
+    },
+    {
+      "id": "27e8b283-b984-4a4e-a581-6d0821a23736",
+      "playerId": "5da0693c-a10b-4202-bc78-024498faec2d",
+      "playerName": "Matheuzinho",
+      "fromTeam": "Corinthians",
+      "toTeam": "Flamengo",
+      "status": "NEGOTIATING",
+      "createdAt": "2026-02-14T23:40:12.318Z",
+      "createdByUserId": "8ef15aee-eef0-45b1-aeed-e37205bedd8b",
+      "createdByName": "Ana Costa"
+    },
+    {
+      "id": "12d8c71a-f7e8-476d-9a3e-a3f77bb83e3f",
+      "playerId": "0c7dc35c-2ecf-454b-92b0-1041fc3bc520",
+      "playerName": "Guilherme Arana",
+      "fromTeam": "Atlético Mineiro",
+      "toTeam": "Corinthians",
+      "status": "RUMOR",
+      "createdAt": "2026-02-14T23:40:12.501Z",
+      "createdByUserId": "b6bc7465-63aa-4631-b45a-fbbf6b4d6fcb",
+      "createdByName": "Maria Silva"
+    },
+    {
+      "id": "c54bea26-e73b-46e2-a92f-8c2b1fad82f0",
+      "playerId": "c67408bc-e4e9-43c5-9825-b053fa31680a",
+      "playerName": "Gabriel Paulista",
+      "fromTeam": "Atlético Mineiro",
+      "toTeam": "Cruzeiro",
+      "status": "RUMOR",
+      "createdAt": "2026-02-15T02:46:32.357Z",
+      "createdByUserId": "f776ac8c-ed71-41a6-973e-b177903878cf",
+      "createdByName": "Vitor Espindula da Rocha Latorraca"
+    }
+  ]
+}

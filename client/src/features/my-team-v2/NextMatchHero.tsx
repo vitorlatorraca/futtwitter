@@ -2,7 +2,8 @@
 
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
-import { CalendarDays, MapPin, Tv, Home } from 'lucide-react';
+import { CalendarDays, MapPin, ChevronRight, Home } from 'lucide-react';
+import { Link } from 'wouter';
 import { getTeamCrestFromTeam } from '@/lib/teamCrests';
 import { Skeleton } from '@/components/ui/skeleton';
 
@@ -25,7 +26,7 @@ interface NextMatchHeroProps {
 }
 
 const panelClass =
-  'rounded-2xl border border-[rgba(255,255,255,0.06)] bg-[#10161D] p-4 shadow-sm';
+  'rounded-2xl border border-white/10 backdrop-blur-sm bg-[#10161D] shadow-sm transition-all duration-200 hover:border-emerald-500/40';
 
 export function NextMatchHero({
   data,
@@ -36,15 +37,13 @@ export function NextMatchHero({
   if (isLoading) {
     return (
       <div className={panelClass}>
-        <Skeleton className="h-5 w-36 mb-4" />
-        <div className="flex items-center justify-between gap-4">
-          <Skeleton className="h-14 w-14 rounded-full" />
-          <Skeleton className="h-12 w-20" />
-          <Skeleton className="h-14 w-14 rounded-full" />
-        </div>
-        <div className="mt-4 space-y-2">
-          <Skeleton className="h-4 w-48" />
-          <Skeleton className="h-4 w-32" />
+        <div className="flex items-center gap-4 p-4 min-h-[120px]">
+          <Skeleton className="h-16 w-20 shrink-0" />
+          <div className="flex-1 min-w-0 space-y-2">
+            <Skeleton className="h-4 w-32" />
+            <Skeleton className="h-4 w-48" />
+          </div>
+          <Skeleton className="h-8 w-20 shrink-0" />
         </div>
       </div>
     );
@@ -53,8 +52,10 @@ export function NextMatchHero({
   if (!data) {
     return (
       <div className={panelClass}>
-        <h2 className="text-base font-semibold text-foreground mb-2">Próximo jogo</h2>
-        <p className="text-sm text-muted-foreground py-6 text-center">Nenhum jogo agendado.</p>
+        <div className="flex items-center justify-between gap-4 p-4 min-h-[120px]">
+          <h2 className="text-sm font-semibold text-foreground">Próximo jogo</h2>
+          <p className="text-xs text-muted-foreground">Nenhum jogo agendado.</p>
+        </div>
       </div>
     );
   }
@@ -74,73 +75,81 @@ export function NextMatchHero({
   const awayCrest = getTeamCrestFromTeam(awayTeam.teamId, awayTeam.name);
 
   return (
-    <div className={`${panelClass} border-meu-time-accent/30 bg-gradient-to-br from-meu-time-accent/5 to-transparent`}>
-      <div className="flex items-center justify-between mb-4">
-        <h2 className="text-base font-semibold text-foreground">Próximo jogo</h2>
-        {data.isHomeMatch && (
-          <span className="inline-flex items-center gap-1 text-[10px] font-medium px-2 py-1 rounded-full bg-meu-time-accent/20 text-meu-time-accent">
-            <Home className="h-3 w-3" />
-            Casa
-          </span>
-        )}
-      </div>
-
-      <div className="flex items-center justify-between gap-4 mb-4">
-        <div className="flex flex-col items-center gap-2 min-w-0 flex-1">
-          <img
-            src={homeCrest}
-            alt={homeTeam.name}
-            className="h-12 w-12 object-contain"
-            onError={(e) => {
-              (e.target as HTMLImageElement).src = '/assets/crests/default.png';
-            }}
-          />
-          <span className="text-xs font-medium text-foreground truncate w-full text-center">
-            {homeTeam.name}
-          </span>
-        </div>
-        <div className="flex flex-col items-center gap-0.5 shrink-0">
-          <span className="text-2xl font-mono font-bold text-foreground/80">×</span>
-          <span className="text-[10px] text-muted-foreground">vs</span>
-        </div>
-        <div className="flex flex-col items-center gap-2 min-w-0 flex-1">
-          <img
-            src={awayCrest}
-            alt={awayTeam.name}
-            className="h-12 w-12 object-contain"
-            onError={(e) => {
-              (e.target as HTMLImageElement).src = '/assets/crests/default.png';
-            }}
-          />
-          <span className="text-xs font-medium text-foreground truncate w-full text-center">
-            {awayTeam.name}
-          </span>
-        </div>
-      </div>
-
-      <div className="space-y-1.5 pt-3 border-t border-[rgba(255,255,255,0.06)]">
-        <div className="flex items-center gap-2 text-sm font-medium text-foreground">
-          <CalendarDays className="h-4 w-4 text-meu-time-accent" />
-          {dayCapitalized}
-        </div>
-        <p className="text-xs text-muted-foreground pl-6">{fullDate}</p>
-        {data.stadium && (
-          <div className="flex items-center gap-2 text-xs text-muted-foreground pl-6">
-            <MapPin className="h-3.5 w-3.5 shrink-0" />
-            {data.stadium}
+    <div className={`${panelClass} border-meu-time-accent/25 bg-gradient-to-br from-meu-time-accent/8 via-transparent to-transparent`}>
+      <div className="p-4">
+        {/* Top: meta (competition, date) — subtle */}
+        <div className="flex items-center justify-between mb-3">
+          <div className="flex items-center gap-2">
+            {data.competition && (
+              <span className="text-[10px] text-muted-foreground truncate max-w-[120px]" title={data.competition}>
+                {data.competition}
+              </span>
+            )}
+            <span className="text-[10px] text-muted-foreground/80">{fullDate}</span>
           </div>
-        )}
-        {data.broadcastChannel && (
-          <div className="flex items-center gap-2 text-xs text-muted-foreground pl-6">
-            <Tv className="h-3.5 w-3.5 shrink-0" />
-            {data.broadcastChannel}
+          {data.isHomeMatch && (
+            <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[9px] font-medium bg-meu-time-accent/15 text-meu-time-accent border border-meu-time-accent/20">
+              <Home className="h-2.5 w-2.5" />
+              Casa
+            </span>
+          )}
+        </div>
+
+        {/* Center: confrontation — teams prominent, vs central */}
+        <div className="flex items-center justify-center gap-4 sm:gap-6 min-w-0">
+          <div className="flex flex-col items-center gap-1.5 min-w-0 flex-1">
+            <img
+              src={homeCrest}
+              alt={homeTeam.name}
+              className="h-10 w-10 sm:h-12 sm:w-12 shrink-0 object-contain"
+              onError={(e) => {
+                (e.target as HTMLImageElement).src = '/assets/crests/default.png';
+              }}
+            />
+            <span className="text-xs sm:text-sm font-semibold text-foreground truncate w-full text-center">
+              {homeTeam.name}
+            </span>
           </div>
-        )}
-        {data.competition && (
-          <span className="inline-block mt-2 text-[10px] text-muted-foreground px-2 py-0.5 rounded bg-[#141C24]">
-            {data.competition}
-          </span>
-        )}
+          <div className="flex flex-col items-center shrink-0">
+            <span className="text-2xl sm:text-3xl font-bold font-mono text-emerald-500">VS</span>
+          </div>
+          <div className="flex flex-col items-center gap-1.5 min-w-0 flex-1">
+            <img
+              src={awayCrest}
+              alt={awayTeam.name}
+              className="h-10 w-10 sm:h-12 sm:w-12 shrink-0 object-contain"
+              onError={(e) => {
+                (e.target as HTMLImageElement).src = '/assets/crests/default.png';
+              }}
+            />
+            <span className="text-xs sm:text-sm font-semibold text-foreground truncate w-full text-center">
+              {awayTeam.name}
+            </span>
+          </div>
+        </div>
+
+        {/* Bottom: time left, stadium + link right */}
+        <div className="flex items-center justify-between gap-4 mt-3 pt-3 border-t border-white/5">
+          <div className="flex items-center gap-1.5 text-xs text-muted-foreground shrink-0">
+            <CalendarDays className="h-3.5 w-3.5 text-emerald-500 shrink-0" />
+            <span>{dayCapitalized}</span>
+          </div>
+          <div className="flex items-center gap-3 min-w-0 flex-1 justify-end">
+            {data.stadium && (
+              <div className="flex items-center gap-1 text-[10px] text-muted-foreground/80 truncate max-w-[120px] sm:max-w-[180px]" title={data.stadium}>
+                <MapPin className="h-3 w-3 shrink-0" />
+                <span className="truncate">{data.stadium}</span>
+              </div>
+            )}
+            <Link
+              href="/meu-time/jogos"
+              className="inline-flex items-center gap-1 text-xs font-medium text-emerald-500 hover:text-emerald-400 transition-all duration-200 hover:scale-105 shrink-0"
+            >
+              Detalhes
+              <ChevronRight className="h-3.5 w-3.5" />
+            </Link>
+          </div>
+        </div>
       </div>
     </div>
   );

@@ -3,13 +3,15 @@
  * Idempotent: clears existing transfers and re-inserts demo data.
  *
  * Run: npx tsx server/scripts/seed-transfers-demo.ts
+ * Or: npm run seed:transfers
  *
- * Ensure teams exist first (npm run dev seeds them automatically).
+ * Ensure teams and at least one journalist exist first (npm run dev seeds them).
  */
 import "dotenv/config";
 import { db } from "../db";
-import { transfers, transferVotes, teams } from "@shared/schema";
+import { transfers, transferVotes, teams, users, journalists } from "@shared/schema";
 import { eq } from "drizzle-orm";
+import bcrypt from "bcrypt";
 import { TEAMS_DATA } from "../teams-data";
 
 const DEMO_TRANSFERS = [
@@ -54,12 +56,69 @@ async function seed() {
     after.forEach((t) => teamIds.add(t.id));
   }
 
-  // Idempotent: delete all transfers (and votes via cascade)
+  // Get or create journalist for createdByJournalistId
+  let journalistId: string | null = null;
+  const journalistUser = await db
+    .select()
+    .from(users)
+    .where(eq(users.email, "jornalista@brasileirao.com"))
+    .limit(1);
+  if (journalistUser.length > 0) {
+    const j = await db
+      .select({ id: journalists.id })
+      .from(journalists)
+      .where(eq(journalists.userId, journalistUser[0].id))
+      .limit(1);
+    if (j.length > 0) journalistId = j[0].id;
+    else {
+      // User exists but journalist record missing - create it
+      const [jj] = await db
+        .insert(journalists)
+        .values({
+          userId: journalistUser[0].id,
+          organization: "Brasileirão News",
+          professionalId: "BR-JOR-001",
+          status: "APPROVED",
+          verificationDate: new Date(),
+        })
+        .returning();
+      journalistId = jj.id;
+      console.log("  ✓ Created journalist record for Maria Silva");
+    }
+  }
+  if (!journalistId) {
+    console.log("Creating demo journalist for transfers...");
+    const hashedPassword = await bcrypt.hash("senha123", 10);
+    const [ju] = await db
+      .insert(users)
+      .values({
+        name: "Maria Silva",
+        email: "jornalista@brasileirao.com",
+        password: hashedPassword,
+        teamId: "flamengo",
+        userType: "JOURNALIST",
+      })
+      .returning();
+    const [jj] = await db
+      .insert(journalists)
+      .values({
+        userId: ju.id,
+        organization: "Brasileirão News",
+        professionalId: "BR-JOR-001",
+        status: "APPROVED",
+        verificationDate: new Date(),
+      })
+      .returning();
+    journalistId = jj.id;
+    console.log("  ✓ Created journalist Maria Silva");
+  }
+
+  // Idempotent: delete all transfers (votes cascade)
   await db.delete(transferVotes);
   await db.delete(transfers);
 
   const teamIdSet = new Set(TEAMS_DATA.map((t) => t.id));
-  let inserted = 0;
+  const insertedTransfers: { id: string; fromTeamId: string | null; toTeamId: string | null }[] = [];
 
   for (let i = 0; i < DEMO_TRANSFERS.length; i++) {
     const t = DEMO_TRANSFERS[i];
@@ -69,22 +128,72 @@ async function seed() {
     if (!fromId && !toIdFinal) continue;
 
     const updatedAt = addDays(new Date(), -i);
-    await db.insert(transfers).values({
-      playerName: t.playerName,
-      playerPhotoUrl: PLACEHOLDER_PHOTO,
-      positionAbbrev: t.positionAbbrev,
-      fromTeamId: fromId,
-      toTeamId: toIdFinal,
-      status: t.status,
-      updatedAt,
-      feeText: t.feeText,
-      notes: t.notes,
-      sourceLabel: "Demo",
-    });
-    inserted++;
+    const [row] = await db
+      .insert(transfers)
+      .values({
+        playerName: t.playerName,
+        playerPhotoUrl: PLACEHOLDER_PHOTO,
+        positionAbbrev: t.positionAbbrev,
+        fromTeamId: fromId,
+        toTeamId: toIdFinal,
+        status: t.status,
+        createdByJournalistId: journalistId,
+        updatedAt,
+        feeText: t.feeText,
+        notes: t.notes,
+        sourceLabel: "Demo",
+      })
+      .returning();
+    if (row) insertedTransfers.push({ id: row.id, fromTeamId: fromId, toTeamId: toIdFinal });
   }
 
-  console.log(`Done. Seeded ${inserted} demo transfers.`);
+  // Seed some votes (SELLING and BUYING) - need users with teamId
+  const fansWithTeam = await db
+    .select({ id: users.id, teamId: users.teamId })
+    .from(users)
+    .where(eq(users.userType, "FAN"));
+  const fanByTeam = new Map<string, string>();
+  for (const f of fansWithTeam) {
+    if (f.teamId && !fanByTeam.has(f.teamId)) fanByTeam.set(f.teamId, f.id);
+  }
+
+  // Ensure we have at least corinthians and flamengo fans for demo votes
+  const corinthiansFan = fanByTeam.get("corinthians");
+  const flamengoFan = fanByTeam.get("flamengo");
+  const palmeirasFan = fanByTeam.get("palmeiras");
+  const saoPauloFan = fanByTeam.get("sao-paulo");
+
+  let votesInserted = 0;
+  for (const tr of insertedTransfers.slice(0, 8)) {
+    // SELLING votes: fromTeam fans
+    if (tr.fromTeamId) {
+      const voterId = fanByTeam.get(tr.fromTeamId);
+      if (voterId) {
+        await db.insert(transferVotes).values({
+          transferId: tr.id,
+          userId: voterId,
+          side: "SELLING",
+          vote: Math.random() > 0.5 ? "LIKE" : "DISLIKE",
+        });
+        votesInserted++;
+      }
+    }
+    // BUYING votes: toTeam fans
+    if (tr.toTeamId) {
+      const voterId = fanByTeam.get(tr.toTeamId);
+      if (voterId) {
+        await db.insert(transferVotes).values({
+          transferId: tr.id,
+          userId: voterId,
+          side: "BUYING",
+          vote: Math.random() > 0.5 ? "LIKE" : "DISLIKE",
+        });
+        votesInserted++;
+      }
+    }
+  }
+
+  console.log(`Done. Seeded ${insertedTransfers.length} transfers, ${votesInserted} votes.`);
 }
 
 seed()

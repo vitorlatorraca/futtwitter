@@ -10,37 +10,51 @@ import { Button } from '@/components/ui/button';
 import { Search } from 'lucide-react';
 import { TEAMS_DATA } from '@/lib/team-data';
 import { cn } from '@/lib/utils';
+import type { TransfersScope } from './transferTypes';
 
-type TransferStatus = 'RUMOR' | 'NEGOCIACAO' | 'FECHADO';
+/** API status for transfer_rumors. Display labels mapped in FILTERS */
+type TransferStatusFilter = 'RUMOR' | 'NEGOTIATING' | 'DONE' | 'all';
 
 interface TransferFiltersProps {
-  status: TransferStatus | 'all';
-  onStatusChange: (s: TransferStatus | 'all') => void;
+  /** 'all' = show team dropdown, 'team' = show readonly "Envolvendo: {teamName}" */
+  scope: TransfersScope;
+  status: TransferStatusFilter;
+  onStatusChange: (s: TransferStatusFilter) => void;
   searchQ: string;
   onSearchChange: (q: string) => void;
-  teamId: string;
-  onTeamChange: (id: string) => void;
+  /** Only used when scope='all' */
+  teamId?: string;
+  onTeamChange?: (id: string) => void;
+  /** When scope='team', shown as readonly label */
+  teamName?: string;
 }
 
-const FILTERS: { value: TransferStatus | 'all'; label: string }[] = [
+const FILTERS: { value: TransferStatusFilter; label: string }[] = [
   { value: 'all', label: 'Todos' },
   { value: 'RUMOR', label: 'Rumores' },
-  { value: 'NEGOCIACAO', label: 'Em negociação' },
-  { value: 'FECHADO', label: 'Fechado' },
+  { value: 'NEGOTIATING', label: 'Em negociação' },
+  { value: 'DONE', label: 'Fechado' },
 ];
 
 export function TransferFilters({
+  scope,
   status,
   onStatusChange,
   searchQ,
   onSearchChange,
-  teamId,
+  teamId = '',
   onTeamChange,
+  teamName,
 }: TransferFiltersProps) {
   const mainTeams = TEAMS_DATA.slice(0, 12);
 
   return (
     <div className="space-y-3">
+      {scope === 'team' && teamName && (
+        <p className="text-xs text-muted-foreground">
+          Mostrando negociações envolvendo <span className="font-semibold text-foreground">{teamName}</span>
+        </p>
+      )}
       <div className="flex flex-wrap gap-1 rounded-full border border-white/5 bg-muted/40 p-1">
         {FILTERS.map((f) => (
           <Button
@@ -68,19 +82,25 @@ export function TransferFilters({
             className="pl-9 h-9 text-sm bg-muted/40 border-white/5"
           />
         </div>
-        <Select value={teamId || 'all'} onValueChange={(v) => onTeamChange(v === 'all' ? '' : v)}>
-          <SelectTrigger className="w-full sm:w-[180px] h-9 text-sm bg-muted/40 border-white/5">
-            <SelectValue placeholder="Time" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="all">Todos os times</SelectItem>
-            {mainTeams.map((t) => (
-              <SelectItem key={t.id} value={t.id}>
-                {t.name}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
+        {scope === 'all' && onTeamChange ? (
+          <Select value={teamId || 'all'} onValueChange={(v) => onTeamChange(v === 'all' ? '' : v)}>
+            <SelectTrigger className="w-full sm:w-[180px] h-9 text-sm bg-muted/40 border-white/5">
+              <SelectValue placeholder="Time" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">Todos os times</SelectItem>
+              {mainTeams.map((t) => (
+                <SelectItem key={t.id} value={t.id}>
+                  {t.name}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        ) : scope === 'team' && teamName ? (
+          <div className="flex items-center h-9 px-3 rounded-lg bg-muted/40 border border-white/5 text-sm text-muted-foreground">
+            Envolvendo: <span className="ml-1 font-semibold text-foreground">{teamName}</span>
+          </div>
+        ) : null}
       </div>
     </div>
   );

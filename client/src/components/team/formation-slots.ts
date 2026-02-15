@@ -65,6 +65,19 @@ export const FORMATION_SLOT_CONFIG: Record<string, SlotConfig[]> = {
     { slotId: 'RW', sector: 'FWD', label: 'PD' },
     { slotId: 'ST', sector: 'FWD', label: 'ATA' },
   ],
+  '4-1-3-2': [
+    { slotId: 'GK', sector: 'GK', label: 'Goleiro' },
+    { slotId: 'LB', sector: 'DEF', label: 'LE' },
+    { slotId: 'CB1', sector: 'DEF', label: 'Zag.' },
+    { slotId: 'CB2', sector: 'DEF', label: 'Zag.' },
+    { slotId: 'RB', sector: 'DEF', label: 'LD' },
+    { slotId: 'DM', sector: 'MID', label: 'Vol.' },
+    { slotId: 'CM1', sector: 'MID', label: 'Vol.' },
+    { slotId: 'CM2', sector: 'MID', label: 'Vol.' },
+    { slotId: 'CM3', sector: 'MID', label: 'Vol.' },
+    { slotId: 'ST1', sector: 'FWD', label: 'ATA' },
+    { slotId: 'ST2', sector: 'FWD', label: 'ATA' },
+  ],
 };
 
 export function getSlotConfig(formation: string, slotIndex: number): SlotConfig | undefined {

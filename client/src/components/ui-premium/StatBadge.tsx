@@ -15,7 +15,7 @@ export interface StatBadgeProps extends React.HTMLAttributes<HTMLSpanElement> {
 
 const variantClasses: Record<StatBadgeVariant, string> = {
   W: "badge-success",
-  D: "badge-warning",
+  D: "bg-muted text-muted-foreground",
   L: "badge-danger",
   success: "badge-success",
   warning: "badge-warning",

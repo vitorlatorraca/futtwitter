@@ -71,6 +71,8 @@ interface FormationViewProps {
   compactSlots?: boolean;
   /** Badge/escudo URL for compact slots (e.g. /assets/teams/corinthians/badge.png) */
   badgeUrl?: string;
+  /** Compact premium card: smaller pitch, elegant styling, widget-like */
+  compact?: boolean;
 }
 
 const DEFAULT_FORMATION = '4-3-3';
@@ -93,8 +95,9 @@ export function FormationView({
   getPhotoUrl = getPhotoUrlFallback,
   compactSlots = false,
   badgeUrl,
+  compact: compactMode = false,
 }: FormationViewProps) {
-  const isCompact = compactSlots || teamId === 'corinthians';
+  const isCompact = compactSlots || teamId === 'corinthians' || compactMode;
   const escudo = badgeUrl ?? getTeamCrest(teamId);
   const [formation, setFormation] = useState(initialFormation);
   const [slots, setSlots] = useState<LineupSlot[]>(initialSlots);
@@ -166,17 +169,33 @@ export function FormationView({
 
   const currentPickerConfig = pickerSlotIndex != null ? getSlotConfig(formation, pickerSlotIndex) : null;
 
+  const pitchGradient = compactMode
+    ? 'bg-gradient-to-b from-emerald-900/40 via-emerald-800/30 to-emerald-950/50'
+    : 'bg-gradient-to-b from-green-600/20 via-green-700/20 to-green-800/20';
+  const pitchBorder = compactMode ? 'border border-emerald-400/30' : 'border-2 border-green-500/30';
+  const pitchAspect = compactMode ? 'aspect-[3/2.8] max-h-[260px]' : 'aspect-[3/4]';
+  const slotSize = compactMode ? 'w-8 h-8 sm:w-9 sm:h-9' : 'w-11 h-11 sm:w-[52px] sm:h-[52px]';
+  const emptySlotClass = compactMode
+    ? 'bg-emerald-500/10 border-emerald-400/40 border-dashed hover:border-emerald-400 hover:scale-105'
+    : 'bg-black/30 border-green-500/40 border-dashed hover:border-green-400/60';
+  const strokeOpacity = compactMode ? '0.15' : '0.3';
+
   return (
-    <Card className="bg-card/60 backdrop-blur-sm border-card-border">
-      <CardHeader>
-        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-          <CardTitle className="text-xl font-display flex items-center gap-2">
-            <Trophy className="h-5 w-5 text-primary" />
-            Tática Ideal
-          </CardTitle>
-          <div className="flex items-center gap-3">
+    <Card className={compactMode ? 'rounded-xl border border-card-border bg-card/90 shadow-[0_8px_32px_-8px_rgba(0,0,0,0.4),0_0_0_1px_rgba(255,255,255,0.06)] transition-all duration-200 hover:shadow-[0_12px_40px_-8px_rgba(0,0,0,0.5),0_0_0_1px_rgba(255,255,255,0.08)]' : 'bg-card/60 backdrop-blur-sm border-card-border'}>
+      <CardHeader className={compactMode ? 'pb-2 pt-3 px-4' : undefined}>
+        <div className={compactMode ? 'flex flex-wrap items-center justify-between gap-2' : 'flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4'}>
+          <div className="flex items-center gap-2">
+            <CardTitle className={compactMode ? 'text-base font-display flex items-center gap-1.5' : 'text-xl font-display flex items-center gap-2'}>
+              <Trophy className={compactMode ? 'h-3.5 w-3.5 text-primary/90' : 'h-5 w-5 text-primary'} />
+              <span className={compactMode ? 'text-sm font-medium text-foreground/90' : ''}>Tática ideal</span>
+            </CardTitle>
+            <Badge variant="outline" className={compactMode ? 'text-xs font-bold px-2 py-0.5 border-primary/30 text-primary' : 'hidden'}>
+              {formation}
+            </Badge>
+          </div>
+          <div className="flex items-center gap-2">
             <Select value={formation} onValueChange={(v) => setFormation(v)}>
-              <SelectTrigger className="w-[120px]">
+              <SelectTrigger className={compactMode ? 'w-[100px] h-8 text-sm' : 'w-[120px]'}>
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
@@ -186,36 +205,35 @@ export function FormationView({
               </SelectContent>
             </Select>
             {onSave && (
-              <Button size="sm" onClick={handleSave} disabled={saving}>
-                {saving ? <Loader2 className="h-4 w-4 animate-spin" /> : <Save className="h-4 w-4" />}
-                <span className="ml-2">Salvar minha tática</span>
+              <Button size="sm" variant={compactMode ? 'outline' : 'default'} className={compactMode ? 'h-8 w-8 p-0 border-white/10' : ''} onClick={handleSave} disabled={saving} title="Salvar formação">
+                {saving ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Save className={compactMode ? 'h-3.5 w-3.5' : 'h-4 w-4'} />}
+                {!compactMode && <span className="ml-2">Salvar</span>}
               </Button>
             )}
           </div>
         </div>
       </CardHeader>
-      <CardContent>
-        <div className="space-y-4">
-          <div className="flex items-center justify-center">
-            <Badge variant="outline" className="text-lg font-bold px-4 py-2">
-              {formation}
-            </Badge>
-          </div>
+      <CardContent className={compactMode ? 'px-4 pb-4 pt-0' : undefined}>
+        <div className={compactMode ? 'space-y-3' : 'space-y-4'}>
+          {!compactMode && (
+            <div className="flex items-center justify-center">
+              <Badge variant="outline" className="text-lg font-bold px-4 py-2">
+                {formation}
+              </Badge>
+            </div>
+          )}
 
-          <div className="relative w-full aspect-[3/4] bg-gradient-to-b from-green-600/20 via-green-700/20 to-green-800/20 rounded-lg border-2 border-green-500/30 overflow-hidden">
+          <div className={`relative w-full ${pitchAspect} ${pitchGradient} rounded-lg ${pitchBorder} overflow-hidden`}>
             <svg className="absolute inset-0 w-full h-full pointer-events-none">
-              <circle cx="50%" cy="50%" r="15%" fill="none" stroke="rgba(255,255,255,0.3)" strokeWidth="2" />
-              <line x1="0%" y1="50%" x2="100%" y2="50%" stroke="rgba(255,255,255,0.3)" strokeWidth="2" />
-              <rect x="0%" y="60%" width="25%" height="40%" fill="none" stroke="rgba(255,255,255,0.2)" strokeWidth="2" />
-              <rect x="75%" y="60%" width="25%" height="40%" fill="none" stroke="rgba(255,255,255,0.2)" strokeWidth="2" />
+              <circle cx="50%" cy="50%" r="15%" fill="none" stroke={`rgba(255,255,255,${strokeOpacity})`} strokeWidth={compactMode ? 1 : 2} />
+              <line x1="0%" y1="50%" x2="100%" y2="50%" stroke={`rgba(255,255,255,${strokeOpacity})`} strokeWidth={compactMode ? 1 : 2} />
+              <rect x="0%" y="60%" width="25%" height="40%" fill="none" stroke={`rgba(255,255,255,${compactMode ? 0.1 : 0.2})`} strokeWidth={compactMode ? 1 : 2} />
+              <rect x="75%" y="60%" width="25%" height="40%" fill="none" stroke={`rgba(255,255,255,${compactMode ? 0.1 : 0.2})`} strokeWidth={compactMode ? 1 : 2} />
             </svg>
 
             {positions.map((pos, index) => {
               const player = slotToPlayer.get(index);
               const config = slotConfigs[index];
-              const slotId = config?.slotId ?? `S${index}`;
-              const sector = config?.sector ?? 'MID';
-              const label = config?.label ?? `${index + 1}`;
 
               return (
                 <div
@@ -226,25 +244,40 @@ export function FormationView({
                   <button
                     type="button"
                     onClick={() => handleSlotClick(index)}
-                    className={`flex flex-col items-center justify-center w-11 h-11 sm:w-[52px] sm:h-[52px] rounded-full border-2 transition-all focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 focus:ring-offset-transparent hover:shadow-[0_0_12px_rgba(34,197,94,0.2)] ${
+                    className={`flex flex-col items-center justify-center ${slotSize} rounded-full border transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 focus:ring-offset-transparent ${
                       player && isCompact
-                        ? 'bg-black border-black/80 shadow-md'
+                        ? 'bg-emerald-500/10 border-emerald-400 border-2 shadow-[0_0_10px_rgba(16,185,129,0.15)] hover:scale-105'
                         : player
-                          ? 'bg-primary/90 border-primary'
-                          : 'bg-black/30 border-green-500/40 border-dashed hover:border-green-400/60'
+                          ? 'bg-primary/90 border-primary border-2'
+                          : `border ${emptySlotClass}`
                     }`}
                   >
                     {player ? (
                       isCompact ? (
-                        <div className="relative w-full h-full flex items-center justify-center gap-0.5 rounded-full">
-                          <span className="text-lg sm:text-xl font-bold text-white leading-none">
+                        <div className="relative w-full h-full flex items-center justify-center gap-0.5 rounded-full overflow-hidden">
+                          <span className={`font-bold text-white leading-none ${compactMode ? 'text-xs' : 'text-lg sm:text-xl'}`}>
                             {player.shirtNumber ?? '—'}
                           </span>
-                          {escudo && (
+                          {escudo && !compactMode && (
                             <img
                               src={escudo}
-                              alt="Corinthians"
+                              alt=""
                               className="w-5 h-5 sm:w-6 sm:h-6 object-contain opacity-90"
+                              onError={(e) => {
+                                const el = e.target as HTMLImageElement;
+                                if (el.src !== PLACEHOLDER_BADGE_SRC) {
+                                  el.src = PLACEHOLDER_BADGE_SRC;
+                                } else {
+                                  el.style.display = 'none';
+                                }
+                              }}
+                            />
+                          )}
+                          {escudo && compactMode && (
+                            <img
+                              src={escudo}
+                              alt=""
+                              className="w-3.5 h-3.5 object-contain opacity-80"
                               onError={(e) => {
                                 const el = e.target as HTMLImageElement;
                                 if (el.src !== PLACEHOLDER_BADGE_SRC) {
@@ -258,7 +291,7 @@ export function FormationView({
                           <DropdownMenu>
                             <DropdownMenuTrigger asChild onClick={(e) => e.stopPropagation()}>
                               <span
-                                className="absolute -top-1 -right-1 w-5 h-5 rounded-full bg-muted border border-border flex items-center justify-center hover:bg-destructive/20 text-muted-foreground hover:text-destructive text-xs font-bold"
+                                className={`absolute -top-0.5 -right-0.5 rounded-full bg-muted border border-border flex items-center justify-center hover:bg-destructive/20 text-muted-foreground hover:text-destructive font-bold ${compactMode ? 'w-4 h-4 text-[10px]' : 'w-5 h-5 text-xs'}`}
                                 title="Remover"
                               >
                                 ×
@@ -313,9 +346,9 @@ export function FormationView({
                         </>
                       )
                     ) : (
-                      <span className="text-xs text-white/80 flex items-center gap-0.5">
-                        <Plus className="h-3.5 w-3.5" />
-                        <span className="hidden sm:inline">Adicionar</span>
+                      <span className={`text-muted-foreground flex items-center gap-0.5 ${compactMode ? 'text-[10px]' : 'text-xs text-white/80'}`}>
+                        <Plus className={compactMode ? 'h-2.5 w-2.5' : 'h-3.5 w-3.5'} />
+                        {!compactMode && <span className="hidden sm:inline">Adicionar</span>}
                       </span>
                     )}
                   </button>
@@ -324,9 +357,11 @@ export function FormationView({
             })}
           </div>
 
-          <p className="text-center text-sm text-muted-foreground">
-            Clique em uma posição no campo para selecionar o jogador. Use &quot;Trocar jogador&quot; ou &quot;Remover do slot&quot; no menu. Salve para persistir.
-          </p>
+          {!compactMode && (
+            <p className="text-center text-sm text-muted-foreground">
+              Clique em uma posição no campo para selecionar o jogador. Use &quot;Trocar jogador&quot; ou &quot;Remover do slot&quot; no menu. Salve para persistir.
+            </p>
+          )}
         </div>
       </CardContent>
 

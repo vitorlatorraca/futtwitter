@@ -167,6 +167,35 @@ function requireAdmin(req: any, res: any, next: any) {
   })();
 }
 
+// Middleware: require journalist (approved) or admin
+function requireJournalistOrAdmin(req: any, res: any, next: any) {
+  (async () => {
+    try {
+      if (!req.session.userId) {
+        return res.status(401).json({ message: 'Não autenticado' });
+      }
+      const user = await storage.getUser(req.session.userId);
+      if (!user) {
+        return res.status(401).json({ message: 'Usuário não encontrado' });
+      }
+      if (user.userType === 'ADMIN') {
+        return next();
+      }
+      if (user.userType !== 'JOURNALIST') {
+        return res.status(403).json({ message: 'Apenas jornalistas e administradores.' });
+      }
+      const journalist = await storage.getJournalist(req.session.userId);
+      if (!journalist || journalist.status !== 'APPROVED') {
+        return res.status(403).json({ message: 'Acesso negado. Conta de jornalista não aprovada.' });
+      }
+      next();
+    } catch (error) {
+      console.error('requireJournalistOrAdmin error:', error);
+      return res.status(500).json({ message: 'Erro ao verificar permissões' });
+    }
+  })();
+}
+
 function parseSeasonParam(value: unknown): number {
   const current = new Date().getFullYear();
   if (typeof value !== "string") return current;
@@ -445,6 +474,127 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Jogos do Meu Time (match_games preferido, fallback fixtures)
+  app.get("/api/teams/:teamId/matches", requireAuth, async (req, res) => {
+    const teamId = String(req.params.teamId || "").trim();
+    if (!teamId) return res.status(400).json({ message: "teamId inválido" });
+
+    const typeRaw = typeof req.query.type === "string" ? req.query.type.trim().toLowerCase() : "all";
+    const type = typeRaw === "upcoming" || typeRaw === "recent" ? typeRaw : "all";
+    const limit = parseLimitParam(req.query.limit, 20, 100);
+    const competitionId = typeof req.query.competitionId === "string" ? req.query.competitionId.trim() : undefined;
+    const seasonYear = typeof req.query.season === "string" ? parseInt(req.query.season, 10) : undefined;
+
+    try {
+      const team = await storage.getTeam(teamId);
+      if (!team) return res.status(404).json({ message: "Time não encontrado" });
+
+      const { getMatchesByTeam } = await import("./repositories/matches.repo");
+      const matchGamesList = await getMatchesByTeam(teamId, {
+        type,
+        limit,
+        competitionId,
+        seasonYear: Number.isFinite(seasonYear) ? seasonYear : undefined,
+      });
+
+      if (matchGamesList.length > 0) {
+        return res.json({
+          matches: matchGamesList.map((m) => ({
+            id: m.id,
+            kickoffAt: m.kickoffAt,
+            status: m.status,
+            homeTeamId: m.homeTeamId,
+            awayTeamId: m.awayTeamId,
+            homeTeamName: m.homeTeamName,
+            awayTeamName: m.awayTeamName,
+            homeScore: m.homeScore,
+            awayScore: m.awayScore,
+            round: m.round,
+            competition: m.competition,
+            seasonYear: m.seasonYear,
+            venue: m.venue,
+            teamRating: null,
+          })),
+          source: "match_games",
+          updatedAt: Date.now(),
+        });
+      }
+
+      const season = typeof req.query.season === "string" ? req.query.season.trim() : undefined;
+      const items = await storage.getFixturesByTeam(teamId, {
+        type,
+        limit,
+        competitionId,
+        season,
+      });
+
+      return res.json({
+        matches: items.map((f) => ({
+          id: f.id,
+          kickoffAt: f.kickoffAt,
+          status: f.status,
+          homeTeamId: f.homeTeamId,
+          awayTeamId: f.awayTeamId,
+          homeTeamName: f.homeTeamName,
+          awayTeamName: f.awayTeamName,
+          homeScore: f.homeScore,
+          awayScore: f.awayScore,
+          round: f.round,
+          competition: { id: f.competitionId, name: f.competition?.name ?? "TBD", logoUrl: f.competition?.logoUrl ?? null },
+          seasonYear: f.season ? parseInt(f.season, 10) : null,
+          venue: f.venue ? { id: null, name: f.venue, city: null } : null,
+          teamRating: "teamRating" in f && f.teamRating != null ? Number(f.teamRating) : null,
+        })),
+        source: "fixtures",
+        updatedAt: Date.now(),
+      });
+    } catch (error: any) {
+      console.error("[meu-time] /matches error:", error);
+      return res.status(500).json({ message: "Falha ao buscar jogos do time" });
+    }
+  });
+
+  app.post("/api/teams/:teamId/matches", requireAuth, requireAdmin, async (req, res) => {
+    const teamId = String(req.params.teamId || "").trim();
+    if (!teamId) return res.status(400).json({ message: "teamId inválido" });
+
+    try {
+      const { insertFixtureSchema } = await import("@shared/schema");
+      const parsed = insertFixtureSchema.safeParse(req.body);
+      if (!parsed.success) {
+        return res.status(400).json({ message: parsed.error.errors?.[0]?.message ?? "Dados inválidos" });
+      }
+      const fixture = await storage.createFixture({ ...parsed.data, teamId });
+      return res.status(201).json(fixture);
+    } catch (error: any) {
+      console.error("[meu-time] POST /matches error:", error);
+      return res.status(500).json({ message: "Falha ao criar jogo" });
+    }
+  });
+
+  app.put("/api/matches/:matchId", requireAuth, requireAdmin, async (req, res) => {
+    const matchId = String(req.params.matchId || "").trim();
+    if (!matchId) return res.status(400).json({ message: "matchId inválido" });
+
+    try {
+      const body = req.body ?? {};
+      const updates: Record<string, unknown> = {};
+      if (body.status !== undefined) updates.status = body.status;
+      if (body.homeScore !== undefined) updates.homeScore = body.homeScore;
+      if (body.awayScore !== undefined) updates.awayScore = body.awayScore;
+      if (body.kickoffAt !== undefined) updates.kickoffAt = new Date(body.kickoffAt);
+      if (body.round !== undefined) updates.round = body.round;
+      if (body.venue !== undefined) updates.venue = body.venue;
+
+      const updated = await storage.updateFixture(matchId, updates as any);
+      if (!updated) return res.status(404).json({ message: "Jogo não encontrado" });
+      return res.json(updated);
+    } catch (error: any) {
+      console.error("[meu-time] PUT /matches/:id error:", error);
+      return res.status(500).json({ message: "Falha ao atualizar jogo" });
+    }
+  });
+
   app.get("/api/teams/:teamId/stats", requireAuth, async (req, res) => {
     const teamId = String(req.params.teamId || "").trim();
     if (!teamId) return res.status(400).json({ message: "teamId inválido" });
@@ -475,6 +625,71 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error: any) {
       console.error("[meu-time][db] /stats error:", error);
       return res.status(500).json({ message: "Falha ao buscar estatísticas do time" });
+    }
+  });
+
+  // Standings by competition (Sofascore-style, with form)
+  app.get("/api/competitions/:competitionId/standings", async (req, res) => {
+    const competitionId = String(req.params.competitionId || "").trim();
+    const season = typeof req.query.season === "string" ? req.query.season.trim() : "2026";
+    if (!competitionId) return res.status(400).json({ message: "competitionId inválido" });
+
+    try {
+      const { getStandingsByCompetition, getCompetitionById } = await import("./repositories/standings.repo");
+      const competition = await getCompetitionById(competitionId);
+      const rows = await getStandingsByCompetition(competitionId, season);
+
+      // Fallback: se não houver standings no banco, monta a partir dos times (legado)
+      if (rows.length === 0) {
+        const allTeams = await storage.getAllTeams();
+        const sorted = allTeams
+          .slice()
+          .sort((a, b) => {
+            if ((b.points ?? 0) !== (a.points ?? 0)) return (b.points ?? 0) - (a.points ?? 0);
+            const gdA = (a.goalsFor ?? 0) - (a.goalsAgainst ?? 0);
+            const gdB = (b.goalsFor ?? 0) - (b.goalsAgainst ?? 0);
+            if (gdB !== gdA) return gdB - gdA;
+            return (b.goalsFor ?? 0) - (a.goalsFor ?? 0);
+          })
+          .map((t, i) => ({
+            id: `legacy-${t.id}`,
+            competitionId,
+            teamId: t.id,
+            season,
+            position: i + 1,
+            played: (t.wins ?? 0) + (t.draws ?? 0) + (t.losses ?? 0),
+            wins: t.wins ?? 0,
+            draws: t.draws ?? 0,
+            losses: t.losses ?? 0,
+            goalsFor: t.goalsFor ?? 0,
+            goalsAgainst: t.goalsAgainst ?? 0,
+            goalDiff: (t.goalsFor ?? 0) - (t.goalsAgainst ?? 0),
+            points: t.points ?? 0,
+            form: [] as string[],
+            team: {
+              id: t.id,
+              name: t.name,
+              shortName: t.shortName,
+              logoUrl: t.logoUrl ?? "",
+            },
+          }));
+        return res.json({
+          competition: competition ?? { id: competitionId, name: "Brasileirão Série A", country: "Brasil", logoUrl: null },
+          season,
+          standings: sorted,
+          updatedAt: Date.now(),
+        });
+      }
+
+      return res.json({
+        competition: competition ?? { id: competitionId, name: "Brasileirão Série A", country: "Brasil", logoUrl: null },
+        season,
+        standings: rows,
+        updatedAt: Date.now(),
+      });
+    } catch (error: any) {
+      console.error("[standings] GET error:", error);
+      return res.status(500).json({ message: "Falha ao buscar classificação" });
     }
   });
 
@@ -561,6 +776,53 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error("Get team players error:", error);
       return res.status(500).json({ message: "Erro ao buscar elenco" });
+    }
+  });
+
+  // Roster por temporada (team_rosters) - fallback para players legado
+  app.get("/api/teams/:teamId/roster", requireAuth, async (req, res) => {
+    const teamId = String(req.params.teamId || "").trim();
+    if (!teamId) return res.status(400).json({ message: "teamId inválido" });
+
+    const seasonParam = typeof req.query.season === "string" ? req.query.season.trim() : String(new Date().getFullYear());
+    const season = /^\d{4}$/.test(seasonParam) ? Number.parseInt(seasonParam, 10) : new Date().getFullYear();
+    const position = typeof req.query.position === "string" ? req.query.position.trim() : undefined;
+    const sector = typeof req.query.sector === "string" ? req.query.sector.trim() : undefined;
+
+    try {
+      const team = await storage.getTeam(teamId);
+      if (!team) return res.status(404).json({ message: "Time não encontrado" });
+
+      const { getRosterByTeamAndSeason, getRosterByTeamLegacy } = await import("./repositories/roster.repo");
+      let roster = await getRosterByTeamAndSeason(teamId, season, { position, sector: sector as any });
+      if (roster.length === 0) {
+        roster = await getRosterByTeamLegacy(teamId, { position, sector: sector as any });
+      }
+      return res.json({ roster, season, updatedAt: Date.now() });
+    } catch (error) {
+      console.error("Get roster error:", error);
+      return res.status(500).json({ message: "Erro ao buscar elenco" });
+    }
+  });
+
+  // Top jogadores mais bem avaliados (média dos últimos N jogos)
+  app.get("/api/teams/:teamId/top-rated", requireAuth, async (req, res) => {
+    const teamId = String(req.params.teamId || "").trim();
+    if (!teamId) return res.status(400).json({ message: "teamId inválido" });
+
+    const limit = parseLimitParam(req.query.limit, 3, 10);
+    const lastN = Math.min(Math.max(parseInt(String(req.query.lastN ?? 5), 10) || 5, 3), 15);
+
+    try {
+      const team = await storage.getTeam(teamId);
+      if (!team) return res.status(404).json({ message: "Time não encontrado" });
+
+      const { getTopRatedByTeam } = await import("./repositories/players.repo");
+      const players = await getTopRatedByTeam(teamId, { limit, lastNMatches: lastN });
+      return res.json({ players, lastNMatches: lastN, updatedAt: Date.now() });
+    } catch (error) {
+      console.error("Get top-rated error:", error);
+      return res.status(500).json({ message: "Erro ao buscar top avaliados" });
     }
   });
 
@@ -746,17 +1008,56 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  app.get('/api/teams/:teamId/last-match/ratings', requireAuth, async (req, res) => {
+    try {
+      const { teamId } = req.params;
+      const { getLastMatchRatings } = await import("./repositories/matches.repo");
+      const data = await getLastMatchRatings(teamId);
+      if (!data) {
+        return res.json({ match: null, playerRatings: [] });
+      }
+      res.json({
+        match: {
+          matchId: data.match.matchId,
+          kickoffAt: data.match.kickoffAt,
+          competitionName: data.match.competitionName,
+          homeTeamName: data.match.homeTeamName,
+          awayTeamName: data.match.awayTeamName,
+          homeScore: data.match.homeScore,
+          awayScore: data.match.awayScore,
+        },
+        playerRatings: data.playerRatings,
+      });
+    } catch (error) {
+      console.error('Last match ratings error:', error);
+      res.status(500).json({ message: 'Erro ao buscar notas da última partida' });
+    }
+  });
+
   // ============================================
   // MATCHES ROUTES
   // ============================================
 
   app.get('/api/matches/:id', async (req, res) => {
+    const matchId = req.params.id;
     try {
-      const match = await storage.getMatch(req.params.id);
+      const { getMatchDetails } = await import("./repositories/matches.repo");
+      const details = await getMatchDetails(matchId);
+      if (details) {
+        return res.json({
+          match: details.match,
+          events: details.events,
+          lineups: details.lineups,
+          playerStats: details.playerStats,
+          teamStats: details.teamStats,
+          source: "match_games",
+        });
+      }
+      const match = await storage.getMatch(matchId);
       if (!match) {
         return res.status(404).json({ message: 'Partida não encontrada' });
       }
-      res.json(match);
+      res.json({ match, source: "legacy" });
     } catch (error) {
       console.error('Get match error:', error);
       res.status(500).json({ message: 'Erro ao buscar partida' });
@@ -1355,6 +1656,18 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  app.get('/api/players/search', async (req, res) => {
+    try {
+      const q = typeof req.query.q === 'string' ? req.query.q.trim() : '';
+      const limit = typeof req.query.limit === 'string' ? Math.min(parseInt(req.query.limit, 10) || 10, 20) : 10;
+      const players = await storage.searchPlayers(q, limit);
+      res.json(players);
+    } catch (error) {
+      console.error('Search players error:', error);
+      res.status(500).json({ message: 'Erro ao buscar jogadores' });
+    }
+  });
+
   app.get('/api/players/:id/ratings', async (req, res) => {
     try {
       const ratings = await storage.getPlayerRatings(req.params.id);
@@ -1670,6 +1983,191 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // ============================================
+  // FORUM (Comunidade)
+  // ============================================
+
+  app.get('/api/teams/:teamId/forum/stats', requireAuth, async (req, res) => {
+    try {
+      const teamId = String(req.params.teamId || '').trim();
+      const userTeamId = (await storage.getUser(req.session.userId!))?.teamId;
+      if (!userTeamId || userTeamId !== teamId) {
+        return res.status(403).json({ message: 'Acesso negado. Só é possível ver o fórum do seu time.' });
+      }
+      const { getForumStats } = await import('./repositories/forum.repo');
+      const stats = await getForumStats(teamId);
+      return res.json(stats);
+    } catch (error: any) {
+      console.error('Forum stats error:', error);
+      return res.status(500).json({ message: 'Erro ao buscar estatísticas do fórum' });
+    }
+  });
+
+  app.get('/api/teams/:teamId/forum/topics', requireAuth, async (req, res) => {
+    try {
+      const teamId = String(req.params.teamId || '').trim();
+      const userTeamId = (await storage.getUser(req.session.userId!))?.teamId;
+      if (!userTeamId || userTeamId !== teamId) {
+        return res.status(403).json({ message: 'Acesso negado. Só é possível ver o fórum do seu time.' });
+      }
+      const category = typeof req.query.category === 'string' ? req.query.category.trim() : undefined;
+      const search = typeof req.query.search === 'string' ? req.query.search.trim() : undefined;
+      const trending = req.query.trending === 'true';
+      const limit = Math.min(parseInt(String(req.query.limit || 24), 10) || 24, 50);
+      const offset = Math.max(0, parseInt(String(req.query.offset || 0), 10));
+      const { listForumTopics } = await import('./repositories/forum.repo');
+      const topics = await listForumTopics(teamId, {
+        category: category as any,
+        search: search || undefined,
+        trending,
+        limit,
+        offset,
+        viewerUserId: req.session.userId,
+      });
+      return res.json(topics);
+    } catch (error: any) {
+      console.error('Forum topics error:', error);
+      return res.status(500).json({ message: 'Erro ao buscar tópicos' });
+    }
+  });
+
+  app.get('/api/teams/:teamId/forum/topics/:topicId', requireAuth, async (req, res) => {
+    try {
+      const { teamId, topicId } = req.params;
+      const userTeamId = (await storage.getUser(req.session.userId!))?.teamId;
+      if (!userTeamId || userTeamId !== teamId) {
+        return res.status(403).json({ message: 'Acesso negado. Só é possível ver o fórum do seu time.' });
+      }
+      const { getForumTopicById } = await import('./repositories/forum.repo');
+      const topic = await getForumTopicById(topicId, teamId, {
+        viewerUserId: req.session.userId,
+        incrementView: true,
+      });
+      if (!topic) return res.status(404).json({ message: 'Tópico não encontrado' });
+      return res.json(topic);
+    } catch (error: any) {
+      console.error('Forum topic detail error:', error);
+      return res.status(500).json({ message: 'Erro ao buscar tópico' });
+    }
+  });
+
+  app.post('/api/teams/:teamId/forum/topics', requireAuth, async (req, res) => {
+    try {
+      const teamId = String(req.params.teamId || '').trim();
+      const userId = req.session.userId!;
+      const user = await storage.getUser(userId);
+      if (!user?.teamId || user.teamId !== teamId) {
+        return res.status(403).json({ message: 'Acesso negado. Só é possível criar tópicos no fórum do seu time.' });
+      }
+      const { title, content, category, coverImageUrl } = req.body ?? {};
+      if (!title || typeof title !== 'string' || title.trim().length < 3) {
+        return res.status(400).json({ message: 'Título deve ter pelo menos 3 caracteres' });
+      }
+      if (!content || typeof content !== 'string' || content.trim().length < 10) {
+        return res.status(400).json({ message: 'Conteúdo deve ter pelo menos 10 caracteres' });
+      }
+      const validCategories = ['news', 'pre_match', 'post_match', 'transfer', 'off_topic', 'base'];
+      const cat = category && validCategories.includes(category) ? category : 'base';
+      const { createForumTopic } = await import('./repositories/forum.repo');
+      const topic = await createForumTopic(teamId, userId, {
+        title: title.trim(),
+        content: content.trim(),
+        category: cat as any,
+        coverImageUrl: coverImageUrl || null,
+      });
+      return res.status(201).json(topic);
+    } catch (error: any) {
+      console.error('Create forum topic error:', error);
+      return res.status(500).json({ message: error?.message || 'Erro ao criar tópico' });
+    }
+  });
+
+  app.get('/api/teams/:teamId/forum/topics/:topicId/replies', requireAuth, async (req, res) => {
+    try {
+      const { teamId, topicId } = req.params;
+      const userTeamId = (await storage.getUser(req.session.userId!))?.teamId;
+      if (!userTeamId || userTeamId !== teamId) {
+        return res.status(403).json({ message: 'Acesso negado.' });
+      }
+      const { listForumReplies, getForumTopicById } = await import('./repositories/forum.repo');
+      const topic = await getForumTopicById(topicId, teamId);
+      if (!topic) return res.status(404).json({ message: 'Tópico não encontrado' });
+      const limit = Math.min(parseInt(String(req.query.limit || 50), 10) || 50, 100);
+      const offset = Math.max(0, parseInt(String(req.query.offset || 0), 10));
+      const replies = await listForumReplies(topicId, {
+        viewerUserId: req.session.userId,
+        limit,
+        offset,
+      });
+      return res.json(replies);
+    } catch (error: any) {
+      console.error('Forum replies error:', error);
+      return res.status(500).json({ message: 'Erro ao buscar respostas' });
+    }
+  });
+
+  app.post('/api/teams/:teamId/forum/topics/:topicId/replies', requireAuth, async (req, res) => {
+    try {
+      const { teamId, topicId } = req.params;
+      const userId = req.session.userId!;
+      const user = await storage.getUser(userId);
+      if (!user?.teamId || user.teamId !== teamId) {
+        return res.status(403).json({ message: 'Acesso negado.' });
+      }
+      const { getForumTopicById, createForumReply } = await import('./repositories/forum.repo');
+      const topic = await getForumTopicById(topicId, teamId);
+      if (!topic) return res.status(404).json({ message: 'Tópico não encontrado' });
+      if (topic.isLocked) return res.status(403).json({ message: 'Este tópico está trancado.' });
+      const content = (req.body?.content ?? '').trim();
+      if (!content) return res.status(400).json({ message: 'Conteúdo da resposta é obrigatório' });
+      const reply = await createForumReply(topicId, userId, content);
+      return res.status(201).json(reply);
+    } catch (error: any) {
+      console.error('Create forum reply error:', error);
+      return res.status(500).json({ message: error?.message || 'Erro ao criar resposta' });
+    }
+  });
+
+  app.post('/api/teams/:teamId/forum/topics/:topicId/like', requireAuth, async (req, res) => {
+    try {
+      const { teamId, topicId } = req.params;
+      const userId = req.session.userId!;
+      const userTeamId = (await storage.getUser(userId))?.teamId;
+      if (!userTeamId || userTeamId !== teamId) {
+        return res.status(403).json({ message: 'Acesso negado.' });
+      }
+      const { getForumTopicById, toggleForumTopicLike } = await import('./repositories/forum.repo');
+      const topic = await getForumTopicById(topicId, teamId);
+      if (!topic) return res.status(404).json({ message: 'Tópico não encontrado' });
+      const result = await toggleForumTopicLike(topicId, userId);
+      return res.json(result);
+    } catch (error: any) {
+      console.error('Forum topic like error:', error);
+      return res.status(500).json({ message: 'Erro ao curtir tópico' });
+    }
+  });
+
+  app.post('/api/teams/:teamId/forum/replies/:replyId/like', requireAuth, async (req, res) => {
+    try {
+      const { teamId, replyId } = req.params;
+      const userId = req.session.userId!;
+      const userTeamId = (await storage.getUser(userId))?.teamId;
+      if (!userTeamId || userTeamId !== teamId) {
+        return res.status(403).json({ message: 'Acesso negado.' });
+      }
+      const { getForumReplyTeamId, toggleForumReplyLike } = await import('./repositories/forum.repo');
+      const replyTeamId = await getForumReplyTeamId(replyId);
+      if (!replyTeamId || replyTeamId !== teamId) {
+        return res.status(404).json({ message: 'Resposta não encontrada' });
+      }
+      const result = await toggleForumReplyLike(replyId, userId);
+      return res.json(result);
+    } catch (error: any) {
+      console.error('Forum reply like error:', error);
+      return res.status(500).json({ message: 'Erro ao curtir resposta' });
+    }
+  });
+
+  // ============================================
   // TRANSFERS (Vai e Vem)
   // ============================================
 
@@ -1688,38 +2186,246 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // ============================================
+  // TRANSFER RUMORS (Vai e Vem - schema transfer_rumors)
+  // ============================================
+
+  app.get('/api/transfer-rumors', async (req, res) => {
+    try {
+      const status = typeof req.query.status === 'string' ? req.query.status.trim() : undefined;
+      const q = typeof req.query.q === 'string' ? req.query.q.trim() : undefined;
+      const teamId = typeof req.query.teamId === 'string' ? req.query.teamId.trim() : undefined;
+      const limit = typeof req.query.limit === 'string' ? parseInt(req.query.limit, 10) : 30;
+      const offset = typeof req.query.offset === 'string' ? parseInt(req.query.offset, 10) : 0;
+      const viewerUserId = req.session?.userId ?? null;
+
+      const items = await storage.getTransferRumors({ status, q, teamId, viewerUserId, limit: Number.isNaN(limit) ? 30 : limit, offset: Number.isNaN(offset) ? 0 : offset });
+      res.json(items);
+    } catch (error) {
+      console.error('Get transfer rumors error:', error);
+      res.status(500).json({ message: 'Erro ao buscar rumores' });
+    }
+  });
+
+  app.get('/api/transfer-rumors/mine', requireJournalistOrAdmin, async (req, res) => {
+    try {
+      const userId = req.session!.userId!;
+      const items = await storage.getTransferRumorsByAuthor(userId);
+      res.json(items);
+    } catch (error) {
+      console.error('Get my transfer rumors error:', error);
+      res.status(500).json({ message: 'Erro ao buscar suas negociações' });
+    }
+  });
+
+  app.get('/api/transfer-rumors/:id', async (req, res) => {
+    try {
+      const rumor = await storage.getTransferRumorById(req.params.id);
+      if (!rumor) return res.status(404).json({ message: 'Rumor não encontrado' });
+      res.json(rumor);
+    } catch (error) {
+      console.error('Get transfer rumor error:', error);
+      res.status(500).json({ message: 'Erro ao buscar rumor' });
+    }
+  });
+
+  app.post('/api/transfer-rumors', requireAuth, async (req, res) => {
+    try {
+      const userId = req.session.userId!;
+      const user = await storage.getUser(userId);
+      if (!user || (user.userType !== 'JOURNALIST' && user.userType !== 'ADMIN')) {
+        return res.status(403).json({ message: 'Apenas jornalistas e administradores podem criar negociações' });
+      }
+      const { playerId, fromTeamId, toTeamId, status, feeAmount, feeCurrency, contractUntil, sourceUrl, sourceName, note } = req.body ?? {};
+      if (!playerId || !fromTeamId || !toTeamId) {
+        return res.status(400).json({ message: 'playerId, fromTeamId e toTeamId são obrigatórios' });
+      }
+      if (fromTeamId === toTeamId) {
+        return res.status(400).json({ message: 'fromTeamId e toTeamId devem ser diferentes' });
+      }
+      const validStatus = ['RUMOR', 'NEGOTIATING', 'DONE', 'CANCELLED'].includes(status) ? status : 'RUMOR';
+      const rumor = await storage.createTransferRumor({
+        playerId,
+        fromTeamId,
+        toTeamId,
+        status: validStatus,
+        feeAmount: feeAmount != null ? Number(feeAmount) : null,
+        feeCurrency: feeCurrency ?? 'BRL',
+        contractUntil: contractUntil ?? null,
+        sourceUrl: sourceUrl ?? null,
+        sourceName: sourceName ?? null,
+        note: note ?? null,
+        createdByUserId: userId,
+      });
+      const full = await storage.getTransferRumorById(rumor.id);
+      res.status(201).json(full ?? rumor);
+    } catch (error) {
+      console.error('Create transfer rumor error:', error);
+      res.status(500).json({ message: 'Erro ao criar negociação' });
+    }
+  });
+
+  app.patch('/api/transfer-rumors/:id', requireAuth, async (req, res) => {
+    try {
+      const userId = req.session.userId!;
+      const user = await storage.getUser(userId);
+      if (!user || (user.userType !== 'JOURNALIST' && user.userType !== 'ADMIN')) {
+        return res.status(403).json({ message: 'Apenas jornalistas e administradores podem editar negociações' });
+      }
+      const rumor = await storage.getTransferRumorById(req.params.id);
+      if (!rumor) return res.status(404).json({ message: 'Negociação não encontrada' });
+      const authorId = (rumor as any).createdByUserId ?? rumor.author?.id;
+      if (authorId !== userId && user.userType !== 'ADMIN') {
+        return res.status(403).json({ message: 'Você só pode editar suas próprias negociações' });
+      }
+      const { status, feeAmount, feeCurrency, contractUntil, sourceName, sourceUrl, note } = req.body ?? {};
+      const updates: Record<string, unknown> = {};
+      if (status !== undefined && ['RUMOR', 'NEGOTIATING', 'DONE', 'CANCELLED'].includes(status)) updates.status = status;
+      if (feeAmount !== undefined) updates.feeAmount = feeAmount != null ? Number(feeAmount) : null;
+      if (feeCurrency !== undefined) updates.feeCurrency = feeCurrency;
+      if (contractUntil !== undefined) updates.contractUntil = contractUntil ?? null;
+      if (sourceName !== undefined) updates.sourceName = sourceName ?? null;
+      if (sourceUrl !== undefined) updates.sourceUrl = sourceUrl ?? null;
+      if (note !== undefined) updates.note = note ?? null;
+      if (Object.keys(updates).length === 0) {
+        return res.json(rumor);
+      }
+      const updated = await storage.updateTransferRumor(req.params.id, updates as any);
+      if (!updated) return res.status(404).json({ message: 'Negociação não encontrada' });
+      const full = await storage.getTransferRumorById(updated.id);
+      res.json(full ?? updated);
+    } catch (error) {
+      console.error('Update transfer rumor error:', error);
+      res.status(500).json({ message: 'Erro ao atualizar negociação' });
+    }
+  });
+
+  app.delete('/api/transfer-rumors/:id', requireAuth, async (req, res) => {
+    try {
+      const userId = req.session.userId!;
+      const user = await storage.getUser(userId);
+      if (!user || (user.userType !== 'JOURNALIST' && user.userType !== 'ADMIN')) {
+        return res.status(403).json({ message: 'Apenas jornalistas e administradores podem excluir negociações' });
+      }
+      const rumor = await storage.getTransferRumorById(req.params.id);
+      if (!rumor) return res.status(404).json({ message: 'Negociação não encontrada' });
+      const authorId = (rumor as any).createdByUserId ?? (rumor.author as any)?.id;
+      if (authorId !== userId && user.userType !== 'ADMIN') {
+        return res.status(403).json({ message: 'Você só pode excluir suas próprias negociações' });
+      }
+      const deleted = await storage.deleteTransferRumor(req.params.id);
+      if (!deleted) return res.status(404).json({ message: 'Negociação não encontrada' });
+      res.status(204).send();
+    } catch (error) {
+      console.error('Delete transfer rumor error:', error);
+      res.status(500).json({ message: 'Erro ao excluir negociação' });
+    }
+  });
+
+  app.post('/api/transfer-rumors/:id/vote', requireAuth, async (req, res) => {
+    try {
+      const rumorId = req.params.id;
+      const { side, vote } = req.body ?? {};
+      if (!['SELLING', 'BUYING'].includes(side)) {
+        return res.status(400).json({ message: 'side deve ser SELLING ou BUYING' });
+      }
+      if (!['LIKE', 'DISLIKE', 'CLEAR'].includes(vote)) {
+        return res.status(400).json({ message: 'vote deve ser LIKE, DISLIKE ou CLEAR' });
+      }
+      const userId = req.session.userId!;
+      const user = await storage.getUser(userId);
+      if (!user) return res.status(401).json({ message: 'Usuário não encontrado' });
+
+      const rumor = await storage.getTransferRumorById(rumorId);
+      if (!rumor) return res.status(404).json({ message: 'Rumor não encontrado' });
+
+      if (side === 'SELLING') {
+        if (user.teamId !== rumor.fromTeam?.id) {
+          return res.status(403).json({ message: 'Apenas torcedores do time que está vendendo podem votar aqui.' });
+        }
+      } else {
+        if (user.teamId !== rumor.toTeam?.id) {
+          return res.status(403).json({ message: 'Apenas torcedores do time que está comprando podem votar aqui.' });
+        }
+      }
+
+      const result = await storage.upsertTransferRumorVote(rumorId, userId, side, vote);
+      res.json(result);
+    } catch (error) {
+      console.error('Transfer rumor vote error:', error);
+      res.status(500).json({ message: 'Erro ao registrar voto' });
+    }
+  });
+
+  app.get('/api/transfer-rumors/:id/comments', async (req, res) => {
+    try {
+      const comments = await storage.listTransferRumorComments(req.params.id);
+      res.json(comments);
+    } catch (error) {
+      console.error('List transfer rumor comments error:', error);
+      res.status(500).json({ message: 'Erro ao listar comentários' });
+    }
+  });
+
+  app.post('/api/transfer-rumors/:id/comments', requireAuth, async (req, res) => {
+    try {
+      const { content } = req.body ?? {};
+      if (!content || typeof content !== 'string' || !content.trim()) {
+        return res.status(400).json({ message: 'content é obrigatório' });
+      }
+      const comment = await storage.createTransferRumorComment(req.params.id, req.session.userId!, content.trim());
+      res.status(201).json(comment);
+    } catch (error) {
+      console.error('Create transfer rumor comment error:', error);
+      res.status(500).json({ message: 'Erro ao criar comentário' });
+    }
+  });
+
   app.post('/api/transfers/:id/vote', requireAuth, async (req, res) => {
     try {
       const transferId = req.params.id;
-      const { vote } = req.body ?? {};
-      if (vote !== 'UP' && vote !== 'DOWN') {
-        return res.status(400).json({ message: 'vote deve ser UP ou DOWN' });
+      const { side, vote } = req.body ?? {};
+      if (!['SELLING', 'BUYING'].includes(side)) {
+        return res.status(400).json({ message: 'side deve ser SELLING ou BUYING' });
+      }
+      if (!['LIKE', 'DISLIKE', 'CLEAR'].includes(vote)) {
+        return res.status(400).json({ message: 'vote deve ser LIKE, DISLIKE ou CLEAR' });
       }
       const userId = req.session.userId!;
+
+      const user = await storage.getUser(userId);
+      if (!user) {
+        return res.status(401).json({ message: 'Usuário não encontrado' });
+      }
 
       const transfer = await storage.getTransferById(transferId);
       if (!transfer) {
         return res.status(404).json({ message: 'Transferência não encontrada' });
       }
 
-      const existing = await storage.getUserTransferVote(transferId, userId);
-      if (existing) {
-        return res.status(409).json({ message: 'Você já votou neste item.' });
+      // Regra de permissão: SELLING só para torcida do fromTeam, BUYING só para torcida do toTeam
+      if (side === 'SELLING') {
+        if (!transfer.fromTeamId) {
+          return res.status(400).json({ message: 'Este rumor não tem time de origem definido.' });
+        }
+        if (user.teamId !== transfer.fromTeamId) {
+          return res.status(403).json({
+            message: 'Apenas torcedores do time que está vendendo podem votar aqui.',
+          });
+        }
+      } else {
+        if (!transfer.toTeamId) {
+          return res.status(400).json({ message: 'Este rumor não tem time de destino definido.' });
+        }
+        if (user.teamId !== transfer.toTeamId) {
+          return res.status(403).json({
+            message: 'Apenas torcedores do time que está comprando podem votar aqui.',
+          });
+        }
       }
 
-      await storage.createTransferVote(transferId, userId, vote);
-
-      const items = await storage.getTransfers({ viewerUserId: userId });
-      const updated = items.find((i) => i.id === transferId);
-      if (!updated) {
-        return res.status(500).json({ message: 'Erro ao retornar dados atualizados' });
-      }
-      res.json({
-        upPercent: updated.upPercent,
-        downPercent: updated.downPercent,
-        voteCount: updated.voteCount,
-        viewerVote: updated.viewerVote,
-      });
+      const result = await storage.upsertTransferVote(transferId, userId, side, vote);
+      res.json(result);
     } catch (error) {
       console.error('Transfer vote error:', error);
       res.status(500).json({ message: 'Erro ao registrar voto' });
