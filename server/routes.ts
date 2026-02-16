@@ -265,6 +265,22 @@ export async function registerRoutes(app: Express): Promise<Server> {
     })
   );
 
+  // Health check (no auth, no secrets) - for platforms and load balancers
+  app.get("/api/health", async (_req, res) => {
+    let dbStatus: "ok" | "error" = "ok";
+    try {
+      await pool.query("SELECT 1");
+    } catch {
+      dbStatus = "error";
+    }
+    res.json({
+      ok: dbStatus === "ok",
+      status: dbStatus === "ok" ? "healthy" : "degraded",
+      db: dbStatus,
+      env: process.env.NODE_ENV || "development",
+    });
+  });
+
   // Ensure base data exists (idempotente).
   // Sem times no banco, o feed (join com teams) e páginas de time quebram.
   try {
@@ -274,6 +290,17 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   } catch (error) {
     console.error("❌ Falha ao seedar times automaticamente:", error);
+  }
+
+  // Ensure game sets exist (Adivinhe o Elenco).
+  try {
+    const { seedGames } = await import("./db/seed/games.seed");
+    const result = await seedGames();
+    if (result.seeded) {
+      console.log("✅ Game set corinthians-2005-brasileirao criado (auto)");
+    }
+  } catch (error) {
+    console.error("❌ Falha ao seedar game sets:", error);
   }
 
   // ============================================
@@ -388,6 +415,132 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error("Me error:", error);
       res.status(500).json({ message: 'Erro ao buscar usuário' });
+    }
+  });
+
+  // ============================================
+  // MY TEAM OVERVIEW (Jogos + Performance - fonte única)
+  // ============================================
+
+  app.get("/api/my-team/overview", requireAuth, async (req, res) => {
+    try {
+      const user = await storage.getUser(req.session.userId!);
+      if (!user?.teamId) {
+        return res.status(200).json({
+          team: null,
+          standings: null,
+          lastMatches: [],
+          form: [],
+        });
+      }
+      const teamId = user.teamId;
+      const team = await storage.getTeam(teamId);
+      if (!team) {
+        return res.status(200).json({
+          team: null,
+          standings: null,
+          lastMatches: [],
+          form: [],
+        });
+      }
+
+      const { getMatchesByTeam } = await import("./repositories/matches.repo");
+      const { getResultForTeam, deriveFormFromMatches } = await import("./utils/resultForTeam");
+
+      let rawMatches: Array<{
+        id: string;
+        kickoffAt: Date | string;
+        status: string;
+        homeTeamId: string | null;
+        awayTeamId: string | null;
+        homeTeamName: string;
+        awayTeamName: string;
+        homeScore: number | null;
+        awayScore: number | null;
+        competition: { id: string; name: string; logoUrl: string | null };
+        teamRating?: number | null;
+      }> = [];
+
+      const matchGamesList = await getMatchesByTeam(teamId, { type: "all", limit: 30 });
+      if (matchGamesList.length > 0) {
+        rawMatches = matchGamesList.map((m) => ({
+          id: m.id,
+          kickoffAt: m.kickoffAt,
+          status: m.status,
+          homeTeamId: m.homeTeamId,
+          awayTeamId: m.awayTeamId,
+          homeTeamName: m.homeTeamName,
+          awayTeamName: m.awayTeamName,
+          homeScore: m.homeScore,
+          awayScore: m.awayScore,
+          competition: m.competition,
+          teamRating: null,
+        }));
+      } else {
+        const fixtures = await storage.getFixturesByTeam(teamId, { type: "all", limit: 30 });
+        rawMatches = fixtures.map((f) => ({
+          id: f.id,
+          kickoffAt: f.kickoffAt,
+          status: f.status,
+          homeTeamId: f.homeTeamId,
+          awayTeamId: f.awayTeamId,
+          homeTeamName: f.homeTeamName,
+          awayTeamName: f.awayTeamName,
+          homeScore: f.homeScore,
+          awayScore: f.awayScore,
+          competition: { id: f.competitionId ?? "", name: f.competition?.name ?? "TBD", logoUrl: f.competition?.logoUrl ?? null },
+          teamRating: "teamRating" in f ? (f as any).teamRating : null,
+        }));
+      }
+
+      const finished = rawMatches
+        .filter((m) => m.status === "FT" && m.homeScore != null && m.awayScore != null)
+        .sort((a, b) => new Date(b.kickoffAt).getTime() - new Date(a.kickoffAt).getTime())
+        .slice(0, 5);
+
+      const form = deriveFormFromMatches(finished, teamId, 5);
+
+      const lastMatches = finished.map((m) => ({
+        id: m.id,
+        date: new Date(m.kickoffAt).toISOString(),
+        home: { id: m.homeTeamId ?? "", name: m.homeTeamName },
+        away: { id: m.awayTeamId ?? "", name: m.awayTeamName },
+        score: { home: m.homeScore ?? 0, away: m.awayScore ?? 0 },
+        resultForTeam: getResultForTeam(m, teamId) ?? "D",
+        competition: m.competition?.name ?? null,
+        teamRating: m.teamRating ?? null,
+      }));
+
+      const allTeams = await storage.getAllTeams();
+      const sorted = [...allTeams].sort((a, b) => (b.points ?? 0) - (a.points ?? 0));
+      const teamIndex = sorted.findIndex((t) => t.id === teamId);
+      const leader = sorted[0];
+      const z4First = sorted[16];
+      const standings =
+        teamIndex >= 0
+          ? {
+              position: teamIndex + 1,
+              points: team.points ?? 0,
+              played: (team.wins ?? 0) + (team.draws ?? 0) + (team.losses ?? 0),
+              wins: team.wins ?? 0,
+              draws: team.draws ?? 0,
+              losses: team.losses ?? 0,
+              goalDiff: (team.goalsFor ?? 0) - (team.goalsAgainst ?? 0),
+              leaderPoints: leader?.points ?? null,
+              z4Points: z4First?.points ?? null,
+            }
+          : null;
+
+      return res.json({
+        team: { id: team.id, name: team.name, slug: team.id },
+        standings,
+        lastMatches,
+        form,
+        updatedAt: Date.now(),
+      });
+    } catch (error: any) {
+      console.error("[my-team] /overview error:", error);
+      return res.status(500).json({ message: "Falha ao buscar overview do time" });
     }
   });
 
@@ -2429,6 +2582,112 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error('Transfer vote error:', error);
       res.status(500).json({ message: 'Erro ao registrar voto' });
+    }
+  });
+
+  // ============================================
+  // GAMES (Adivinhe o Elenco - históricos)
+  // ============================================
+
+  app.get("/api/games/sets", async (req, res) => {
+    try {
+      const { listGameSets } = await import("./repositories/games.repo");
+      const sets = await listGameSets();
+      return res.json(sets);
+    } catch (error: any) {
+      console.error("[games] GET /sets error:", error);
+      return res.status(500).json({ message: "Erro ao buscar sets" });
+    }
+  });
+
+  app.get("/api/games/sets/:slug", async (req, res) => {
+    const slug = String(req.params.slug || "").trim();
+    if (!slug) return res.status(400).json({ message: "slug inválido" });
+    try {
+      const { getGameSetBySlug } = await import("./repositories/games.repo");
+      const set = await getGameSetBySlug(slug);
+      if (!set) return res.status(404).json({ message: "Set não encontrado" });
+      return res.json(set);
+    } catch (error: any) {
+      console.error("[games] GET /sets/:slug error:", error);
+      return res.status(500).json({ message: "Erro ao buscar set" });
+    }
+  });
+
+  app.post("/api/games/attempts/start", requireAuth, async (req, res) => {
+    const { setSlug } = req.body ?? {};
+    const slug = String(setSlug || "").trim();
+    if (!slug) return res.status(400).json({ message: "setSlug é obrigatório" });
+    try {
+      const userId = req.session.userId!;
+      const { startOrGetAttempt } = await import("./repositories/games.repo");
+      const result = await startOrGetAttempt(userId, slug);
+      return res.json(result);
+    } catch (error: any) {
+      console.error("[games] POST /attempts/start error:", error);
+      return res.status(500).json({ message: error?.message ?? "Erro ao iniciar tentativa" });
+    }
+  });
+
+  app.get("/api/games/attempts/:id", requireAuth, async (req, res) => {
+    const attemptId = String(req.params.id || "").trim();
+    if (!attemptId) return res.status(400).json({ message: "id inválido" });
+    try {
+      const userId = req.session.userId!;
+      const { getAttempt } = await import("./repositories/games.repo");
+      const attempt = await getAttempt(attemptId, userId);
+      if (!attempt) return res.status(404).json({ message: "Tentativa não encontrada" });
+      return res.json(attempt);
+    } catch (error: any) {
+      console.error("[games] GET /attempts/:id error:", error);
+      return res.status(500).json({ message: "Erro ao buscar tentativa" });
+    }
+  });
+
+  app.post("/api/games/attempts/:id/guess", requireAuth, async (req, res) => {
+    const attemptId = String(req.params.id || "").trim();
+    const { text } = req.body ?? {};
+    const guessText = typeof text === "string" ? text.trim() : "";
+    if (!attemptId) return res.status(400).json({ message: "id inválido" });
+    if (!guessText) return res.status(400).json({ message: "text é obrigatório" });
+    try {
+      const userId = req.session.userId!;
+      const { processGuess } = await import("./repositories/games.repo");
+      const result = await processGuess(attemptId, userId, guessText);
+      return res.json(result);
+    } catch (error: any) {
+      console.error("[games] POST /attempts/:id/guess error:", error);
+      return res.status(500).json({ message: error?.message ?? "Erro ao processar palpite" });
+    }
+  });
+
+  app.post("/api/games/attempts/:id/reset", requireAuth, async (req, res) => {
+    const attemptId = String(req.params.id || "").trim();
+    if (!attemptId) return res.status(400).json({ message: "id inválido" });
+    try {
+      const userId = req.session.userId!;
+      const { resetAttempt } = await import("./repositories/games.repo");
+      const ok = await resetAttempt(attemptId, userId);
+      if (!ok) return res.status(404).json({ message: "Tentativa não encontrada" });
+      return res.json({ message: "Reiniciado" });
+    } catch (error: any) {
+      console.error("[games] POST /attempts/:id/reset error:", error);
+      return res.status(500).json({ message: "Erro ao reiniciar" });
+    }
+  });
+
+  app.post("/api/games/attempts/:id/abandon", requireAuth, async (req, res) => {
+    const attemptId = String(req.params.id || "").trim();
+    if (!attemptId) return res.status(400).json({ message: "id inválido" });
+    try {
+      const userId = req.session.userId!;
+      const { abandonAttempt } = await import("./repositories/games.repo");
+      const ok = await abandonAttempt(attemptId, userId);
+      if (!ok) return res.status(404).json({ message: "Tentativa não encontrada" });
+      return res.json({ message: "Desistência registrada" });
+    } catch (error: any) {
+      console.error("[games] POST /attempts/:id/abandon error:", error);
+      return res.status(500).json({ message: "Erro ao desistir" });
     }
   });
 

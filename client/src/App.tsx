@@ -16,6 +16,8 @@ import { MatchesPage } from "@/features/team/matches";
 import PerfilPage from "@/pages/perfil";
 import JornalistaPage from "@/pages/jornalista";
 import JogosParaSeDivertirPage from "@/pages/jogos-para-se-divertir";
+import LembraDesseElencoPage from "@/pages/jogos/lembra-desse-elenco";
+import AdivinheElencoPage from "@/pages/jogos/adivinhe-elenco";
 import VaiEVemPage from "@/pages/vai-e-vem";
 import NotFound from "@/pages/not-found";
 
@@ -79,6 +81,8 @@ function Router() {
       <Route path="/meu-time/comunidade/:topicId" component={() => <ProtectedRoute component={MeuTimeComunidadeTopicPage} />} />
       <Route path="/meu-time/jogos" component={() => <ProtectedRoute component={MatchesPage} />} />
       <Route path="/jogos" component={() => <ProtectedRoute component={JogosParaSeDivertirPage} />} />
+      <Route path="/jogos/lembra-desse-elenco" component={() => <ProtectedRoute component={LembraDesseElencoPage} />} />
+      <Route path="/jogos/adivinhe-elenco/:slug" component={() => <ProtectedRoute component={AdivinheElencoPage} />} />
       <Route path="/vai-e-vem" component={() => <ProtectedRoute component={VaiEVemPage} />} />
       <Route path="/perfil" component={() => <ProtectedRoute component={PerfilPage} />} />
       <Route path="/jornalista" component={() => <ProtectedRoute component={JornalistaPage} />} />

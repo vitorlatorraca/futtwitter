@@ -1,4 +1,5 @@
 export { TeamHeaderPanel } from './TeamHeaderPanel';
+export { MyTeamCard, MyTeamCardSection } from './MyTeamCard';
 export { MatchesSidebar } from './MatchesSidebar';
 export { NextMatchHero } from './NextMatchHero';
 export { LastMatchCard } from './LastMatchCard';

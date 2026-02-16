@@ -45,9 +45,10 @@ No projeto Railway, vá em **"Variables"** e adicione:
 ```env
 DATABASE_URL=postgresql://user:password@host.neon.tech/dbname?sslmode=require
 NODE_ENV=production
-PORT=5000
 SESSION_SECRET=seu-secret-super-seguro-aqui-mude-em-producao
 ```
+
+**Nota:** `PORT` é injetado automaticamente pelo Railway; não é necessário defini-lo.
 
 ### Variáveis Opcionais (mas recomendadas)
 
@@ -63,28 +64,33 @@ CORS_ORIGIN=https://futtwitter-production.up.railway.app
 
 ## Passo 4: Preparar o Banco de Dados
 
-### Opção A: Via Railway (Recomendado)
+**Importante:** `db:push` é bloqueado em produção. Use migrations.
 
-1. No projeto Railway, adicione um novo serviço ou use o terminal do serviço existente
-2. Execute o comando de preparação do banco:
+### Opção A: Via Railway (Produção)
 
-```bash
-npm run db:prepare
-```
-
-Ou diretamente:
+1. No projeto Railway, use o terminal do serviço ou um job one-off
+2. **Antes:** Faça backup no Neon Console (recomendado)
+3. Execute migrations:
 
 ```bash
-npx drizzle-kit push
+npm run db:migrate
 ```
 
-### Opção B: Via Local (Desenvolvimento)
+### Opção B: Via Local (Produção)
 
-1. Configure `.env` local com a `DATABASE_URL` do Neon/Railway
+1. Configure `.env` com a `DATABASE_URL` do Neon de produção
 2. Execute:
 
 ```bash
-npm run db:prepare
+npm run db:migrate
+```
+
+### Opção C: Desenvolvimento (schema local)
+
+Para sincronizar schema em dev (rápido, iterativo):
+
+```bash
+npm run db:push
 ```
 
 ## Passo 5: Configurar Build e Start no Railway
@@ -198,7 +204,7 @@ Railway Service
 |----------|-------------|-----------|---------|
 | `DATABASE_URL` | ✅ Sim | Connection string do PostgreSQL | `postgresql://user:pass@host/db` |
 | `NODE_ENV` | ✅ Sim | Ambiente de execução | `production` |
-| `PORT` | ✅ Sim | Porta do servidor (Railway injeta) | `5000` |
+| `PORT` | ⚠️ Injetado | Railway injeta automaticamente; não é necessário definir | — |
 | `SESSION_SECRET` | ✅ Sim | Secret para sessões | `seu-secret-aqui` |
 | `CORS_ORIGIN` | ⚠️ Opcional | Origem permitida para CORS | `https://app.example.com` |
 

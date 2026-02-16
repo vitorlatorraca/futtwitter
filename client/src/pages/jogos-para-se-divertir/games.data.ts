@@ -8,9 +8,18 @@ export interface GameItem {
   description: string;
   slug?: string;
   available: boolean;
+  /** Se definido, "Abrir" navega para esta rota em vez de /jogos/adivinhe-elenco/:slug */
+  selectionRoute?: string;
 }
 
 export const GAMES: GameItem[] = [
+  {
+    id: 'adivinhe-elenco',
+    title: 'Lembra desse elenco?',
+    description: 'Escolha um elenco histórico e tente acertar todos os jogadores.',
+    available: true,
+    selectionRoute: '/jogos/lembra-desse-elenco',
+  },
   {
     id: 'quiz',
     title: 'Quiz do Time',

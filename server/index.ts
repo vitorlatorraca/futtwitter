@@ -135,10 +135,14 @@ app.use((req, res, next) => {
     serveStatic(app);
   }
 
-  // ALWAYS serve the app on the port specified in the environment variable PORT
-  // Railway injects PORT automatically. Default to 5000 if not specified.
-  // this serves both the API and the client.
-  const port = parseInt(process.env.PORT || '5000', 10);
+  // Use process.env.PORT. Platforms (Railway, Render) inject it in production.
+  // Fallback 5000 only in development for local runs.
+  const portRaw = process.env.PORT;
+  const port = portRaw ? parseInt(portRaw, 10) : (process.env.NODE_ENV === "production" ? 0 : 5000);
+  if (!port || port <= 0) {
+    console.error("[express] PORT must be set in production. Platforms inject it automatically.");
+    process.exit(1);
+  }
   // In production (Railway), bind to 0.0.0.0 to accept external connections
   // In development, use 127.0.0.1 for localhost only
   const host = process.env.NODE_ENV === 'production' ? '0.0.0.0' : '127.0.0.1';
@@ -148,7 +152,8 @@ app.use((req, res, next) => {
       console.error('\n[express] Porta ' + port + ' em uso. Nenhum processo pode escutar nela.');
       console.error('  Diagnosticar (ver PID na última coluna):  netstat -ano | findstr :' + port);
       console.error('  Matar processo:  taskkill /PID <PID> /F');
-      console.error('  Ou rode:  npm run kill:5000\n');
+      if (port === 5000) console.error('  Ou rode:  npm run kill:5000');
+      console.error('');
       process.exit(1);
     }
     throw err;
@@ -157,7 +162,14 @@ app.use((req, res, next) => {
   server.listen({
     port,
     host,
-  }, () => {
-    log(`serving on ${host}:${port}`);
+  }, async () => {
+    log(`serving on ${host}:${port} (NODE_ENV=${process.env.NODE_ENV || "development"})`);
+    try {
+      const { pool } = await import("./db");
+      await pool.query("SELECT 1");
+      log("DB connection OK");
+    } catch (err) {
+      console.error("[express] DB connection failed:", (err as Error).message);
+    }
   });
 })();

@@ -96,10 +96,10 @@ export function ElencoPreviewMini({
         </div>
         {preview.length > 0 ? (
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
-            {preview.map((p) => {
+            {preview.map((p, index) => {
               const age = getAgeFromBirthDate(p.birthDate);
               const tooltipContent = age != null ? `${p.name} · ${age} anos` : p.name;
-              const stableKey = p.id ?? `${p.name}-${p.shirtNumber ?? ''}`;
+              const stableKey = p.id ?? p.slug ?? `${p.name}-${p.shirtNumber ?? ''}-${index}`;
               return (
                 <Tooltip key={stableKey}>
                   <TooltipTrigger asChild>

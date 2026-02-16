@@ -1,6 +1,7 @@
 import { useMemo, useState, useEffect, type ChangeEvent } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { useAuth } from '@/lib/auth-context';
+import { useMyTeamOverview, overviewMatchesToTeamMatch } from '@/hooks/useMyTeamOverview';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { AppShell } from '@/components/ui/app-shell';
@@ -15,6 +16,7 @@ import {
   LastMatchRatingsCard,
   TransfersPreviewMini,
   ElencoPreviewMini,
+  MyTeamCard,
 } from '@/features/my-team-v2';
 import { MatchesCard } from '@/features/team/matches';
 import { LineupSection, resolvePlayerPhoto } from '@/features/my-team-v2';
@@ -30,8 +32,8 @@ import { Button } from '@/components/ui/button';
 import { useToast } from '@/hooks/use-toast';
 import { apiRequest, getApiUrl } from '@/lib/queryClient';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
-import { useLocation } from 'wouter';
-import { CalendarDays, Loader2, Newspaper } from 'lucide-react';
+import { Link, useLocation } from 'wouter';
+import { CalendarDays, ChevronRight, Loader2, Newspaper } from 'lucide-react';
 import type { Team, Player, Match, News } from '@shared/schema';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
@@ -249,6 +251,8 @@ export default function MeuTimePage() {
     },
     enabled: !!teamId,
   });
+
+  const overviewQuery = useMyTeamOverview();
 
   const lineupMutation = useMutation({
     mutationFn: async ({ formation, slots }: { formation: string; slots: Array<{ slotIndex: number; playerId: string }> }) => {
@@ -563,39 +567,51 @@ export default function MeuTimePage() {
           />
 
           <TabsContent value="overview" className="mt-4">
-            {/* Grid premium: 3 col desktop, 2 tablet, 1 mobile. Ritmo vertical consistente (gap-5). */}
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-[380px_1fr_380px] gap-5 max-w-[1280px] auto-rows-auto">
-              {/* 1. Próximo jogo — mobile 1º, desktop col1 row1 */}
-              <div className="min-h-[110px] order-1 lg:col-start-1 lg:row-start-1">
-                <NextMatchHero
-                  data={upcomingMatchQuery.data}
-                  isLoading={upcomingMatchQuery.isLoading}
-                  teamId={teamId ?? ''}
-                  teamName={mergedTeam?.name ?? clubConfig.displayName}
-                />
+            {/* Linha 0: Próximo jogo + Performance */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-5 max-w-[1280px] mb-5">
+              <NextMatchHero
+                data={upcomingMatchQuery.data}
+                isLoading={upcomingMatchQuery.isLoading}
+                teamId={teamId ?? ''}
+                teamName={mergedTeam?.name ?? clubConfig.displayName}
+              />
+              <PerformanceCard
+                teams={mergedLeagueTable}
+                currentTeamId={safeTeamData?.team.id ?? ''}
+                formMatches={recentFormMatches}
+                overview={overviewQuery.data}
+                isLoading={overviewQuery.isLoading && !overviewQuery.data}
+                formLimit={5}
+              />
+            </div>
+
+            {/* LINHA A: Jogos | Tática | Top avaliados — grid 12 cols, altura fixa */}
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-12 gap-5 max-w-[1280px] mb-5">
+              {/* Jogos — 4/12 desktop, 1/2 tablet, full mobile */}
+              <div className="lg:col-span-4 order-1 md:order-1">
+                <MyTeamCard
+                  title="Jogos"
+                  rightSlot={
+                    <Link href="/meu-time/jogos" className="text-xs font-medium text-emerald-500 hover:text-emerald-400 flex items-center gap-1 transition-colors">
+                      Ver todos
+                      <ChevronRight className="h-3.5 w-3.5" />
+                    </Link>
+                  }
+                  heightClass="h-[520px] md:h-[480px] xl:h-[560px]"
+                >
+                  <MatchesCard
+                    teamId={teamId ?? ''}
+                    teamName={mergedTeam?.name ?? clubConfig.displayName}
+                    embed
+                    overviewMode={!!teamId}
+                    matches={overviewQuery.data ? overviewMatchesToTeamMatch(overviewQuery.data.lastMatches) : undefined}
+                    isLoading={overviewQuery.isLoading}
+                  />
+                </MyTeamCard>
               </div>
 
-              {/* 2. Performance (Situação + Forma) — mobile 2º, desktop col3 row1 */}
-              <div className="order-2 lg:col-start-3 lg:row-start-1">
-                <PerformanceCard
-                  teams={mergedLeagueTable}
-                  currentTeamId={safeTeamData?.team.id ?? ''}
-                  formMatches={recentFormMatches}
-                  isLoading={!safeTeamData}
-                  formLimit={5}
-                />
-              </div>
-
-              {/* 3. Jogos — mobile 3º, desktop col1 row2 */}
-              <div className="min-h-[200px] order-3 lg:col-start-1 lg:row-start-2">
-                <MatchesCard
-                  teamId={teamId ?? ''}
-                  teamName={mergedTeam?.name ?? clubConfig.displayName}
-                />
-              </div>
-
-              {/* 4. Tática / Escalação — mobile 4º, desktop col2 row1-2, full width para novo layout */}
-              <div className="order-4 lg:col-start-2 lg:col-span-2 lg:row-start-1 lg:row-span-2 min-h-[400px]">
+              {/* Tática / Escalação — 5/12 desktop, full tablet/mobile */}
+              <div className="lg:col-span-5 order-3 md:order-3 lg:order-2 md:col-span-2">
                 <LineupSection
                   players={rosterPlayers}
                   teamId={teamId!}
@@ -603,14 +619,18 @@ export default function MeuTimePage() {
                   initialSlots={lineupInitial.slots}
                   onSave={teamId ? async (formation, slots) => lineupMutation.mutateAsync({ formation, slots }) : undefined}
                   getPhotoUrl={(p) => p.photoUrl ?? resolvePlayerPhoto(p.name, p.photoUrl, teamId)}
+                  heightClass="h-[520px] md:h-[480px] xl:h-[560px]"
                 />
               </div>
 
-              {/* 5. Top avaliados — mobile 5º, desktop col3 row2 */}
-              <div className="min-h-[200px] order-5 lg:col-start-3 lg:row-start-2">
-                {topRatedQuery.data?.players && topRatedQuery.data.players.length > 0 ? (
+              {/* Top avaliados — 3/12 desktop, 1/2 tablet, full mobile */}
+              <div className="lg:col-span-3 order-2 md:order-2 lg:order-3">
+                <MyTeamCard
+                  title={`Top avaliados (últimos ${topRatedQuery.data?.lastNMatches ?? 5} jogos)`}
+                  heightClass="h-[520px] md:h-[480px] xl:h-[560px]"
+                >
                   <TopRatedMini
-                    players={topRatedQuery.data.players.map((p) => ({
+                    players={(topRatedQuery.data?.players ?? []).map((p) => ({
                       playerId: p.playerId,
                       name: p.name,
                       position: p.position,
@@ -618,25 +638,21 @@ export default function MeuTimePage() {
                       averageRating: p.avgRating,
                       matchesPlayed: p.matchesPlayed,
                     }))}
-                    lastNMatches={topRatedQuery.data.lastNMatches ?? 5}
+                    lastNMatches={topRatedQuery.data?.lastNMatches ?? 5}
                     getPhotoUrl={(id) => playersById.get(id)?.photoUrl ?? '/assets/players/placeholder.png'}
+                    embed
                   />
-                ) : (
-                  <div className="rounded-2xl border border-[rgba(255,255,255,0.06)] bg-[#10161D] p-4 shadow-sm transition-all duration-200 hover:border-white/[0.08]">
-                    <h3 className="text-sm font-semibold text-foreground mb-2">Top avaliados (últimos 5 jogos)</h3>
-                    <p className="text-xs text-muted-foreground">Média das notas nos últimos jogos. Dados disponíveis quando houver partidas com estatísticas.</p>
-                  </div>
-                )}
-              </div>
-
-              {/* 6. Última partida — notas — mobile 6º, desktop col3 row3 */}
-              <div className="min-h-[200px] order-6 lg:col-start-3 lg:row-start-3">
-                <LastMatchRatingsCard teamId={teamId} />
+                </MyTeamCard>
               </div>
             </div>
 
-            {/* SEGUNDA FAIXA: Vai e Vem + Elenco preview — mesmo gap vertical */}
-            <div className="mt-5 grid grid-cols-1 md:grid-cols-2 gap-5 max-w-[1280px]">
+            {/* Linha B: Última partida — notas */}
+            <div className="mb-5 max-w-[1280px]">
+              <LastMatchRatingsCard teamId={teamId} />
+            </div>
+
+            {/* SEGUNDA FAIXA: Vai e Vem + Elenco preview */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-5 max-w-[1280px]">
               <TransfersPreviewMini
                 teamId={teamId}
                 teamName={clubConfig?.displayName ?? mergedTeam?.name ?? 'seu time'}

@@ -59,6 +59,8 @@ export const forumTopicCategoryEnum = pgEnum("forum_topic_category", [
   "news", "pre_match", "post_match", "transfer", "off_topic", "base",
 ]);
 export const forumModerationStatusEnum = pgEnum("forum_moderation_status", ["PENDING", "APPROVED", "REMOVED"]);
+/** Game attempts: in_progress | completed | abandoned */
+export const gameAttemptStatusEnum = pgEnum("game_attempt_status", ["in_progress", "completed", "abandoned"]);
 
 // ============================================
 // TABLES
@@ -880,6 +882,96 @@ export const teamsForumLikes = pgTable(
 );
 
 // ============================================
+// GAMES (históricos - Adivinhe o Elenco)
+// ============================================
+
+export const gameSets = pgTable(
+  "game_sets",
+  {
+    id: varchar("id", { length: 36 }).primaryKey().default(sql`gen_random_uuid()`),
+    slug: text("slug").notNull().unique(),
+    title: text("title").notNull(),
+    season: integer("season"),
+    competition: text("competition"),
+    clubName: text("club_name").notNull(),
+    metadata: json("metadata").$type<Record<string, unknown>>(),
+    createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+    updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
+  },
+  (t) => ({
+    slugIdx: index("game_sets_slug_idx").on(t.slug),
+  })
+);
+
+export const gameSetPlayers = pgTable(
+  "game_set_players",
+  {
+    id: varchar("id", { length: 36 }).primaryKey().default(sql`gen_random_uuid()`),
+    setId: varchar("set_id", { length: 36 })
+      .notNull()
+      .references(() => gameSets.id, { onDelete: "cascade" }),
+    jerseyNumber: integer("jersey_number"),
+    displayName: text("display_name").notNull(),
+    normalizedName: text("normalized_name").notNull(),
+    aliases: json("aliases").$type<string[]>(),
+    role: varchar("role", { length: 20 }).default("player"),
+    sortOrder: integer("sort_order").notNull().default(0),
+    createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+  },
+  (t) => ({
+    setIdIdx: index("game_set_players_set_id_idx").on(t.setId),
+    normalizedNameIdx: index("game_set_players_normalized_name_idx").on(t.normalizedName),
+  })
+);
+
+export const gameAttempts = pgTable(
+  "game_attempts",
+  {
+    id: varchar("id", { length: 36 }).primaryKey().default(sql`gen_random_uuid()`),
+    userId: varchar("user_id", { length: 36 })
+      .notNull()
+      .references(() => users.id, { onDelete: "cascade" }),
+    setId: varchar("set_id", { length: 36 })
+      .notNull()
+      .references(() => gameSets.id, { onDelete: "cascade" }),
+    status: gameAttemptStatusEnum("status").notNull().default("in_progress"),
+    startedAt: timestamp("started_at", { withTimezone: true }).notNull().defaultNow(),
+    completedAt: timestamp("completed_at", { withTimezone: true }),
+    guessesCount: integer("guesses_count").notNull().default(0),
+    createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+    updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
+  },
+  (t) => ({
+    userSetIdx: uniqueIndex("game_attempts_user_set_unique").on(t.userId, t.setId),
+    userIdIdx: index("game_attempts_user_id_idx").on(t.userId),
+    setIdIdx: index("game_attempts_set_id_idx").on(t.setId),
+  })
+);
+
+export const gameAttemptGuesses = pgTable(
+  "game_attempt_guesses",
+  {
+    id: varchar("id", { length: 36 }).primaryKey().default(sql`gen_random_uuid()`),
+    attemptId: varchar("attempt_id", { length: 36 })
+      .notNull()
+      .references(() => gameAttempts.id, { onDelete: "cascade" }),
+    setPlayerId: varchar("set_player_id", { length: 36 })
+      .notNull()
+      .references(() => gameSetPlayers.id, { onDelete: "cascade" }),
+    guessedText: text("guessed_text").notNull(),
+    matchedScore: real("matched_score"),
+    createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+  },
+  (t) => ({
+    attemptPlayerUnique: uniqueIndex("game_attempt_guesses_attempt_player_unique").on(
+      t.attemptId,
+      t.setPlayerId
+    ),
+    attemptIdx: index("game_attempt_guesses_attempt_idx").on(t.attemptId),
+  })
+);
+
+// ============================================
 // RELATIONS
 // ============================================
 
@@ -1453,6 +1545,12 @@ export const insertForumReplySchema = createInsertSchema(teamsForumReplies, {
 }).omit({ id: true, topicId: true, authorId: true, likesCount: true, createdAt: true });
 export const selectForumReplySchema = createSelectSchema(teamsForumReplies);
 
+// Game schemas (for seed/admin only; API uses custom validation)
+export const insertGameSetSchema = createInsertSchema(gameSets);
+export const insertGameSetPlayerSchema = createInsertSchema(gameSetPlayers);
+export const insertGameAttemptSchema = createInsertSchema(gameAttempts);
+export const insertGameAttemptGuessSchema = createInsertSchema(gameAttemptGuesses);
+
 // ============================================
 // TYPES
 // ============================================
@@ -1532,6 +1630,15 @@ export type ForumReply = typeof teamsForumReplies.$inferSelect;
 export type InsertForumReply = z.infer<typeof insertForumReplySchema>;
 
 export type ForumLike = typeof teamsForumLikes.$inferSelect;
+
+export type GameSet = typeof gameSets.$inferSelect;
+export type InsertGameSet = z.infer<typeof insertGameSetSchema>;
+export type GameSetPlayer = typeof gameSetPlayers.$inferSelect;
+export type InsertGameSetPlayer = z.infer<typeof insertGameSetPlayerSchema>;
+export type GameAttempt = typeof gameAttempts.$inferSelect;
+export type InsertGameAttempt = z.infer<typeof insertGameAttemptSchema>;
+export type GameAttemptGuess = typeof gameAttemptGuesses.$inferSelect;
+export type InsertGameAttemptGuess = z.infer<typeof insertGameAttemptGuessSchema>;
 
 export type Country = typeof countries.$inferSelect;
 export type Venue = typeof venues.$inferSelect;

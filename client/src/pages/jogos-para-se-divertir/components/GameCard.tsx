@@ -1,5 +1,6 @@
 'use client';
 
+import { useLocation } from 'wouter';
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import { StatBadge } from '@/components/ui-premium';
 import { Button } from '@/components/ui/button';
@@ -16,8 +17,16 @@ interface GameCardProps {
 }
 
 export function GameCard({ game }: GameCardProps) {
-  const button = (
-    <Button variant="secondary" size="sm" disabled={!game.available}>
+  const [, setLocation] = useLocation();
+  const href = game.available
+    ? game.selectionRoute ?? (game.slug ? `/jogos/adivinhe-elenco/${game.slug}` : null)
+    : null;
+  const button = href ? (
+    <Button variant="secondary" size="sm" onClick={() => setLocation(href)}>
+      Abrir
+    </Button>
+  ) : (
+    <Button variant="secondary" size="sm" disabled>
       Abrir
     </Button>
   );

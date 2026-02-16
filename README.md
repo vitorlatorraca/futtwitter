@@ -200,6 +200,7 @@ npm run dev          # Ou use dev:clean para matar + subir em um comando
 - `npm run start` - Start production server
 - `npm run lint` - Run ESLint
 - `npm run seed:transfers` - Seed demo transfers for "Vai e Vem" (ver `docs/VAI_E_VEM.md`)
+- `npm run seed:games` - Seed game sets (Adivinhe o Elenco). Também roda automaticamente no `npm run dev`.
 
 ### Project Structure
 
@@ -232,6 +233,10 @@ server/
 shared/
 ??? schema.ts           # Shared schemas
 ```
+
+### Troubleshooting
+
+- **proxy.js disconnected port** — Erro vem de extensão do navegador (ex.: React DevTools). Pode ignorar. Se incomodar, teste em janela anônima.
 
 ### Design Tokens
 

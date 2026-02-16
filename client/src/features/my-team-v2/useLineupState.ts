@@ -63,16 +63,45 @@ export function useLineupState({
     setSelectedSlotIndex((prev) => (prev === slotIndex ? null : slotIndex));
   }, []);
 
-  const handleReplacePlayer = useCallback((playerId: string) => {
-    if (selectedSlotIndex === null) return;
-
+  const handleReplacePlayer = useCallback((slotIndex: number, playerId: string) => {
     setSlots((prev) => {
-      const withoutThisSlot = prev.filter((s) => s.slotIndex !== selectedSlotIndex);
+      const withoutThisSlot = prev.filter((s) => s.slotIndex !== slotIndex);
       const withoutThisPlayer = withoutThisSlot.filter((s) => s.playerId !== playerId);
-      return [...withoutThisPlayer, { slotIndex: selectedSlotIndex, playerId }];
+      return [...withoutThisPlayer, { slotIndex, playerId }];
     });
     setSelectedSlotIndex(null);
-  }, [selectedSlotIndex]);
+  }, []);
+
+  const handleClearSlot = useCallback((slotIndex: number) => {
+    setSlots((prev) => prev.filter((s) => s.slotIndex !== slotIndex));
+    setSelectedSlotIndex(null);
+  }, []);
+
+  /** Drag & drop: move player to empty slot, swap with occupied slot, or revert if invalid target */
+  const handleDragEnd = useCallback((fromSlotIndex: number, toSlotIndex: number | null) => {
+    if (toSlotIndex === null || toSlotIndex === fromSlotIndex) return;
+
+    const layout = getFormationLayout(formation);
+    const maxIndex = layout.slots.length - 1;
+    if (fromSlotIndex < 0 || fromSlotIndex > maxIndex || toSlotIndex < 0 || toSlotIndex > maxIndex) return;
+
+    setSlots((prev) => {
+      const fromEntry = prev.find((s) => s.slotIndex === fromSlotIndex);
+      const toEntry = prev.find((s) => s.slotIndex === toSlotIndex);
+      const fromPlayerId = fromEntry?.playerId ?? null;
+      const toPlayerId = toEntry?.playerId ?? null;
+
+      if (!fromPlayerId) return prev;
+
+      const withoutBoth = prev.filter((s) => s.slotIndex !== fromSlotIndex && s.slotIndex !== toSlotIndex);
+
+      if (toPlayerId) {
+        return [...withoutBoth, { slotIndex: fromSlotIndex, playerId: toPlayerId }, { slotIndex: toSlotIndex, playerId: fromPlayerId }];
+      }
+      return [...withoutBoth, { slotIndex: toSlotIndex, playerId: fromPlayerId }];
+    });
+    setSelectedSlotIndex(null);
+  }, [formation]);
 
   const handleSave = useCallback(async () => {
     if (!onSave) {
@@ -107,6 +136,8 @@ export function useLineupState({
     handleFormationChange,
     handleSlotClick,
     handleReplacePlayer,
+    handleClearSlot,
+    handleDragEnd,
     handleSave,
   };
 }

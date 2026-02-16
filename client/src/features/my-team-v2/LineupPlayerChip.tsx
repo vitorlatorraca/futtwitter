@@ -29,13 +29,13 @@ export function LineupPlayerChip({
       type="button"
       onClick={onClick}
       className={cn(
-        'w-full flex items-center gap-3 p-2.5 rounded-lg border text-left transition-all duration-200',
+        'w-full flex items-center gap-3 p-2.5 rounded-lg border text-left transition-all duration-200 ease-out',
         'focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 focus:ring-offset-transparent',
         isSelected
-          ? 'border-primary bg-primary/10 ring-2 ring-primary/50'
+          ? 'border-primary bg-primary/10 ring-2 ring-primary/40 shadow-[0_0_0_1px_hsl(var(--primary)/0.2)]'
           : isLineup
-            ? 'border-emerald-500/30 bg-emerald-500/5 hover:border-emerald-500/50'
-            : 'border-card-border bg-surface-card hover:bg-surface-elevated hover:border-border-strong'
+            ? 'border-emerald-500/25 bg-emerald-500/5 hover:border-emerald-500/45 hover:shadow-[0_2px_8px_-2px_rgba(0,0,0,0.2)]'
+            : 'border-white/[0.06] bg-white/[0.02] hover:bg-white/[0.05] hover:border-white/10 hover:shadow-[0_2px_8px_-2px_rgba(0,0,0,0.15)]'
       )}
     >
       <div className="w-10 h-10 rounded-full overflow-hidden border border-card-border flex-shrink-0 bg-muted">

@@ -10,7 +10,9 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { Trophy, TrendingDown } from 'lucide-react';
+import { getRecentForm } from './utils/recentForm';
 import type { RecentFormMatch } from './RecentFormMini';
+import type { MyTeamOverview } from '@/hooks/useMyTeamOverview';
 
 export type FormResult = 'W' | 'D' | 'L';
 
@@ -22,21 +24,18 @@ interface StandingsTeam {
 }
 
 interface PerformanceCardProps {
-  teams: StandingsTeam[];
+  /** Legado: tabela para posição/pontos e diffLeader/diffZ4 */
+  teams?: StandingsTeam[];
   currentTeamId: string;
-  formMatches: RecentFormMatch[];
+  /** Legado: jogos para forma e tooltips */
+  formMatches?: RecentFormMatch[];
+  /** Nova fonte única: overview (Jogos + Performance) */
+  overview?: MyTeamOverview | null;
   isLoading?: boolean;
   formLimit?: number;
 }
 
 const Z4_START = 17;
-
-function getResult(m: RecentFormMatch): FormResult {
-  if (m.teamScore == null || m.opponentScore == null) return 'D';
-  if (m.teamScore > m.opponentScore) return 'W';
-  if (m.teamScore < m.opponentScore) return 'L';
-  return 'D';
-}
 
 function resultStyle(result: FormResult): string {
   if (result === 'W') return 'bg-meu-time-success/25 text-meu-time-success';
@@ -53,14 +52,39 @@ function resultLabel(result: FormResult): string {
 const panelClass =
   'rounded-2xl border border-white/10 backdrop-blur-sm bg-[#10161D] p-4 shadow-sm transition-all duration-200 hover:border-emerald-500/40';
 
+function overviewToFormMatches(
+  lastMatches: MyTeamOverview['lastMatches'],
+  teamId: string
+): RecentFormMatch[] {
+  return lastMatches.map((m) => {
+    const isHome = m.home.id === teamId;
+    return {
+      id: m.id,
+      opponent: isHome ? m.away.name : m.home.name,
+      teamScore: isHome ? m.score.home : m.score.away,
+      opponentScore: isHome ? m.score.away : m.score.home,
+      matchDate: m.date,
+      isHomeMatch: isHome,
+      competition: m.competition ?? null,
+    };
+  });
+}
+
 export function PerformanceCard({
-  teams,
+  teams = [],
   currentTeamId,
-  formMatches,
+  formMatches = [],
+  overview,
   isLoading,
   formLimit = 5,
 }: PerformanceCardProps) {
-  const recent = formMatches.slice(0, formLimit);
+  const useOverview = overview && overview.team?.id === currentTeamId;
+  const recent = useOverview
+    ? overviewToFormMatches(overview.lastMatches, currentTeamId).slice(0, formLimit)
+    : formMatches.slice(0, formLimit);
+  const form = useOverview
+    ? overview.form.slice(0, formLimit)
+    : getRecentForm(formMatches, currentTeamId, formLimit);
   const placeholderCount = Math.max(0, formLimit - recent.length);
 
   if (isLoading) {
@@ -80,17 +104,35 @@ export function PerformanceCard({
     );
   }
 
-  const sorted = [...(teams ?? [])].sort((a, b) => (b.points ?? 0) - (a.points ?? 0));
-  const withPosition = sorted.map((t, i) => ({ ...t, position: i + 1 }));
-  const current = withPosition.find((t) => t.id === currentTeamId);
-  const leader = withPosition[0];
-  const z4First = withPosition[Z4_START - 1];
+  let position: number;
+  let pointsUs: number;
+  let diffLeader: number | null;
+  let diffZ4: number | null;
 
-  const pointsLeader = leader?.points ?? 0;
-  const pointsUs = current?.points ?? 0;
-  const position = current?.position ?? 0;
-  const diffLeader = leader && pointsLeader > pointsUs ? pointsLeader - pointsUs : null;
-  const diffZ4 = z4First ? (current?.points ?? 0) - (z4First.points ?? 0) : null;
+  if (useOverview && overview.standings) {
+    position = overview.standings.position;
+    pointsUs = overview.standings.points;
+    diffLeader =
+      overview.standings.leaderPoints != null && overview.standings.leaderPoints > pointsUs
+        ? overview.standings.leaderPoints - pointsUs
+        : null;
+    diffZ4 =
+      overview.standings.z4Points != null
+        ? pointsUs - overview.standings.z4Points
+        : null;
+  } else {
+    const sorted = [...teams].sort((a, b) => (b.points ?? 0) - (a.points ?? 0));
+    const withPosition = sorted.map((t, i) => ({ ...t, position: i + 1 }));
+    const current = withPosition.find((t) => t.id === currentTeamId);
+    const leader = withPosition[0];
+    const z4First = withPosition[Z4_START - 1];
+    pointsUs = current?.points ?? 0;
+    position = current?.position ?? 0;
+    diffLeader = leader && (leader.points ?? 0) > pointsUs ? (leader.points ?? 0) - pointsUs : null;
+    diffZ4 = z4First ? pointsUs - (z4First.points ?? 0) : null;
+  }
+
+  const hasStandings = useOverview ? !!overview.standings : teams.length > 0;
 
   return (
     <TooltipProvider delayDuration={200}>
@@ -99,7 +141,7 @@ export function PerformanceCard({
 
         {/* Situação no campeonato */}
         <div className="flex flex-wrap items-center gap-2.5 text-sm">
-          {current ? (
+          {hasStandings ? (
             <>
               <span className="font-bold text-foreground tabular-nums">{position}º</span>
               <span className="text-muted-foreground">
@@ -135,8 +177,8 @@ export function PerformanceCard({
             Forma recente
           </p>
           <div className="flex gap-1.5 flex-wrap">
-            {recent.map((m) => {
-              const result = getResult(m);
+            {recent.map((m, idx) => {
+              const result = form[idx] ?? 'D';
               const score =
                 m.teamScore != null && m.opponentScore != null
                   ? `${m.teamScore}–${m.opponentScore}`
