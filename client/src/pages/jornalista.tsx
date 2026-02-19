@@ -14,7 +14,7 @@ import { PageHeader } from '@/components/ui/page';
 import { EmptyState } from '@/components/ui/empty-state';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { useToast } from '@/hooks/use-toast';
-import { apiRequest } from '@/lib/queryClient';
+import { apiRequest, getApiUrl } from '@/lib/queryClient';
 import { TEAMS_DATA } from '@/lib/team-data';
 import { ArrowLeftRight, Edit, Eye, FileImage, Plus, ShieldCheck, Trash2, UploadCloud } from 'lucide-react';
 import type { News } from '@shared/schema';
@@ -154,7 +154,7 @@ export default function JornalistaPage() {
         const body = new FormData();
         body.append('image', imageFile);
 
-        const uploadRes = await fetch('/api/uploads/news-image', {
+        const uploadRes = await fetch(getApiUrl('/api/uploads/news-image'), {
           method: 'POST',
           body,
           credentials: 'include',

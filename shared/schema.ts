@@ -972,6 +972,57 @@ export const gameAttemptGuesses = pgTable(
 );
 
 // ============================================
+// GAMES (Adivinhe o Jogador — Player of the Day)
+// Timezone: UTC. dateKey = YYYY-MM-DD in UTC.
+// Each team gets its own daily player (deterministic via seed).
+// ============================================
+
+export const gameDailyPlayer = pgTable(
+  "game_daily_player",
+  {
+    id: varchar("id", { length: 36 }).primaryKey().default(sql`gen_random_uuid()`),
+    dateKey: varchar("date_key", { length: 10 }).notNull(),
+    teamId: varchar("team_id", { length: 36 })
+      .notNull()
+      .references(() => teams.id, { onDelete: "cascade" }),
+    playerId: varchar("player_id", { length: 36 })
+      .notNull()
+      .references(() => players.id, { onDelete: "cascade" }),
+    seedUsed: integer("seed_used"),
+    createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+  },
+  (t) => ({
+    dateTeamUnique: uniqueIndex("game_daily_player_date_team_unique").on(t.dateKey, t.teamId),
+  })
+);
+
+export const gameDailyGuessProgress = pgTable(
+  "game_daily_guess_progress",
+  {
+    id: varchar("id", { length: 36 }).primaryKey().default(sql`gen_random_uuid()`),
+    userId: varchar("user_id", { length: 36 })
+      .notNull()
+      .references(() => users.id, { onDelete: "cascade" }),
+    dateKey: varchar("date_key", { length: 10 }).notNull(),
+    dailyPlayerId: varchar("daily_player_id", { length: 36 })
+      .notNull()
+      .references(() => gameDailyPlayer.id, { onDelete: "cascade" }),
+    attempts: integer("attempts").notNull().default(0),
+    wrongAttempts: integer("wrong_attempts").notNull().default(0),
+    guessed: boolean("guessed").notNull().default(false),
+    lost: boolean("lost").notNull().default(false),
+    guesses: json("guesses").$type<Array<{ text: string; normalized: string; correct: boolean }>>().default([]),
+    createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+    updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
+  },
+  (t) => ({
+    userDateKeyUnique: uniqueIndex("game_daily_guess_progress_user_date_unique").on(t.userId, t.dateKey),
+    userIdIdx: index("game_daily_guess_progress_user_idx").on(t.userId),
+    dateKeyIdx: index("game_daily_guess_progress_date_idx").on(t.dateKey),
+  })
+);
+
+// ============================================
 // RELATIONS
 // ============================================
 
@@ -1639,6 +1690,9 @@ export type GameAttempt = typeof gameAttempts.$inferSelect;
 export type InsertGameAttempt = z.infer<typeof insertGameAttemptSchema>;
 export type GameAttemptGuess = typeof gameAttemptGuesses.$inferSelect;
 export type InsertGameAttemptGuess = z.infer<typeof insertGameAttemptGuessSchema>;
+
+export type GameDailyPlayer = typeof gameDailyPlayer.$inferSelect;
+export type GameDailyGuessProgress = typeof gameDailyGuessProgress.$inferSelect;
 
 export type Country = typeof countries.$inferSelect;
 export type Venue = typeof venues.$inferSelect;

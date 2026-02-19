@@ -3,6 +3,7 @@
 import { useState, useMemo } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { useAuth } from "@/lib/auth-context";
+import { getApiUrl } from "@/lib/queryClient";
 import { AppShell } from "@/components/ui/app-shell";
 import { EmptyState } from "@/components/ui/empty-state";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -38,7 +39,7 @@ export function MatchesPage() {
   const teamsQuery = useQuery({
     queryKey: ["/api/teams"],
     queryFn: async () => {
-      const res = await fetch("/api/teams");
+      const res = await fetch(getApiUrl("/api/teams"), { credentials: "include" });
       if (!res.ok) throw new Error("Failed");
       return res.json();
     },
@@ -77,10 +78,8 @@ export function MatchesPage() {
     <AppShell mainClassName="py-4 sm:py-6 px-4 sm:px-6 min-h-screen">
       <div className="max-w-2xl mx-auto">
         <div className="flex items-center gap-4 mb-6">
-          <Link href="/meu-time">
-            <a className="p-2 rounded-lg hover:bg-muted/60 transition-colors">
-              <ChevronLeft className="h-5 w-5 text-foreground" />
-            </a>
+          <Link href="/meu-time" className="p-2 rounded-lg hover:bg-muted/60 transition-colors inline-flex">
+            <ChevronLeft className="h-5 w-5 text-foreground" />
           </Link>
           <div>
             <h1 className="font-display font-bold text-2xl text-foreground">Jogos</h1>

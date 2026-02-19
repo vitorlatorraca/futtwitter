@@ -18,6 +18,7 @@ import JornalistaPage from "@/pages/jornalista";
 import JogosParaSeDivertirPage from "@/pages/jogos-para-se-divertir";
 import LembraDesseElencoPage from "@/pages/jogos/lembra-desse-elenco";
 import AdivinheElencoPage from "@/pages/jogos/adivinhe-elenco";
+import AdivinheOJogadorPage from "@/pages/jogos/adivinhe-o-jogador";
 import VaiEVemPage from "@/pages/vai-e-vem";
 import NotFound from "@/pages/not-found";
 
@@ -83,6 +84,7 @@ function Router() {
       <Route path="/jogos" component={() => <ProtectedRoute component={JogosParaSeDivertirPage} />} />
       <Route path="/jogos/lembra-desse-elenco" component={() => <ProtectedRoute component={LembraDesseElencoPage} />} />
       <Route path="/jogos/adivinhe-elenco/:slug" component={() => <ProtectedRoute component={AdivinheElencoPage} />} />
+      <Route path="/jogos/adivinhe-o-jogador" component={() => <ProtectedRoute component={AdivinheOJogadorPage} />} />
       <Route path="/vai-e-vem" component={() => <ProtectedRoute component={VaiEVemPage} />} />
       <Route path="/perfil" component={() => <ProtectedRoute component={PerfilPage} />} />
       <Route path="/jornalista" component={() => <ProtectedRoute component={JornalistaPage} />} />

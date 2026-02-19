@@ -16,11 +16,11 @@ export default function LembraDesseElencoPage() {
     <AppShell mainClassName="py-4 sm:py-6 md:py-8 px-3 sm:px-4 max-w-5xl mx-auto">
       <div className="space-y-8">
         <div className="flex items-center gap-3">
-          <Link href="/jogos">
-            <Button variant="ghost" size="icon">
+          <Button variant="ghost" size="icon" asChild>
+            <Link href="/jogos">
               <ArrowLeft className="h-4 w-4" />
-            </Button>
-          </Link>
+            </Link>
+          </Button>
           <div className="flex-1 min-w-0">
             <h1 className="font-display font-bold text-2xl sm:text-3xl text-foreground flex items-center gap-2">
               <Gamepad2 className="h-7 w-7 text-primary shrink-0" />
@@ -41,20 +41,16 @@ export default function LembraDesseElencoPage() {
         ) : error ? (
           <div className="text-center py-12">
             <p className="text-muted-foreground">Não foi possível carregar os elencos.</p>
-            <Link href="/jogos">
-              <Button variant="outline" className="mt-4">
-                Voltar aos Jogos
-              </Button>
-            </Link>
+            <Button variant="outline" className="mt-4" asChild>
+              <Link href="/jogos">Voltar aos Jogos</Link>
+            </Button>
           </div>
         ) : !sets || sets.length === 0 ? (
           <div className="text-center py-12">
             <p className="text-muted-foreground">Nenhum elenco disponível ainda.</p>
-            <Link href="/jogos">
-              <Button variant="outline" className="mt-4">
-                Voltar aos Jogos
-              </Button>
-            </Link>
+            <Button variant="outline" className="mt-4" asChild>
+              <Link href="/jogos">Voltar aos Jogos</Link>
+            </Button>
           </div>
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">

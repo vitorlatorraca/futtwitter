@@ -27,9 +27,8 @@ export function ForumTopicCard({ topic, teamId }: ForumTopicCardProps) {
   const excerpt = topic.content.slice(0, 120) + (topic.content.length > 120 ? '...' : '');
 
   return (
-    <Link href={`/meu-time/comunidade/${topic.id}`}>
-      <a className="block group">
-        <article
+    <Link href={`/meu-time/comunidade/${topic.id}`} className="block group">
+      <article
           className="rounded-2xl border border-white/5 bg-[#10161D] overflow-hidden transition-all duration-200 hover:border-white/[0.12] hover:shadow-lg hover:shadow-black/20"
         >
           {topic.coverImageUrl ? (
@@ -96,7 +95,6 @@ export function ForumTopicCard({ topic, teamId }: ForumTopicCardProps) {
             </div>
           </div>
         </article>
-      </a>
     </Link>
   );
 }

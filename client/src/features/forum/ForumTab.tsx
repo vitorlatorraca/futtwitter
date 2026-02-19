@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { useQuery } from '@tanstack/react-query';
+import { getApiUrl } from '@/lib/queryClient';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -35,7 +36,7 @@ export function ForumTab({ teamId, clubConfig }: ForumTabProps) {
   const statsQuery = useQuery({
     queryKey: ['/api/teams', teamId, 'forum', 'stats'],
     queryFn: async () => {
-      const res = await fetch(`/api/teams/${teamId}/forum/stats`, { credentials: 'include' });
+      const res = await fetch(getApiUrl(`/api/teams/${teamId}/forum/stats`), { credentials: 'include' });
       if (!res.ok) throw new Error('Falha ao buscar estatísticas');
       return res.json();
     },
@@ -58,7 +59,7 @@ export function ForumTab({ teamId, clubConfig }: ForumTabProps) {
       if (searchDebounced) params.set('search', searchDebounced);
       params.set('limit', '24');
       const res = await fetch(
-        `/api/teams/${teamId}/forum/topics?${params.toString()}`,
+        getApiUrl(`/api/teams/${teamId}/forum/topics?${params.toString()}`),
         { credentials: 'include' }
       );
       if (!res.ok) throw new Error('Falha ao buscar tópicos');

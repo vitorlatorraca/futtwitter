@@ -1,5 +1,6 @@
 import { useQuery } from "@tanstack/react-query";
 import { useAuth } from "@/lib/auth-context";
+import { getApiUrl } from "@/lib/queryClient";
 import type { TeamMatch } from "@/features/team/matches/types";
 
 export interface MyTeamOverviewMatch {
@@ -61,7 +62,7 @@ export function useMyTeamOverview() {
   return useQuery<MyTeamOverview>({
     queryKey: ["/api/my-team/overview"],
     queryFn: async () => {
-      const res = await fetch("/api/my-team/overview", { credentials: "include" });
+      const res = await fetch(getApiUrl("/api/my-team/overview"), { credentials: "include" });
       if (!res.ok) throw new Error("Failed to fetch overview");
       return res.json();
     },

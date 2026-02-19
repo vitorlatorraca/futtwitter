@@ -66,16 +66,12 @@ export default function LandingPage() {
               </p>
               
               <div className="flex flex-col sm:flex-row gap-4">
-                <Link href="/cadastro" data-testid="link-signup">
-                  <Button size="lg" className="w-full sm:w-auto bg-[#6D5EF0] text-white hover:bg-[#7D6EFF]">
-                    Criar Conta Grátis
-                  </Button>
-                </Link>
-                <Link href="/login" data-testid="link-login">
-                  <Button size="lg" variant="outline" className="w-full sm:w-auto border-white/20 bg-transparent hover:bg-white/5">
-                    Já tenho conta
-                  </Button>
-                </Link>
+                <Button size="lg" className="w-full sm:w-auto bg-[#6D5EF0] text-white hover:bg-[#7D6EFF]" asChild>
+                  <Link href="/cadastro" data-testid="link-signup">Criar Conta Grátis</Link>
+                </Button>
+                <Button size="lg" variant="outline" className="w-full sm:w-auto border-white/20 bg-transparent hover:bg-white/5" asChild>
+                  <Link href="/login" data-testid="link-login">Já tenho conta</Link>
+                </Button>
               </div>
               
               <p className="text-xs text-foreground-secondary">
@@ -174,16 +170,12 @@ export default function LandingPage() {
                   
                   {/* Action Buttons */}
                   <div className="flex gap-3 pt-2">
-                    <Link href="/dashboard" className="flex-1">
-                      <Button variant="outline" size="sm" className="w-full border-white/20 bg-transparent hover:bg-white/5">
-                        Ver dashboard
-                      </Button>
-                    </Link>
-                    <Link href="/cadastro" className="flex-1">
-                      <Button variant="outline" size="sm" className="w-full border-white/20 bg-transparent hover:bg-white/5">
-                        Começar agora
-                      </Button>
-                    </Link>
+                    <Button variant="outline" size="sm" className="flex-1 w-full border-white/20 bg-transparent hover:bg-white/5" asChild>
+                      <Link href="/dashboard">Ver dashboard</Link>
+                    </Button>
+                    <Button variant="outline" size="sm" className="flex-1 w-full border-white/20 bg-transparent hover:bg-white/5" asChild>
+                      <Link href="/cadastro">Começar agora</Link>
+                    </Button>
                   </div>
                   
                   {/* Disclaimer */}
@@ -213,16 +205,12 @@ export default function LandingPage() {
                 </div>
                 
                 <div className="flex flex-col sm:flex-row gap-4">
-                  <Link href="/cadastro">
-                    <Button size="lg" className="bg-[#6D5EF0] text-white hover:bg-[#7D6EFF]">
-                      Começar agora
-                    </Button>
-                  </Link>
-                  <Link href="/dashboard">
-                    <Button size="lg" variant="outline" className="border-white/20 bg-transparent hover:bg-white/5">
-                      Ver dashboard
-                    </Button>
-                  </Link>
+                  <Button size="lg" className="bg-[#6D5EF0] text-white hover:bg-[#7D6EFF]" asChild>
+                    <Link href="/cadastro">Começar agora</Link>
+                  </Button>
+                  <Button size="lg" variant="outline" className="border-white/20 bg-transparent hover:bg-white/5" asChild>
+                    <Link href="/dashboard">Ver dashboard</Link>
+                  </Button>
                 </div>
               </div>
             </CardContent>

@@ -1,6 +1,7 @@
 'use client';
 
 import { useQuery } from '@tanstack/react-query';
+import { getApiUrl } from '@/lib/queryClient';
 import { Skeleton } from '@/components/ui/skeleton';
 import { getTeamCrest } from '@/lib/teamCrests';
 import { Trophy } from 'lucide-react';
@@ -66,7 +67,7 @@ export function ClassificacaoTab({ userTeamId }: ClassificacaoTabProps) {
   }>({
     queryKey: ['/api/competitions', BRASILEIRAO_ID, 'standings', SEASON],
     queryFn: async () => {
-      const res = await fetch(`/api/competitions/${BRASILEIRAO_ID}/standings?season=${SEASON}`, {
+      const res = await fetch(getApiUrl(`/api/competitions/${BRASILEIRAO_ID}/standings?season=${SEASON}`), {
         credentials: 'include',
       });
       if (!res.ok) throw new Error('Falha ao carregar classificação');

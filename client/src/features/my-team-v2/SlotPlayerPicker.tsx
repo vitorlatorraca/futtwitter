@@ -114,7 +114,7 @@ export function SlotPlayerPicker({
               Nenhum jogador encontrado
             </CommandEmpty>
             {hasCurrentPlayer && (
-              <CommandGroup heading={null} className="p-0">
+              <CommandGroup className="p-0">
                 <CommandItem
                   onSelect={handleClear}
                   className="flex items-center gap-2 rounded-md px-2 py-2 text-amber-400/90 hover:bg-white/10 hover:text-amber-400"
@@ -123,7 +123,7 @@ export function SlotPlayerPicker({
                 </CommandItem>
               </CommandGroup>
             )}
-            <CommandGroup heading={null} className="p-0 mt-1">
+            <CommandGroup className="p-0 mt-1">
               {filteredPlayers.map((player) => {
                 const photoUrl =
                   getPhotoUrl?.(player) ?? resolvePlayerPhoto(player.name, player.photoUrl, teamId);

@@ -44,7 +44,7 @@ export function SocialIntegration({ teamId, news, playerRatings }: SocialIntegra
 
   const handleSubmitComment = () => {
     // TODO: Implementar envio de comentário quando API estiver disponível
-    console.log('Comment submitted:', newComment);
+    if (import.meta.env.DEV) console.log('Comment submitted:', newComment);
     setNewComment('');
   };
 

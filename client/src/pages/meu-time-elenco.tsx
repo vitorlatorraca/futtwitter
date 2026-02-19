@@ -1,6 +1,7 @@
 import { Link } from 'wouter';
 import { useQuery } from '@tanstack/react-query';
 import { useAuth } from '@/lib/auth-context';
+import { getApiUrl } from '@/lib/queryClient';
 import { AppShell } from '@/components/ui/app-shell';
 import { EmptyState } from '@/components/ui/empty-state';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -18,7 +19,7 @@ export default function MeuTimeElencoPage() {
     queryKey: ['/api/teams', teamId, 'players'],
     queryFn: async () => {
       if (!teamId) return [];
-      const response = await fetch(`/api/teams/${teamId}/players`, {
+      const response = await fetch(getApiUrl(`/api/teams/${teamId}/players`), {
         credentials: 'include',
       });
       if (!response.ok) {
@@ -80,12 +81,12 @@ export default function MeuTimeElencoPage() {
       <div className="max-w-[1600px] mx-auto">
         {/* Header */}
         <div className="mb-6 space-y-4">
-          <Link href="/meu-time">
-            <Button variant="ghost" size="sm" className="gap-2 -ml-2 text-muted-foreground hover:text-foreground">
+          <Button variant="ghost" size="sm" className="gap-2 -ml-2 text-muted-foreground hover:text-foreground" asChild>
+            <Link href="/meu-time">
               <ArrowLeft className="h-4 w-4" />
               Voltar para Meu Time
-            </Button>
-          </Link>
+            </Link>
+          </Button>
           <div>
             <h1 className="font-display text-2xl sm:text-3xl font-bold text-foreground">
               Elenco do {clubConfig.displayName}

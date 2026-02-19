@@ -1,4 +1,5 @@
 import { useQuery } from "@tanstack/react-query";
+import { getApiUrl } from "@/lib/queryClient";
 
 export type PositionGroup = "GK" | "DEF" | "MID" | "ATT" | "UNK";
 
@@ -32,7 +33,7 @@ export function useLastMatchRatings(teamId: string | null) {
     queryKey: ["/api/teams", teamId, "last-match", "ratings"],
     queryFn: async () => {
       if (!teamId) return null;
-      const res = await fetch(`/api/teams/${teamId}/last-match/ratings`, {
+      const res = await fetch(getApiUrl(`/api/teams/${teamId}/last-match/ratings`), {
         credentials: "include",
       });
       if (!res.ok) return null;

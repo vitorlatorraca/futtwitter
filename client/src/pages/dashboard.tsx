@@ -235,12 +235,12 @@ export default function DashboardPage() {
                   title="Seu time"
                   subtitle="Atalhos e contexto rápido."
                   action={
-                    <Link href="/meu-time">
-                      <Button variant="outline" size="sm" className="gap-2">
+                    <Button variant="outline" size="sm" className="gap-2" asChild>
+                      <Link href="/meu-time">
                         Ver
                         <ArrowRight className="h-4 w-4" />
-                      </Button>
-                    </Link>
+                      </Link>
+                    </Button>
                   }
                 />
                 <div className="mt-5 flex items-center gap-3">

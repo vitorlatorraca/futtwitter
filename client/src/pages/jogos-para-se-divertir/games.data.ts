@@ -30,9 +30,9 @@ export const GAMES: GameItem[] = [
   {
     id: 'adivinhe',
     title: 'Adivinhe o Jogador',
-    description: 'Descubra quem é o jogador pela silhueta, estatísticas ou dicas.',
-    slug: 'adivinhe-jogador',
-    available: false,
+    description: 'Um jogador por dia: descubra quem é pela foto borrada. A cada erro, a imagem fica mais nítida!',
+    available: true,
+    selectionRoute: '/jogos/adivinhe-o-jogador',
   },
   {
     id: 'escalacao',

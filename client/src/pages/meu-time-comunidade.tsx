@@ -15,7 +15,7 @@ import { ArrowLeft, MessageCircle, Heart, Eye, Loader2 } from 'lucide-react';
 import { Link } from 'wouter';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
-import { apiRequest } from '@/lib/queryClient';
+import { apiRequest, getApiUrl } from '@/lib/queryClient';
 import { useToast } from '@/hooks/use-toast';
 import { getClubConfig } from '@/features/meu-time';
 import { FORUM_CATEGORIES } from '@/features/forum/types';
@@ -40,7 +40,7 @@ export default function MeuTimeComunidadeTopicPage() {
   const topicQuery = useQuery({
     queryKey: ['/api/teams', teamId, 'forum', 'topics', topicId],
     queryFn: async () => {
-      const res = await fetch(`/api/teams/${teamId}/forum/topics/${topicId}`, {
+      const res = await fetch(getApiUrl(`/api/teams/${teamId}/forum/topics/${topicId}`), {
         credentials: 'include',
       });
       if (!res.ok) throw new Error('Tópico não encontrado');
@@ -53,7 +53,7 @@ export default function MeuTimeComunidadeTopicPage() {
     queryKey: ['/api/teams', teamId, 'forum', 'topics', topicId, 'replies'],
     queryFn: async () => {
       const res = await fetch(
-        `/api/teams/${teamId}/forum/topics/${topicId}/replies`,
+        getApiUrl(`/api/teams/${teamId}/forum/topics/${topicId}/replies`),
         { credentials: 'include' }
       );
       if (!res.ok) throw new Error('Falha ao buscar respostas');

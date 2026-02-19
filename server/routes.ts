@@ -1907,8 +1907,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const userId = req.session.userId!;
 
       const updatedUser = await storage.updateUser(userId, { name, email });
-
-      res.json(updatedUser);
+      if (!updatedUser) {
+        return res.status(404).json({ message: 'Usuário não encontrado' });
+      }
+      const { password: _p, ...safeUser } = updatedUser;
+      res.json(safeUser);
     } catch (error) {
       console.error('Update profile error:', error);
       res.status(500).json({ message: 'Erro ao atualizar perfil' });
@@ -2688,6 +2691,62 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error: any) {
       console.error("[games] POST /attempts/:id/abandon error:", error);
       return res.status(500).json({ message: "Erro ao desistir" });
+    }
+  });
+
+  // ============================================
+  // GAMES (Adivinhe o Jogador — Player of the Day)
+  // ============================================
+
+  app.get("/api/games/player-of-the-day", requireAuth, async (req, res) => {
+    try {
+      const userId = req.session.userId!;
+      const user = await storage.getUser(userId);
+      if (!user?.teamId) return res.status(400).json({ message: "Selecione um time primeiro" });
+
+      const { getPlayerOfTheDay } = await import("./repositories/guess-player.repo");
+      const data = await getPlayerOfTheDay(userId, user.teamId);
+      if (!data) return res.status(404).json({ message: "Nenhum jogador disponível para o jogo" });
+
+      return res.json(data);
+    } catch (error: any) {
+      console.error("[guess-player] GET /player-of-the-day error:", error);
+      return res.status(500).json({ message: "Erro ao buscar jogador do dia" });
+    }
+  });
+
+  app.get("/api/games/players/search", requireAuth, async (req, res) => {
+    try {
+      const userId = req.session.userId!;
+      const user = await storage.getUser(userId);
+      if (!user?.teamId) return res.status(400).json({ message: "Selecione um time primeiro" });
+
+      const q = String(req.query.q ?? "").trim();
+      const { searchPlayersForGame } = await import("./repositories/guess-player.repo");
+      const results = await searchPlayersForGame(user.teamId, q, 10);
+      return res.json(results);
+    } catch (error: any) {
+      console.error("[guess-player] GET /players/search error:", error);
+      return res.status(500).json({ message: "Erro ao buscar jogadores" });
+    }
+  });
+
+  app.post("/api/games/player-of-the-day/guess", requireAuth, async (req, res) => {
+    try {
+      const userId = req.session.userId!;
+      const user = await storage.getUser(userId);
+      if (!user?.teamId) return res.status(400).json({ message: "Selecione um time primeiro" });
+
+      const { guess } = req.body ?? {};
+      const guessText = typeof guess === "string" ? guess.trim() : "";
+      if (!guessText) return res.status(400).json({ message: "guess é obrigatório" });
+
+      const { processGuess } = await import("./repositories/guess-player.repo");
+      const result = await processGuess(userId, user.teamId, guessText);
+      return res.json(result);
+    } catch (error: any) {
+      console.error("[guess-player] POST /player-of-the-day/guess error:", error);
+      return res.status(500).json({ message: error?.message ?? "Erro ao processar palpite" });
     }
   });
 

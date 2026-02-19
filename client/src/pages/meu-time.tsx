@@ -113,7 +113,7 @@ export default function MeuTimePage() {
   const teamsQuery = useQuery<Team[]>({
     queryKey: ["/api/teams"],
     queryFn: async () => {
-      const response = await fetch("/api/teams");
+      const response = await fetch(getApiUrl("/api/teams"), { credentials: "include" });
       if (!response.ok) {
         const text = await response.text();
         throw new Error(`Failed to fetch teams: ${text}`);
@@ -135,7 +135,7 @@ export default function MeuTimePage() {
     queryKey: ['/api/teams', teamId, 'extended'],
     queryFn: async () => {
       if (!teamId) throw new Error('No team selected');
-      const response = await fetch(`/api/teams/${teamId}/extended`, {
+      const response = await fetch(getApiUrl(`/api/teams/${teamId}/extended`), {
         credentials: 'include',
       });
       if (!response.ok) {
@@ -182,7 +182,7 @@ export default function MeuTimePage() {
     queryKey: ["/api/teams", teamId, "players"],
     queryFn: async () => {
       if (!teamId) return [];
-      const response = await fetch(`/api/teams/${teamId}/players`, {
+      const response = await fetch(getApiUrl(`/api/teams/${teamId}/players`), {
         credentials: "include",
       });
       if (!response.ok) {
@@ -208,7 +208,7 @@ export default function MeuTimePage() {
     queryKey: ['/api/teams', teamId, 'upcoming-match'],
     queryFn: async () => {
       if (!teamId) return null;
-      const res = await fetch(`/api/teams/${teamId}/upcoming-match`, { credentials: 'include' });
+      const res = await fetch(getApiUrl(`/api/teams/${teamId}/upcoming-match`), { credentials: 'include' });
       if (!res.ok) return null;
       const data = await res.json();
       return data;
@@ -231,7 +231,7 @@ export default function MeuTimePage() {
     queryKey: ['/api/teams', teamId, 'top-rated'],
     queryFn: async () => {
       if (!teamId) return { players: [] };
-      const res = await fetch(`/api/teams/${teamId}/top-rated?limit=5&lastN=5`, {
+      const res = await fetch(getApiUrl(`/api/teams/${teamId}/top-rated?limit=5&lastN=5`), {
         credentials: 'include',
       });
       if (!res.ok) return { players: [] };
@@ -244,7 +244,7 @@ export default function MeuTimePage() {
     queryKey: ['/api/lineups/me', teamId],
     queryFn: async () => {
       if (!teamId) return null;
-      const res = await fetch(`/api/lineups/me?teamId=${encodeURIComponent(teamId)}`, { credentials: 'include' });
+      const res = await fetch(getApiUrl(`/api/lineups/me?teamId=${encodeURIComponent(teamId)}`), { credentials: 'include' });
       if (!res.ok) throw new Error('Failed to fetch lineup');
       const data = await res.json();
       return data ?? null;
@@ -322,7 +322,7 @@ export default function MeuTimePage() {
     queryKey: ['/api/matches', teamId],
     queryFn: async () => {
       if (!teamId) return [];
-      const response = await fetch(`/api/matches/${teamId}/recent?limit=10`, {
+      const response = await fetch(getApiUrl(`/api/matches/${teamId}/recent?limit=10`), {
         credentials: 'include',
       });
       if (!response.ok) throw new Error('Failed to fetch matches');

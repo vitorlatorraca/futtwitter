@@ -105,11 +105,9 @@ function AdivinheElencoPage() {
       <AppShell>
         <div className="py-8 text-center">
           <p className="text-muted-foreground">Set não encontrado.</p>
-          <Link href="/jogos">
-            <Button variant="outline" className="mt-4">
-              Voltar aos Jogos
-            </Button>
-          </Link>
+          <Button variant="outline" className="mt-4" asChild>
+            <Link href="/jogos">Voltar aos Jogos</Link>
+          </Button>
         </div>
       </AppShell>
     );
@@ -119,11 +117,11 @@ function AdivinheElencoPage() {
     <AppShell mainClassName="py-4 sm:py-6 px-3 sm:px-4 max-w-3xl mx-auto">
       <div className="space-y-6">
         <div className="flex items-center gap-3">
-          <Link href="/jogos">
-            <Button variant="ghost" size="icon">
+          <Button variant="ghost" size="icon" asChild>
+            <Link href="/jogos">
               <ArrowLeft className="h-4 w-4" />
-            </Button>
-          </Link>
+            </Link>
+          </Button>
           <div className="flex-1 min-w-0">
             <h1 className="font-display font-bold text-xl text-foreground truncate">
               {setData?.title ?? "Carregando..."}

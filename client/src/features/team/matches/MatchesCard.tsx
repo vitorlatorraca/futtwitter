@@ -3,6 +3,7 @@
 import { useQuery } from "@tanstack/react-query";
 import { Link } from "wouter";
 import { cn } from "@/lib/utils";
+import { getApiUrl } from "@/lib/queryClient";
 import { Panel, SectionHeader, LoadingSkeleton } from "@/components/ui-premium";
 import { ChevronRight } from "lucide-react";
 import { getResultForTeam } from "./matchUtils";
@@ -25,7 +26,7 @@ export function MatchesCard({ teamId, teamName, embed, overviewMode, matches: ma
   const { data, isLoading } = useQuery<{ matches: TeamMatch[] }>({
     queryKey: ["/api/teams", teamId, "matches", "all", 30],
     queryFn: async () => {
-      const res = await fetch(`/api/teams/${teamId}/matches?type=all&limit=30`, {
+      const res = await fetch(getApiUrl(`/api/teams/${teamId}/matches?type=all&limit=30`), {
         credentials: "include",
       });
       if (!res.ok) throw new Error("Failed to fetch");
