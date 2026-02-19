@@ -1,10 +1,9 @@
 import "dotenv/config"; // keep first: required for scripts relying on env vars
-import { Pool, neonConfig } from "@neondatabase/serverless";
-import { drizzle } from "drizzle-orm/neon-serverless";
-import ws from "ws";
+import pg from "pg";
+import { drizzle } from "drizzle-orm/node-postgres";
 import * as schema from "@shared/schema";
 
-neonConfig.webSocketConstructor = ws;
+const { Pool } = pg;
 
 // Support both possible env variable names
 const databaseUrl =
@@ -19,4 +18,4 @@ if (!databaseUrl) {
 }
 
 export const pool = new Pool({ connectionString: databaseUrl });
-export const db = drizzle({ client: pool, schema });
+export const db = drizzle(pool, { schema });
