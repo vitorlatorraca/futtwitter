@@ -3,6 +3,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Star } from 'lucide-react';
 import type { Player } from '@shared/schema';
+import { formatRating, ratingToStars, isValidRating } from '@/lib/ratingUtils';
 
 interface PlayerCardProps {
   player: Player & { averageRating?: number };
@@ -11,11 +12,11 @@ interface PlayerCardProps {
 
 export function PlayerCard({ player, onRate }: PlayerCardProps) {
   const renderRating = () => {
-    if (!player.averageRating) {
+    if (!isValidRating(player.averageRating)) {
       return <span className="text-sm text-muted-foreground">Sem avaliações</span>;
     }
 
-    const stars = Math.round(player.averageRating / 2);
+    const stars = ratingToStars(player.averageRating);
     return (
       <div className="flex items-center gap-1">
         {[...Array(5)].map((_, i) => (
@@ -24,7 +25,7 @@ export function PlayerCard({ player, onRate }: PlayerCardProps) {
             className={`h-4 w-4 ${i < stars ? 'fill-yellow-500 text-yellow-500' : 'text-muted'}`}
           />
         ))}
-        <span className="text-sm font-semibold ml-1">{player.averageRating.toFixed(1)}</span>
+        <span className="text-sm font-semibold ml-1 tabular-nums">{formatRating(player.averageRating)}</span>
       </div>
     );
   };

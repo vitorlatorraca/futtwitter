@@ -10,7 +10,8 @@ import {
 } from '@/components/ui/tooltip';
 import { ChevronRight } from 'lucide-react';
 import type { Player } from '@shared/schema';
-import { toPtBrAbbrev } from '@/lib/positionAbbrev';
+import { normalizeToCanonical, POSITION_SORT_ORDER } from '@shared/positions';
+import { PositionBadge } from '@/components/ui/position-badge';
 
 const panelClass =
   'rounded-2xl border border-white/10 backdrop-blur-sm bg-[#10161D] p-4 shadow-sm transition-all duration-200 hover:border-emerald-500/40';
@@ -21,23 +22,8 @@ interface ElencoPreviewMiniProps {
   isLoading?: boolean;
 }
 
-/** Ordem de prioridade para mostrar "titulares" (posições mais comuns no 11) */
-const POSITION_PRIORITY: Record<string, number> = {
-  Goalkeeper: 0,
-  'Centre-Back': 1,
-  'Left-Back': 2,
-  'Right-Back': 3,
-  'Defensive Midfield': 4,
-  'Central Midfield': 5,
-  'Attacking Midfield': 6,
-  'Left Winger': 7,
-  'Right Winger': 8,
-  'Centre-Forward': 9,
-  'Second Striker': 10,
-};
-
 function getPositionOrder(p: Player): number {
-  return POSITION_PRIORITY[p.position ?? ''] ?? 99;
+  return POSITION_SORT_ORDER[normalizeToCanonical(p.position)] ?? 99;
 }
 
 function getAgeFromBirthDate(birthDate: string | null | undefined): number | null {
@@ -119,10 +105,12 @@ export function ElencoPreviewMini({
                       </div>
                       <div className="min-w-0 flex-1">
                         <p className="text-xs font-medium text-foreground truncate">{p.name}</p>
-                        <p className="text-[10px] text-muted-foreground">
-                          {toPtBrAbbrev(p.position)}
-                          {p.shirtNumber != null ? ` · ${p.shirtNumber}` : ''}
-                        </p>
+                        <div className="flex items-center gap-1 mt-0.5">
+                          <PositionBadge position={p.position} size="xs" />
+                          {p.shirtNumber != null && (
+                            <span className="text-[10px] text-muted-foreground">#{p.shirtNumber}</span>
+                          )}
+                        </div>
                       </div>
                     </Link>
                   </TooltipTrigger>

@@ -5,6 +5,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { useLastMatchRatings, type LastMatchRating, type PositionGroup } from './useLastMatchRatings';
 import { cn } from '@/lib/utils';
 import { LayoutGrid, BarChart3 } from 'lucide-react';
+import { formatRating, getRatingPillClass } from '@/lib/ratingUtils';
 
 const panelClass =
   'rounded-2xl border border-white/10 backdrop-blur-sm bg-[#10161D] p-4 shadow-sm transition-all duration-200 hover:border-emerald-500/40';
@@ -16,12 +17,6 @@ const GROUP_LABELS: Record<PositionGroup, string> = {
   ATT: 'Ataque',
   UNK: 'Outros',
 };
-
-function getRatingPillClass(rating: number): string {
-  if (rating >= 8.0) return 'bg-emerald-500/15 text-emerald-600 dark:text-emerald-400';
-  if (rating >= 7.0) return 'bg-muted/80 text-muted-foreground';
-  return 'bg-amber-500/15 text-amber-600 dark:text-amber-400';
-}
 
 const POSITION_ORDER: PositionGroup[] = ['GK', 'DEF', 'MID', 'ATT', 'UNK'];
 
@@ -208,7 +203,7 @@ export function LastMatchRatingsCard({ teamId }: { teamId: string | null }) {
                         getRatingPillClass(p.rating)
                       )}
                     >
-                      {p.rating.toFixed(1)}
+                      {formatRating(p.rating)}
                     </span>
                   </div>
                 ))}

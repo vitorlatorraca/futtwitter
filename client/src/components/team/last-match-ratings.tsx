@@ -2,6 +2,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { Badge } from '@/components/ui/badge';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
+import { formatRating, getRatingPillClass } from '@/lib/ratingUtils';
 
 export interface LastMatchPlayer {
   playerId: string;
@@ -31,9 +32,9 @@ interface LastMatchRatingsProps {
 }
 
 function getRatingColor(rating: number): string {
-  if (rating >= 7) return 'bg-green-500/20 text-green-600 dark:text-green-400 border-green-500/40';
-  if (rating >= 6.5) return 'bg-yellow-500/20 text-yellow-600 dark:text-yellow-400 border-yellow-500/40';
-  return 'bg-red-500/20 text-red-600 dark:text-red-400 border-red-500/40';
+  if (rating >= 7.5) return 'bg-emerald-500/20 text-emerald-600 dark:text-emerald-400 border-emerald-500/40';
+  if (rating >= 6.5) return 'bg-muted/50 text-muted-foreground border-border/50';
+  return 'bg-amber-500/20 text-amber-600 dark:text-amber-400 border-amber-500/40';
 }
 
 export function LastMatchRatings({ data, isLoading }: LastMatchRatingsProps) {
@@ -101,8 +102,8 @@ export function LastMatchRatings({ data, isLoading }: LastMatchRatingsProps) {
                   <span className="text-xs text-muted-foreground shrink-0">{p.minutes}'</span>
                 )}
               </div>
-              <Badge variant="outline" className={`shrink-0 font-mono text-xs ${getRatingColor(p.rating)}`}>
-                {p.rating.toFixed(1)}
+              <Badge variant="outline" className={`shrink-0 font-mono text-xs tabular-nums ${getRatingColor(p.rating)}`}>
+                {formatRating(p.rating)}
               </Badge>
             </li>
           ))}

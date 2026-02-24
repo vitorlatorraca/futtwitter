@@ -8,6 +8,7 @@ import { Panel, SectionHeader, LoadingSkeleton } from "@/components/ui-premium";
 import { ChevronRight } from "lucide-react";
 import { getResultForTeam } from "./matchUtils";
 import type { TeamMatch } from "./types";
+import { formatRating, getRatingPillClass } from "@/lib/ratingUtils";
 
 interface MatchesCardProps {
   teamId: string;
@@ -68,13 +69,11 @@ export function MatchesCard({ teamId, teamName, embed, overviewMode, matches: ma
                   {rating != null ? (
                     <span
                       className={cn(
-                        "text-[10px] font-semibold px-1.5 py-0.5 rounded min-w-[2rem] text-center",
-                        rating >= 7.5 && "bg-emerald-500/15 text-emerald-600 dark:text-emerald-400",
-                        rating >= 6.8 && rating < 7.5 && "bg-muted text-muted-foreground",
-                        rating < 6.8 && "bg-amber-500/15 text-amber-600 dark:text-amber-400"
+                        "text-[10px] font-semibold px-1.5 py-0.5 rounded min-w-[2rem] text-center tabular-nums",
+                        getRatingPillClass(rating)
                       )}
                     >
-                      {rating.toFixed(1)}
+                      {formatRating(rating)}
                     </span>
                   ) : (
                     <span className="text-[10px] text-muted-foreground px-1.5">—</span>

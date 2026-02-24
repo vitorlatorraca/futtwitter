@@ -41,6 +41,7 @@ export const fixtureStatusEnum = pgEnum("fixture_status", ["SCHEDULED", "LIVE", 
 export const preferredFootEnum = pgEnum("preferred_foot", ["LEFT", "RIGHT", "BOTH"]);
 export const primaryPositionEnum = pgEnum("primary_position", [
   "GK", "CB", "FB", "LB", "RB", "WB", "DM", "CM", "AM", "W", "LW", "RW", "ST", "SS",
+  "CDM", "CAM",
 ]);
 export const rosterRoleEnum = pgEnum("roster_role", ["STARTER", "ROTATION", "YOUTH", "RESERVE"]);
 export const rosterStatusEnum = pgEnum("roster_status", [

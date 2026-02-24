@@ -4,7 +4,9 @@ import { useState } from 'react';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Loader2, Check, ChevronRight, Star } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
-import { sortByPosition, normalizePosition } from '@/lib/positionSort';
+import { sortByPositionOrder } from '@shared/positions';
+import { formatRating, starToRating, ratingToStars, isValidRating } from '@/lib/ratingUtils';
+import { PositionBadge } from '@/components/ui/position-badge';
 import {
   Collapsible,
   CollapsibleContent,
@@ -13,16 +15,7 @@ import {
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Button } from '@/components/ui/button';
 
-/** Converts 0–10 average to 1–5 star display. Rounds to nearest half for display. */
-export function ratingToStars(rating: number): number {
-  const stars = rating / 2;
-  return Math.round(stars);
-}
-
-/** Converts star (1–5) to 0–10 for backend. */
-export function starToRating(star: number): number {
-  return Math.min(10, Math.max(0, star * 2));
-}
+export { ratingToStars, starToRating };
 
 /** One row: player with average rating and optional user vote */
 export interface FanRatingPlayer {
@@ -89,7 +82,7 @@ export function FanRatings({
     }
   };
 
-  const sortedPlayers = sortByPosition(players);
+  const sortedPlayers = sortByPositionOrder(players);
   const starters = sortedPlayers.filter((p) => p.isStarter);
   const substitutes = sortedPlayers.filter((p) => !p.isStarter);
 
@@ -197,22 +190,19 @@ function FanRatingRowCompact({
   isLoggedIn = true,
 }: FanRatingRowCompactProps) {
   const hasVoted = player.userRating !== null;
-  const posAbbrev = normalizePosition(player.position);
   const disabled = !isLoggedIn || hasVoted || isVoting || isSaving;
 
   return (
     <li className="flex items-center gap-3 py-2 px-2 rounded-md hover:bg-muted/30 transition-colors min-h-0">
-      <span className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wide shrink-0 w-7">
-        {posAbbrev}
-      </span>
+      <PositionBadge position={player.position} size="xs" />
       <span className="text-sm font-medium text-foreground truncate min-w-0 flex-1">
         {player.name}
       </span>
       <span className="shrink-0 flex items-center gap-2">
-        {player.averageRating != null && player.voteCount > 0 ? (
+        {isValidRating(player.averageRating) && player.voteCount > 0 ? (
           <>
-            <span className="text-xs font-medium bg-muted/80 px-1.5 py-0.5 rounded text-foreground">
-              {player.averageRating.toFixed(1)}
+            <span className="text-xs font-medium bg-muted/80 px-1.5 py-0.5 rounded text-foreground tabular-nums">
+              {formatRating(player.averageRating)}
             </span>
             <span className="text-[10px] text-muted-foreground tabular-nums">
               {player.voteCount}
@@ -229,7 +219,7 @@ function FanRatingRowCompact({
         {isLoggedIn && hasVoted && (
           <span className="inline-flex items-center gap-1 text-xs text-green-600 dark:text-green-400">
             <Check className="h-3 w-3" />
-            {player.userRating!.toFixed(1)}
+            {formatRating(player.userRating)}
           </span>
         )}
         {isLoggedIn && !hasVoted && (

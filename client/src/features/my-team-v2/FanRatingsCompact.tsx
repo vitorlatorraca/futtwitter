@@ -4,7 +4,9 @@ import { useState } from 'react';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Loader2, Check, ChevronRight, Star } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
-import { sortByPosition, normalizePosition } from '@/lib/positionSort';
+import { sortByPositionOrder } from '@shared/positions';
+import { formatRating, starToRating, ratingToStars, isValidRating } from '@/lib/ratingUtils';
+import { PositionBadge } from '@/components/ui/position-badge';
 import {
   Collapsible,
   CollapsibleContent,
@@ -13,13 +15,7 @@ import {
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Button } from '@/components/ui/button';
 
-export function ratingToStars(rating: number): number {
-  return Math.round(rating / 2);
-}
-
-export function starToRating(star: number): number {
-  return Math.min(10, Math.max(0, star * 2));
-}
+export { ratingToStars, starToRating };
 
 export interface FanRatingPlayerCompact {
   playerId: string;
@@ -85,7 +81,7 @@ export function FanRatingsCompact({
     }
   };
 
-  const sortedPlayers = sortByPosition(players);
+  const sortedPlayers = sortByPositionOrder(players);
   const starters = sortedPlayers.filter((p) => p.isStarter);
   const substitutes = sortedPlayers.filter((p) => !p.isStarter);
 
@@ -188,7 +184,6 @@ function FanRatingRow({
   isLoggedIn = true,
 }: FanRatingRowProps) {
   const hasVoted = player.userRating !== null;
-  const posAbbrev = normalizePosition(player.position);
   const disabled = !isLoggedIn || hasVoted || isVoting || isSaving;
 
   return (
@@ -197,17 +192,15 @@ function FanRatingRow({
         disabled ? 'opacity-80' : 'hover:bg-[#141C24]/60'
       }`}
     >
-      <span className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wide shrink-0 w-7">
-        {posAbbrev}
-      </span>
+      <PositionBadge position={player.position} size="xs" />
       <span className="text-xs font-medium text-foreground truncate min-w-0 flex-1">
         {player.name}
       </span>
       <span className="shrink-0 flex items-center gap-1.5">
-        {player.averageRating != null && player.voteCount > 0 ? (
+        {isValidRating(player.averageRating) && player.voteCount > 0 ? (
           <>
-            <span className="text-[10px] font-medium bg-[#141C24] px-1.5 py-0.5 rounded text-foreground">
-              {player.averageRating.toFixed(1)}
+            <span className="text-[10px] font-medium bg-[#141C24] px-1.5 py-0.5 rounded text-foreground tabular-nums">
+              {formatRating(player.averageRating)}
             </span>
             <span className="text-[10px] text-muted-foreground tabular-nums">
               {player.voteCount}
@@ -224,7 +217,7 @@ function FanRatingRow({
         {isLoggedIn && hasVoted && (
           <span className="inline-flex items-center gap-1 text-[10px] text-meu-time-success">
             <Check className="h-2.5 w-2.5" />
-            {player.userRating!.toFixed(1)}
+            {formatRating(player.userRating)}
           </span>
         )}
         {isLoggedIn && !hasVoted && (

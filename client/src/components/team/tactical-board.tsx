@@ -5,7 +5,9 @@ import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
 import { sortLineupPlayers, type LineupPlayer } from '@/lib/lineupOrder';
-import { toPtBrAbbrev } from '@/lib/positionAbbrev';
+import { positionToPtBr } from '@shared/positions';
+import { formatRating, isValidRating } from '@/lib/ratingUtils';
+import { PositionBadge } from '@/components/ui/position-badge';
 
 const formationPositions: Record<string, { x: number; y: number }[]> = {
   '4-3-3': [
@@ -81,8 +83,8 @@ export function TacticalBoard({
   const displayLines = useMemo(() => {
     return sortedStarters.map((p) => {
       const info = ratingByPlayerId[p.playerId];
-      const displayRating = info && info.voteCount > 0 ? info.avgRating.toFixed(1) : '—';
-      const positionAbbrev = toPtBrAbbrev(p.position);
+      const displayRating = info && info.voteCount > 0 && isValidRating(info.avgRating) ? formatRating(info.avgRating) : '—';
+      const positionAbbrev = positionToPtBr(p.position);
       return { playerId: p.playerId, name: p.name, shirtNumber: p.shirtNumber, displayRating, positionAbbrev };
     });
   }, [sortedStarters, ratingByPlayerId]);

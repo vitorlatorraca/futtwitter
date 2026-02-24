@@ -16,6 +16,7 @@ import type { Player } from '@shared/schema';
 import { positionToSector } from '@shared/player-sector';
 import { SECTOR_LABELS } from '@shared/player-sector';
 import type { PlayerSector } from '@shared/player-sector';
+import { PositionBadge } from '@/components/ui/position-badge';
 
 interface PlayerPickerProps {
   open: boolean;
@@ -119,8 +120,8 @@ export function PlayerPicker({
                   </div>
                   <div className="min-w-0 flex-1">
                     <div className="font-semibold text-foreground truncate">{player.name}</div>
-                    <div className="flex items-center gap-2 flex-wrap">
-                      <span className="text-xs text-muted-foreground">{player.position}</span>
+                    <div className="flex items-center gap-2 flex-wrap mt-0.5">
+                      <PositionBadge position={player.position} size="xs" />
                       {player.shirtNumber != null && (
                         <Badge variant="outline" className="text-xs">
                           {player.shirtNumber}

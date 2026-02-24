@@ -15,6 +15,7 @@ import {
   useGuessPlayerOfTheDay,
   type PlayerSearchResult,
 } from "@/features/games/guess-player/api";
+import { positionToPtBr } from "@shared/positions";
 
 const MAX_BLUR_PX = 20;
 const MAX_WRONG_ATTEMPTS = 10;
@@ -219,7 +220,7 @@ export default function AdivinheOJogadorPage() {
               {/* Hint: position */}
               {!isFinished && data.player.position && (
                 <p className="text-center text-sm text-muted-foreground">
-                  Posição: <span className="font-medium text-foreground">{data.player.position}</span>
+                  Posição: <span className="font-medium text-foreground">{positionToPtBr(data.player.position)}</span>
                   {data.player.shirtNumber != null && (
                     <> · Camisa <span className="font-medium text-foreground">#{data.player.shirtNumber}</span></>
                   )}
@@ -313,7 +314,7 @@ export default function AdivinheOJogadorPage() {
                           )}
                           <div className="min-w-0">
                             <p className="font-medium text-foreground truncate">{player.name}</p>
-                            <p className="text-xs text-muted-foreground">{player.position}</p>
+                            <p className="text-xs text-muted-foreground">{positionToPtBr(player.position)}</p>
                           </div>
                         </button>
                       ))}

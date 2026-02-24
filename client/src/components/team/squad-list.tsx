@@ -5,9 +5,10 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Input } from '@/components/ui/input';
 import { Users, Filter, Search, Star } from 'lucide-react';
 import type { Player } from '@shared/schema';
-import { positionToSector, SECTOR_LABELS } from '@shared/player-sector';
-
-type PlayerSector = 'GK' | 'DEF' | 'MID' | 'FWD';
+import { positionToSectorFromCanonical, SECTOR_LABELS } from '@shared/positions';
+import type { PositionSector as PlayerSector } from '@shared/positions';
+import { isValidRating } from '@/lib/ratingUtils';
+import { PositionBadge } from '@/components/ui/position-badge';
 
 /** Player with optional overall from DB (players.overall or equivalent) */
 type PlayerWithOverall = Player & { overall?: number | null };
@@ -28,14 +29,11 @@ type PositionFilter = 'ALL' | PlayerSector;
 const groupLabels: Record<PlayerSector, string> = SECTOR_LABELS;
 
 function getPositionGroup(position: string): PlayerSector {
-  return positionToSector(position);
+  return positionToSectorFromCanonical(position);
 }
 
-/** Overall from DB when available; otherwise "—" for display */
 function getOverallDisplay(player: PlayerWithOverall): number | string {
-  const v = player.overall;
-  if (v != null && typeof v === 'number' && !Number.isNaN(v)) return v;
-  return '—';
+  return isValidRating(player.overall) ? player.overall : '—';
 }
 
 /** For sorting by overall when DB has no overall field (fallback order) */
@@ -105,9 +103,7 @@ function SquadPlayerCard({
             <h4 className="font-semibold text-sm truncate text-foreground">
               {player.name}
             </h4>
-            <p className="text-xs text-muted-foreground truncate">
-              {player.position}
-            </p>
+            <PositionBadge position={player.position} size="xs" className="mt-0.5" />
             <div className="flex items-center justify-center gap-1 mt-1">
               <Star className="h-3.5 w-3.5 fill-yellow-500 text-yellow-500 flex-shrink-0" aria-hidden />
               <span className="text-sm font-bold text-foreground tabular-nums">

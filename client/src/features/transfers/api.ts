@@ -1,6 +1,7 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { getApiUrl } from '@/lib/queryClient';
 import type { TransferItem } from './transferTypes';
+import { positionToPtBr } from '@shared/positions';
 
 /** API status (transfer_rumors). Maps to display: RUMOR, NEGOCIACAO, FECHADO */
 export type TransferRumorApiStatus = 'RUMOR' | 'NEGOTIATING' | 'DONE' | 'CANCELLED';
@@ -38,7 +39,7 @@ function normalizeRumorToItem(raw: {
     id: raw.id,
     playerName: raw.player?.name ?? '?',
     playerPhotoUrl: raw.player?.photoUrl ?? null,
-    positionAbbrev: raw.player?.position ?? '—',
+    positionAbbrev: raw.player?.position ? positionToPtBr(raw.player.position) : '—',
     fromTeam: raw.fromTeam ?? null,
     toTeam: raw.toTeam ?? null,
     fromTeamId: raw.fromTeam?.id,

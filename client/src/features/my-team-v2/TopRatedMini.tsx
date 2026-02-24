@@ -1,7 +1,8 @@
 'use client';
 
 import { useMemo } from 'react';
-import { toPtBrAbbrev } from '@/lib/positionAbbrev';
+import { PositionBadge } from '@/components/ui/position-badge';
+import { RatingPill } from '@/components/ui/rating-pill';
 
 interface TopRatedPlayer {
   playerId: string;
@@ -63,14 +64,10 @@ export function TopRatedMini({ players, maxItems = 5, lastNMatches = 5, getPhoto
           <div className="flex-1 min-w-0">
             <p className="text-xs font-medium text-foreground truncate">{p.name}</p>
             {p.position && (
-              <p className="text-[10px] text-muted-foreground">
-                {toPtBrAbbrev(p.position)}
-              </p>
+              <PositionBadge position={p.position} size="xs" className="mt-0.5" />
             )}
           </div>
-          <span className="text-xs font-medium text-sky-400 tabular-nums shrink-0">
-            {p.averageRating.toFixed(1)}
-          </span>
+          <RatingPill rating={p.averageRating} size="sm" />
         </div>
       ))}
     </div>

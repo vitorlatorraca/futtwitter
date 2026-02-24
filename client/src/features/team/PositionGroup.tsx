@@ -1,8 +1,7 @@
 import type { Player } from '@shared/schema';
-import { positionToSector, SECTOR_LABELS } from '@shared/player-sector';
-import type { PlayerSector } from '@shared/player-sector';
+import { SECTOR_LABELS, sortByPositionOrder } from '@shared/positions';
+import type { PositionSector as PlayerSector } from '@shared/positions';
 import { PlayerRow } from './PlayerRow';
-import { sortByPosition } from '@/lib/positionSort';
 
 interface PositionGroupProps {
   sector: PlayerSector;
@@ -12,7 +11,7 @@ interface PositionGroupProps {
 
 export function PositionGroup({ sector, players, getPhotoUrl }: PositionGroupProps) {
   const label = SECTOR_LABELS[sector];
-  const sorted = sortByPosition(players);
+  const sorted = sortByPositionOrder(players);
 
   if (sorted.length === 0) return null;
 

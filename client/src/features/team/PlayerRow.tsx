@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import type { Player } from '@shared/schema';
-import { toPtBrAbbrev } from '@/lib/positionAbbrev';
+import { PositionBadge } from '@/components/ui/position-badge';
 
 /** Simple country name to flag emoji (ISO 3166-1 alpha-2) */
 const COUNTRY_FLAGS: Record<string, string> = {
@@ -75,7 +75,6 @@ export function PlayerRow({ player, getPhotoUrl }: PlayerRowProps) {
   const [imgError, setImgError] = useState(false);
   const photoUrl = getPhotoUrl(player);
   const showPlaceholder = imgError || !player.photoUrl;
-  const positionAbbrev = toPtBrAbbrev(player.position);
   const age = getAge(player.birthDate);
   const nationality = player.nationalitySecondary
     ? `${player.nationalityPrimary} / ${player.nationalitySecondary}`
@@ -108,7 +107,7 @@ export function PlayerRow({ player, getPhotoUrl }: PlayerRowProps) {
         </div>
         <div className="min-w-0 flex-1">
           <div className="font-semibold text-foreground truncate">{player.name}</div>
-          <div className="text-xs text-muted-foreground">{positionAbbrev}</div>
+          <PositionBadge position={player.position} size="xs" className="mt-0.5" />
         </div>
       </div>
 

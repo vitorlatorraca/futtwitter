@@ -12,6 +12,7 @@ import {
 import { Popover, PopoverAnchor, PopoverContent } from '@/components/ui/popover';
 import { resolvePlayerPhoto, PLAYER_PHOTO_PLACEHOLDER } from './resolvePlayerPhoto';
 import type { Player } from '@shared/schema';
+import { PositionBadge } from '@/components/ui/position-badge';
 
 function getInitials(name: string): string {
   const parts = name.trim().split(/\s+/);
@@ -152,10 +153,12 @@ export function SlotPlayerPicker({
                     </div>
                     <div className="flex-1 min-w-0">
                       <p className="font-medium text-sm text-white truncate">{player.name}</p>
-                      <p className="text-xs text-white/50 truncate">
-                        {player.position ?? player.primaryPosition ?? '—'}
-                        {player.shirtNumber != null ? ` • ${player.shirtNumber}` : ''}
-                      </p>
+                      <div className="flex items-center gap-1.5">
+                        <PositionBadge position={player.position ?? player.primaryPosition} size="xs" />
+                        {player.shirtNumber != null && (
+                          <span className="text-xs text-white/50">#{player.shirtNumber}</span>
+                        )}
+                      </div>
                     </div>
                   </CommandItem>
                 );

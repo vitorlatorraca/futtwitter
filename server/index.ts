@@ -135,17 +135,8 @@ app.use((req, res, next) => {
     serveStatic(app);
   }
 
-  // Use process.env.PORT. Platforms (Railway, Render) inject it in production.
-  // Fallback 5000 only in development for local runs.
-  const portRaw = process.env.PORT;
-  const port = portRaw ? parseInt(portRaw, 10) : (process.env.NODE_ENV === "production" ? 0 : 5000);
-  if (!port || port <= 0) {
-    console.error("[express] PORT must be set in production. Platforms inject it automatically.");
-    process.exit(1);
-  }
-  // In production (Railway), bind to 0.0.0.0 to accept external connections
-  // In development, use 127.0.0.1 for localhost only
-  const host = process.env.NODE_ENV === 'production' ? '0.0.0.0' : '127.0.0.1';
+  const port = Number(process.env.PORT) || 5000;
+  const host = process.env.NODE_ENV === "production" ? "0.0.0.0" : "127.0.0.1";
 
   server.on('error', (err: NodeJS.ErrnoException) => {
     if (err.code === 'EADDRINUSE') {

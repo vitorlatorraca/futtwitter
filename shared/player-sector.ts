@@ -1,42 +1,12 @@
 /**
- * Regras de classificação de posição -> setor (GK|DEF|MID|FWD)
- * Usado de forma consistente no backend e frontend.
+ * Re-exports from the canonical positions module.
+ * Kept for backward compatibility.
  */
-export type PlayerSector = "GK" | "DEF" | "MID" | "FWD";
-
-export const SECTOR_LABELS: Record<PlayerSector, string> = {
-  GK: "Goleiros",
-  DEF: "Defensores",
-  MID: "Meio-campistas",
-  FWD: "Atacantes",
-};
-
-export function positionToSector(position: string): PlayerSector {
-  const p = (position || "").trim();
-  switch (p) {
-    case "Goalkeeper":
-      return "GK";
-    case "Centre-Back":
-    case "Left-Back":
-    case "Right-Back":
-    case "Wing-Back":
-      return "DEF";
-    case "Defensive Midfield":
-    case "Central Midfield":
-    case "Attacking Midfield":
-      return "MID";
-    case "Left Winger":
-    case "Right Winger":
-    case "Centre-Forward":
-    case "Second Striker":
-      return "FWD";
-    default:
-      if (p.toLowerCase().includes("keeper") || p.toLowerCase().includes("goalkeeper")) return "GK";
-      if (p.toLowerCase().includes("back") || p.toLowerCase().includes("defender")) return "DEF";
-      if (p.toLowerCase().includes("midfield") || p.toLowerCase().includes("midfielder")) return "MID";
-      return "FWD";
-  }
-}
+export {
+  positionToSectorFromCanonical as positionToSector,
+  SECTOR_LABELS,
+} from "./positions";
+export type { PositionSector as PlayerSector } from "./positions";
 
 export function slugify(name: string): string {
   return name

@@ -1,7 +1,7 @@
 import { cn } from '@/lib/utils';
-import { Badge } from '@/components/ui/badge';
 import { resolvePlayerPhoto, PLAYER_PHOTO_PLACEHOLDER } from './resolvePlayerPhoto';
 import type { Player } from '@shared/schema';
+import { PositionBadge } from '@/components/ui/position-badge';
 
 interface LineupPlayerChipProps {
   player: Player;
@@ -58,9 +58,7 @@ export function LineupPlayerChip({
         <div className="font-semibold text-sm text-foreground truncate">{player.name}</div>
         <div className="flex items-center gap-1.5 flex-wrap mt-0.5">
           {player.position && (
-            <Badge variant="outline" className="text-[10px] px-1.5 py-0">
-              {player.position}
-            </Badge>
+            <PositionBadge position={player.position} size="xs" />
           )}
           {player.shirtNumber != null && (
             <span className="text-xs text-muted-foreground font-mono">{player.shirtNumber}</span>
