@@ -22,50 +22,46 @@ if (process.env.NODE_ENV === "production") {
   app.set("trust proxy", 1);
 }
 
-// Configure CORS
+// Configure CORS — always active so preflight OPTIONS succeeds
 const isDev = process.env.NODE_ENV === "development";
-const corsAllowedOrigins = (process.env.CORS_ORIGIN ?? process.env.CLIENT_URL ?? "")
+const extraOrigins = (process.env.CORS_ORIGIN ?? process.env.CLIENT_URL ?? "")
   .split(",")
   .map((o) => o.trim())
   .filter(Boolean);
 
-// Only enable CORS when needed:
-// - dev: allow localhost
-// - prod: only if CORS_ORIGIN is explicitly set
-if (isDev || corsAllowedOrigins.length > 0) {
-  const corsOptions = {
-    origin: (
-      origin: string | undefined,
-      callback: (err: Error | null, allow?: boolean) => void
-    ) => {
-      // Allow requests with no origin (like mobile apps or curl requests)
-      if (!origin) {
-        return callback(null, true);
-      }
+const allowedOrigins = [
+  "https://futtwitter.vercel.app",
+  ...extraOrigins,
+];
 
-      // In development, allow localhost
-      if (isDev) {
-        if (
-          origin.startsWith("http://localhost:") ||
-          origin.startsWith("http://127.0.0.1:")
-        ) {
-          return callback(null, true);
-        }
-      }
+const corsOptions: cors.CorsOptions = {
+  origin: (origin, callback) => {
+    if (!origin) {
+      return callback(null, true);
+    }
 
-      // In production, only allow explicitly configured origins
-      if (corsAllowedOrigins.includes(origin)) {
-        return callback(null, true);
-      }
+    if (isDev && (origin.startsWith("http://localhost:") || origin.startsWith("http://127.0.0.1:"))) {
+      return callback(null, true);
+    }
 
-      return callback(new Error("Not allowed by CORS"));
-    },
-    credentials: true,
-    optionsSuccessStatus: 200,
-  };
+    if (allowedOrigins.includes(origin)) {
+      return callback(null, true);
+    }
 
-  app.use(cors(corsOptions));
-}
+    if (origin.endsWith(".vercel.app")) {
+      return callback(null, true);
+    }
+
+    return callback(new Error(`CORS blocked for origin: ${origin}`));
+  },
+  methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
+  allowedHeaders: ["Content-Type", "Authorization"],
+  credentials: true,
+  optionsSuccessStatus: 200,
+};
+
+app.use(cors(corsOptions));
+app.options("*", cors(corsOptions));
 
 declare module 'http' {
   interface IncomingMessage {
