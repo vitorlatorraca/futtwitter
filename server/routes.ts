@@ -229,11 +229,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
       ? process.env.COOKIE_DOMAIN.trim()
       : undefined;
 
+  const isProd = process.env.NODE_ENV === "production";
+
   const cookieSameSiteEnv = (process.env.COOKIE_SAMESITE ?? "").trim().toLowerCase();
-  const cookieSameSite =
+  const cookieSameSite: "lax" | "strict" | "none" =
     cookieSameSiteEnv === "lax" || cookieSameSiteEnv === "strict" || cookieSameSiteEnv === "none"
       ? (cookieSameSiteEnv as "lax" | "strict" | "none")
-      : ("lax" as const);
+      : isProd
+        ? "none"
+        : "lax";
 
   const cookieSecureEnv = (process.env.COOKIE_SECURE ?? "").trim().toLowerCase();
   let cookieSecure =
@@ -241,9 +245,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
       ? true
       : cookieSecureEnv === "false"
         ? false
-        : process.env.NODE_ENV === "production";
+        : isProd;
 
-  // Browsers require Secure when SameSite=None
   if (cookieSameSite === "none") {
     cookieSecure = true;
   }
@@ -330,14 +333,18 @@ export async function registerRoutes(app: Express): Promise<Server> {
         userType: 'FAN',
       });
 
-      // Set session
       req.session.userId = user.id;
       req.session.userType = user.userType;
 
-      // Award signup badge
       await storage.checkAndAwardBadges(user.id);
 
-      res.json({ id: user.id, name: user.name, email: user.email, teamId: user.teamId, userType: user.userType });
+      req.session.save((err) => {
+        if (err) {
+          console.error("Session save error (register):", err);
+          return res.status(500).json({ message: 'Erro ao criar conta' });
+        }
+        res.json({ id: user.id, name: user.name, email: user.email, teamId: user.teamId, userType: user.userType });
+      });
     } catch (error: any) {
       console.error('Registration error:', error);
       res.status(400).json({ message: error.message || 'Erro ao criar conta' });
@@ -362,11 +369,16 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(401).json({ message: 'Email ou senha incorretos' });
       }
 
-      // Set session
       req.session.userId = user.id;
       req.session.userType = user.userType;
 
-      res.json({ id: user.id, name: user.name, email: user.email, teamId: user.teamId, userType: user.userType });
+      req.session.save((err) => {
+        if (err) {
+          console.error("Session save error:", err);
+          return res.status(500).json({ message: 'Erro ao fazer login' });
+        }
+        res.json({ id: user.id, name: user.name, email: user.email, teamId: user.teamId, userType: user.userType });
+      });
     } catch (error: any) {
       console.error("Login error:", error);
       res.status(500).json({ message: 'Erro ao fazer login' });
