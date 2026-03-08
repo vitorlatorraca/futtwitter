@@ -1,7 +1,6 @@
 import { Link } from 'wouter';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Progress } from '@/components/ui/progress';
 import { Badge } from '@/components/ui/badge';
 import { Trophy, Star, Users, Shield, TrendingUp, Calendar, Newspaper, MessageSquare, BarChart3 } from 'lucide-react';
 
@@ -24,60 +23,62 @@ export default function LandingPage() {
   ];
 
   const features = [
-    { icon: Trophy, label: "20 Times", color: "text-blue-400" },
-    { icon: Star, label: "500+ Jogadores", color: "text-[#6D5EF0]" },
-    { icon: Users, label: "Milhares de Torcedores", color: "text-[#2FE6A6]" },
+    { icon: Trophy, label: "20 Times", color: "text-primary" },
+    { icon: Star, label: "500+ Jogadores", color: "text-primary" },
+    { icon: Users, label: "Milhares de Torcedores", color: "text-accent" },
     { icon: Shield, label: "Notícias Exclusivas", color: "text-foreground-secondary" },
   ];
 
   return (
-    <div className="min-h-screen bg-[#05060A] relative">
-      {/* Background effects */}
-      <div 
+    <div className="min-h-screen bg-background relative">
+      {/* Background effects — holofote âmbar + vermelho sutil */}
+      <div
         className="fixed inset-0 pointer-events-none z-0"
         style={{
           background: `
-            radial-gradient(ellipse 100% 60% at 20% 30%, rgba(109, 94, 240, 0.15) 0%, transparent 50%),
-            radial-gradient(ellipse 100% 60% at 80% 70%, rgba(47, 230, 166, 0.1) 0%, transparent 50%),
+            radial-gradient(ellipse 100% 60% at 20% 30%, hsl(38 92% 50% / 0.12) 0%, transparent 50%),
+            radial-gradient(ellipse 100% 60% at 80% 70%, hsl(0 80% 55% / 0.07) 0%, transparent 50%),
             radial-gradient(ellipse 80% 50% at 50% 120%, rgba(0, 0, 0, 0.4) 0%, transparent 70%)
           `
         }}
       />
-      
+
       {/* Hero Section */}
       <section className="relative z-10 min-h-screen flex items-center">
         <div className="container mx-auto px-4 md:px-6 py-20 md:py-32 max-w-[1200px]">
           <div className="grid lg:grid-cols-2 gap-12 lg:gap-16 items-center">
             {/* Left Column */}
             <div className="space-y-8">
-              <div className="w-fit bg-white/4 backdrop-blur-md border border-white/10 rounded-full px-3 py-1.5">
+              {/* Pill */}
+              <div className="w-fit bg-primary/5 backdrop-blur-md border border-primary/20 rounded-full px-3 py-1.5">
                 <div className="flex items-center gap-2">
-                  <div className="h-1.5 w-1.5 rounded-full bg-[#2FE6A6]"></div>
+                  <div className="h-1.5 w-1.5 rounded-full bg-primary animate-pulse"></div>
                   <span className="text-xs font-medium text-foreground">All-in-one Brasileirão</span>
                 </div>
               </div>
-              
-              <h1 className="text-5xl md:text-6xl lg:text-7xl font-bold leading-[1.1] tracking-[-0.02em] text-foreground">
+
+              {/* H1 — Barlow Condensed bold, editorial */}
+              <h1 className="font-display font-bold uppercase tracking-tight text-5xl md:text-6xl lg:text-7xl leading-[1.05] text-foreground">
                 Sua paixão pelo Brasileirão em uma só plataforma
               </h1>
-              
+
               <p className="text-lg md:text-xl text-foreground-secondary max-w-xl leading-relaxed">
                 Avalie jogadores, leia notícias exclusivas e conecte-se com milhares de torcedores apaixonados — tudo em um lugar, tudo no seu controle.
               </p>
-              
+
               <div className="flex flex-col sm:flex-row gap-4">
-                <Button size="lg" className="w-full sm:w-auto bg-[#6D5EF0] text-white hover:bg-[#7D6EFF]" asChild>
+                <Button size="lg" className="w-full sm:w-auto" asChild>
                   <Link href="/cadastro" data-testid="link-signup">Criar Conta Grátis</Link>
                 </Button>
-                <Button size="lg" variant="outline" className="w-full sm:w-auto border-white/20 bg-transparent hover:bg-white/5" asChild>
+                <Button size="lg" variant="outline" className="w-full sm:w-auto" asChild>
                   <Link href="/login" data-testid="link-login">Já tenho conta</Link>
                 </Button>
               </div>
-              
-              <p className="text-xs text-foreground-secondary">
+
+              <p className="text-xs text-foreground-muted">
                 Sem cartão de crédito necessário
               </p>
-              
+
               {/* Features */}
               <div className="flex flex-wrap gap-6 pt-4">
                 {features.map((feature, index) => {
@@ -91,37 +92,37 @@ export default function LandingPage() {
                 })}
               </div>
             </div>
-            
-            {/* Right Column - Overview Card */}
+
+            {/* Right Column — Overview Card */}
             <div className="flex justify-center lg:justify-end">
-              <Card className="w-full max-w-md bg-white/4 backdrop-blur-md border border-white/8 rounded-2xl shadow-[0_8px_32px_0_rgba(0,0,0,0.3)] hover:bg-white/6 transition-all">
+              <Card className="w-full max-w-md bg-surface-card backdrop-blur-md border border-primary/10 rounded-2xl shadow-elevated hover:border-primary/20 transition-all">
                 <CardHeader>
-                  <CardTitle className="text-xl">Visão geral da plataforma</CardTitle>
+                  <CardTitle className="text-xl font-display uppercase tracking-tight">Visão geral da plataforma</CardTitle>
                   <CardDescription className="text-foreground-secondary">
                     Atividade dos torcedores, avaliações e notícias — tudo em uma visão clara.
                   </CardDescription>
                 </CardHeader>
-                
+
                 <CardContent className="space-y-6">
                   {/* Mini Cards */}
                   <div className="grid grid-cols-3 gap-3">
-                    <div className="bg-white/4 backdrop-blur-md border border-white/8 rounded-lg p-3">
+                    <div className="bg-surface-elevated border border-border-subtle rounded-lg p-3">
                       <div className="flex items-center gap-2 mb-1">
-                        <Trophy className="h-4 w-4 text-foreground-secondary" />
+                        <Trophy className="h-4 w-4 text-primary" />
                         <span className="text-xs text-foreground-secondary">Times</span>
                       </div>
                       <p className="text-lg font-semibold">20</p>
                     </div>
-                    
-                    <div className="bg-white/4 backdrop-blur-md border border-white/8 rounded-lg p-3">
+
+                    <div className="bg-surface-elevated border border-border-subtle rounded-lg p-3">
                       <div className="flex items-center gap-2 mb-1">
-                        <TrendingUp className="h-4 w-4 text-[#2FE6A6]" />
+                        <TrendingUp className="h-4 w-4 text-accent" />
                         <span className="text-xs text-foreground-secondary">Ativos hoje</span>
                       </div>
                       <p className="text-lg font-semibold">1.2k</p>
                     </div>
-                    
-                    <div className="bg-white/4 backdrop-blur-md border border-white/8 rounded-lg p-3">
+
+                    <div className="bg-surface-elevated border border-border-subtle rounded-lg p-3">
                       <div className="flex items-center gap-2 mb-1">
                         <Calendar className="h-4 w-4 text-foreground-secondary" />
                         <span className="text-xs text-foreground-secondary">Jogos hoje</span>
@@ -129,7 +130,7 @@ export default function LandingPage() {
                       <p className="text-lg font-semibold">3</p>
                     </div>
                   </div>
-                  
+
                   {/* Categories with Progress */}
                   <div className="space-y-4">
                     {categories.map((category, index) => {
@@ -145,12 +146,12 @@ export default function LandingPage() {
                               {category.percentage}%
                             </span>
                           </div>
-                          <div className="relative h-2 w-full overflow-hidden rounded-full bg-white/5">
-                            <div 
+                          <div className="relative h-2 w-full overflow-hidden rounded-full bg-border-subtle">
+                            <div
                               className="h-full flex-1 transition-all"
-                              style={{ 
+                              style={{
                                 width: `${category.percentage}%`,
-                                background: 'linear-gradient(90deg, #2FE6A6 0%, #6D5EF0 100%)'
+                                background: 'linear-gradient(90deg, hsl(38,92%,50%) 0%, hsl(0,80%,55%) 100%)'
                               }}
                             />
                           </div>
@@ -158,28 +159,28 @@ export default function LandingPage() {
                       )
                     })}
                   </div>
-                  
+
                   {/* Chips */}
                   <div className="flex flex-wrap gap-2">
                     {chips.map((chip, index) => (
-                      <Badge key={index} variant="default" className="border-white/10 bg-white/5 text-foreground-secondary">
+                      <Badge key={index} variant="outline" className="text-foreground-secondary">
                         {chip}
                       </Badge>
                     ))}
                   </div>
-                  
+
                   {/* Action Buttons */}
                   <div className="flex gap-3 pt-2">
-                    <Button variant="outline" size="sm" className="flex-1 w-full border-white/20 bg-transparent hover:bg-white/5" asChild>
+                    <Button variant="outline" size="sm" className="flex-1 w-full" asChild>
                       <Link href="/dashboard">Ver dashboard</Link>
                     </Button>
-                    <Button variant="outline" size="sm" className="flex-1 w-full border-white/20 bg-transparent hover:bg-white/5" asChild>
+                    <Button size="sm" className="flex-1 w-full" asChild>
                       <Link href="/cadastro">Começar agora</Link>
                     </Button>
                   </div>
-                  
+
                   {/* Disclaimer */}
-                  <p className="text-xs text-foreground-secondary pt-2 leading-relaxed">
+                  <p className="text-xs text-foreground-muted pt-2 leading-relaxed">
                     Nunca vendemos seus dados. Você controla o que compartilha, avalia ou exclui — a qualquer momento.
                   </p>
                 </CardContent>
@@ -192,23 +193,23 @@ export default function LandingPage() {
       {/* CTA Banner */}
       <section className="relative z-10 py-16">
         <div className="container mx-auto px-4 md:px-6 max-w-[1200px]">
-          <Card className="bg-white/4 backdrop-blur-md border border-white/8 rounded-2xl shadow-[0_8px_32px_0_rgba(0,0,0,0.3)] hover:bg-white/6 transition-all">
+          <Card className="bg-surface-card backdrop-blur-md border border-primary/10 rounded-2xl shadow-elevated hover:border-primary/20 transition-all">
             <CardContent className="p-8 md:p-12">
               <div className="flex flex-col md:flex-row items-center justify-between gap-6">
                 <div className="text-center md:text-left">
-                  <h2 className="text-2xl md:text-3xl font-bold mb-2 text-foreground">
+                  <h2 className="font-display uppercase tracking-tight text-2xl md:text-3xl font-bold mb-2 text-foreground">
                     Pronto para fazer parte da comunidade?
                   </h2>
                   <p className="text-foreground-secondary">
                     Comece a avaliar jogadores e acompanhar seu time hoje. É grátis para começar.
                   </p>
                 </div>
-                
+
                 <div className="flex flex-col sm:flex-row gap-4">
-                  <Button size="lg" className="bg-[#6D5EF0] text-white hover:bg-[#7D6EFF]" asChild>
+                  <Button size="lg" asChild>
                     <Link href="/cadastro">Começar agora</Link>
                   </Button>
-                  <Button size="lg" variant="outline" className="border-white/20 bg-transparent hover:bg-white/5" asChild>
+                  <Button size="lg" variant="outline" asChild>
                     <Link href="/dashboard">Ver dashboard</Link>
                   </Button>
                 </div>
@@ -219,10 +220,14 @@ export default function LandingPage() {
       </section>
 
       {/* Footer */}
-      <footer className="relative z-10 border-t border-white/10 bg-[#05060A]/50 backdrop-blur-md">
+      <footer className="relative z-10 border-t border-border-subtle bg-background/80 backdrop-blur-md">
         <div className="container mx-auto px-4 md:px-6 py-12">
           <div className="flex flex-col md:flex-row justify-between items-center gap-4">
-            <p className="text-sm text-foreground-secondary">
+            <div className="flex items-center gap-2">
+              <span className="font-display font-bold uppercase tracking-tight text-lg text-foreground">FUTTWITTER</span>
+              <span className="text-foreground-muted text-xs">· Premium Futebol Editorial</span>
+            </div>
+            <p className="text-sm text-foreground-muted">
               © 2024 Brasileirão. Todos os direitos reservados.
             </p>
             <div className="flex gap-6 text-sm text-foreground-secondary">
