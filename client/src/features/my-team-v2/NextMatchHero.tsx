@@ -26,7 +26,7 @@ interface NextMatchHeroProps {
 }
 
 const panelClass =
-  'rounded-2xl border border-white/10 backdrop-blur-sm bg-[#10161D] shadow-sm transition-all duration-200 hover:border-emerald-500/40';
+  'rounded-xl border border-border bg-surface-card shadow-card transition-colors duration-200 hover:border-primary/25';
 
 export function NextMatchHero({
   data,
@@ -75,7 +75,7 @@ export function NextMatchHero({
   const awayCrest = getTeamCrestFromTeam(awayTeam.teamId, awayTeam.name);
 
   return (
-    <div className={`${panelClass} border-meu-time-accent/25 bg-gradient-to-br from-meu-time-accent/8 via-transparent to-transparent`}>
+    <div className={panelClass}>
       <div className="p-4">
         {/* Top: meta (competition, date) — subtle */}
         <div className="flex items-center justify-between mb-3">
@@ -88,7 +88,7 @@ export function NextMatchHero({
             <span className="text-[10px] text-muted-foreground/80">{fullDate}</span>
           </div>
           {data.isHomeMatch && (
-            <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[9px] font-medium bg-meu-time-accent/15 text-meu-time-accent border border-meu-time-accent/20">
+            <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[9px] font-semibold bg-primary/10 text-primary border border-primary/20">
               <Home className="h-2.5 w-2.5" />
               Casa
             </span>
@@ -111,7 +111,7 @@ export function NextMatchHero({
             </span>
           </div>
           <div className="flex flex-col items-center shrink-0">
-            <span className="text-2xl sm:text-3xl font-bold font-mono text-emerald-500">VS</span>
+            <span className="text-2xl sm:text-3xl font-bold font-mono text-primary">VS</span>
           </div>
           <div className="flex flex-col items-center gap-1.5 min-w-0 flex-1">
             <img
@@ -129,9 +129,9 @@ export function NextMatchHero({
         </div>
 
         {/* Bottom: time left, stadium + link right */}
-        <div className="flex items-center justify-between gap-4 mt-3 pt-3 border-t border-white/5">
+        <div className="flex items-center justify-between gap-4 mt-3 pt-3 border-t border-border-subtle">
           <div className="flex items-center gap-1.5 text-xs text-muted-foreground shrink-0">
-            <CalendarDays className="h-3.5 w-3.5 text-emerald-500 shrink-0" />
+            <CalendarDays className="h-3.5 w-3.5 text-primary shrink-0" />
             <span>{dayCapitalized}</span>
           </div>
           <div className="flex items-center gap-3 min-w-0 flex-1 justify-end">
@@ -143,7 +143,7 @@ export function NextMatchHero({
             )}
             <Link
               href="/meu-time/jogos"
-              className="inline-flex items-center gap-1 text-xs font-medium text-emerald-500 hover:text-emerald-400 transition-all duration-200 hover:scale-105 shrink-0"
+              className="inline-flex items-center gap-1 text-xs font-medium text-primary hover:text-primary/75 transition-colors shrink-0"
             >
               Detalhes
               <ChevronRight className="h-3.5 w-3.5" />

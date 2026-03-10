@@ -25,23 +25,13 @@ export default function LandingPage() {
   const features = [
     { icon: Trophy, label: "20 Times", color: "text-primary" },
     { icon: Star, label: "500+ Jogadores", color: "text-primary" },
-    { icon: Users, label: "Milhares de Torcedores", color: "text-accent" },
+    { icon: Users, label: "Milhares de Torcedores", color: "text-foreground-secondary" },
     { icon: Shield, label: "Notícias Exclusivas", color: "text-foreground-secondary" },
   ];
 
   return (
     <div className="min-h-screen bg-background relative">
-      {/* Background effects — holofote âmbar + vermelho sutil */}
-      <div
-        className="fixed inset-0 pointer-events-none z-0"
-        style={{
-          background: `
-            radial-gradient(ellipse 100% 60% at 20% 30%, hsl(38 92% 50% / 0.12) 0%, transparent 50%),
-            radial-gradient(ellipse 100% 60% at 80% 70%, hsl(0 80% 55% / 0.07) 0%, transparent 50%),
-            radial-gradient(ellipse 80% 50% at 50% 120%, rgba(0, 0, 0, 0.4) 0%, transparent 70%)
-          `
-        }}
-      />
+      {/* Sem ruído de fundo — o body::before já tem o glow âmbar sutil */}
 
       {/* Hero Section */}
       <section className="relative z-10 min-h-screen flex items-center">
@@ -95,7 +85,7 @@ export default function LandingPage() {
 
             {/* Right Column — Overview Card */}
             <div className="flex justify-center lg:justify-end">
-              <Card className="w-full max-w-md bg-surface-card backdrop-blur-md border border-primary/10 rounded-2xl shadow-elevated hover:border-primary/20 transition-all">
+              <Card className="w-full max-w-md bg-surface-card border border-border rounded-xl shadow-card hover:border-primary/20 transition-colors">
                 <CardHeader>
                   <CardTitle className="text-xl font-display uppercase tracking-tight">Visão geral da plataforma</CardTitle>
                   <CardDescription className="text-foreground-secondary">
@@ -116,7 +106,7 @@ export default function LandingPage() {
 
                     <div className="bg-surface-elevated border border-border-subtle rounded-lg p-3">
                       <div className="flex items-center gap-2 mb-1">
-                        <TrendingUp className="h-4 w-4 text-accent" />
+                        <TrendingUp className="h-4 w-4 text-primary" />
                         <span className="text-xs text-foreground-secondary">Ativos hoje</span>
                       </div>
                       <p className="text-lg font-semibold">1.2k</p>
@@ -151,7 +141,7 @@ export default function LandingPage() {
                               className="h-full flex-1 transition-all"
                               style={{
                                 width: `${category.percentage}%`,
-                                background: 'linear-gradient(90deg, hsl(38,92%,50%) 0%, hsl(0,80%,55%) 100%)'
+                                background: 'hsl(38 90% 55%)'
                               }}
                             />
                           </div>
@@ -193,7 +183,7 @@ export default function LandingPage() {
       {/* CTA Banner */}
       <section className="relative z-10 py-16">
         <div className="container mx-auto px-4 md:px-6 max-w-[1200px]">
-          <Card className="bg-surface-card backdrop-blur-md border border-primary/10 rounded-2xl shadow-elevated hover:border-primary/20 transition-all">
+          <Card className="bg-surface-card border border-border rounded-xl shadow-card hover:border-primary/20 transition-colors">
             <CardContent className="p-8 md:p-12">
               <div className="flex flex-col md:flex-row items-center justify-between gap-6">
                 <div className="text-center md:text-left">

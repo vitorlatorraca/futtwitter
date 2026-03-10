@@ -3,7 +3,7 @@
 import { cn } from '@/lib/utils';
 
 const CARD_BASE =
-  'rounded-2xl border border-white/[0.06] bg-gradient-to-b from-[#0f1419] to-[#0a0e12] shadow-[0_4px_24px_-4px_rgba(0,0,0,0.4)] overflow-hidden';
+  'rounded-xl border border-border bg-surface-card shadow-card overflow-hidden';
 
 interface MyTeamCardProps {
   title: React.ReactNode;
@@ -30,7 +30,7 @@ export function MyTeamCard({
         className
       )}
     >
-      <header className="flex items-center justify-between gap-3 px-4 py-3 sm:px-5 sm:py-4 border-b border-white/[0.06] shrink-0">
+      <header className="flex items-center justify-between gap-3 px-4 py-3 sm:px-5 sm:py-4 border-b border-border shrink-0">
         <h3 className="text-sm sm:text-base font-semibold text-foreground truncate">
           {title}
         </h3>

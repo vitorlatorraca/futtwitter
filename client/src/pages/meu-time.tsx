@@ -547,10 +547,10 @@ export default function MeuTimePage() {
   }
 
   return (
-    <AppShell mainClassName="py-4 sm:py-6 px-4 sm:px-6 min-h-screen bg-gradient-to-b from-zinc-950 to-black">
+    <AppShell mainClassName="py-4 sm:py-6 px-4 sm:px-6 min-h-screen">
       <div className="max-w-[1600px] mx-auto">
         {isTeamError ? (
-          <div className="rounded-2xl border border-white/5 bg-card p-4 flex items-center justify-between gap-4 mb-4">
+          <div className="rounded-xl border border-border bg-surface-card p-4 flex items-center justify-between gap-4 mb-4">
             <div className="text-sm text-foreground-secondary">
               Alguns dados do time não puderam ser carregados agora. O básico foi carregado e o resto continua funcionando.
             </div>
