@@ -24,11 +24,18 @@ const POSITION_ORDER: PositionGroup[] = ["GK", "DEF", "MID", "ATT", "UNK"];
 
 function positionToGroup(code: string | null): PositionGroup {
   if (!code) return "UNK";
-  const u = code.toUpperCase();
+  const u = code.toUpperCase().trim();
   if (u === "GK") return "GK";
-  if (["CB", "LB", "RB", "LWB", "RWB"].includes(u)) return "DEF";
-  if (["DM", "CM", "AM", "LM", "RM"].includes(u)) return "MID";
-  if (["LW", "RW", "ST", "CF"].includes(u)) return "ATT";
+  // Short codes — includes Portuguese/Spanish variants (DC, DR, DL, MC, ML, MR, CDM, CAM…)
+  if (["CB", "DC", "LB", "DL", "RB", "DR", "LWB", "RWB", "WB"].includes(u)) return "DEF";
+  if (["DM", "CDM", "CM", "MC", "AM", "CAM", "LM", "ML", "RM", "MR"].includes(u)) return "MID";
+  if (["LW", "RW", "ST", "CF", "SS"].includes(u)) return "ATT";
+  // Full English names (stored by positionPrimaryToDisplay)
+  const lower = code.toLowerCase();
+  if (lower.includes("goalkeeper") || lower.includes("keeper")) return "GK";
+  if (lower.includes("-back") || lower.includes("defender")) return "DEF";
+  if (lower.includes("midfield")) return "MID";
+  if (lower.includes("forward") || lower.includes("winger") || lower.includes("striker")) return "ATT";
   return "UNK";
 }
 
@@ -489,6 +496,7 @@ export async function getLastMatchRatings(teamId: string): Promise<{
     homeScore: number | null;
     awayScore: number | null;
   };
+  formation: string;
   playerRatings: Array<{
     playerId: string;
     playerName: string;
@@ -533,7 +541,7 @@ export async function getLastMatchRatings(teamId: string): Promise<{
 
   // Lineup positionCode por jogador (fonte de verdade para aquele jogo)
   const [ourLineup] = await db
-    .select({ id: matchLineups.id })
+    .select({ id: matchLineups.id, formation: matchLineups.formation })
     .from(matchLineups)
     .where(
       and(eq(matchLineups.matchId, lastMatch.id), eq(matchLineups.teamId, teamId))
@@ -610,6 +618,7 @@ export async function getLastMatchRatings(teamId: string): Promise<{
       homeScore: lastMatch.homeScore,
       awayScore: lastMatch.awayScore,
     },
+    formation: ourLineup?.formation ?? "4-3-3",
     playerRatings,
   };
 }

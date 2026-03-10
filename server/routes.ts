@@ -1191,6 +1191,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
           homeScore: data.match.homeScore,
           awayScore: data.match.awayScore,
         },
+        formation: data.formation,
         playerRatings: data.playerRatings,
       });
     } catch (error) {

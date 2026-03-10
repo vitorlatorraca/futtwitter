@@ -25,6 +25,7 @@ export interface LastMatchRatingsData {
     homeScore: number | null;
     awayScore: number | null;
   };
+  formation: string;
   playerRatings: LastMatchRating[];
 }
 

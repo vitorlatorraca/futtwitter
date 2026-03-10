@@ -1,14 +1,14 @@
 'use client';
 
-import { useState, useMemo } from 'react';
+import { useMemo } from 'react';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useLastMatchRatings, type LastMatchRating, type PositionGroup } from './useLastMatchRatings';
 import { cn } from '@/lib/utils';
-import { LayoutGrid, BarChart3 } from 'lucide-react';
-import { formatRating, getRatingPillClass } from '@/lib/ratingUtils';
+import { formatRating } from '@/lib/ratingUtils';
+import { format } from 'date-fns';
+import { ptBR } from 'date-fns/locale';
 
-const panelClass =
-  'rounded-2xl border border-white/10 backdrop-blur-sm bg-[#10161D] p-4 shadow-sm transition-all duration-200 hover:border-emerald-500/40';
+// ─── Position helpers ────────────────────────────────────────────────────────
 
 const GROUP_LABELS: Record<PositionGroup, string> = {
   GK: 'Goleiro',
@@ -31,185 +31,311 @@ function groupPlayersByPosition(ratings: LastMatchRating[]): Map<PositionGroup, 
   return map;
 }
 
-function sortGroupByRating(players: LastMatchRating[]): LastMatchRating[] {
-  return [...players].sort((a, b) => (b.rating ?? 0) - (a.rating ?? 0));
+// ─── Rating color ─────────────────────────────────────────────────────────────
+
+function ratingColor(r: number): string {
+  if (r >= 7.5) return 'text-primary font-bold';
+  if (r >= 6.5) return 'text-foreground font-semibold';
+  return 'text-foreground-secondary';
 }
 
-type SortMode = 'position' | 'rating';
+// ─── Formation pitch positions ────────────────────────────────────────────────
 
-export function LastMatchRatingsCard({ teamId }: { teamId: string | null }) {
-  const [sortMode, setSortMode] = useState<SortMode>('position');
-  const { data, isLoading, isError } = useLastMatchRatings(teamId);
+const FORMATION_POSITIONS: Record<string, { x: number; y: number }[]> = {
+  '4-3-3': [
+    { x: 50, y: 92 },
+    { x: 18, y: 72 }, { x: 38, y: 75 }, { x: 62, y: 75 }, { x: 82, y: 72 },
+    { x: 28, y: 50 }, { x: 50, y: 52 }, { x: 72, y: 50 },
+    { x: 22, y: 24 }, { x: 50, y: 18 }, { x: 78, y: 24 },
+  ],
+  '4-4-2': [
+    { x: 50, y: 92 },
+    { x: 18, y: 72 }, { x: 38, y: 75 }, { x: 62, y: 75 }, { x: 82, y: 72 },
+    { x: 18, y: 50 }, { x: 38, y: 52 }, { x: 62, y: 52 }, { x: 82, y: 50 },
+    { x: 35, y: 24 }, { x: 65, y: 24 },
+  ],
+  '3-5-2': [
+    { x: 50, y: 92 },
+    { x: 25, y: 75 }, { x: 50, y: 76 }, { x: 75, y: 75 },
+    { x: 12, y: 52 }, { x: 33, y: 53 }, { x: 50, y: 54 }, { x: 67, y: 53 }, { x: 88, y: 52 },
+    { x: 38, y: 24 }, { x: 62, y: 24 },
+  ],
+  '4-2-3-1': [
+    { x: 50, y: 92 },
+    { x: 18, y: 72 }, { x: 38, y: 75 }, { x: 62, y: 75 }, { x: 82, y: 72 },
+    { x: 34, y: 58 }, { x: 66, y: 58 },
+    { x: 22, y: 38 }, { x: 50, y: 36 }, { x: 78, y: 38 },
+    { x: 50, y: 18 },
+  ],
+};
 
-  // Hooks e derivados SEMPRE no topo, antes de qualquer return condicional
-  const safeRatings = data?.playerRatings ?? [];
-  const grouped = groupPlayersByPosition(safeRatings);
-  const sections = (['GK', 'DEF', 'MID', 'ATT', 'UNK'] as PositionGroup[]).filter(
-    (g) => (grouped.get(g)?.length ?? 0) > 0
-  ) as PositionGroup[];
+const FALLBACK_POSITIONS = [
+  { x: 50, y: 92 },
+  { x: 18, y: 72 }, { x: 38, y: 75 }, { x: 62, y: 75 }, { x: 82, y: 72 },
+  { x: 28, y: 50 }, { x: 50, y: 52 }, { x: 72, y: 50 },
+  { x: 22, y: 24 }, { x: 50, y: 18 }, { x: 78, y: 24 },
+];
 
-  const displayData = useMemo(() => {
-    if (sortMode === 'rating') {
-      const flat = sortGroupByRating(safeRatings);
-      return [{ group: 'UNK' as PositionGroup, players: flat }];
-    }
-    return sections.map((group) => ({
-      group,
-      players: sortGroupByRating(grouped.get(group) ?? []),
-    }));
-  }, [sortMode, sections, grouped, safeRatings]);
+// ─── Inline Pitch ─────────────────────────────────────────────────────────────
 
-  const match = data?.match;
-  const subtitle =
-    match && match.homeScore != null && match.awayScore != null
-      ? `${match.homeTeamName} ${match.homeScore}–${match.awayScore} ${match.awayTeamName} · ${match.competitionName}`
-      : match
-        ? `${match.homeTeamName} x ${match.awayTeamName} · ${match.competitionName}`
-        : '';
+interface PitchProps {
+  formation: string;
+  players: LastMatchRating[];
+}
 
-  // Early returns só DEPOIS de todos os hooks
-  if (isLoading) {
-    return (
-      <div className={panelClass}>
-        <h3 className="text-sm font-semibold text-foreground mb-2">Última partida — notas</h3>
-        <div className="space-y-2 mt-3">
-          {Array.from({ length: 5 }).map((_, i) => (
-            <div key={i} className="flex items-center gap-3">
-              <Skeleton className="h-8 w-8 rounded-full shrink-0" />
-              <Skeleton className="h-4 flex-1 max-w-[120px]" />
-              <Skeleton className="h-5 w-10 rounded" />
-            </div>
-          ))}
-        </div>
-      </div>
-    );
-  }
+function Pitch({ formation, players }: PitchProps) {
+  const positions = FORMATION_POSITIONS[formation] ?? FALLBACK_POSITIONS;
 
-  if (isError || !data) {
-    return (
-      <div className={panelClass}>
-        <h3 className="text-sm font-semibold text-foreground mb-2">Última partida — notas</h3>
-        <p className="text-xs text-muted-foreground">Sem notas disponíveis para a última partida.</p>
-      </div>
-    );
-  }
-
-  if (safeRatings.length === 0) {
-    return (
-      <div className={panelClass}>
-        <h3 className="text-sm font-semibold text-foreground mb-1">Última partida — notas</h3>
-        <p className="text-[10px] text-muted-foreground mb-3">{subtitle}</p>
-        <p className="text-xs text-muted-foreground">Sem notas disponíveis para a última partida.</p>
-      </div>
-    );
-  }
-
-  const scoreDisplay =
-    match.homeScore != null && match.awayScore != null
-      ? `${match.homeScore}–${match.awayScore}`
-      : null;
+  const sorted = useMemo(() => {
+    const order: Record<PositionGroup, number> = { GK: 0, DEF: 1, MID: 2, ATT: 3, UNK: 4 };
+    return [...players].sort((a, b) => {
+      const diff = order[a.group] - order[b.group];
+      return diff !== 0 ? diff : b.rating - a.rating;
+    });
+  }, [players]);
 
   return (
-    <div className={panelClass}>
-      {/* Header: placar destacado + competição badge */}
-      <div className="mb-3">
-        <div className="flex items-center justify-between gap-2 mb-1.5">
-          <h3 className="text-sm font-semibold text-foreground">Última partida</h3>
-          {scoreDisplay && (
-            <span className="text-lg font-bold font-mono text-foreground tabular-nums">
-              {scoreDisplay}
-            </span>
-          )}
-        </div>
-        <div className="flex items-center gap-2 flex-wrap">
-          <span className="text-[10px] text-muted-foreground truncate max-w-[140px]">
-            {match.homeTeamName} × {match.awayTeamName}
-          </span>
-          <span className="inline-flex items-center px-1.5 py-0.5 rounded text-[9px] font-medium bg-white/5 text-muted-foreground border border-white/5">
-            {match.competitionName}
-          </span>
-        </div>
+    <div className="relative w-full aspect-[3/4] rounded-xl overflow-hidden border border-border-subtle/50">
+      {/* Pitch background */}
+      <div
+        className="absolute inset-0"
+        style={{
+          background:
+            'linear-gradient(180deg, hsl(140 35% 16% / 0.40) 0%, hsl(140 35% 10% / 0.55) 100%)',
+        }}
+      />
+
+      {/* Pitch markings */}
+      <svg
+        className="absolute inset-0 w-full h-full pointer-events-none"
+        viewBox="0 0 100 133"
+        preserveAspectRatio="none"
+      >
+        <line x1="0" y1="66.5" x2="100" y2="66.5" stroke="rgba(255,255,255,0.14)" strokeWidth="0.6" />
+        <circle cx="50" cy="66.5" r="10" fill="none" stroke="rgba(255,255,255,0.12)" strokeWidth="0.6" />
+        <circle cx="50" cy="66.5" r="1" fill="rgba(255,255,255,0.22)" />
+        <rect x="28" y="0" width="44" height="14" fill="none" stroke="rgba(255,255,255,0.10)" strokeWidth="0.6" />
+        <rect x="16" y="0" width="68" height="26" fill="none" stroke="rgba(255,255,255,0.10)" strokeWidth="0.6" />
+        <rect x="28" y="119" width="44" height="14" fill="none" stroke="rgba(255,255,255,0.10)" strokeWidth="0.6" />
+        <rect x="16" y="107" width="68" height="26" fill="none" stroke="rgba(255,255,255,0.10)" strokeWidth="0.6" />
+      </svg>
+
+      {/* Formation badge */}
+      <div className="absolute top-1.5 left-2 z-10">
+        <span className="text-[8px] font-bold font-display tracking-widest uppercase text-primary bg-background/50 backdrop-blur-sm px-1.5 py-0.5 rounded border border-primary/20">
+          {formation}
+        </span>
       </div>
 
-      {/* Sort toggle */}
-      <div className="flex gap-1 mb-2 p-0.5 rounded-lg bg-white/[0.02] w-fit">
-        <button
-          type="button"
-          onClick={() => setSortMode('position')}
-          className={cn(
-            'flex items-center gap-1 px-2 py-1 rounded text-[10px] font-medium transition-all duration-200',
-            sortMode === 'position'
-              ? 'bg-white/10 text-foreground'
-              : 'text-muted-foreground hover:text-foreground/80'
-          )}
-        >
-          <LayoutGrid className="h-3 w-3" />
-          Por posição
-        </button>
-        <button
-          type="button"
-          onClick={() => setSortMode('rating')}
-          className={cn(
-            'flex items-center gap-1 px-2 py-1 rounded text-[10px] font-medium transition-all duration-200',
-            sortMode === 'rating'
-              ? 'bg-white/10 text-foreground'
-              : 'text-muted-foreground hover:text-foreground/80'
-          )}
-        >
-          <BarChart3 className="h-3 w-3" />
-          Por nota
-        </button>
-      </div>
-
-      <div className="space-y-2.5 max-h-[280px] overflow-y-auto overflow-x-hidden pr-1 [&::-webkit-scrollbar]:w-0.5 [&::-webkit-scrollbar-track]:bg-transparent [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-thumb]:bg-white/8">
-        {displayData.map(({ group, players }) => (
-          <div key={group}>
-            {sortMode === 'position' && (
-              <p className="text-[9px] font-medium text-muted-foreground/90 uppercase tracking-widest mb-1">
-                {GROUP_LABELS[group]}
-              </p>
-            )}
-            <div className="space-y-0.5">
-              {players.map((p) => (
-                <div
-                  key={p.playerId}
-                  className="flex items-center gap-2.5 py-1.5 px-2 rounded-lg hover:bg-[#141C24]/60 transition-all duration-200"
-                >
-                    <span className="w-5 h-5 rounded bg-muted/80 flex items-center justify-center text-[10px] font-bold text-muted-foreground tabular-nums shrink-0">
-                      {p.shirtNumber ?? '—'}
-                    </span>
-                    <div className="shrink-0">
-                      {p.photoUrl ? (
-                        <img
-                          src={p.photoUrl}
-                          alt=""
-                          className="h-8 w-8 rounded-full object-cover border border-white/5"
-                        />
-                      ) : (
-                        <div className="h-8 w-8 rounded-full bg-muted flex items-center justify-center text-xs font-medium text-muted-foreground">
-                          {p.playerName.slice(0, 2).toUpperCase()}
-                        </div>
-                      )}
-                    </div>
-                    <span className="text-xs font-medium text-foreground truncate flex-1 min-w-0">
-                      {p.playerName}
-                    </span>
-                    <span className="text-[10px] text-muted-foreground tabular-nums shrink-0">
-                      {p.minutes}'
-                    </span>
-                    <span
-                      className={cn(
-                        'text-xs font-semibold px-1.5 py-0.5 rounded tabular-nums shrink-0',
-                        getRatingPillClass(p.rating)
-                      )}
-                    >
-                      {formatRating(p.rating)}
-                    </span>
-                  </div>
-                ))}
+      {/* Players */}
+      {positions.slice(0, Math.min(sorted.length, 11)).map((pos, i) => {
+        const player = sorted[i];
+        if (!player) return null;
+        const lastName = player.playerName.split(' ').pop() ?? player.playerName;
+        return (
+          <div
+            key={player.playerId}
+            className="absolute transform -translate-x-1/2 -translate-y-1/2 z-10"
+            style={{ left: `${pos.x}%`, top: `${pos.y}%` }}
+          >
+            <div className="flex flex-col items-center gap-[2px]">
+              <div
+                className="flex items-center justify-center rounded-full border-2 shadow-lg"
+                style={{
+                  width: '26px',
+                  height: '26px',
+                  background: 'hsl(38 92% 50%)',
+                  borderColor: 'hsl(38 92% 72%)',
+                  boxShadow: '0 2px 8px hsl(38 92% 50% / 0.35)',
+                }}
+              >
+                <span className="text-[9px] font-bold text-background leading-none tabular-nums">
+                  {player.shirtNumber ?? '?'}
+                </span>
               </div>
+              <span
+                style={{
+                  fontSize: '7px',
+                  color: 'rgba(255,255,255,0.90)',
+                  textShadow: '0 1px 3px rgba(0,0,0,0.9)',
+                  maxWidth: '34px',
+                  whiteSpace: 'nowrap',
+                  overflow: 'hidden',
+                  textOverflow: 'ellipsis',
+                  lineHeight: 1,
+                  fontWeight: 600,
+                }}
+              >
+                {lastName}
+              </span>
             </div>
-          ))}
+          </div>
+        );
+      })}
+    </div>
+  );
+}
+
+// ─── Main Card ────────────────────────────────────────────────────────────────
+
+export function LastMatchRatingsCard({ teamId }: { teamId: string | null }) {
+  const { data, isLoading, isError } = useLastMatchRatings(teamId);
+
+  const safeRatings = data?.playerRatings ?? [];
+  const grouped = groupPlayersByPosition(safeRatings);
+  const sections = POSITION_ORDER.filter((g) => (grouped.get(g)?.length ?? 0) > 0);
+  const match = data?.match;
+  const formation = data?.formation ?? '4-3-3';
+
+  const dateLabel = match?.kickoffAt
+    ? format(new Date(match.kickoffAt), "d 'de' MMM", { locale: ptBR })
+    : '';
+
+  const hasScore = match?.homeScore != null && match?.awayScore != null;
+
+  // ── Loading ──
+  if (isLoading) {
+    return (
+      <div className="rounded-2xl border border-border-subtle bg-surface-card p-5">
+        <div className="flex items-center justify-between mb-4">
+          <Skeleton className="h-5 w-40" />
+          <Skeleton className="h-7 w-16" />
+        </div>
+        <div className="grid grid-cols-1 lg:grid-cols-[200px_1fr] gap-5">
+          <Skeleton className="aspect-[3/4] w-full rounded-xl" />
+          <div className="space-y-2">
+            {Array.from({ length: 7 }).map((_, i) => (
+              <Skeleton key={i} className="h-8 w-full rounded-lg" />
+            ))}
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // ── No data ──
+  if (isError || !data || !match) {
+    return (
+      <div className="rounded-2xl border border-border-subtle bg-surface-card p-5">
+        <h3 className="font-display font-bold uppercase tracking-tight text-base text-foreground mb-2">
+          Última Partida
+        </h3>
+        <p className="text-sm text-foreground-secondary">
+          Sem dados disponíveis para a última partida.
+        </p>
+      </div>
+    );
+  }
+
+  return (
+    <div className="rounded-2xl border border-border-subtle bg-surface-card p-5 hover:border-primary/20 transition-colors">
+      {/* ── Header ── */}
+      <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-3 mb-5">
+        <div>
+          <p className="text-[10px] font-semibold text-foreground-muted uppercase tracking-widest mb-1">
+            Última Partida · Notas dos jogadores
+          </p>
+          <h3 className="font-display font-bold uppercase tracking-tight text-lg md:text-xl text-foreground leading-tight">
+            {match.homeTeamName}{' '}
+            <span className="text-foreground-secondary font-normal">×</span>{' '}
+            {match.awayTeamName}
+          </h3>
+          <div className="flex items-center gap-2 mt-1 flex-wrap">
+            <span className="inline-flex items-center px-2 py-0.5 rounded text-[9px] font-bold uppercase tracking-wide bg-primary/10 text-primary border border-primary/20">
+              {match.competitionName}
+            </span>
+            <span className="text-[10px] text-foreground-muted">{dateLabel}</span>
+          </div>
+        </div>
+
+        {/* Score */}
+        {hasScore && (
+          <div
+            className="text-3xl sm:text-4xl font-bold font-display tabular-nums tracking-tight shrink-0"
+            style={{
+              background: 'linear-gradient(90deg, hsl(38,92%,50%) 0%, hsl(0,80%,55%) 100%)',
+              WebkitBackgroundClip: 'text',
+              WebkitTextFillColor: 'transparent',
+              backgroundClip: 'text',
+            }}
+          >
+            {match.homeScore}–{match.awayScore}
+          </div>
+        )}
+      </div>
+
+      {/* ── Body: Pitch + Ratings list ── */}
+      <div className="grid grid-cols-1 lg:grid-cols-[180px_1fr] xl:grid-cols-[210px_1fr] gap-5 items-start">
+        {/* Pitch formation */}
+        <Pitch formation={formation} players={safeRatings} />
+
+        {/* Ratings list grouped by position */}
+        <div className="space-y-3">
+          {sections.length === 0 ? (
+            <p className="text-sm text-foreground-secondary py-4">Sem notas disponíveis.</p>
+          ) : (
+            sections.map((group) => {
+              const groupPlayers = [...(grouped.get(group) ?? [])].sort(
+                (a, b) => b.rating - a.rating
+              );
+              return (
+                <div key={group}>
+                  <p className="text-[9px] font-bold uppercase tracking-widest text-foreground-muted mb-1 pl-1">
+                    {GROUP_LABELS[group]}
+                  </p>
+                  <div className="space-y-0.5">
+                    {groupPlayers.map((p) => (
+                      <div
+                        key={p.playerId}
+                        className="flex items-center gap-2 px-2 py-1.5 rounded-lg hover:bg-surface-elevated/50 transition-colors"
+                      >
+                        {/* Shirt number */}
+                        <span className="w-5 h-5 rounded bg-border-subtle/60 flex items-center justify-center text-[9px] font-bold text-foreground-secondary tabular-nums shrink-0">
+                          {p.shirtNumber ?? '—'}
+                        </span>
+
+                        {/* Photo or initials */}
+                        <div className="shrink-0">
+                          {p.photoUrl ? (
+                            <img
+                              src={p.photoUrl}
+                              alt=""
+                              className="h-7 w-7 rounded-full object-cover border border-border-subtle"
+                            />
+                          ) : (
+                            <div className="h-7 w-7 rounded-full bg-surface-elevated border border-border-subtle flex items-center justify-center text-[9px] font-bold text-foreground-secondary">
+                              {p.playerName.slice(0, 2).toUpperCase()}
+                            </div>
+                          )}
+                        </div>
+
+                        {/* Name */}
+                        <span className="text-xs font-medium text-foreground truncate flex-1 min-w-0">
+                          {p.playerName}
+                        </span>
+
+                        {/* Minutes */}
+                        <span className="text-[10px] text-foreground-muted tabular-nums shrink-0">
+                          {p.minutes}'
+                        </span>
+
+                        {/* Rating */}
+                        <span
+                          className={cn(
+                            'text-sm tabular-nums shrink-0 w-8 text-right',
+                            ratingColor(p.rating)
+                          )}
+                        >
+                          {formatRating(p.rating)}
+                        </span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              );
+            })
+          )}
+        </div>
       </div>
     </div>
   );
