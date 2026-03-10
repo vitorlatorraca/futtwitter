@@ -562,6 +562,9 @@ export async function getLastMatchRatings(teamId: string): Promise<{
     }
   }
 
+  // Se temos lineup, filtra só os titulares; senão retorna todos com rating
+  const starterPlayerIds = ourLineup ? new Set(lineupPositionByPlayer.keys()) : null;
+
   const statsRows = await db
     .select({
       playerId: playerMatchStats.playerId,
@@ -580,7 +583,7 @@ export async function getLastMatchRatings(teamId: string): Promise<{
     );
 
   const rawRatings = statsRows
-    .filter((r) => r.rating != null)
+    .filter((r) => r.rating != null && (starterPlayerIds === null || starterPlayerIds.has(r.playerId)))
     .map((r) => {
       const positionCode =
         lineupPositionByPlayer.get(r.playerId) ??

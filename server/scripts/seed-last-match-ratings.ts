@@ -84,6 +84,14 @@ async function seed() {
 
   const nameToPlayer = new Map(roster.map((p) => [p.name, p]));
 
+  // --- Limpar playerMatchStats antigos (remove entradas de seeds anteriores) ---
+  const deleted = await db
+    .delete(playerMatchStats)
+    .where(
+      and(eq(playerMatchStats.matchId, lastMatch.id), eq(playerMatchStats.teamId, CORINTHIANS_ID))
+    );
+  console.log(`  🗑  playerMatchStats antigos removidos para este jogo`);
+
   // --- Criar matchLineup (idempotente) ---
   const [existingLineup] = await db
     .select()
