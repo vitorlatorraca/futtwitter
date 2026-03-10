@@ -18,7 +18,7 @@ export const Panel = React.forwardRef<HTMLDivElement, PanelProps>(
     <div
       ref={ref}
       className={cn(
-        "rounded-2xl bg-card border border-white/5 shadow-sm",
+        "rounded-2xl border border-border bg-surface-card",
         paddingClasses[padding],
         className
       )}

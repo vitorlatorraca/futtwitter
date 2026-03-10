@@ -52,7 +52,7 @@ export function TransfersBoard({
     <div className="space-y-6">
       {!hideHeader && (
         <header className="space-y-1">
-          <h2 className="font-display text-lg font-bold text-foreground">Vai e Vem</h2>
+          <h2 className="font-bold text-lg text-foreground">Vai e Vem</h2>
           <p className="text-sm text-muted-foreground">
             {scope === 'team' && teamName
               ? `Mercado do seu time — negociações envolvendo ${teamName}`

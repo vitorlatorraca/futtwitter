@@ -46,7 +46,7 @@ export default function JogosParaSeDivertirPage() {
     <AppShell mainClassName="py-4 sm:py-6 md:py-8 px-3 sm:px-4 max-w-5xl mx-auto">
       <div className="space-y-8">
         <header className="space-y-1">
-          <h1 className="text-3xl font-display font-bold text-foreground flex items-center gap-2">
+          <h1 className="text-3xl font-bold text-foreground flex items-center gap-2">
             <Gamepad2 className="h-8 w-8 text-primary" />
             Jogos (para se divertir)
           </h1>

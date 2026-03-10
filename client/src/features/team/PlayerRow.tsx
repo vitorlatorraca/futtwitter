@@ -83,7 +83,7 @@ export function PlayerRow({ player, getPhotoUrl }: PlayerRowProps) {
 
   return (
     <div
-      className="grid grid-cols-1 md:grid-cols-[minmax(0,1fr)_minmax(100px,1fr)_56px_96px_32px] gap-3 md:gap-4 p-3 md:px-4 md:py-3 rounded-xl border border-white/5 bg-card/60 hover:bg-card/80 transition-all duration-200 cursor-default"
+      className="grid grid-cols-1 md:grid-cols-[minmax(0,1fr)_minmax(100px,1fr)_56px_96px_32px] gap-3 md:gap-4 p-3 md:px-4 md:py-3 rounded-xl border border-border bg-card/60 hover:bg-card/80 transition-all duration-200 cursor-default"
       role="row"
     >
       {/* Jogador: Número + Foto + Nome (posição) */}
@@ -91,7 +91,7 @@ export function PlayerRow({ player, getPhotoUrl }: PlayerRowProps) {
         <span className="w-7 text-right font-mono text-sm text-muted-foreground tabular-nums shrink-0">
           {player.shirtNumber ?? '—'}
         </span>
-        <div className="w-10 h-10 rounded-full bg-muted flex items-center justify-center overflow-hidden border border-white/5 shrink-0">
+        <div className="w-10 h-10 rounded-full bg-muted flex items-center justify-center overflow-hidden border border-border shrink-0">
           {showPlaceholder ? (
             <span className="text-xs font-bold text-muted-foreground select-none">
               {getInitials(player.name)}

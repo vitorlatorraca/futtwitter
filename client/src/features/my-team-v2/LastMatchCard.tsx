@@ -24,7 +24,7 @@ interface LastMatchCardProps {
 }
 
 const panelClass =
-  'rounded-2xl border border-[rgba(255,255,255,0.06)] bg-[#10161D] p-4 shadow-sm';
+  'rounded-xl border border-border bg-surface-card p-4 transition-colors hover:border-border-strong';
 
 export function LastMatchCard({
   data,
@@ -46,7 +46,7 @@ export function LastMatchCard({
     return (
       <div className={panelClass}>
         <h3 className="text-sm font-semibold text-foreground mb-2">Última partida</h3>
-        <p className="text-xs text-muted-foreground py-4 text-center">Sem partidas recentes.</p>
+        <p className="text-xs text-foreground-secondary py-4 text-center">Sem partidas recentes.</p>
       </div>
     );
   }
@@ -63,9 +63,9 @@ export function LastMatchCard({
     : { name: teamName, teamId };
 
   const scoreColor = won
-    ? 'text-meu-time-success'
+    ? 'text-success'
     : lost
-      ? 'text-meu-time-danger'
+      ? 'text-danger'
       : 'text-foreground';
 
   const homeCrest = getTeamCrestFromTeam(homeTeam.teamId, homeTeam.name);
@@ -76,12 +76,12 @@ export function LastMatchCard({
       <h3 className="text-sm font-semibold text-foreground mb-3">Última partida</h3>
       <div className="flex items-center gap-2 mb-2">
         {data.competition && (
-          <span className="inline-flex items-center gap-1 text-[10px] text-muted-foreground">
+          <span className="inline-flex items-center gap-1 text-[10px] text-foreground-secondary">
             <Trophy className="h-2.5 w-2.5" />
             {data.competition}
           </span>
         )}
-        <span className="text-[10px] text-muted-foreground">
+        <span className="text-[10px] text-foreground-secondary">
           {format(new Date(data.matchDate), "d 'de' MMM", { locale: ptBR })}
         </span>
       </div>

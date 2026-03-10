@@ -54,7 +54,7 @@ export function TeamHeaderCard({
         />
         <div className="flex-1 text-center sm:text-left space-y-4">
           <div>
-            <h1 className="font-display font-bold text-3xl sm:text-4xl md:text-5xl text-foreground tracking-tight">
+            <h1 className="font-bold text-3xl sm:text-4xl md:text-5xl text-foreground tracking-tight">
               {clubConfig.displayName}
             </h1>
             <Badge variant="secondary" className="mt-2 text-sm font-medium">

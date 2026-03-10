@@ -10,7 +10,7 @@ export interface CompactRowProps extends React.HTMLAttributes<HTMLDivElement> {
 export const CompactRow = React.forwardRef<HTMLDivElement, CompactRowProps>(
   ({ className, as: Component = "div", ...props }, ref) => {
     const base = "flex items-center gap-3 py-3 px-2 rounded-xl transition-colors";
-    const interactive = "hover:bg-muted/60 hover:border-white/5 cursor-pointer";
+    const interactive = "hover:bg-muted/60 hover:border-border cursor-pointer";
     return (
       <Component
         ref={ref as any}

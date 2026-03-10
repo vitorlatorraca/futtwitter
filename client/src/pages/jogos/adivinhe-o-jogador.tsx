@@ -169,7 +169,7 @@ export default function AdivinheOJogadorPage() {
             </Link>
           </Button>
           <div className="flex-1 min-w-0">
-            <h1 className="font-display font-bold text-xl text-foreground">
+            <h1 className="font-bold text-xl text-foreground">
               Adivinhe o Jogador
             </h1>
             <p className="text-sm text-muted-foreground flex items-center gap-1">
@@ -180,7 +180,7 @@ export default function AdivinheOJogadorPage() {
         </div>
 
         {isLoading ? (
-          <Card className="rounded-2xl border border-white/5 bg-card">
+          <Card className="rounded-2xl border border-border bg-card">
             <CardContent className="py-8 space-y-6">
               <Skeleton className="w-48 h-48 sm:w-56 sm:h-56 mx-auto rounded-2xl" />
               <Skeleton className="h-10 w-full" />
@@ -188,11 +188,11 @@ export default function AdivinheOJogadorPage() {
             </CardContent>
           </Card>
         ) : data ? (
-          <Card className="rounded-2xl border border-white/5 bg-card overflow-hidden">
+          <Card className="rounded-2xl border border-border bg-card overflow-hidden">
             <CardContent className="py-6 space-y-6">
               {/* Blurred player image */}
               <div className="flex justify-center">
-                <div className="relative w-48 h-48 sm:w-56 sm:h-56 rounded-2xl overflow-hidden bg-muted border border-white/5">
+                <div className="relative w-48 h-48 sm:w-56 sm:h-56 rounded-2xl overflow-hidden bg-muted border border-border">
                   {data.player.photoUrl ? (
                     <img
                       src={data.player.photoUrl}
@@ -234,7 +234,7 @@ export default function AdivinheOJogadorPage() {
                     <Trophy className="h-6 w-6" />
                     <span className="text-xl font-bold">Você acertou!</span>
                   </div>
-                  <p className="text-lg font-display font-bold text-foreground">{data.player.name}</p>
+                  <p className="text-lg font-bold text-foreground">{data.player.name}</p>
                   <p className="text-sm text-muted-foreground">
                     Em {data.progress.attempts} tentativa(s)
                   </p>
@@ -247,7 +247,7 @@ export default function AdivinheOJogadorPage() {
                     <XCircle className="h-6 w-6" />
                     <span className="text-xl font-bold">Não foi dessa vez!</span>
                   </div>
-                  <p className="text-lg font-display font-bold text-foreground">{data.player.name}</p>
+                  <p className="text-lg font-bold text-foreground">{data.player.name}</p>
                   <p className="text-sm text-muted-foreground">
                     O jogador foi revelado após {MAX_WRONG_ATTEMPTS} tentativas erradas.
                   </p>
@@ -288,7 +288,7 @@ export default function AdivinheOJogadorPage() {
                   {showDropdown && searchResults.length > 0 && (
                     <div
                       ref={dropdownRef}
-                      className="absolute z-50 w-full mt-1 bg-popover border border-white/10 rounded-xl shadow-xl overflow-hidden"
+                      className="absolute z-50 w-full mt-1 bg-popover border border-border rounded-xl shadow-xl overflow-hidden"
                     >
                       {searchResults.map((player, i) => (
                         <button
@@ -322,7 +322,7 @@ export default function AdivinheOJogadorPage() {
                   )}
 
                   {isSearching && searchText.length >= 2 && (
-                    <div className="absolute z-50 w-full mt-1 bg-popover border border-white/10 rounded-xl shadow-xl p-3 text-center text-sm text-muted-foreground">
+                    <div className="absolute z-50 w-full mt-1 bg-popover border border-border rounded-xl shadow-xl p-3 text-center text-sm text-muted-foreground">
                       Buscando...
                     </div>
                   )}
@@ -350,7 +350,7 @@ export default function AdivinheOJogadorPage() {
               {/* Guess history chips */}
               {data.progress.guesses.length > 0 && (
                 <div className="space-y-2">
-                  <p className="text-xs text-muted-foreground font-medium uppercase tracking-wide">
+                  <p className="text-xs text-muted-foreground font-medium tracking-wide">
                     Tentativas
                   </p>
                   <div className="flex flex-wrap gap-2">

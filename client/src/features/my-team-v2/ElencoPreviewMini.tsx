@@ -14,7 +14,7 @@ import { normalizeToCanonical, POSITION_SORT_ORDER } from '@shared/positions';
 import { PositionBadge } from '@/components/ui/position-badge';
 
 const panelClass =
-  'rounded-2xl border border-white/10 backdrop-blur-sm bg-[#10161D] p-4 shadow-sm transition-all duration-200 hover:border-emerald-500/40';
+  'rounded-xl border border-border bg-surface-card p-4 shadow-card transition-colors hover:border-border-strong';
 
 interface ElencoPreviewMiniProps {
   players: Player[];
@@ -91,13 +91,13 @@ export function ElencoPreviewMini({
                   <TooltipTrigger asChild>
                     <Link
                       href="/meu-time/elenco"
-                      className="flex items-center gap-2 py-2 px-2.5 rounded-lg hover:bg-[#141C24]/70 transition-all duration-200 group"
+                      className="flex items-center gap-2 py-2 px-2.5 rounded-lg hover:bg-surface-elevated/70 transition-all duration-200 group"
                     >
                       <div className="shrink-0">
                         <img
                           src={getPhotoUrl(p)}
                           alt=""
-                          className="h-8 w-8 rounded-full object-cover border border-white/5"
+                          className="h-8 w-8 rounded-full object-cover border border-border-subtle"
                           onError={(e) => {
                             (e.target as HTMLImageElement).src = '/assets/players/placeholder.png';
                           }}
@@ -108,7 +108,7 @@ export function ElencoPreviewMini({
                         <div className="flex items-center gap-1 mt-0.5">
                           <PositionBadge position={p.position} size="xs" />
                           {p.shirtNumber != null && (
-                            <span className="text-[10px] text-muted-foreground">#{p.shirtNumber}</span>
+                            <span className="text-[10px] text-foreground-secondary">#{p.shirtNumber}</span>
                           )}
                         </div>
                       </div>
@@ -122,7 +122,7 @@ export function ElencoPreviewMini({
             })}
           </div>
         ) : (
-          <p className="text-xs text-muted-foreground py-2">
+          <p className="text-xs text-foreground-secondary py-2">
             Nenhum jogador no elenco.
           </p>
         )}

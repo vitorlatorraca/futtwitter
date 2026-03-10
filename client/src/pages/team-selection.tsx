@@ -63,13 +63,13 @@ export default function TeamSelectionPage() {
   return (
     <div className="min-h-screen bg-background">
       <div className="page-container py-10 sm:py-14">
-        <div className="rounded-2xl border border-white/5 bg-card p-6 sm:p-8 mb-8">
+        <div className="rounded-2xl border border-border bg-card p-6 sm:p-8 mb-8">
           <div className="flex items-start gap-4">
             <div className="rounded-full border border-card-border bg-surface-elevated p-3">
               <ShieldCheck className="h-5 w-5 text-primary" />
             </div>
             <div className="min-w-0">
-              <h1 className="font-display font-bold text-3xl md:text-4xl text-foreground">
+              <h1 className="font-bold text-3xl md:text-4xl text-foreground">
                 Escolha seu time do coração
               </h1>
               <p className="text-foreground-secondary mt-2">
@@ -84,10 +84,10 @@ export default function TeamSelectionPage() {
             <button
               key={team.id}
               onClick={() => handleTeamClick(team.id)}
-              className="rounded-2xl border border-white/5 bg-card hover:border-white/10 transition-colors group flex flex-col items-center gap-2 p-3 transition-all"
+              className="rounded-2xl border border-border bg-card hover:border-border transition-colors group flex flex-col items-center gap-2 p-3 transition-all"
               data-testid={`button-team-${team.id}`}
             >
-              <div className="relative w-full aspect-square rounded-full overflow-hidden border border-white/5 bg-card flex items-center justify-center p-2 group-hover:border-primary transition-colors">
+              <div className="relative w-full aspect-square rounded-full overflow-hidden border border-border bg-card flex items-center justify-center p-2 group-hover:border-primary transition-colors">
                 <Crest slug={team.id} alt={team.name} size="lg" className="w-full h-full" />
               </div>
               <span className="text-xs font-semibold text-center leading-tight hidden md:block text-foreground">
@@ -109,7 +109,7 @@ export default function TeamSelectionPage() {
                     <Crest slug={team.id} alt={team.name} size="lg" className="w-full h-full" />
                   </div>
                   <div>
-                    <p className="font-display font-bold text-xl mb-2">{team.name}</p>
+                    <p className="font-bold text-xl mb-2">{team.name}</p>
                     <p className="text-sm text-muted-foreground">
                       Tem certeza? Esta escolha é <span className="font-semibold text-foreground">permanente</span> e não poderá ser alterada depois!
                     </p>

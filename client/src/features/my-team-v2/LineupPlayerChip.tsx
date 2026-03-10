@@ -34,8 +34,8 @@ export function LineupPlayerChip({
         isSelected
           ? 'border-primary bg-primary/10 ring-2 ring-primary/40 shadow-[0_0_0_1px_hsl(var(--primary)/0.2)]'
           : isLineup
-            ? 'border-emerald-500/25 bg-emerald-500/5 hover:border-emerald-500/45 hover:shadow-[0_2px_8px_-2px_rgba(0,0,0,0.2)]'
-            : 'border-white/[0.06] bg-white/[0.02] hover:bg-white/[0.05] hover:border-white/10 hover:shadow-[0_2px_8px_-2px_rgba(0,0,0,0.15)]'
+            ? 'border-primary/25 bg-primary/5 hover:border-primary/40 hover:shadow-[0_2px_8px_-2px_rgba(0,0,0,0.2)]'
+            : 'border-border bg-surface-card hover:bg-surface-elevated hover:border-border-strong hover:shadow-[0_2px_8px_-2px_rgba(0,0,0,0.15)]'
       )}
     >
       <div className="w-10 h-10 rounded-full overflow-hidden border border-card-border flex-shrink-0 bg-muted">
@@ -49,7 +49,7 @@ export function LineupPlayerChip({
             }}
           />
         ) : (
-          <div className="w-full h-full flex items-center justify-center text-xs font-bold text-muted-foreground">
+          <div className="w-full h-full flex items-center justify-center text-xs font-bold text-foreground-secondary">
             {player.name.slice(0, 2).toUpperCase()}
           </div>
         )}
@@ -61,10 +61,10 @@ export function LineupPlayerChip({
             <PositionBadge position={player.position} size="xs" />
           )}
           {player.shirtNumber != null && (
-            <span className="text-xs text-muted-foreground font-mono">{player.shirtNumber}</span>
+            <span className="text-xs text-foreground-secondary font-mono">{player.shirtNumber}</span>
           )}
           {isLineup && (
-            <span className="text-[10px] text-emerald-500 font-medium">Escalado</span>
+            <span className="text-[10px] text-primary font-medium">Escalado</span>
           )}
         </div>
       </div>

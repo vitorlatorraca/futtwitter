@@ -270,7 +270,7 @@ export default function JornalistaPage() {
           ) : myNews && myNews.length > 0 ? (
             <div className="grid gap-4">
               {myNews.map((news: any) => (
-                <Card key={news.id} className="rounded-2xl border border-white/5 bg-card hover:border-white/10 transition-colors">
+                <Card key={news.id} className="rounded-2xl border border-border bg-card hover:border-border transition-colors">
                   <CardContent className="p-6">
                     <div className="flex items-start justify-between gap-4">
                       <div className="flex-1 min-w-0">
@@ -282,7 +282,7 @@ export default function JornalistaPage() {
                             {news.team?.name}
                           </span>
                         </div>
-                        <h3 className="font-display font-bold text-lg mb-2 truncate text-foreground">
+                        <h3 className="font-bold text-lg mb-2 truncate text-foreground">
                           {news.title}
                         </h3>
                         <p className="text-sm text-foreground-secondary line-clamp-2">{news.content}</p>
@@ -377,7 +377,7 @@ export default function JornalistaPage() {
       >
         <DialogContent className="sm:max-w-3xl max-h-[90vh] overflow-y-auto bg-popover/90 backdrop-blur-md border-card-border">
           <DialogHeader>
-            <DialogTitle className="font-display text-2xl">
+            <DialogTitle className="font-sans text-2xl">
               {editingNews ? 'Editar notícia' : 'Nova notícia'}
             </DialogTitle>
             <DialogDescription>

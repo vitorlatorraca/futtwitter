@@ -38,7 +38,7 @@ interface FanRatingsCompactProps {
 }
 
 const panelClass =
-  'rounded-2xl border border-[rgba(255,255,255,0.06)] bg-[#10161D] p-4 shadow-sm';
+  'rounded-xl border border-border bg-surface-card p-4 transition-colors hover:border-border-strong';
 
 export function FanRatingsCompact({
   players,
@@ -102,7 +102,7 @@ export function FanRatingsCompact({
     return (
       <div className={panelClass}>
         <h3 className="text-sm font-semibold text-foreground mb-2">Notas da torcida</h3>
-        <p className="text-xs text-muted-foreground py-4">Nenhum jogador para avaliar nesta partida.</p>
+        <p className="text-xs text-foreground-secondary py-4">Nenhum jogador para avaliar nesta partida.</p>
       </div>
     );
   }
@@ -111,16 +111,16 @@ export function FanRatingsCompact({
     <div className={panelClass}>
       <div className="pb-2">
         <h3 className="text-sm font-semibold text-foreground">Notas da torcida</h3>
-        <p className="text-[10px] text-muted-foreground mt-0.5">
+        <p className="text-[10px] text-foreground-secondary mt-0.5">
           {formation ? `Formação ${formation}` : '—'} • 1–5 estrelas
         </p>
         {!isLoggedIn && (
-          <p className="text-[10px] text-meu-time-warning mt-1 font-medium">Faça login para avaliar.</p>
+          <p className="text-[10px] text-warning mt-1 font-medium">Faça login para avaliar.</p>
         )}
       </div>
 
       <div className="space-y-1">
-        <h4 className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">
+        <h4 className="text-[10px] font-semibold tracking-wider text-foreground-secondary">
           Titulares
         </h4>
         <div className="space-y-0.5">
@@ -142,7 +142,7 @@ export function FanRatingsCompact({
           <CollapsibleTrigger asChild>
             <button
               type="button"
-              className="flex items-center gap-1.5 text-[10px] font-semibold uppercase tracking-wider text-muted-foreground hover:text-foreground transition-colors py-2 [&[data-state=open]_svg]:rotate-90"
+              className="flex items-center gap-1.5 text-[10px] font-semibold tracking-wider text-foreground-secondary hover:text-foreground transition-colors py-2 [&[data-state=open]_svg]:rotate-90"
             >
               <ChevronRight className="h-3 w-3 transition-transform" />
               Suplentes ({substitutes.length})
@@ -189,7 +189,7 @@ function FanRatingRow({
   return (
     <div
       className={`flex items-center gap-2 py-1.5 px-2 rounded-lg transition-colors ${
-        disabled ? 'opacity-80' : 'hover:bg-[#141C24]/60'
+        disabled ? 'opacity-80' : 'hover:bg-surface-elevated/60'
       }`}
     >
       <PositionBadge position={player.position} size="xs" />
@@ -199,23 +199,23 @@ function FanRatingRow({
       <span className="shrink-0 flex items-center gap-1.5">
         {isValidRating(player.averageRating) && player.voteCount > 0 ? (
           <>
-            <span className="text-[10px] font-medium bg-[#141C24] px-1.5 py-0.5 rounded text-foreground tabular-nums">
+            <span className="text-[10px] font-medium bg-surface-elevated px-1.5 py-0.5 rounded text-foreground tabular-nums">
               {formatRating(player.averageRating)}
             </span>
-            <span className="text-[10px] text-muted-foreground tabular-nums">
+            <span className="text-[10px] text-foreground-secondary tabular-nums">
               {player.voteCount}
             </span>
           </>
         ) : (
-          <span className="text-[10px] text-muted-foreground">—</span>
+          <span className="text-[10px] text-foreground-secondary">—</span>
         )}
       </span>
       <span className="shrink-0 w-16 text-right">
         {!isLoggedIn && (
-          <span className="text-[10px] text-meu-time-warning">Login</span>
+          <span className="text-[10px] text-warning">Login</span>
         )}
         {isLoggedIn && hasVoted && (
-          <span className="inline-flex items-center gap-1 text-[10px] text-meu-time-success">
+          <span className="inline-flex items-center gap-1 text-[10px] text-success">
             <Check className="h-2.5 w-2.5" />
             {formatRating(player.userRating)}
           </span>
@@ -250,7 +250,7 @@ function VotePopover({
           type="button"
           variant="outline"
           size="sm"
-          className="h-6 px-2 text-[10px] border-[rgba(255,255,255,0.12)] hover:bg-[#141C24]"
+          className="h-6 px-2 text-[10px] border-border-strong hover:bg-surface-elevated"
           disabled={disabled}
           aria-label="Avaliar jogador"
         >
@@ -264,8 +264,8 @@ function VotePopover({
           )}
         </Button>
       </PopoverTrigger>
-      <PopoverContent className="w-auto p-2 bg-[#141C24] border-[rgba(255,255,255,0.06)]" align="end" sideOffset={4}>
-        <p className="text-[10px] text-muted-foreground mb-1.5">Sua nota (1–5):</p>
+        <PopoverContent className="w-auto p-2 bg-surface-elevated border-border" align="end" sideOffset={4}>
+        <p className="text-[10px] text-foreground-secondary mb-1.5">Sua nota (1–5):</p>
         <div className="flex items-center gap-0.5" role="group" aria-label="Avaliar com estrelas">
           {[1, 2, 3, 4, 5].map((star) => (
             <button
@@ -273,7 +273,7 @@ function VotePopover({
               type="button"
               disabled={disabled}
               onClick={() => onVote(star, () => setOpen(false))}
-              className="p-1 rounded transition-all duration-150 hover:scale-110 focus:outline-none focus:ring-2 focus:ring-meu-time-accent text-muted-foreground/60 hover:text-[#F5C518] disabled:opacity-50 disabled:pointer-events-none"
+              className="p-1 rounded transition-all duration-150 hover:scale-110 focus:outline-none focus:ring-2 focus:ring-primary text-foreground-secondary/60 hover:text-primary disabled:opacity-50 disabled:pointer-events-none"
               aria-label={`${star} ${star === 1 ? 'estrela' : 'estrelas'}`}
             >
               <Star className="h-5 w-5 fill-current" />

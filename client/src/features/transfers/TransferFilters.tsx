@@ -55,7 +55,7 @@ export function TransferFilters({
           Mostrando negociações envolvendo <span className="font-semibold text-foreground">{teamName}</span>
         </p>
       )}
-      <div className="flex flex-wrap gap-1 rounded-full border border-white/5 bg-muted/40 p-1">
+      <div className="flex flex-wrap gap-1 rounded-full border border-border bg-muted/40 p-1">
         {FILTERS.map((f) => (
           <Button
             key={f.value}
@@ -79,12 +79,12 @@ export function TransferFilters({
             placeholder="Buscar jogador..."
             value={searchQ}
             onChange={(e) => onSearchChange(e.target.value)}
-            className="pl-9 h-9 text-sm bg-muted/40 border-white/5"
+            className="pl-9 h-9 text-sm bg-muted/40 border-border"
           />
         </div>
         {scope === 'all' && onTeamChange ? (
           <Select value={teamId || 'all'} onValueChange={(v) => onTeamChange(v === 'all' ? '' : v)}>
-            <SelectTrigger className="w-full sm:w-[180px] h-9 text-sm bg-muted/40 border-white/5">
+            <SelectTrigger className="w-full sm:w-[180px] h-9 text-sm bg-muted/40 border-border">
               <SelectValue placeholder="Time" />
             </SelectTrigger>
             <SelectContent>
@@ -97,7 +97,7 @@ export function TransferFilters({
             </SelectContent>
           </Select>
         ) : scope === 'team' && teamName ? (
-          <div className="flex items-center h-9 px-3 rounded-lg bg-muted/40 border border-white/5 text-sm text-muted-foreground">
+          <div className="flex items-center h-9 px-3 rounded-lg bg-muted/40 border border-border text-sm text-muted-foreground">
             Envolvendo: <span className="ml-1 font-semibold text-foreground">{teamName}</span>
           </div>
         ) : null}

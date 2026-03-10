@@ -32,10 +32,10 @@ export function GameCard({ game }: GameCardProps) {
   );
 
   return (
-    <Card className="rounded-2xl border border-white/5 bg-card overflow-hidden transition-all duration-fast hover:border-primary/20">
+    <Card className="rounded-2xl border border-border bg-card overflow-hidden transition-all duration-fast hover:border-primary/20">
       <CardHeader className="pb-2">
         <div className="flex items-start justify-between gap-3">
-          <h3 className="font-display font-bold text-lg text-foreground">{game.title}</h3>
+          <h3 className="font-bold text-lg text-foreground">{game.title}</h3>
           {!game.available && (
             <StatBadge variant="upcoming" label="Em breve" size="sm" className="shrink-0" />
           )}

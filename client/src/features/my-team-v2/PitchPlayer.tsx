@@ -73,7 +73,7 @@ export function PitchPlayer({
         }
       }}
     >
-      <div className="relative w-14 h-14 sm:w-16 sm:h-16 rounded-full overflow-hidden bg-black/40 border border-white/20 shadow-[0_4px_12px_rgba(0,0,0,0.4)]">
+      <div className="relative w-14 h-14 sm:w-16 sm:h-16 rounded-full overflow-hidden bg-background/40 border border-border-strong shadow-[0_4px_12px_rgba(0,0,0,0.4)]">
         {photoUrl && photoUrl !== PLAYER_PHOTO_PLACEHOLDER ? (
           <img
             src={photoUrl}
@@ -89,11 +89,11 @@ export function PitchPlayer({
           </div>
         )}
       </div>
-      <div className="mt-1.5 flex items-center gap-1 rounded-full bg-black/80 border border-white/10 px-2 py-0.5 shadow-sm">
-        <span className="flex items-center justify-center w-5 h-5 rounded bg-white text-black text-xs font-bold">
+      <div className="mt-1.5 flex items-center gap-1 rounded-full bg-background/80 border border-border px-2 py-0.5 shadow-sm">
+        <span className="flex items-center justify-center w-5 h-5 rounded bg-primary text-primary-foreground text-xs font-bold">
           {player.shirtNumber ?? '—'}
         </span>
-        <span className="text-[10px] sm:text-xs font-semibold text-white uppercase tracking-wide max-w-[60px] sm:max-w-[72px] truncate">
+        <span className="text-[10px] sm:text-xs font-semibold text-foreground tracking-wide max-w-[60px] sm:max-w-[72px] truncate">
           {getShortName(player.name)}
         </span>
       </div>

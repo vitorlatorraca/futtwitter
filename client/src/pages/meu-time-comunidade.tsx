@@ -178,7 +178,7 @@ export default function MeuTimeComunidadeTopicPage() {
         </Button>
 
         {/* Topic content */}
-        <article className="rounded-2xl border border-white/5 bg-[#10161D] overflow-hidden mb-6">
+        <article className="rounded-xl border border-border bg-surface-card overflow-hidden mb-6">
           {topic.coverImageUrl && (
             <div className="aspect-video bg-muted">
               <img
@@ -197,7 +197,7 @@ export default function MeuTimeComunidadeTopicPage() {
               {topic.isLocked && <Badge variant="secondary">Trancado</Badge>}
             </div>
 
-            <h1 className="font-display text-2xl font-bold text-foreground">{topic.title}</h1>
+            <h1 className="font-bold text-2xl text-foreground">{topic.title}</h1>
 
             <div className="flex items-center gap-3 text-sm text-foreground-secondary">
               <div className="flex items-center gap-2">
@@ -230,7 +230,7 @@ export default function MeuTimeComunidadeTopicPage() {
               {topic.content}
             </div>
 
-            <div className="pt-4 border-t border-white/5">
+            <div className="pt-4 border-t border-border">
               <Button
                 variant="outline"
                 size="sm"
@@ -248,7 +248,7 @@ export default function MeuTimeComunidadeTopicPage() {
 
         {/* Replies */}
         <section className="space-y-4">
-          <h2 className="font-display font-semibold text-lg">
+          <h2 className="font-semibold text-lg">
             Respostas ({topic.repliesCount})
           </h2>
 
@@ -259,7 +259,7 @@ export default function MeuTimeComunidadeTopicPage() {
               ))}
             </div>
           ) : replies.length === 0 ? (
-            <div className="rounded-2xl border border-white/5 bg-[#10161D] p-8 text-center">
+            <div className="rounded-xl border border-border bg-surface-card p-8 text-center">
               <p className="text-foreground-secondary">Nenhuma resposta ainda. Seja o primeiro!</p>
             </div>
           ) : (
@@ -267,7 +267,7 @@ export default function MeuTimeComunidadeTopicPage() {
               {replies.map((reply) => (
                 <div
                   key={reply.id}
-                  className="rounded-2xl border border-white/5 bg-[#10161D] p-4"
+                  className="rounded-xl border border-border bg-surface-card p-4"
                 >
                   <div className="flex items-start gap-3">
                     <Avatar className="h-8 w-8 shrink-0">
@@ -312,7 +312,7 @@ export default function MeuTimeComunidadeTopicPage() {
 
           {/* Reply form */}
           {!topic.isLocked && (
-            <div className="rounded-2xl border border-white/5 bg-[#10161D] p-4 mt-6">
+            <div className="rounded-xl border border-border bg-surface-card p-4 mt-6">
               <h3 className="font-semibold text-foreground mb-3">Responder</h3>
               <Textarea
                 placeholder="Escreva sua resposta..."

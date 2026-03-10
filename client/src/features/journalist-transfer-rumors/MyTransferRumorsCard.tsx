@@ -146,7 +146,7 @@ export function MyTransferRumorsCard({ onNewClick, onEditClick }: MyTransferRumo
   };
 
   return (
-    <Card className="rounded-2xl border border-white/5 bg-card hover:border-white/10 transition-colors">
+    <Card className="rounded-2xl border border-border bg-card hover:border-border transition-colors">
         <CardContent className="p-6">
           <SectionHeader
             title="Minhas Negociações"

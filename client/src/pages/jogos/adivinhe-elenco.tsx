@@ -123,7 +123,7 @@ function AdivinheElencoPage() {
             </Link>
           </Button>
           <div className="flex-1 min-w-0">
-            <h1 className="font-display font-bold text-xl text-foreground truncate">
+            <h1 className="font-bold text-xl text-foreground truncate">
               {setData?.title ?? "Carregando..."}
             </h1>
             <p className="text-sm text-muted-foreground">
@@ -147,7 +147,7 @@ function AdivinheElencoPage() {
             </CardContent>
           </Card>
         ) : (
-          <Card className="rounded-2xl border border-white/5 bg-card overflow-hidden">
+          <Card className="rounded-2xl border border-border bg-card overflow-hidden">
             <CardHeader className="pb-3">
               <div className="flex flex-wrap items-center justify-between gap-3">
                 <div className="flex items-center gap-2">
@@ -193,7 +193,7 @@ function AdivinheElencoPage() {
                       key={p.id}
                       className={`
                         flex items-center gap-2 rounded-lg border px-3 py-2 transition-all duration-200
-                        ${revealed ? "border-emerald-500/30 bg-emerald-500/5" : "border-white/5 bg-surface-elevated"}
+                        ${revealed ? "border-emerald-500/30 bg-emerald-500/5" : "border-border bg-surface-elevated"}
                       `}
                     >
                       {p.jerseyNumber != null && (

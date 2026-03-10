@@ -33,12 +33,12 @@ export function TeamTabs({ clubConfig, currentPosition }: TeamTabsProps) {
             }}
           />
           <div className="min-w-0 flex-1">
-            <h1 className="font-display text-2xl md:text-3xl font-semibold tracking-tight text-white truncate">
+            <h1 className="font-sans text-2xl md:text-3xl font-semibold tracking-tight text-foreground truncate">
               {clubConfig.displayName}
             </h1>
-            <div className="flex items-center gap-2 text-sm text-zinc-400 mt-0.5">
+            <div className="flex items-center gap-2 text-sm text-foreground-secondary mt-0.5">
               {currentPosition != null && (
-                <span className="font-semibold text-white tabular-nums">{currentPosition}º</span>
+                <span className="font-semibold text-primary tabular-nums">{currentPosition}º</span>
               )}
               {clubConfig.league && (
                 <span className="truncate">{clubConfig.league}</span>
@@ -48,12 +48,12 @@ export function TeamTabs({ clubConfig, currentPosition }: TeamTabsProps) {
         </div>
       )}
       <div className="overflow-x-auto scrollbar-hide">
-        <TabsList className="w-max min-w-full justify-start gap-1 p-1 rounded-full bg-white/5 border border-white/10">
+        <TabsList className="w-max min-w-full justify-start gap-1 p-1 rounded-full bg-surface-card border border-border">
           {TAB_ITEMS.map((tab) => (
             <TabsTrigger
               key={tab.value}
               value={tab.value}
-              className="font-semibold rounded-full px-4 py-2 text-sm data-[state=active]:bg-emerald-500 data-[state=active]:text-black data-[state=inactive]:hover:border data-[state=inactive]:hover:border-white/20 data-[state=inactive]:text-zinc-400"
+              className="font-semibold rounded-full px-4 py-2 text-sm data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=inactive]:hover:border data-[state=inactive]:hover:border-border-strong data-[state=inactive]:text-foreground-secondary"
             >
               {tab.label}
             </TabsTrigger>

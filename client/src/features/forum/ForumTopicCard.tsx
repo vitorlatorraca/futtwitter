@@ -29,7 +29,7 @@ export function ForumTopicCard({ topic, teamId }: ForumTopicCardProps) {
   return (
     <Link href={`/meu-time/comunidade/${topic.id}`} className="block group">
       <article
-          className="rounded-2xl border border-white/5 bg-[#10161D] overflow-hidden transition-all duration-200 hover:border-white/[0.12] hover:shadow-lg hover:shadow-black/20"
+          className="rounded-xl border border-border bg-surface-card overflow-hidden transition-colors hover:border-border-strong hover:shadow-lg hover:shadow-black/20"
         >
           {topic.coverImageUrl ? (
             <div className="aspect-video bg-muted overflow-hidden">
@@ -54,12 +54,12 @@ export function ForumTopicCard({ topic, teamId }: ForumTopicCardProps) {
               )}
             </div>
 
-            <h3 className="font-display font-semibold text-foreground line-clamp-2 group-hover:text-primary transition-colors">
+            <h3 className="font-semibold text-foreground line-clamp-2 group-hover:text-primary transition-colors">
               {topic.title}
             </h3>
             <p className="text-sm text-foreground-secondary line-clamp-2">{excerpt}</p>
 
-            <div className="flex items-center justify-between pt-2 border-t border-white/5">
+            <div className="flex items-center justify-between pt-2 border-t border-border">
               <div className="flex items-center gap-2 min-w-0">
                 <Avatar className="h-6 w-6 shrink-0">
                   <AvatarImage src={topic.author.avatarUrl ?? undefined} alt={topic.author.name} />

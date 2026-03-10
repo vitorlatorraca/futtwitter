@@ -51,7 +51,7 @@ export function ClubHistory({ matches }: ClubHistoryProps) {
     return (
       <Card className="bg-card/60 backdrop-blur-sm border-card-border">
         <CardHeader>
-          <CardTitle className="text-xl font-display flex items-center gap-2">
+          <CardTitle className="text-xl font-sans flex items-center gap-2">
             <Calendar className="h-5 w-5 text-primary" />
             Histórico do Clube
           </CardTitle>
@@ -69,7 +69,7 @@ export function ClubHistory({ matches }: ClubHistoryProps) {
   return (
     <Card className="bg-card/60 backdrop-blur-sm border-card-border">
       <CardHeader>
-        <CardTitle className="text-xl font-display flex items-center gap-2">
+        <CardTitle className="text-xl font-sans flex items-center gap-2">
           <Calendar className="h-5 w-5 text-primary" />
           Histórico do Clube
         </CardTitle>

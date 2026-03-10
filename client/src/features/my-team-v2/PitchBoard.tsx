@@ -159,8 +159,8 @@ export function PitchBoard({
       ref={containerRef}
       className={cn(
         'relative w-full min-h-[280px] rounded-2xl overflow-hidden',
-        'bg-gradient-to-b from-emerald-950/95 via-emerald-900/85 to-black/95',
-        'border border-emerald-500/20 shadow-[0_4px_24px_-4px_rgba(0,0,0,0.5),inset_0_1px_0_0_rgba(255,255,255,0.04)]',
+        'bg-surface-card',
+        'border border-border shadow-card',
         className
       )}
       onPointerMove={handlePointerMove}
@@ -248,12 +248,12 @@ export function PitchBoard({
               <div
                 className={cn(
                   'rounded-full transition-all duration-150',
-                  'hover:shadow-[0_0_20px_rgba(52,211,153,0.15)]',
-                  'focus:outline-none focus:ring-2 focus:ring-emerald-400/50 focus:ring-offset-2 focus:ring-offset-transparent'
+                  'hover:shadow-glow-primary',
+                  'focus:outline-none focus:ring-2 focus:ring-primary/50 focus:ring-offset-2 focus:ring-offset-transparent'
                 )}
               >
                 {player ? (
-                  <div className="relative w-14 h-14 sm:w-[56px] sm:h-[56px] rounded-full overflow-hidden bg-black/40 border-2 border-emerald-400/40 shadow-[0_4px_12px_rgba(0,0,0,0.4)] hover:border-emerald-400/60">
+                  <div className="relative w-14 h-14 sm:w-[56px] sm:h-[56px] rounded-full overflow-hidden bg-background/40 border-2 border-primary/40 shadow-[0_4px_12px_rgba(0,0,0,0.4)] hover:border-primary/60">
                     {photoUrl && photoUrl !== PLAYER_PHOTO_PLACEHOLDER ? (
                       <img
                         src={photoUrl}
@@ -273,8 +273,8 @@ export function PitchBoard({
                   <div
                     className={cn(
                       'flex items-center justify-center w-14 h-14 sm:w-[56px] sm:h-[56px] rounded-full',
-                      'border-2 border-dashed border-emerald-400/35 bg-emerald-500/8',
-                      'hover:border-emerald-400/55 hover:bg-emerald-500/18 hover:shadow-[0_0_16px_rgba(52,211,153,0.12)]',
+                      'border-2 border-dashed border-primary/35 bg-primary/8',
+                      'hover:border-primary/55 hover:bg-primary/18 hover:shadow-glow-primary',
                       'transition-all duration-200 ease-out'
                     )}
                   />

@@ -22,7 +22,7 @@ export default function LembraDesseElencoPage() {
             </Link>
           </Button>
           <div className="flex-1 min-w-0">
-            <h1 className="font-display font-bold text-2xl sm:text-3xl text-foreground flex items-center gap-2">
+            <h1 className="font-bold text-2xl sm:text-3xl text-foreground flex items-center gap-2">
               <Gamepad2 className="h-7 w-7 text-primary shrink-0" />
               Lembra desse elenco?
             </h1>
@@ -57,12 +57,12 @@ export default function LembraDesseElencoPage() {
             {sets.map((set) => (
               <Card
                 key={set.id}
-                className="rounded-2xl border border-white/5 bg-card overflow-hidden transition-all duration-fast hover:border-primary/20 cursor-pointer"
+                className="rounded-2xl border border-border bg-card overflow-hidden transition-all duration-fast hover:border-primary/20 cursor-pointer"
                 onClick={() => setLocation(`/jogos/adivinhe-elenco/${set.slug}`)}
               >
                 <CardHeader className="pb-2">
                   <div className="flex items-start justify-between gap-3">
-                    <h3 className="font-display font-bold text-lg text-foreground">
+                    <h3 className="font-bold text-lg text-foreground">
                       {set.clubName}
                     </h3>
                     <span className="text-xs font-medium text-emerald-500/80 shrink-0">

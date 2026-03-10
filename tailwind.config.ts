@@ -119,30 +119,31 @@ const config: Config = {
         },
         ring: "hsl(var(--ring))",
         
-        // Meu Time / Sofascore-like
-        "meu-time": {
-          page: "#0B0F14",
-          panel: "#10161D",
-          elevated: "#141C24",
-          accent: "#7C5CFF",
-          "accent-hover": "#8B6CFF",
-          success: "#22C55E",
-          warning: "#EAB308",
-          danger: "#EF4444",
+        surface: {
+          card: "hsl(var(--surface-card))",
+          elevated: "hsl(var(--surface-elevated))",
+          glass: "hsl(var(--surface-glass))",
         },
       },
       borderRadius: {
-        soft: "var(--radius-soft, 0.75rem)",
-        medium: "var(--radius-medium, 0.5rem)",
-        sharp: "var(--radius-sharp, 0.25rem)",
-        lg: "var(--radius, 1rem)",
-        md: "calc(var(--radius, 1rem) - 2px)",
-        sm: "calc(var(--radius, 1rem) - 4px)",
+        soft: "1rem",
+        medium: "0.75rem",
+        sharp: "0.25rem",
+        lg: "1rem",
+        md: "0.75rem",
+        sm: "0.5rem",
       },
       fontFamily: {
-        sans: ["var(--font-body, Inter)", "system-ui", "sans-serif"],
-        display: ["var(--font-display, Inter)", "var(--font-body, Inter)", "system-ui", "sans-serif"],
-        mono: ["var(--font-mono, 'JetBrains Mono')", "ui-monospace", "SFMono-Regular", "Menlo", "monospace"],
+        sans: [
+          "-apple-system", "BlinkMacSystemFont", '"Segoe UI"', "Roboto",
+          "Helvetica", "Arial", "sans-serif"
+        ],
+        display: [
+          "-apple-system", "BlinkMacSystemFont", '"Segoe UI"', "Roboto",
+          "Helvetica", "Arial", "sans-serif"
+        ],
+        mono: ['"SF Mono"', "SFMono-Regular", "Consolas", '"Liberation Mono"',
+               "Menlo", "Courier", "monospace"],
       },
       boxShadow: {
         "card": "var(--shadow-card)",

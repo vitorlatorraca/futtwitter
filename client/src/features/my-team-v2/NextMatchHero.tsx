@@ -54,7 +54,7 @@ export function NextMatchHero({
       <div className={panelClass}>
         <div className="flex items-center justify-between gap-4 p-4 min-h-[120px]">
           <h2 className="text-sm font-semibold text-foreground">Próximo jogo</h2>
-          <p className="text-xs text-muted-foreground">Nenhum jogo agendado.</p>
+          <p className="text-xs text-foreground-secondary">Nenhum jogo agendado.</p>
         </div>
       </div>
     );
@@ -81,11 +81,11 @@ export function NextMatchHero({
         <div className="flex items-center justify-between mb-3">
           <div className="flex items-center gap-2">
             {data.competition && (
-              <span className="text-[10px] text-muted-foreground truncate max-w-[120px]" title={data.competition}>
+              <span className="text-[10px] text-foreground-secondary truncate max-w-[120px]" title={data.competition}>
                 {data.competition}
               </span>
             )}
-            <span className="text-[10px] text-muted-foreground/80">{fullDate}</span>
+            <span className="text-[10px] text-foreground-secondary/80">{fullDate}</span>
           </div>
           {data.isHomeMatch && (
             <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[9px] font-semibold bg-primary/10 text-primary border border-primary/20">
@@ -130,13 +130,13 @@ export function NextMatchHero({
 
         {/* Bottom: time left, stadium + link right */}
         <div className="flex items-center justify-between gap-4 mt-3 pt-3 border-t border-border-subtle">
-          <div className="flex items-center gap-1.5 text-xs text-muted-foreground shrink-0">
+          <div className="flex items-center gap-1.5 text-xs text-foreground-secondary shrink-0">
             <CalendarDays className="h-3.5 w-3.5 text-primary shrink-0" />
             <span>{dayCapitalized}</span>
           </div>
           <div className="flex items-center gap-3 min-w-0 flex-1 justify-end">
             {data.stadium && (
-              <div className="flex items-center gap-1 text-[10px] text-muted-foreground/80 truncate max-w-[120px] sm:max-w-[180px]" title={data.stadium}>
+              <div className="flex items-center gap-1 text-[10px] text-foreground-secondary/80 truncate max-w-[120px] sm:max-w-[180px]" title={data.stadium}>
                 <MapPin className="h-3 w-3 shrink-0" />
                 <span className="truncate">{data.stadium}</span>
               </div>

@@ -29,11 +29,11 @@ export function ForumHero({ teamName, stats, clubConfig }: ForumHeroProps) {
 
   return (
     <div
-      className="relative overflow-hidden rounded-2xl border border-white/5 p-6 sm:p-8"
+      className="relative overflow-hidden rounded-2xl border border-border p-6 sm:p-8"
       style={gradientStyle}
     >
       <div className="relative z-10">
-        <h2 className="font-display text-2xl sm:text-3xl font-bold text-foreground mb-1">
+        <h2 className="font-bold text-2xl sm:text-3xl text-foreground mb-1">
           Comunidade {suffix}
         </h2>
         <p className="text-sm sm:text-base text-foreground-secondary mb-6">

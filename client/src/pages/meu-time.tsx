@@ -592,7 +592,7 @@ export default function MeuTimePage() {
                 <MyTeamCard
                   title="Jogos"
                   rightSlot={
-                    <Link href="/meu-time/jogos" className="text-xs font-medium text-emerald-500 hover:text-emerald-400 flex items-center gap-1 transition-colors">
+                    <Link href="/meu-time/jogos" className="text-xs font-medium text-primary hover:text-primary/80 flex items-center gap-1 transition-colors">
                       Ver todos
                       <ChevronRight className="h-3.5 w-3.5" />
                     </Link>
@@ -692,9 +692,9 @@ export default function MeuTimePage() {
           </TabsContent>
 
           <TabsContent value="matches" className="space-y-6">
-            <div className="flex flex-col items-center justify-center py-12 rounded-2xl border border-white/5 bg-card">
+            <div className="flex flex-col items-center justify-center py-12 rounded-xl border border-border bg-surface-card">
               <CalendarDays className="h-12 w-12 text-muted-foreground mb-4" />
-              <h3 className="font-display font-bold text-xl text-foreground mb-2">Jogos do seu time</h3>
+              <h3 className="font-bold text-xl text-foreground mb-2">Jogos do seu time</h3>
               <p className="text-sm text-foreground-secondary text-center max-w-md mb-6">
                 Veja todos os jogos, próximas partidas e resultados na página completa.
               </p>
@@ -734,7 +734,7 @@ export default function MeuTimePage() {
       <Dialog open={!!selectedPlayer} onOpenChange={() => setSelectedPlayer(null)}>
         <DialogContent className="sm:max-w-3xl max-h-[90vh] overflow-y-auto">
           <DialogHeader>
-            <DialogTitle className="text-2xl font-display">
+            <DialogTitle className="text-2xl font-sans">
               Avaliar {selectedPlayer?.name}
             </DialogTitle>
             <DialogDescription>
@@ -751,10 +751,10 @@ export default function MeuTimePage() {
               </div>
             ) : matches && matches.length > 0 ? (
               matches.map((match) => (
-                <div key={match.id} className="p-6 rounded-2xl border border-white/5 bg-card space-y-4">
+                <div key={match.id} className="p-6 rounded-xl border border-border bg-surface-card space-y-4">
                   <div className="flex items-center justify-between pb-3 border-b border-card-border">
                     <div>
-                      <p className="font-display font-bold text-lg text-foreground">{match.opponent}</p>
+                      <p className="font-bold text-lg text-foreground">{match.opponent}</p>
                       <p className="text-sm text-foreground-secondary font-mono mt-1">
                         {match.teamScore !== null && match.opponentScore !== null ? (
                           <>Placar: {match.teamScore}x{match.opponentScore} • </>
@@ -795,7 +795,7 @@ export default function MeuTimePage() {
                 </div>
               ))
             ) : (
-              <div className="p-12 text-center rounded-2xl border border-white/5 bg-card">
+              <div className="p-12 text-center rounded-xl border border-border bg-surface-card">
                 <p className="text-foreground-secondary">Não há partidas recentes para avaliar</p>
               </div>
             )}

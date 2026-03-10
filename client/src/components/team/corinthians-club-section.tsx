@@ -148,7 +148,7 @@ export function CorinthiansClubSection({ data, compact }: CorinthiansClubSection
       }}
     >
       <CardHeader className="pb-2">
-        <CardTitle className="text-xl font-display flex items-center gap-2">
+        <CardTitle className="text-xl font-sans flex items-center gap-2">
           <Trophy className="h-5 w-5" style={{ color: data.colors.primary }} />
           História & Títulos
         </CardTitle>
@@ -166,7 +166,7 @@ export function CorinthiansClubSection({ data, compact }: CorinthiansClubSection
       <CardContent className="space-y-4">
         {data.nicknames.length > 0 && (
           <div>
-            <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-1">Apelidos</p>
+            <p className="text-xs font-semibold text-muted-foreground tracking-wide mb-1">Apelidos</p>
             <p className="text-sm text-foreground">{data.nicknames.join(' • ')}</p>
           </div>
         )}
@@ -178,7 +178,7 @@ export function CorinthiansClubSection({ data, compact }: CorinthiansClubSection
               if (!items || items.length === 0) return null;
               return (
                 <div key={key}>
-                  <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-2">
+                  <p className="text-xs font-semibold text-muted-foreground tracking-wide mb-2">
                     {CATEGORY_LABELS[key] ?? key}
                   </p>
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
@@ -205,7 +205,7 @@ export function CorinthiansClubSection({ data, compact }: CorinthiansClubSection
 
         {!compact && honours.length > 0 && !catHonours && (
           <div>
-            <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-2">Títulos (contagem verificada)</p>
+            <p className="text-xs font-semibold text-muted-foreground tracking-wide mb-2">Títulos (contagem verificada)</p>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               {honours.map((item, i) => (
                 <HonourCard key={i} item={item} />

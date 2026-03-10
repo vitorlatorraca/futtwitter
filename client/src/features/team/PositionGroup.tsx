@@ -17,7 +17,7 @@ export function PositionGroup({ sector, players, getPhotoUrl }: PositionGroupPro
 
   return (
     <div className="space-y-3">
-      <h3 className="font-display font-semibold text-base uppercase tracking-wide text-foreground/90">
+      <h3 className="font-semibold text-base tracking-wide text-foreground/90">
         {label}
       </h3>
       <div className="space-y-2">

@@ -36,9 +36,9 @@ function getResult(m: RecentFormMatch): FormResult {
 }
 
 function resultStyle(result: FormResult): string {
-  if (result === 'W') return 'bg-meu-time-success/25 text-meu-time-success';
-  if (result === 'D') return 'bg-muted/50 text-muted-foreground';
-  return 'bg-meu-time-danger/25 text-meu-time-danger';
+  if (result === 'W') return 'bg-success/20 text-success';
+  if (result === 'D') return 'bg-muted/50 text-foreground-secondary';
+  return 'bg-danger/20 text-danger';
 }
 
 function resultLabel(result: FormResult): string {
@@ -48,7 +48,7 @@ function resultLabel(result: FormResult): string {
 }
 
 const panelClass =
-  'rounded-2xl border border-[rgba(255,255,255,0.06)] bg-[#10161D] p-4 shadow-sm';
+  'rounded-xl border border-border bg-surface-card p-4 transition-colors hover:border-border-strong';
 
 export function RecentFormMini({
   matches,
@@ -75,7 +75,7 @@ export function RecentFormMini({
     return (
       <div className={panelClass}>
         <h3 className="text-sm font-semibold text-foreground mb-2">Forma recente</h3>
-        <p className="text-xs text-muted-foreground">Nenhum jogo recente</p>
+        <p className="text-xs text-foreground-secondary">Nenhum jogo recente</p>
       </div>
     );
   }
@@ -105,11 +105,11 @@ export function RecentFormMini({
                 </TooltipTrigger>
                 <TooltipContent side="bottom" className="max-w-[240px]">
                   <p className="font-medium">{m.opponent}</p>
-                  <p className="text-sm text-muted-foreground">
+                  <p className="text-sm text-foreground-secondary">
                     Placar: {score} • {date} • {venue}
                   </p>
                   {m.competition && (
-                    <p className="text-xs text-muted-foreground mt-0.5">{m.competition}</p>
+                    <p className="text-xs text-foreground-secondary mt-0.5">{m.competition}</p>
                   )}
                 </TooltipContent>
               </Tooltip>
@@ -118,7 +118,7 @@ export function RecentFormMini({
           {Array.from({ length: placeholderCount }).map((_, i) => (
             <div
               key={`ph-${i}`}
-              className="w-8 h-8 rounded-lg border border-dashed border-[rgba(255,255,255,0.06)] flex items-center justify-center text-muted-foreground text-xs shrink-0"
+              className="w-8 h-8 rounded-lg border border-dashed border-border flex items-center justify-center text-foreground-secondary text-xs shrink-0"
               aria-hidden
             >
               —

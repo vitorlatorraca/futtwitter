@@ -169,10 +169,8 @@ export function FormationView({
 
   const currentPickerConfig = pickerSlotIndex != null ? getSlotConfig(formation, pickerSlotIndex) : null;
 
-  const pitchGradient = compactMode
-    ? 'bg-gradient-to-b from-emerald-900/40 via-emerald-800/30 to-emerald-950/50'
-    : 'bg-gradient-to-b from-green-600/20 via-green-700/20 to-green-800/20';
-  const pitchBorder = compactMode ? 'border border-emerald-400/30' : 'border-2 border-green-500/30';
+  const pitchGradient = 'bg-surface-card';
+  const pitchBorder = 'border border-border';
   const pitchAspect = compactMode ? 'aspect-[3/2.8] max-h-[260px]' : 'aspect-[3/4]';
   const slotSize = compactMode ? 'w-8 h-8 sm:w-9 sm:h-9' : 'w-11 h-11 sm:w-[52px] sm:h-[52px]';
   const emptySlotClass = compactMode
@@ -185,7 +183,7 @@ export function FormationView({
       <CardHeader className={compactMode ? 'pb-2 pt-3 px-4' : undefined}>
         <div className={compactMode ? 'flex flex-wrap items-center justify-between gap-2' : 'flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4'}>
           <div className="flex items-center gap-2">
-            <CardTitle className={compactMode ? 'text-base font-display flex items-center gap-1.5' : 'text-xl font-display flex items-center gap-2'}>
+            <CardTitle className={compactMode ? 'text-base font-sans flex items-center gap-1.5' : 'text-xl font-sans flex items-center gap-2'}>
               <Trophy className={compactMode ? 'h-3.5 w-3.5 text-primary/90' : 'h-5 w-5 text-primary'} />
               <span className={compactMode ? 'text-sm font-medium text-foreground/90' : ''}>Tática ideal</span>
             </CardTitle>
@@ -205,7 +203,7 @@ export function FormationView({
               </SelectContent>
             </Select>
             {onSave && (
-              <Button size="sm" variant={compactMode ? 'outline' : 'default'} className={compactMode ? 'h-8 w-8 p-0 border-white/10' : ''} onClick={handleSave} disabled={saving} title="Salvar formação">
+              <Button size="sm" variant={compactMode ? 'outline' : 'default'} className={compactMode ? 'h-8 w-8 p-0 border-border' : ''} onClick={handleSave} disabled={saving} title="Salvar formação">
                 {saving ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Save className={compactMode ? 'h-3.5 w-3.5' : 'h-4 w-4'} />}
                 {!compactMode && <span className="ml-2">Salvar</span>}
               </Button>

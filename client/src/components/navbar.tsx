@@ -30,17 +30,17 @@ export function Navbar() {
   const isActive = (path: string) => location === path;
 
   return (
-    <nav className="sticky top-0 z-50 w-full border-b border-card-border bg-background/60 backdrop-blur-md supports-[backdrop-filter]:bg-background/40">
-      <div className="container flex h-16 items-center justify-between">
+    <nav className="sticky top-0 z-50 w-full border-b border-border bg-black/90 backdrop-blur-md">
+      <div className="container flex h-14 items-center justify-between gap-4">
         {/* Logo */}
         <Link href="/dashboard" data-testid="link-logo">
-          <div className="group flex items-center gap-2 rounded-medium px-2 py-2 cursor-pointer transition-all duration-fast hover:bg-surface-elevated">
+          <div className="flex items-center gap-2 cursor-pointer px-2 py-1.5 rounded-full hover:bg-white/5 transition-colors">
             <span className="text-xl">⚽</span>
             <div className="hidden sm:flex flex-col leading-none">
-              <span className="font-display font-extrabold tracking-tight text-[15px] text-foreground group-hover:text-foreground">
+              <span className="font-bold text-[15px] text-foreground tracking-tight">
                 FUTTWITTER
               </span>
-              <span className="text-[11px] text-foreground-secondary">
+              <span className="text-[10px] text-foreground-secondary">
                 Premium Futebol Editorial
               </span>
             </div>
@@ -48,7 +48,7 @@ export function Navbar() {
         </Link>
 
         {/* Desktop Navigation */}
-        <div className="hidden md:flex items-center gap-1 rounded-medium border border-card-border bg-surface-glass px-1 py-1">
+        <div className="hidden md:flex items-center">
           {navLinks.map((link) => {
             const active = isActive(link.href);
             return (
@@ -57,19 +57,18 @@ export function Navbar() {
                 href={link.href}
                 data-testid={link.testId}
                 className={cn(
-                  "relative inline-flex items-center justify-center rounded-medium px-3 py-2 text-sm font-semibold text-foreground-secondary transition-all duration-fast",
-                  "hover:text-foreground hover:bg-surface-elevated focus-ring",
-                  active && "text-foreground bg-surface-elevated"
+                  "relative flex items-center justify-center px-4 h-14 text-sm font-bold transition-colors",
+                  "hover:bg-white/5",
+                  active ? "text-foreground" : "text-foreground-secondary"
                 )}
               >
                 {link.label}
-                <span
-                  aria-hidden="true"
-                  className={cn(
-                    "pointer-events-none absolute inset-x-3 -bottom-[6px] h-[2px] rounded-full bg-primary transition-all duration-fast",
-                    active ? "opacity-100" : "opacity-0"
-                  )}
-                />
+                {active && (
+                  <span
+                    aria-hidden="true"
+                    className="absolute bottom-0 inset-x-4 h-1 rounded-full bg-primary"
+                  />
+                )}
               </Link>
             );
           })}
@@ -81,21 +80,21 @@ export function Navbar() {
             <DropdownMenuTrigger asChild>
               <button
                 className={cn(
-                  "hidden md:flex items-center gap-2 rounded-medium border border-card-border bg-surface-glass px-2 py-1.5",
-                  "hover:bg-surface-elevated transition-all duration-fast focus-ring"
+                  "hidden md:flex items-center gap-2 rounded-full px-3 py-1.5",
+                  "hover:bg-white/5 transition-colors"
                 )}
                 aria-label="Abrir menu do usuário"
               >
-                <Avatar className="h-8 w-8 ring-2 ring-primary/20">
-                  <AvatarFallback className="bg-primary text-primary-foreground text-sm font-bold">
+                <Avatar className="h-8 w-8">
+                  <AvatarFallback className="bg-primary/20 text-primary text-sm font-bold border border-primary/30">
                     {user.name.slice(0, 2).toUpperCase()}
                   </AvatarFallback>
                 </Avatar>
-                <span className="text-sm font-semibold hidden lg:inline text-foreground">{user.name}</span>
-                <ChevronDown className="h-4 w-4 text-foreground-secondary" />
+                <span className="text-sm font-bold hidden lg:inline text-foreground">{user.name}</span>
+                <ChevronDown className="h-3.5 w-3.5 text-foreground-secondary" />
               </button>
             </DropdownMenuTrigger>
-            <DropdownMenuContent align="end" className="w-64 bg-popover/80 backdrop-blur-md border-card-border">
+            <DropdownMenuContent align="end" className="w-64 bg-[#16181C] border-border shadow-xl rounded-2xl">
               <DropdownMenuLabel className="space-y-1">
                 <div className="text-sm font-semibold text-foreground">{user.name}</div>
                 <div className="text-xs text-foreground-secondary truncate">{user.email}</div>
@@ -129,9 +128,9 @@ export function Navbar() {
                 <Menu className="h-6 w-6" />
               </Button>
             </SheetTrigger>
-            <SheetContent side="right" className="w-72 bg-surface-card border-card-border">
+            <SheetContent side="right" className="w-72 bg-surface-card border-border">
               <div className="flex flex-col gap-4 mt-8">
-                <div className="flex items-center gap-3 pb-4 border-b border-card-border">
+                <div className="flex items-center gap-3 pb-4 border-b border-border">
                   <Avatar className="h-10 w-10 ring-2 ring-primary/20">
                     <AvatarFallback className="bg-primary text-primary-foreground font-bold">
                       {user.name.slice(0, 2).toUpperCase()}

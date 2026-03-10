@@ -176,7 +176,7 @@ export default function PerfilPage() {
             </Avatar>
 
             <div className="min-w-0 flex-1">
-              <div className="font-display font-bold text-2xl sm:text-3xl text-foreground truncate">
+              <div className="font-bold text-2xl sm:text-3xl text-foreground truncate">
                 {user?.name}
               </div>
               <div className="text-sm text-foreground-secondary truncate">{user?.email}</div>
@@ -226,7 +226,7 @@ export default function PerfilPage() {
           </div>
 
           <TabsContent value="info" className="space-y-6">
-            <Card className="rounded-2xl border border-white/5 bg-card">
+            <Card className="rounded-2xl border border-border bg-card">
               <CardHeader>
                 <CardTitle>Foto do Perfil</CardTitle>
                 <CardDescription>Envie ou remova seu avatar</CardDescription>
@@ -237,7 +237,7 @@ export default function PerfilPage() {
             </Card>
 
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-              <Card className="rounded-2xl border border-white/5 bg-card">
+              <Card className="rounded-2xl border border-border bg-card">
               <CardHeader>
                 <CardTitle>Dados Pessoais</CardTitle>
                 <CardDescription>Atualize suas informações</CardDescription>
@@ -288,7 +288,7 @@ export default function PerfilPage() {
               </CardContent>
               </Card>
 
-              <Card className="rounded-2xl border border-white/5 bg-card">
+              <Card className="rounded-2xl border border-border bg-card">
               <CardHeader>
                 <CardTitle>Alterar Senha</CardTitle>
                 <CardDescription>Mantenha sua conta segura</CardDescription>
@@ -341,7 +341,7 @@ export default function PerfilPage() {
 
           <TabsContent value="stats">
             <div className="grid md:grid-cols-3 gap-6">
-              <Card className="rounded-2xl border border-white/5 bg-card hover:border-white/10 transition-colors group">
+              <Card className="rounded-2xl border border-border bg-card hover:border-border transition-colors group">
                 <CardContent className="p-6 text-center">
                   <div className="stat-number text-primary mb-2 group-hover:scale-110 transition-transform duration-fast">
                     {mockStats.ratingsCount}
@@ -349,7 +349,7 @@ export default function PerfilPage() {
                   <p className="stat-label">Avaliações Feitas</p>
                 </CardContent>
               </Card>
-              <Card className="rounded-2xl border border-white/5 bg-card hover:border-white/10 transition-colors group">
+              <Card className="rounded-2xl border border-border bg-card hover:border-border transition-colors group">
                 <CardContent className="p-6 text-center">
                   <div className="stat-number text-primary mb-2 group-hover:scale-110 transition-transform duration-fast">
                     {mockStats.newsLiked}
@@ -357,7 +357,7 @@ export default function PerfilPage() {
                   <p className="stat-label">Notícias Curtidas</p>
                 </CardContent>
               </Card>
-              <Card className="rounded-2xl border border-white/5 bg-card hover:border-white/10 transition-colors group">
+              <Card className="rounded-2xl border border-border bg-card hover:border-border transition-colors group">
                 <CardContent className="p-6 text-center">
                   <div className="stat-number text-primary mb-2 group-hover:scale-110 transition-transform duration-fast">
                     {mockStats.daysActive}
@@ -373,12 +373,12 @@ export default function PerfilPage() {
               {badges.map((badge: any) => (
                 <Card 
                   key={badge.id} 
-                  className={`rounded-2xl border border-white/5 bg-card hover:border-white/10 transition-colors ${!badge.unlocked ? 'opacity-60 grayscale' : ''}`}
+                  className={`rounded-2xl border border-border bg-card hover:border-border transition-colors ${!badge.unlocked ? 'opacity-60 grayscale' : ''}`}
                 >
                   <CardContent className="p-6 flex items-center gap-4">
                     <div className="text-4xl">{badge.icon}</div>
                     <div className="flex-1">
-                      <h3 className="font-display font-bold text-lg mb-1 text-foreground">{badge.name}</h3>
+                      <h3 className="font-bold text-lg mb-1 text-foreground">{badge.name}</h3>
                       <p className="text-sm text-foreground-secondary mb-3">{badge.description}</p>
                       <Badge 
                         variant={badge.unlocked ? 'default' : 'outline'}
@@ -422,7 +422,7 @@ export default function PerfilPage() {
                   </div>
                   <div className="space-y-2">
                     {adminResults.map((r) => (
-                      <div key={r.id} className="rounded-xl border border-white/5 bg-card p-4 flex flex-wrap items-center justify-between gap-2 hover:border-white/10 transition-colors">
+                      <div key={r.id} className="rounded-xl border border-border bg-card p-4 flex flex-wrap items-center justify-between gap-2 hover:border-border transition-colors">
                         <div>
                           <span className="font-semibold text-foreground">{r.name}</span>
                           <span className="text-foreground-secondary text-sm ml-2">{r.email}</span>

@@ -110,7 +110,7 @@ export function FanRatings({
   return (
     <div className="space-y-4">
       <div className="pb-2">
-        <h3 className="text-lg font-display font-bold text-foreground">
+        <h3 className="text-lg font-bold text-foreground">
           Notas da torcida
         </h3>
         <p className="text-xs text-muted-foreground mt-0.5">
@@ -125,7 +125,7 @@ export function FanRatings({
 
       {/* TITULARES – aberto por padrão */}
       <div className="space-y-1">
-        <h4 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+        <h4 className="text-xs font-semibold tracking-wider text-muted-foreground">
           Titulares
         </h4>
         <ul className="space-y-0.5">
@@ -148,7 +148,7 @@ export function FanRatings({
           <CollapsibleTrigger asChild>
             <button
               type="button"
-              className="flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wider text-muted-foreground hover:text-foreground transition-colors py-1 [&[data-state=open]_svg]:rotate-90"
+              className="flex items-center gap-1.5 text-xs font-semibold tracking-wider text-muted-foreground hover:text-foreground transition-colors py-1 [&[data-state=open]_svg]:rotate-90"
             >
               <ChevronRight className="h-3.5 w-3.5 transition-transform" />
               Suplentes ({substitutes.length})

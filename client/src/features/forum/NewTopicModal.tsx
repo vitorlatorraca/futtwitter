@@ -77,7 +77,7 @@ export function NewTopicModal({ open, onOpenChange, teamId }: NewTopicModalProps
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-xl border-card-border bg-background">
         <DialogHeader>
-          <DialogTitle className="font-display text-xl">Novo tópico</DialogTitle>
+          <DialogTitle className="font-sans text-xl">Novo tópico</DialogTitle>
           <DialogDescription>
             Compartilhe sua opinião, notícia ou debate com a comunidade.
           </DialogDescription>

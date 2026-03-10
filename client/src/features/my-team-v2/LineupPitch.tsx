@@ -86,8 +86,8 @@ export function LineupPitch({
       <div
         className={cn(
           'relative w-full min-h-[280px] aspect-[16/10] sm:aspect-[4/3] max-h-full rounded-xl overflow-hidden',
-          'bg-gradient-to-b from-emerald-950/90 via-emerald-900/80 to-emerald-950/90',
-          'border border-emerald-500/25 shadow-[0_4px_20px_-4px_rgba(0,0,0,0.4),inset_0_1px_0_0_rgba(255,255,255,0.06)]',
+          'bg-surface-card',
+          'border border-border shadow-card',
           className
         )}
       >
@@ -161,7 +161,7 @@ export function LineupPitch({
 
         <DragOverlay dropAnimation={null}>
           {activePlayer ? (
-            <div className="scale-[1.02] shadow-[0_8px_24px_rgba(0,0,0,0.4)] ring-2 ring-emerald-400/50 rounded-lg opacity-95 cursor-grabbing">
+            <div className="scale-[1.02] shadow-[0_8px_24px_rgba(0,0,0,0.4)] ring-2 ring-primary/50 rounded-lg opacity-95 cursor-grabbing">
               <PitchPlayer
                 player={activePlayer}
                 teamId={teamId}

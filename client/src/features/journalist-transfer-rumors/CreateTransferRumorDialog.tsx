@@ -231,7 +231,7 @@ export function CreateTransferRumorDialog({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-2xl max-h-[90vh] overflow-y-auto bg-popover/90 backdrop-blur-md border-card-border">
         <DialogHeader>
-          <DialogTitle className="font-display text-2xl">
+          <DialogTitle className="font-sans text-2xl">
             {isEditing ? 'Editar negociação' : 'Nova negociação (Vai e Vem)'}
           </DialogTitle>
           <DialogDescription>

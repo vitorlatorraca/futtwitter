@@ -180,7 +180,7 @@ export function SquadList({ players, onPlayerClick, onRatePlayer, draggable, get
     <Card className="bg-card/60 backdrop-blur-sm border-card-border">
       <CardHeader>
         <div className="flex items-center justify-between">
-          <CardTitle className="text-xl font-display flex items-center gap-2">
+          <CardTitle className="text-xl font-sans flex items-center gap-2">
             <Users className="h-5 w-5 text-primary" />
             Elenco ({filteredAndSortedPlayers.length} jogadores)
           </CardTitle>
@@ -234,7 +234,7 @@ export function SquadList({ players, onPlayerClick, onRatePlayer, draggable, get
             {Object.entries(groupedPlayers).map(([position, positionPlayers]) => (
               <div key={position}>
                 <div className="flex items-center justify-between mb-4">
-                  <h3 className="font-display font-semibold text-lg uppercase tracking-wide text-foreground">
+                  <h3 className="font-semibold text-lg tracking-wide text-foreground">
                     {(groupLabels as any)[position] || position}
                   </h3>
                   <Badge variant="secondary">{positionPlayers.length}</Badge>

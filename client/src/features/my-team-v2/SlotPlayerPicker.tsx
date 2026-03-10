@@ -92,7 +92,7 @@ export function SlotPlayerPicker({
         {children}
       </PopoverAnchor>
       <PopoverContent
-        className="w-[340px] p-0 border-white/10 bg-zinc-900/95 backdrop-blur-md shadow-xl"
+        className="w-[340px] p-0 border-border bg-surface-elevated/95 backdrop-blur-md shadow-xl"
         align="center"
         side="bottom"
         sideOffset={8}
@@ -108,17 +108,17 @@ export function SlotPlayerPicker({
             placeholder="Buscar jogador..."
             value={search}
             onValueChange={setSearch}
-            className="border-b border-white/10 bg-transparent placeholder:text-white/50 focus:ring-0"
+            className="border-b border-border bg-transparent placeholder:text-foreground-muted focus:ring-0"
           />
           <CommandList className="max-h-[280px] overflow-y-auto p-1">
-            <CommandEmpty className="py-6 text-center text-sm text-white/60">
+            <CommandEmpty className="py-6 text-center text-sm text-foreground-muted">
               Nenhum jogador encontrado
             </CommandEmpty>
             {hasCurrentPlayer && (
               <CommandGroup className="p-0">
                 <CommandItem
                   onSelect={handleClear}
-                  className="flex items-center gap-2 rounded-md px-2 py-2 text-amber-400/90 hover:bg-white/10 hover:text-amber-400"
+                  className="flex items-center gap-2 rounded-md px-2 py-2 text-primary/90 hover:bg-surface-elevated hover:text-primary"
                 >
                   <span className="text-sm font-medium">Remover jogador</span>
                 </CommandItem>
@@ -133,9 +133,9 @@ export function SlotPlayerPicker({
                     key={player.id}
                     value={player.id}
                     onSelect={() => handleSelect(player)}
-                    className="flex items-center gap-3 rounded-md px-2 py-2 cursor-pointer hover:bg-white/10 data-[selected=true]:bg-white/10"
+                    className="flex items-center gap-3 rounded-md px-2 py-2 cursor-pointer hover:bg-surface-elevated data-[selected=true]:bg-surface-elevated"
                   >
-                    <div className="h-8 w-8 shrink-0 rounded-full overflow-hidden bg-black/40 border border-white/10">
+                    <div className="h-8 w-8 shrink-0 rounded-full overflow-hidden bg-background/40 border border-border">
                       {photoUrl && photoUrl !== PLAYER_PHOTO_PLACEHOLDER ? (
                         <img
                           src={photoUrl}
@@ -152,11 +152,11 @@ export function SlotPlayerPicker({
                       )}
                     </div>
                     <div className="flex-1 min-w-0">
-                      <p className="font-medium text-sm text-white truncate">{player.name}</p>
+                      <p className="font-medium text-sm text-foreground truncate">{player.name}</p>
                       <div className="flex items-center gap-1.5">
                         <PositionBadge position={player.position ?? player.primaryPosition} size="xs" />
                         {player.shirtNumber != null && (
-                          <span className="text-xs text-white/50">#{player.shirtNumber}</span>
+                          <span className="text-xs text-foreground-muted">#{player.shirtNumber}</span>
                         )}
                       </div>
                     </div>

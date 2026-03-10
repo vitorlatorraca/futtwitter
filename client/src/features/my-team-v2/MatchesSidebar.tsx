@@ -57,7 +57,7 @@ export function MatchesSidebar({
       <SectionHeader title="Próximos & recentes" />
       <div className="space-y-1.5 mt-3">
         {combined.length === 0 ? (
-          <p className="text-xs text-muted-foreground py-4 text-center">
+          <p className="text-xs text-foreground-secondary py-4 text-center">
             Nenhum jogo encontrado
           </p>
         ) : (
@@ -70,10 +70,10 @@ export function MatchesSidebar({
               <a
                 key={m.id}
                 href={`#match-${m.id}`}
-                className="flex items-center gap-3 p-2.5 rounded-xl border border-transparent hover:border-white/5 hover:bg-muted/60 transition-colors group"
+                className="flex items-center gap-3 p-2.5 rounded-xl border border-transparent hover:border-border hover:bg-surface-elevated/60 transition-colors group"
               >
                 <div className="flex-shrink-0 w-12 text-right">
-                  <div className="text-[10px] text-muted-foreground uppercase">
+                  <div className="text-[10px] text-foreground-secondary">
                     {format(new Date(m.matchDate), 'dd/MM', { locale: ptBR })}
                   </div>
                   <div className="text-xs font-medium text-foreground tabular-nums">
@@ -86,7 +86,7 @@ export function MatchesSidebar({
                 </div>
                 <div className="min-w-0 flex-1">
                   {m.competition && (
-                    <span className="inline-flex items-center gap-1 text-[10px] text-muted-foreground mb-0.5">
+                    <span className="inline-flex items-center gap-1 text-[10px] text-foreground-secondary mb-0.5">
                       <Trophy className="h-2.5 w-2.5" />
                       {m.competition}
                     </span>

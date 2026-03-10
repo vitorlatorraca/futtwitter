@@ -88,7 +88,7 @@ export default function MeuTimeElencoPage() {
             </Link>
           </Button>
           <div>
-            <h1 className="font-display text-2xl sm:text-3xl font-bold text-foreground">
+            <h1 className="font-sans text-2xl sm:text-3xl font-bold text-foreground">
               Elenco do {clubConfig.displayName}
             </h1>
             <p className="text-sm text-muted-foreground mt-1">
@@ -99,7 +99,7 @@ export default function MeuTimeElencoPage() {
 
         {/* Content */}
         {playersQuery.isError ? (
-          <div className="rounded-2xl border border-white/5 bg-card p-8 text-center">
+          <div className="rounded-2xl border border-border bg-card p-8 text-center">
             <p className="text-foreground-secondary mb-4">
               Não foi possível carregar o elenco. Tente novamente.
             </p>
@@ -121,14 +121,14 @@ export default function MeuTimeElencoPage() {
             ))}
           </div>
         ) : playersQuery.data && playersQuery.data.length > 0 ? (
-          <div className="rounded-2xl border border-white/5 bg-card/40 backdrop-blur-sm p-4 sm:p-6">
+          <div className="rounded-2xl border border-border bg-card/40 backdrop-blur-sm p-4 sm:p-6">
             <SquadPage
               players={playersQuery.data}
               getPhotoUrl={(p) => p.photoUrl ?? '/assets/players/placeholder.png'}
             />
           </div>
         ) : (
-          <div className="rounded-2xl border border-white/5 bg-card p-8 text-center">
+          <div className="rounded-2xl border border-border bg-card p-8 text-center">
             <p className="text-foreground-secondary">Nenhum jogador no elenco no momento.</p>
           </div>
         )}

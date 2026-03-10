@@ -57,7 +57,7 @@ export function Achievements({ achievements }: AchievementsProps) {
     return (
       <Card className="bg-card/60 backdrop-blur-sm border-card-border">
         <CardHeader>
-          <CardTitle className="text-xl font-display flex items-center gap-2">
+          <CardTitle className="text-xl font-sans flex items-center gap-2">
             <Trophy className="h-5 w-5 text-primary" />
             Conquistas
           </CardTitle>
@@ -76,7 +76,7 @@ export function Achievements({ achievements }: AchievementsProps) {
   return (
     <Card className="bg-card/60 backdrop-blur-sm border-card-border">
       <CardHeader>
-        <CardTitle className="text-xl font-display flex items-center gap-2">
+        <CardTitle className="text-xl font-sans flex items-center gap-2">
           <Trophy className="h-5 w-5 text-primary" />
           Conquistas ({defaultAchievements.length})
         </CardTitle>

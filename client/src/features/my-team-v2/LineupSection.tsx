@@ -6,7 +6,7 @@ import type { Player } from '@shared/schema';
 import { getFormationLayout } from './LineupLayout';
 
 const cardShell =
-  'rounded-2xl border border-white/[0.06] bg-gradient-to-b from-[#0f1419] to-[#0a0e12] shadow-[0_4px_24px_-4px_rgba(0,0,0,0.4)] overflow-hidden flex flex-col';
+  'rounded-xl border border-border bg-surface-card shadow-card overflow-hidden flex flex-col';
 
 const STORAGE_KEY_PREFIX = 'futtwitter:lineup:positions:';
 

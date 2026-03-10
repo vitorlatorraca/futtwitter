@@ -35,9 +35,9 @@ export function getRatingTier(rating: number): RatingTier {
 
 /** Tailwind classes for rating pill by tier. */
 export const RATING_PILL_CLASSES: Record<RatingTier, string> = {
-  high: "bg-emerald-500/15 text-emerald-600 dark:text-emerald-400",
+  high: "bg-success/15 text-success",
   mid: "bg-muted/80 text-muted-foreground",
-  low: "bg-amber-500/15 text-amber-600 dark:text-amber-400",
+  low: "bg-warning/15 text-warning",
 };
 
 /** Returns Tailwind classes for a rating pill. */

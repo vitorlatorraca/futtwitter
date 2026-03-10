@@ -26,7 +26,7 @@ export function SquadPage({ players, getPhotoUrl = defaultGetPhotoUrl }: SquadPa
   return (
     <div className="space-y-8">
       {/* Table header - desktop only */}
-      <div className="hidden md:grid grid-cols-[minmax(0,1fr)_minmax(100px,1fr)_56px_96px_32px] gap-4 py-3 text-xs font-medium text-muted-foreground uppercase tracking-wide border-b border-white/5">
+      <div className="hidden md:grid grid-cols-[minmax(0,1fr)_minmax(100px,1fr)_56px_96px_32px] gap-4 py-3 text-xs font-medium text-muted-foreground tracking-wide border-b border-border">
         <span>Jogador</span>
         <span>Nacionalidade</span>
         <span className="text-right">Altura</span>

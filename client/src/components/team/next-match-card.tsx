@@ -54,7 +54,7 @@ export function NextMatchCard({
   if (!data) {
     return (
       <div className="rounded-2xl bg-gradient-to-br from-card to-card/60 border border-card-border/80 p-8 sm:p-10 shadow-md">
-        <h2 className="font-display font-bold text-xl text-foreground mb-4">Próximo desafio</h2>
+        <h2 className="font-bold text-xl text-foreground mb-4">Próximo desafio</h2>
         <p className="text-muted-foreground text-center py-12">Nenhum jogo agendado.</p>
       </div>
     );
@@ -74,7 +74,7 @@ export function NextMatchCard({
   return (
     <div className="rounded-2xl bg-gradient-to-br from-primary/10 via-card to-card/80 border border-card-border/80 p-8 sm:p-10 shadow-md transition-all hover:shadow-lg hover:border-primary/20">
       <div className="flex items-center justify-between mb-6">
-        <h2 className="font-display font-bold text-xl text-foreground tracking-tight">
+        <h2 className="font-bold text-xl text-foreground tracking-tight">
           Próximo desafio
         </h2>
         {data.isHomeMatch && (

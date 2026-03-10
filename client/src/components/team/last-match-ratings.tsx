@@ -32,9 +32,9 @@ interface LastMatchRatingsProps {
 }
 
 function getRatingColor(rating: number): string {
-  if (rating >= 7.5) return 'bg-emerald-500/20 text-emerald-600 dark:text-emerald-400 border-emerald-500/40';
+  if (rating >= 7.5) return 'bg-success/20 text-success border-success/40';
   if (rating >= 6.5) return 'bg-muted/50 text-muted-foreground border-border/50';
-  return 'bg-amber-500/20 text-amber-600 dark:text-amber-400 border-amber-500/40';
+  return 'bg-warning/20 text-warning border-warning/40';
 }
 
 export function LastMatchRatings({ data, isLoading }: LastMatchRatingsProps) {
@@ -65,7 +65,7 @@ export function LastMatchRatings({ data, isLoading }: LastMatchRatingsProps) {
   return (
     <div className="space-y-4">
       <div>
-        <h3 className="text-sm font-semibold text-foreground uppercase tracking-wide mb-1">
+        <h3 className="text-sm font-semibold text-foreground tracking-wide mb-1">
           Última Partida — Notas
         </h3>
         <div className="flex flex-wrap items-center gap-2 text-sm">

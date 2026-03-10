@@ -21,7 +21,7 @@ export function MatchRow({ match, teamId, teamName }: MatchRowProps) {
   const isFinished = match.status === "FT";
 
   return (
-    <div className="flex items-center justify-between gap-4 py-3 px-4 rounded-xl border border-white/5 bg-card/50 hover:bg-card/80 transition-colors">
+    <div className="flex items-center justify-between gap-4 py-3 px-4 rounded-xl border border-border bg-card/50 hover:bg-card/80 transition-colors">
       <div className="min-w-0 flex-1">
         <div className="text-xs text-muted-foreground mb-0.5">{match.competition.name}</div>
         <div className="flex items-center gap-2 flex-wrap">

@@ -104,82 +104,71 @@
   --elevate-2: rgba(255,255,255, .07);
 
   /* ============================================================
-     PALETA: OBSIDIAN + ÂMBAR
-     Um fundo. Um acento. Zero ruído visual.
+     PALETA: TWITTER/X — preto puro + âmbar
      ============================================================ */
 
-  /* === BASE === */
-  --background: 0 0% 4%;              /* #0A0A0A */
-  --background-secondary: 0 0% 6%;    /* #0F0F0F */
-  --foreground: 0 0% 96%;             /* #F5F5F5 */
-  --foreground-secondary: 0 0% 53%;   /* #888888 */
-  --foreground-muted: 0 0% 38%;       /* #616161 */
+  /* === FUNDO — preto puro como o Twitter === */
+  --background: 0 0% 0%;               /* #000000 */
+  --background-secondary: 220 9% 5%;   /* #0D0D0D */
 
-  /* === SURFACES === */
-  --surface-card: 0 0% 7%;            /* #111111 */
-  --surface-glass: 0 0% 7% / 0.90;
-  --surface-elevated: 0 0% 10%;       /* #1A1A1A */
+  /* === TEXTO — Twitter usa #E7E9EA e #71767B === */
+  --foreground: 207 5% 91%;            /* #E7E9EA */
+  --foreground-secondary: 207 4% 46%;  /* #71767B */
+  --foreground-muted: 207 4% 38%;      /* #5E6368 */
 
-  /* === BORDERS === */
-  --border: 0 0% 14%;                 /* #242424 */
-  --border-subtle: 0 0% 11%;          /* #1C1C1C */
-  --border-strong: 0 0% 20%;          /* #333333 */
+  /* === SURFACES — cinza escuro Twitter === */
+  --surface-card: 220 9% 9%;           /* #16181C */
+  --surface-glass: 220 9% 9% / 0.90;
+  --surface-elevated: 220 9% 12%;      /* #1C1F23 */
 
-  /* === PRIMARY — Âmbar (único acento de marca) === */
-  --primary: 38 90% 55%;              /* #F5A623 */
-  --primary-foreground: 0 0% 4%;      /* #0A0A0A */
+  /* === BORDAS — Twitter usa #2F3336 === */
+  --border: 214 7% 20%;                /* #2F3336 */
+  --border-subtle: 214 7% 14%;         /* #222529 */
+  --border-strong: 214 7% 26%;         /* #3D4044 */
+
+  /* === PRIMARY — âmbar mantido como cor de marca === */
+  --primary: 38 90% 55%;               /* #F5A623 */
+  --primary-foreground: 0 0% 0%;
   --primary-hover: 38 90% 48%;
   --primary-active: 38 90% 40%;
 
-  /* === ACCENT — superfície neutra (sem vermelho como acento UI) === */
-  --accent: 0 0% 13%;                 /* #222222 */
-  --accent-foreground: 0 0% 90%;
+  /* === ACCENT === */
+  --accent: 220 9% 14%;
+  --accent-foreground: 207 5% 91%;
 
   /* === CARD === */
-  --card: 0 0% 7%;                    /* #111111 */
-  --card-foreground: 0 0% 96%;
-  --card-border: 0 0% 14%;            /* #242424 */
+  --card: 220 9% 9%;
+  --card-foreground: 207 5% 91%;
+  --card-border: 214 7% 20%;
 
   /* === POPOVER === */
-  --popover: 0 0% 8%;                 /* #141414 */
-  --popover-foreground: 0 0% 96%;
-  --popover-border: 0 0% 14%;
+  --popover: 220 9% 9%;
+  --popover-foreground: 207 5% 91%;
+  --popover-border: 214 7% 20%;
 
   /* === SECONDARY === */
-  --secondary: 0 0% 12%;              /* #1F1F1F */
-  --secondary-foreground: 0 0% 82%;   /* #D1D1D1 */
+  --secondary: 220 9% 12%;
+  --secondary-foreground: 207 5% 82%;
 
   /* === MUTED === */
-  --muted: 0 0% 11%;                  /* #1C1C1C */
-  --muted-foreground: 0 0% 53%;       /* #888888 */
+  --muted: 220 9% 9%;
+  --muted-foreground: 207 4% 46%;
 
   /* === RING === */
   --ring: 38 90% 55%;
 
   /* === SIDEBAR === */
-  --sidebar: 0 0% 5%;                 /* #0D0D0D */
-  --sidebar-foreground: 0 0% 96%;
-  --sidebar-border: 0 0% 11%;
+  --sidebar: 0 0% 0%;
+  --sidebar-foreground: 207 5% 91%;
+  --sidebar-border: 214 7% 20%;
   --sidebar-primary: 38 90% 55%;
-  --sidebar-primary-foreground: 0 0% 4%;
-  --sidebar-accent: 0 0% 11%;
-  --sidebar-accent-foreground: 0 0% 82%;
+  --sidebar-primary-foreground: 0 0% 0%;
+  --sidebar-accent: 220 9% 14%;
+  --sidebar-accent-foreground: 207 5% 82%;
   --sidebar-ring: 38 90% 55%;
 
-  /* === MEU TIME (mapeado para tokens principais) === */
-  --meu-time-page-bg: #0A0A0A;
-  --meu-time-panel-bg: #111111;
-  --meu-time-elevated: #1A1A1A;
-  --meu-time-border: rgba(255,255,255,0.07);
-  --meu-time-border-hover: rgba(255,255,255,0.13);
-  --meu-time-accent: #F5A623;
-  --meu-time-accent-hover: #F0B040;
-  --meu-time-success: #22C55E;
-  --meu-time-warning: #F5A623;
-  --meu-time-danger: #E5534B;
-
-  /* === STATUS — vermelho apenas para erros/alertas === */
-  --destructive: 3 74% 59%;           /* #E5534B */
+  /* === STATUS === */
+  --destructive: 3 74% 59%;
   --destructive-foreground: 0 0% 98%;
   --danger: 3 74% 59%;
   --danger-foreground: 0 0% 98%;
@@ -200,7 +189,7 @@
   --badge-verified: 38 90% 55%;
 
   /* === INPUT === */
-  --input: 0 0% 13%;                  /* #222222 */
+  --input: 220 9% 14%;
 
   /* === CHARTS === */
   --chart-1: 38 90% 55%;
@@ -209,26 +198,26 @@
   --chart-4: 142 60% 45%;
   --chart-5: 270 60% 60%;
 
-  /* === SHADOWS === */
-  --shadow-2xs: 0px 1px 2px hsl(0 0% 0% / 0.20);
-  --shadow-xs:  0px 1px 3px hsl(0 0% 0% / 0.25);
-  --shadow-sm:  0px 2px 4px hsl(0 0% 0% / 0.30);
-  --shadow:     0px 2px 6px hsl(0 0% 0% / 0.35);
-  --shadow-md:  0px 4px 12px hsl(0 0% 0% / 0.40);
-  --shadow-lg:  0px 8px 20px hsl(0 0% 0% / 0.45);
-  --shadow-xl:  0px 12px 32px hsl(0 0% 0% / 0.50);
-  --shadow-2xl: 0px 20px 48px hsl(0 0% 0% / 0.55);
-  --shadow-card:     0 4px 16px hsl(0 0% 0% / 0.40);
-  --shadow-hover:    0 8px 24px hsl(0 0% 0% / 0.48);
-  --shadow-elevated: 0 16px 40px hsl(0 0% 0% / 0.55);
-  --shadow-glow-primary: 0 0 20px hsl(38 90% 55% / 0.18);
-  --shadow-glow-accent:  0 0 20px hsl(3 74% 59% / 0.12);
+  /* === SHADOWS — Twitter usa sombras mínimas === */
+  --shadow-2xs: none;
+  --shadow-xs:  none;
+  --shadow-sm:  none;
+  --shadow:     none;
+  --shadow-md:  none;
+  --shadow-lg:  none;
+  --shadow-xl:  none;
+  --shadow-2xl: none;
+  --shadow-card: none;
+  --shadow-hover: none;
+  --shadow-elevated: 0 1px 3px hsl(0 0% 0% / 0.40);
+  --shadow-glow-primary: none;
+  --shadow-glow-accent: none;
 
-  /* === RADIUS — bordas mais fechadas (minimalista) === */
-  --radius: 0.5rem;        /* 8px — padrão shadcn */
-  --radius-soft: 0.75rem;  /* 12px — cards */
-  --radius-medium: 0.5rem; /* 8px */
-  --radius-sharp: 0.25rem; /* 4px */
+  /* === RADIUS === */
+  --radius: 1rem;
+  --radius-soft: 1rem;
+  --radius-medium: 0.75rem;
+  --radius-sharp: 0.25rem;
 
   /* Fallback for older browsers */
   --sidebar-primary-border: hsl(var(--sidebar-primary));
@@ -266,36 +255,21 @@
 
   body {
     @apply font-sans antialiased bg-background text-foreground;
-    font-family: var(--font-body, 'Inter', system-ui, sans-serif);
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
+                 Helvetica, Arial, sans-serif;
     position: relative;
     min-height: 100vh;
   }
 
-  /* Único glow âmbar muito sutil no topo — marca presença sem ruído */
-  body::before {
-    content: '';
-    position: fixed;
-    top: 0;
-    left: 0;
-    right: 0;
-    height: 280px;
-    background: radial-gradient(ellipse 60% 100% at 50% 0%, hsl(38 90% 55% / 0.04) 0%, transparent 100%);
-    pointer-events: none;
-    z-index: -1;
-  }
-  
   h1, h2, h3, h4, h5, h6 {
-    font-family: var(--font-display, 'Barlow Condensed', 'Inter Tight', system-ui, sans-serif);
     font-weight: 700;
-    letter-spacing: 0.01em;
-    text-transform: uppercase;
+    letter-spacing: -0.01em;
   }
-  
-  /* Números em mono */
+
   .font-mono,
   [data-type="number"],
   [data-type="stat"] {
-    font-family: var(--font-mono, 'JetBrains Mono', 'IBM Plex Mono', monospace);
+    font-family: "SF Mono", SFMono-Regular, Consolas, "Liberation Mono", Menlo, Courier, monospace;
     font-variant-numeric: tabular-nums;
   }
 }
@@ -501,15 +475,15 @@
   }
 
   .page-title {
-    @apply font-display text-3xl sm:text-4xl font-bold tracking-tight text-foreground;
+    @apply text-xl font-bold text-foreground;
   }
 
   .page-subtitle {
-    @apply text-foreground-secondary text-sm sm:text-base leading-relaxed;
+    @apply text-sm text-foreground-secondary;
   }
 
   .section-title {
-    @apply font-display text-lg sm:text-xl font-semibold tracking-tight text-foreground;
+    @apply text-lg font-bold text-foreground;
   }
 
   .section-subtitle {

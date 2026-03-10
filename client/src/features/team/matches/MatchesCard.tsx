@@ -48,7 +48,7 @@ export function MatchesCard({ teamId, teamName, embed, overviewMode, matches: ma
     <div className="space-y-2">
       {recent.length > 0 ? (
         <>
-          <div className="text-[10px] text-muted-foreground uppercase tracking-wider">Últimos resultados</div>
+          <div className="text-[10px] text-muted-foreground tracking-wider">Últimos resultados</div>
           {recent.map((m) => {
             const result = getResultForTeam(m, teamId);
             const rating = m.teamRating;
@@ -81,7 +81,7 @@ export function MatchesCard({ teamId, teamName, embed, overviewMode, matches: ma
                   {result && (
                     <span className={cn(
                       "text-[9px] font-bold w-5 h-5 rounded-full flex items-center justify-center shrink-0",
-                      result === 'W' && "bg-emerald-500/25 text-emerald-500",
+                      result === 'W' && "bg-success/20 text-success",
                       result === 'D' && "bg-muted/60 text-muted-foreground",
                       result === 'L' && "bg-red-500/25 text-red-500"
                     )}>
@@ -94,7 +94,7 @@ export function MatchesCard({ teamId, teamName, embed, overviewMode, matches: ma
           })}
         </>
       ) : (
-        <div className="flex flex-col items-center justify-center py-8 px-4 rounded-xl border border-dashed border-white/10 bg-muted/20">
+        <div className="flex flex-col items-center justify-center py-8 px-4 rounded-xl border border-dashed border-border bg-muted/20">
           <div className="text-4xl mb-2 opacity-40">⚽</div>
           <p className="text-xs text-muted-foreground text-center font-medium">
             Nenhum jogo encontrado
@@ -102,7 +102,7 @@ export function MatchesCard({ teamId, teamName, embed, overviewMode, matches: ma
           <p className="text-[10px] text-muted-foreground/80 text-center mt-0.5">
             Os resultados aparecerão aqui
           </p>
-          <Link href="/meu-time/jogos" className="mt-3 text-xs font-medium text-emerald-500 hover:text-emerald-400">
+          <Link href="/meu-time/jogos" className="mt-3 text-xs font-medium text-primary hover:text-primary/80">
             Ver calendário
           </Link>
         </div>
@@ -124,10 +124,10 @@ export function MatchesCard({ teamId, teamName, embed, overviewMode, matches: ma
 
   if (showLoading) {
     return (
-      <Panel padding="sm" className="rounded-2xl border-white/10 backdrop-blur-sm transition-all duration-200 hover:border-emerald-500/40">
+      <Panel padding="sm" className="rounded-xl border-border transition-colors hover:border-border-strong">
         <div className="flex items-center justify-between">
           <SectionHeader title="Jogos" />
-          <Link href="/meu-time/jogos" className="text-xs font-medium text-emerald-500 hover:text-emerald-400 flex items-center gap-1 transition-colors">
+          <Link href="/meu-time/jogos" className="text-xs font-medium text-primary hover:text-primary/80 flex items-center gap-1 transition-colors">
             Ver todos
             <ChevronRight className="h-3.5 w-3.5" />
           </Link>
@@ -138,10 +138,10 @@ export function MatchesCard({ teamId, teamName, embed, overviewMode, matches: ma
   }
 
   return (
-    <Panel padding="sm" className="rounded-2xl border-white/10 backdrop-blur-sm transition-all duration-200 hover:border-emerald-500/40">
+    <Panel padding="sm" className="rounded-xl border-border transition-colors hover:border-border-strong">
       <div className="flex items-center justify-between">
         <SectionHeader title="Jogos" />
-        <Link href="/meu-time/jogos" className="text-xs font-medium text-emerald-500 hover:text-emerald-400 flex items-center gap-1 transition-colors">
+        <Link href="/meu-time/jogos" className="text-xs font-medium text-primary hover:text-primary/80 flex items-center gap-1 transition-colors">
           Ver todos
           <ChevronRight className="h-3.5 w-3.5" />
         </Link>

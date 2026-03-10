@@ -1,6 +1,5 @@
 import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { Card, CardContent, CardFooter, CardHeader } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Crest } from '@/components/ui-premium';
@@ -11,6 +10,7 @@ import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { apiRequest, getApiUrl } from '@/lib/queryClient';
 import { useToast } from '@/hooks/use-toast';
+import { cn } from '@/lib/utils';
 import type { News } from '@shared/schema';
 
 export interface CommentItem {
@@ -160,182 +160,211 @@ export function NewsCard({ news, canInteract, onInteract }: NewsCardProps) {
   const teamId = news.team?.id ?? news.teamId;
 
   return (
-    <Card className="overflow-hidden rounded-2xl border border-white/5 bg-card shadow-sm hover:border-white/10 transition-colors group" data-testid={`news-card-${news.id}`}>
-      <CardHeader className="p-6 pb-4 border-b border-white/5">
-        <div className="flex items-center gap-3">
-          <div className="relative">
+    <div
+      className="border-b border-border hover:bg-white/[0.02] transition-colors cursor-pointer"
+      data-testid={`news-card-${news.id}`}
+    >
+      {/* Header */}
+      <div className="px-4 pt-4 pb-0">
+        <div className="flex items-start gap-3">
+          <div className="relative shrink-0 mt-0.5">
             {teamId ? (
               <Crest slug={teamId} alt={teamName} size="md" ring />
             ) : (
-              <div className="w-10 h-10 rounded-full bg-muted flex items-center justify-center ring-2 ring-white/5">
-                <Globe className="h-5 w-5 text-muted-foreground" />
+              <div className="w-10 h-10 rounded-full bg-surface-elevated flex items-center justify-center border border-border">
+                <Globe className="h-5 w-5 text-foreground-secondary" />
               </div>
             )}
-            <div className="absolute -bottom-1 -right-1 w-4 h-4 rounded-full bg-badge-journalist border-2 border-surface-card flex items-center justify-center">
-              <span className="text-[8px] text-white font-bold">✓</span>
+            <div className="absolute -bottom-0.5 -right-0.5 w-4 h-4 rounded-full bg-primary border-2 border-black flex items-center justify-center">
+              <span className="text-[8px] text-black font-bold">✓</span>
             </div>
           </div>
+
           <div className="flex-1 min-w-0">
-            <div className="flex items-center gap-2 flex-wrap">
-              <p className="font-semibold text-sm text-foreground truncate">{news.journalist.user.name}</p>
-              <Badge variant="default" className="text-[10px] px-1.5 py-0 h-4 badge-journalist">
+            <div className="flex items-center gap-1.5 flex-wrap">
+              <span className="font-bold text-[15px] text-foreground">
+                {news.journalist.user.name}
+              </span>
+              <Badge variant="default" className="text-[10px] px-1.5 py-0 h-4 bg-primary/15 text-primary border-0 font-bold rounded-full">
                 Jornalista
               </Badge>
               {scope === 'EUROPE' && (
-                <Badge variant="secondary" className="text-[10px] px-1.5 py-0 h-4">
-                  EUROPA
-                </Badge>
+                <Badge variant="secondary" className="text-[10px] px-1.5 py-0 h-4 rounded-full">EUROPA</Badge>
               )}
-              {scope === 'TEAM' && (
-                <Badge variant="outline" className="text-[10px] px-1.5 py-0 h-4">
-                  MEU TIME
+              <span className="text-foreground-secondary text-[15px]">·</span>
+              <span className="text-foreground-secondary text-sm">
+                {format(new Date(news.publishedAt), "d MMM", { locale: ptBR })}
+              </span>
+              <span className="ml-auto">
+                <Badge variant="outline" className="text-xs font-medium border-border text-foreground-secondary rounded-full">
+                  {categoryLabel}
                 </Badge>
-              )}
+              </span>
             </div>
-            <p className="text-xs text-foreground-secondary truncate mt-0.5">{teamName}</p>
+            <p className="text-foreground-secondary text-sm">{teamName}</p>
           </div>
-          <Badge variant="outline" className="text-xs font-medium">{categoryLabel}</Badge>
         </div>
-      </CardHeader>
+      </div>
 
+      {/* Image */}
       {news.imageUrl && (
-        <div className="relative aspect-video overflow-hidden bg-surface-elevated">
+        <div className="mt-3 mx-4 relative aspect-video overflow-hidden bg-surface-elevated rounded-2xl border border-border">
           <img
             src={news.imageUrl}
             alt={news.title}
             loading="lazy"
             decoding="async"
-            className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
+            className="w-full h-full object-cover"
           />
-          <div className="absolute inset-0 bg-gradient-to-t from-background/60 via-transparent to-transparent" />
         </div>
       )}
 
-      <CardContent className="p-6 space-y-4">
-        <div>
-          <h3 className="font-display font-bold text-2xl mb-3 leading-tight text-foreground group-hover:text-primary transition-colors">
-            {news.title}
-          </h3>
-          <p className="text-foreground-secondary leading-relaxed line-clamp-3 text-[15px]">
-            {news.content}
-          </p>
-        </div>
+      {/* Content */}
+      <div className="px-4 py-3 pl-[52px]">
+        <h3 className="font-bold text-[17px] text-foreground leading-snug mb-1">
+          {news.title}
+        </h3>
+        <p className="text-foreground-secondary text-[15px] leading-relaxed line-clamp-3">
+          {news.content}
+        </p>
+      </div>
 
-        <div className="flex items-center justify-between pt-2 border-t border-white/5">
-          <div className="flex items-center gap-2 text-xs text-foreground-muted font-mono">
-            <span>{format(new Date(news.publishedAt), "dd 'de' MMMM 'às' HH:mm", { locale: ptBR })}</span>
-          </div>
-        </div>
-      </CardContent>
+      {/* Actions */}
+      <div className="pl-[52px] px-4 pb-3 flex items-center gap-1">
+        <button
+          onClick={() => canInteract && onInteract(news.id, 'LIKE')}
+          disabled={!canInteract}
+          className={cn(
+            "flex items-center gap-1.5 px-3 py-2 rounded-full text-sm transition-colors",
+            news.userInteraction === 'LIKE'
+              ? "text-primary"
+              : "text-foreground-secondary hover:text-primary hover:bg-primary/10"
+          )}
+          data-testid={`button-like-${news.id}`}
+        >
+          <ThumbsUp className="h-4 w-4" />
+          <span className="font-medium">{news.likesCount}</span>
+        </button>
 
-      <CardFooter className="p-6 pt-0 flex flex-col gap-3 border-t border-white/5">
-        <div className="flex flex-wrap items-center gap-2">
-          <InteractionButton type="LIKE" count={news.likesCount} icon={ThumbsUp} />
-          <InteractionButton type="DISLIKE" count={news.dislikesCount} icon={ThumbsDown} />
-          <Button
-            variant="outline"
-            size="sm"
-            className="gap-2"
-            onClick={() => setCommentsOpen((o) => !o)}
-            aria-expanded={commentsOpen}
-          >
-            <MessageCircle className="h-4 w-4" />
-            Comentários
-            {commentsList.length > 0 && (
-              <span className="font-semibold">({commentsList.length})</span>
-            )}
-            {commentsOpen ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
-          </Button>
-        </div>
+        <button
+          onClick={() => canInteract && onInteract(news.id, 'DISLIKE')}
+          disabled={!canInteract}
+          className={cn(
+            "flex items-center gap-1.5 px-3 py-2 rounded-full text-sm transition-colors",
+            news.userInteraction === 'DISLIKE'
+              ? "text-danger"
+              : "text-foreground-secondary hover:text-danger hover:bg-danger/10"
+          )}
+          data-testid={`button-dislike-${news.id}`}
+        >
+          <ThumbsDown className="h-4 w-4" />
+          <span className="font-medium">{news.dislikesCount}</span>
+        </button>
 
-        {commentsOpen && (
-          <div className="space-y-3 pt-3 border-t border-card-border">
-            {!canInteract && (
-              <p className="text-sm text-muted-foreground italic">
-                {scope === 'EUROPE'
-                  ? 'Faça login para comentar.'
-                  : `Apenas torcedores do ${teamName} podem comentar nesta publicação.`}
-              </p>
-            )}
-            {canInteract && (
-              <div className="flex gap-2">
-                <textarea
-                  value={newCommentText}
-                  onChange={(e) => setNewCommentText(e.target.value)}
-                  placeholder="Escreva um comentário..."
-                  className="min-h-[80px] w-full rounded-medium border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
-                  maxLength={2000}
-                  disabled={createCommentMutation.isPending}
-                />
-                <Button
-                  size="sm"
-                  onClick={() => {
-                    const t = newCommentText.trim();
-                    if (t) createCommentMutation.mutate(t);
-                  }}
-                  disabled={!newCommentText.trim() || createCommentMutation.isPending}
-                >
-                  {createCommentMutation.isPending ? <Loader2 className="h-4 w-4 animate-spin" /> : 'Enviar'}
-                </Button>
-              </div>
-            )}
+        <button
+          onClick={() => setCommentsOpen((o) => !o)}
+          aria-expanded={commentsOpen}
+          className="flex items-center gap-1.5 px-3 py-2 rounded-full text-sm text-foreground-secondary hover:text-primary hover:bg-primary/10 transition-colors"
+        >
+          <MessageCircle className="h-4 w-4" />
+          <span className="font-medium">
+            {commentsOpen ? 'Fechar' : `Comentários${commentsList.length > 0 ? ` (${commentsList.length})` : ''}`}
+          </span>
+          {commentsOpen ? <ChevronUp className="h-3.5 w-3.5" /> : <ChevronDown className="h-3.5 w-3.5" />}
+        </button>
+      </div>
 
-            {commentsLoading ? (
-              <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                <Loader2 className="h-4 w-4 animate-spin" />
-                Carregando comentários...
-              </div>
-            ) : commentsList.length === 0 ? (
-              <p className="text-sm text-muted-foreground">Nenhum comentário ainda.</p>
-            ) : (
-              <ul className="space-y-3">
-                {commentsList.map((c) => (
-                  <li key={c.id} className="flex gap-3 rounded-xl border border-white/5 bg-muted/30 p-3">
-                    <Avatar className="h-8 w-8 shrink-0">
-                      {c.author.avatarUrl ? (
-                        <img src={c.author.avatarUrl} alt="" className="h-full w-full object-cover" />
-                      ) : null}
-                      <AvatarFallback className="text-xs">{c.author.name.slice(0, 2).toUpperCase()}</AvatarFallback>
-                    </Avatar>
-                    <div className="min-w-0 flex-1">
-                      <div className="flex items-center gap-2 flex-wrap">
-                        <span className="font-semibold text-sm">{c.author.name}</span>
-                        <span className="text-xs text-muted-foreground">
-                          {format(new Date(c.createdAt), "dd/MM 'às' HH:mm", { locale: ptBR })}
-                        </span>
-                      </div>
-                      <p className="text-sm text-foreground mt-0.5 break-words">{c.content}</p>
-                      {canInteract && (
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          className="mt-1 h-8 gap-1.5 text-muted-foreground hover:text-destructive"
-                          onClick={() => {
-                            if (c.viewerHasLiked) unlikeCommentMutation.mutate(c.id);
-                            else likeCommentMutation.mutate(c.id);
-                          }}
-                          disabled={likeCommentMutation.isPending || unlikeCommentMutation.isPending}
-                        >
-                          <Heart
-                            className={`h-4 w-4 ${c.viewerHasLiked ? 'fill-current text-destructive' : ''}`}
-                          />
-                          <span>{c.likeCount}</span>
-                        </Button>
-                      )}
-                      {!canInteract && c.likeCount > 0 && (
-                        <span className="text-xs text-muted-foreground mt-1 inline-flex items-center gap-1">
-                          <Heart className="h-3 w-3" />
-                          {c.likeCount}
-                        </span>
-                      )}
+      {/* Comments */}
+      {commentsOpen && (
+        <div className="pl-[52px] px-4 pb-4 border-t border-border space-y-3 pt-3">
+          {!canInteract && (
+            <p className="text-sm text-foreground-secondary italic">
+              {scope === 'EUROPE'
+                ? 'Faça login para comentar.'
+                : `Apenas torcedores do ${teamName} podem comentar nesta publicação.`}
+            </p>
+          )}
+          {canInteract && (
+            <div className="flex gap-2">
+              <textarea
+                value={newCommentText}
+                onChange={(e) => setNewCommentText(e.target.value)}
+                placeholder="Escreva um comentário..."
+                className="min-h-[80px] w-full rounded-2xl border border-border bg-background px-3 py-2 text-sm placeholder:text-foreground-secondary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:ring-offset-background disabled:cursor-not-allowed disabled:opacity-50"
+                maxLength={2000}
+                disabled={createCommentMutation.isPending}
+              />
+              <Button
+                size="sm"
+                onClick={() => {
+                  const t = newCommentText.trim();
+                  if (t) createCommentMutation.mutate(t);
+                }}
+                disabled={!newCommentText.trim() || createCommentMutation.isPending}
+              >
+                {createCommentMutation.isPending ? <Loader2 className="h-4 w-4 animate-spin" /> : 'Enviar'}
+              </Button>
+            </div>
+          )}
+
+          {commentsLoading ? (
+            <div className="flex items-center gap-2 text-sm text-foreground-secondary">
+              <Loader2 className="h-4 w-4 animate-spin" />
+              Carregando comentários...
+            </div>
+          ) : commentsList.length === 0 ? (
+            <p className="text-sm text-foreground-secondary">Nenhum comentário ainda.</p>
+          ) : (
+            <ul className="space-y-0">
+              {commentsList.map((c) => (
+                <li key={c.id} className="flex gap-3 py-3 border-b border-border last:border-0">
+                  <Avatar className="h-8 w-8 shrink-0">
+                    {c.author.avatarUrl ? (
+                      <img src={c.author.avatarUrl} alt="" className="h-full w-full object-cover" />
+                    ) : null}
+                    <AvatarFallback className="text-xs">{c.author.name.slice(0, 2).toUpperCase()}</AvatarFallback>
+                  </Avatar>
+                  <div className="min-w-0 flex-1">
+                    <div className="flex items-center gap-2 flex-wrap">
+                      <span className="font-bold text-sm">{c.author.name}</span>
+                      <span className="text-xs text-foreground-secondary">
+                        {format(new Date(c.createdAt), "dd/MM 'às' HH:mm", { locale: ptBR })}
+                      </span>
                     </div>
-                  </li>
-                ))}
-              </ul>
-            )}
-          </div>
-        )}
-      </CardFooter>
-    </Card>
+                    <p className="text-sm text-foreground mt-0.5 break-words">{c.content}</p>
+                    {canInteract && (
+                      <button
+                        className={cn(
+                          "mt-1 flex items-center gap-1.5 px-2 py-1 rounded-full text-sm transition-colors",
+                          c.viewerHasLiked
+                            ? "text-danger"
+                            : "text-foreground-secondary hover:text-danger hover:bg-danger/10"
+                        )}
+                        onClick={() => {
+                          if (c.viewerHasLiked) unlikeCommentMutation.mutate(c.id);
+                          else likeCommentMutation.mutate(c.id);
+                        }}
+                        disabled={likeCommentMutation.isPending || unlikeCommentMutation.isPending}
+                      >
+                        <Heart
+                          className={`h-4 w-4 ${c.viewerHasLiked ? 'fill-current' : ''}`}
+                        />
+                        <span>{c.likeCount}</span>
+                      </button>
+                    )}
+                    {!canInteract && c.likeCount > 0 && (
+                      <span className="text-xs text-foreground-secondary mt-1 inline-flex items-center gap-1">
+                        <Heart className="h-3 w-3" />
+                        {c.likeCount}
+                      </span>
+                    )}
+                  </div>
+                </li>
+              ))}
+            </ul>
+          )}
+        </div>
+      )}
+    </div>
   );
 }

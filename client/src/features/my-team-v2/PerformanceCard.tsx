@@ -38,9 +38,9 @@ interface PerformanceCardProps {
 const Z4_START = 17;
 
 function resultStyle(result: FormResult): string {
-  if (result === 'W') return 'bg-meu-time-success/25 text-meu-time-success';
-  if (result === 'D') return 'bg-muted/50 text-muted-foreground';
-  return 'bg-meu-time-danger/25 text-meu-time-danger';
+  if (result === 'W') return 'bg-success/20 text-success';
+  if (result === 'D') return 'bg-muted/50 text-foreground-secondary';
+  return 'bg-danger/20 text-danger';
 }
 
 function resultLabel(result: FormResult): string {
@@ -50,7 +50,7 @@ function resultLabel(result: FormResult): string {
 }
 
 const panelClass =
-  'rounded-2xl border border-white/10 backdrop-blur-sm bg-[#10161D] p-4 shadow-sm transition-all duration-200 hover:border-emerald-500/40';
+  'rounded-xl border border-border bg-surface-card p-4 shadow-card transition-colors hover:border-border-strong';
 
 function overviewToFormMatches(
   lastMatches: MyTeamOverview['lastMatches'],
@@ -93,7 +93,7 @@ export function PerformanceCard({
         <h3 className="text-sm font-semibold text-foreground mb-3">Performance atual</h3>
         <div className="space-y-4">
           <Skeleton className="h-8 w-full" />
-          <div className="h-px bg-white/5" />
+          <div className="h-px bg-border" />
           <div className="flex gap-2">
             {Array.from({ length: 5 }).map((_, i) => (
               <Skeleton key={i} className="h-7 w-7 rounded-lg" />
@@ -144,36 +144,36 @@ export function PerformanceCard({
           {hasStandings ? (
             <>
               <span className="font-bold text-foreground tabular-nums">{position}º</span>
-              <span className="text-muted-foreground">
+              <span className="text-foreground-secondary">
                 <span className="font-medium text-foreground">{pointsUs} pts</span>
               </span>
               {diffLeader != null && diffLeader > 0 && (
-                <span className="flex items-center gap-1 text-meu-time-warning text-xs">
-                  <Trophy className="h-3 w-3" />
+                <span className="flex items-center gap-1 text-foreground-secondary text-xs">
+                  <Trophy className="h-3 w-3 text-primary" />
                   {diffLeader} pts do líder
                 </span>
               )}
               {diffZ4 != null && diffZ4 >= 0 && position >= Z4_START && (
-                <span className="flex items-center gap-1 text-meu-time-danger text-xs">
+                <span className="flex items-center gap-1 text-danger text-xs font-semibold">
                   <TrendingDown className="h-3 w-3" />
                   Z4
                 </span>
               )}
               {diffZ4 != null && diffZ4 > 0 && position < Z4_START && (
-                <span className="text-muted-foreground text-xs">+{diffZ4} pts acima do Z4</span>
+                <span className="text-foreground-secondary text-xs">+{diffZ4} pts acima do Z4</span>
               )}
             </>
           ) : (
-            <span className="text-xs text-muted-foreground">Classificação indisponível</span>
+            <span className="text-xs text-foreground-secondary">Classificação indisponível</span>
           )}
         </div>
 
         {/* Divider */}
-        <div className="h-px bg-white/5 my-3" />
+        <div className="h-px bg-border my-3" />
 
         {/* Forma recente */}
         <div>
-          <p className="text-[10px] font-medium text-muted-foreground uppercase tracking-wider mb-2">
+          <p className="text-[10px] font-medium text-foreground-secondary tracking-wider mb-2">
             Forma recente
           </p>
           <div className="flex gap-1.5 flex-wrap">
@@ -197,11 +197,11 @@ export function PerformanceCard({
                   </TooltipTrigger>
                   <TooltipContent side="bottom" className="max-w-[240px]">
                     <p className="font-medium">{m.opponent}</p>
-                    <p className="text-sm text-muted-foreground">
+                    <p className="text-sm text-foreground-secondary">
                       Placar: {score} • {date} • {venue}
                     </p>
                     {m.competition && (
-                      <p className="text-xs text-muted-foreground mt-0.5">{m.competition}</p>
+                      <p className="text-xs text-foreground-secondary mt-0.5">{m.competition}</p>
                     )}
                   </TooltipContent>
                 </Tooltip>
@@ -210,7 +210,7 @@ export function PerformanceCard({
             {Array.from({ length: placeholderCount }).map((_, i) => (
               <div
                 key={`ph-${i}`}
-                className="w-7 h-7 rounded-md border border-dashed border-[rgba(255,255,255,0.06)] flex items-center justify-center text-muted-foreground text-[10px] shrink-0"
+                className="w-7 h-7 rounded-md border border-dashed border-border flex items-center justify-center text-foreground-secondary text-[10px] shrink-0"
                 aria-hidden
               >
                 —

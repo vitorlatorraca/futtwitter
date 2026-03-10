@@ -122,7 +122,7 @@ function Pitch({ formation, players }: PitchProps) {
 
       {/* Formation badge */}
       <div className="absolute top-1.5 left-2 z-10">
-        <span className="text-[8px] font-bold font-display tracking-widest uppercase text-primary bg-background/50 backdrop-blur-sm px-1.5 py-0.5 rounded border border-primary/20">
+        <span className="text-[8px] font-bold tracking-widest text-primary bg-background/50 backdrop-blur-sm px-1.5 py-0.5 rounded border border-primary/20">
           {formation}
         </span>
       </div>
@@ -196,7 +196,7 @@ export function LastMatchRatingsCard({ teamId }: { teamId: string | null }) {
   // ── Loading ──
   if (isLoading) {
     return (
-      <div className="rounded-2xl border border-border-subtle bg-surface-card p-5">
+      <div className="rounded-xl border border-border bg-surface-card p-5">
         <div className="flex items-center justify-between mb-4">
           <Skeleton className="h-5 w-40" />
           <Skeleton className="h-7 w-16" />
@@ -216,8 +216,8 @@ export function LastMatchRatingsCard({ teamId }: { teamId: string | null }) {
   // ── No data ──
   if (isError || !data || !match) {
     return (
-      <div className="rounded-2xl border border-border-subtle bg-surface-card p-5">
-        <h3 className="font-display font-bold uppercase tracking-tight text-base text-foreground mb-2">
+      <div className="rounded-xl border border-border bg-surface-card p-5">
+        <h3 className="font-bold text-base text-foreground mb-2">
           Última Partida
         </h3>
         <p className="text-sm text-foreground-secondary">
@@ -228,20 +228,20 @@ export function LastMatchRatingsCard({ teamId }: { teamId: string | null }) {
   }
 
   return (
-    <div className="rounded-2xl border border-border-subtle bg-surface-card p-5 hover:border-primary/20 transition-colors">
+    <div className="rounded-xl border border-border bg-surface-card p-5 hover:border-primary/20 transition-colors">
       {/* ── Header ── */}
       <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-3 mb-5">
         <div>
-          <p className="text-[10px] font-semibold text-foreground-muted uppercase tracking-widest mb-1">
+          <p className="text-[10px] font-semibold text-foreground-muted tracking-widest mb-1">
             Última Partida · Notas dos jogadores
           </p>
-          <h3 className="font-display font-bold uppercase tracking-tight text-lg md:text-xl text-foreground leading-tight">
+          <h3 className="font-bold text-lg md:text-xl text-foreground leading-tight">
             {match.homeTeamName}{' '}
             <span className="text-foreground-secondary font-normal">×</span>{' '}
             {match.awayTeamName}
           </h3>
           <div className="flex items-center gap-2 mt-1 flex-wrap">
-            <span className="inline-flex items-center px-2 py-0.5 rounded text-[9px] font-bold uppercase tracking-wide bg-primary/10 text-primary border border-primary/20">
+            <span className="inline-flex items-center px-2 py-0.5 rounded text-[9px] font-bold tracking-wide bg-primary/10 text-primary border border-primary/20">
               {match.competitionName}
             </span>
             <span className="text-[10px] text-foreground-muted">{dateLabel}</span>
@@ -251,7 +251,7 @@ export function LastMatchRatingsCard({ teamId }: { teamId: string | null }) {
         {/* Score */}
         {hasScore && (
           <div
-            className="text-3xl sm:text-4xl font-bold font-display tabular-nums tracking-tight shrink-0"
+            className="text-3xl sm:text-4xl font-bold tabular-nums tracking-tight shrink-0"
             style={{
               background: 'linear-gradient(90deg, hsl(38,92%,50%) 0%, hsl(0,80%,55%) 100%)',
               WebkitBackgroundClip: 'text',
@@ -280,7 +280,7 @@ export function LastMatchRatingsCard({ teamId }: { teamId: string | null }) {
               );
               return (
                 <div key={group}>
-                  <p className="text-[9px] font-bold uppercase tracking-widest text-foreground-muted mb-1 pl-1">
+                  <p className="text-[9px] font-bold tracking-widest text-foreground-muted mb-1 pl-1">
                     {GROUP_LABELS[group]}
                   </p>
                   <div className="space-y-0.5">

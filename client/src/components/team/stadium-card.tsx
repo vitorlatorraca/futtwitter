@@ -50,7 +50,7 @@ export function StadiumCard({
             aria-hidden
           />
           <div className="absolute bottom-0 left-0 right-0 p-4 text-white">
-            <h2 className="text-xl sm:text-2xl font-display font-bold">{stadiumName}</h2>
+            <h2 className="text-xl sm:text-2xl font-bold">{stadiumName}</h2>
           </div>
         </div>
         <CardContent className="p-4 space-y-2">
@@ -82,7 +82,7 @@ export function StadiumCard({
   return (
     <Card className="bg-card/60 backdrop-blur-sm border-card-border overflow-hidden">
       <CardHeader className="pb-3">
-        <CardTitle className="text-xl font-display flex items-center gap-2">
+        <CardTitle className="text-xl font-sans flex items-center gap-2">
           <MapPin className="h-5 w-5 text-primary" />
           Visão do Estádio
         </CardTitle>

@@ -82,7 +82,7 @@ export function MatchesPage() {
             <ChevronLeft className="h-5 w-5 text-foreground" />
           </Link>
           <div>
-            <h1 className="font-display font-bold text-2xl text-foreground">Jogos</h1>
+            <h1 className="font-bold text-2xl text-foreground">Jogos</h1>
             <p className="text-sm text-foreground-secondary">Fixtures e resultados do seu time</p>
           </div>
         </div>

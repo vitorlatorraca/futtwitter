@@ -78,15 +78,15 @@ export function LineupSidebar({
 
   const chipBase = 'rounded-full px-2.5 py-1 text-xs font-semibold transition-all duration-200';
   const chipActive = 'border-primary bg-primary/15 text-primary border-[1.5px]';
-  const chipInactive = 'border border-white/10 bg-white/[0.04] text-foreground-secondary hover:bg-white/10 hover:text-foreground';
+  const chipInactive = 'border border-border bg-surface-card text-foreground-secondary hover:bg-surface-elevated hover:text-foreground';
 
   return (
     <div className={cn('flex flex-col h-full min-h-0', className)}>
       <div className="flex items-baseline justify-between gap-2 mb-3">
-        <h3 className="text-[10px] font-bold uppercase tracking-[0.12em] text-foreground-secondary">
+        <h3 className="text-[10px] font-bold tracking-[0.12em] text-foreground-secondary">
           Elenco
         </h3>
-        <span className="text-[10px] font-medium text-muted-foreground tabular-nums">
+        <span className="text-[10px] font-medium text-foreground-secondary tabular-nums">
           {players.length} jogadores
         </span>
       </div>
@@ -98,12 +98,12 @@ export function LineupSidebar({
       )}
 
       <div className="relative flex-shrink-0 mb-3">
-        <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground pointer-events-none" />
+        <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-foreground-secondary pointer-events-none" />
         <Input
           placeholder="Buscar por nome, posição ou número…"
           value={search}
           onChange={(e) => setSearch(e.target.value)}
-          className="pl-9 h-9 text-sm bg-white/[0.03] border-white/10 focus:border-primary/50 transition-colors duration-200"
+          className="pl-9 h-9 text-sm bg-surface-card border-border focus:border-primary/50 transition-colors duration-200"
         />
       </div>
 
@@ -125,7 +125,7 @@ export function LineupSidebar({
 
       <div className="flex-1 overflow-y-auto space-y-1.5 pr-1 -mr-1 min-h-0">
         {filteredAndSorted.length === 0 ? (
-          <p className="text-sm text-muted-foreground py-6 text-center">
+          <p className="text-sm text-foreground-secondary py-6 text-center">
             Nenhum jogador encontrado.
           </p>
         ) : (
@@ -143,7 +143,7 @@ export function LineupSidebar({
         )}
       </div>
 
-      <div className="flex-shrink-0 pt-3 mt-3 border-t border-white/[0.06] flex items-center justify-between gap-2 text-[11px] text-muted-foreground">
+      <div className="flex-shrink-0 pt-3 mt-3 border-t border-border flex items-center justify-between gap-2 text-[11px] text-foreground-secondary">
         <span className="tabular-nums">{lineupPlayerIds.size}/11 escalados</span>
         <span className="tabular-nums">{availableCount} disponíveis</span>
       </div>

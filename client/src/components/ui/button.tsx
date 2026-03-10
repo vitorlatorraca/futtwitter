@@ -5,26 +5,26 @@ import { cva, type VariantProps } from "class-variance-authority"
 import { cn } from "@/lib/utils"
 
 const buttonVariants = cva(
-  "inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-medium text-sm font-semibold focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:ring-offset-background disabled:pointer-events-none disabled:opacity-50 transition-all duration-fast [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0",
+  "inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-full text-sm font-bold focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:ring-offset-background disabled:pointer-events-none disabled:opacity-50 transition-colors [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0",
   {
     variants: {
       variant: {
         default:
-          "bg-primary text-primary-foreground border border-primary/20 shadow-glow-primary hover:bg-primary-hover hover:shadow-glow-primary hover:shadow-hover hover:-translate-y-0.5 active:bg-primary-active active:translate-y-0",
+          "bg-primary text-primary-foreground hover:bg-primary/90 font-bold",
         destructive:
-          "bg-danger text-danger-foreground border border-danger/20 shadow-sm hover:bg-danger/90 hover:-translate-y-0.5 active:translate-y-0",
+          "bg-danger text-danger-foreground hover:bg-danger/90",
         outline:
-          "border border-border-strong bg-surface-card/50 text-foreground hover:bg-surface-elevated hover:border-border hover:-translate-y-0.5 active:translate-y-0",
-        secondary: 
-          "border border-border-strong bg-secondary/50 text-secondary-foreground hover:bg-secondary hover:border-border hover:-translate-y-0.5 active:translate-y-0",
-        ghost: 
-          "border border-transparent text-foreground hover:bg-surface-card hover:border-border-subtle",
+          "border border-border bg-transparent hover:bg-white/5 text-foreground font-semibold",
+        secondary:
+          "bg-surface-elevated text-foreground hover:bg-surface-card border border-border",
+        ghost:
+          "hover:bg-white/5 text-foreground-secondary hover:text-foreground",
       },
       size: {
-        default: "min-h-9 px-4 py-2",
-        sm: "min-h-8 rounded-medium px-3 text-xs",
-        lg: "min-h-11 rounded-medium px-8 text-base",
-        icon: "h-9 w-9",
+        default: "h-9 px-5 py-2 rounded-full",
+        sm: "h-8 rounded-full px-4 text-sm",
+        lg: "h-11 rounded-full px-8",
+        icon: "h-9 w-9 rounded-full",
       },
     },
     defaultVariants: {

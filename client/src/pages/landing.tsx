@@ -48,7 +48,7 @@ export default function LandingPage() {
               </div>
 
               {/* H1 — Barlow Condensed bold, editorial */}
-              <h1 className="font-display font-bold uppercase tracking-tight text-5xl md:text-6xl lg:text-7xl leading-[1.05] text-foreground">
+              <h1 className="font-bold text-5xl md:text-6xl lg:text-7xl leading-tight text-foreground tracking-tight">
                 Sua paixão pelo Brasileirão em uma só plataforma
               </h1>
 
@@ -57,10 +57,10 @@ export default function LandingPage() {
               </p>
 
               <div className="flex flex-col sm:flex-row gap-4">
-                <Button size="lg" className="w-full sm:w-auto" asChild>
+                <Button size="lg" className="rounded-full font-bold w-full sm:w-auto" asChild>
                   <Link href="/cadastro" data-testid="link-signup">Criar Conta Grátis</Link>
                 </Button>
-                <Button size="lg" variant="outline" className="w-full sm:w-auto" asChild>
+                <Button size="lg" variant="outline" className="rounded-full font-bold border-border w-full sm:w-auto" asChild>
                   <Link href="/login" data-testid="link-login">Já tenho conta</Link>
                 </Button>
               </div>
@@ -85,9 +85,9 @@ export default function LandingPage() {
 
             {/* Right Column — Overview Card */}
             <div className="flex justify-center lg:justify-end">
-              <Card className="w-full max-w-md bg-surface-card border border-border rounded-xl shadow-card hover:border-primary/20 transition-colors">
+              <Card className="w-full max-w-md bg-surface-card border border-border rounded-2xl transition-colors">
                 <CardHeader>
-                  <CardTitle className="text-xl font-display uppercase tracking-tight">Visão geral da plataforma</CardTitle>
+                  <CardTitle className="text-xl font-bold tracking-tight">Visão geral da plataforma</CardTitle>
                   <CardDescription className="text-foreground-secondary">
                     Atividade dos torcedores, avaliações e notícias — tudo em uma visão clara.
                   </CardDescription>
@@ -141,7 +141,7 @@ export default function LandingPage() {
                               className="h-full flex-1 transition-all"
                               style={{
                                 width: `${category.percentage}%`,
-                                background: 'hsl(38 90% 55%)'
+                                background: 'hsl(var(--primary))'
                               }}
                             />
                           </div>
@@ -183,11 +183,11 @@ export default function LandingPage() {
       {/* CTA Banner */}
       <section className="relative z-10 py-16">
         <div className="container mx-auto px-4 md:px-6 max-w-[1200px]">
-          <Card className="bg-surface-card border border-border rounded-xl shadow-card hover:border-primary/20 transition-colors">
+          <Card className="bg-surface-card border border-border rounded-2xl transition-colors">
             <CardContent className="p-8 md:p-12">
               <div className="flex flex-col md:flex-row items-center justify-between gap-6">
                 <div className="text-center md:text-left">
-                  <h2 className="font-display uppercase tracking-tight text-2xl md:text-3xl font-bold mb-2 text-foreground">
+                  <h2 className="text-2xl md:text-3xl font-bold mb-2 text-foreground tracking-tight">
                     Pronto para fazer parte da comunidade?
                   </h2>
                   <p className="text-foreground-secondary">
@@ -214,7 +214,7 @@ export default function LandingPage() {
         <div className="container mx-auto px-4 md:px-6 py-12">
           <div className="flex flex-col md:flex-row justify-between items-center gap-4">
             <div className="flex items-center gap-2">
-              <span className="font-display font-bold uppercase tracking-tight text-lg text-foreground">FUTTWITTER</span>
+              <span className="font-bold tracking-tight text-lg text-foreground">FUTTWITTER</span>
               <span className="text-foreground-muted text-xs">· Premium Futebol Editorial</span>
             </div>
             <p className="text-sm text-foreground-muted">

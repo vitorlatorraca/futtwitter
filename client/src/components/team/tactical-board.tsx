@@ -131,7 +131,7 @@ export function TacticalBoard({
           {formation}
         </Badge>
         <div className="mt-3 space-y-1">
-          <p className="text-xs font-medium text-muted-foreground uppercase tracking-wider">Em campo</p>
+          <p className="text-xs font-medium text-muted-foreground tracking-wider">Em campo</p>
           {displayLines.length > 0 ? (
             <ul className="text-sm text-foreground leading-relaxed list-none p-0 m-0 space-y-0.5">
               {displayLines.map((line) => (

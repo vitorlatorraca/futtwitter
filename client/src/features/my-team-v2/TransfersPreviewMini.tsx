@@ -8,12 +8,12 @@ import { cn } from '@/lib/utils';
 import type { TransferItem, TransferStatus } from '@/features/transfers/transferTypes';
 
 const panelClass =
-  'rounded-2xl border border-white/10 backdrop-blur-sm bg-[#10161D] p-4 shadow-sm transition-all duration-200 hover:border-emerald-500/40';
+  'rounded-xl border border-border bg-surface-card p-4 shadow-card transition-colors hover:border-border-strong';
 
 const STATUS_CONFIG: Record<TransferStatus, { label: string; className: string }> = {
-  RUMOR: { label: 'Rumor', className: 'bg-meu-time-warning/20 text-meu-time-warning border-meu-time-warning/30' },
-  NEGOCIACAO: { label: 'Negociação', className: 'bg-meu-time-accent/15 text-meu-time-accent border-meu-time-accent/25' },
-  FECHADO: { label: 'Fechado', className: 'bg-meu-time-success/20 text-meu-time-success border-meu-time-success/30' },
+  RUMOR: { label: 'Rumor', className: 'bg-warning/20 text-warning border-warning/30' },
+  NEGOCIACAO: { label: 'Negociação', className: 'bg-primary/15 text-primary border-primary/25' },
+  FECHADO: { label: 'Fechado', className: 'bg-success/20 text-success border-success/30' },
 };
 
 interface TransfersPreviewMiniProps {
@@ -82,17 +82,17 @@ export function TransfersPreviewMini({ teamId, teamName, onViewAll }: TransfersP
             return (
               <div
                 key={item.id}
-                className="flex items-center gap-2.5 py-2 px-2.5 rounded-lg hover:bg-[#141C24]/60 transition-all duration-200"
+                className="flex items-center gap-2.5 py-2 px-2.5 rounded-lg hover:bg-surface-elevated/60 transition-all duration-200"
               >
                 <div className="shrink-0">
                   {item.playerPhotoUrl ? (
                     <img
                       src={item.playerPhotoUrl}
                       alt=""
-                      className="h-7 w-7 rounded-full object-cover border border-white/5"
+                      className="h-7 w-7 rounded-full object-cover border border-border-subtle"
                     />
                   ) : (
-                    <div className="h-7 w-7 rounded-full bg-muted flex items-center justify-center text-[9px] font-medium text-muted-foreground">
+                    <div className="h-7 w-7 rounded-full bg-muted flex items-center justify-center text-[9px] font-medium text-foreground-secondary">
                       {item.playerName.slice(0, 2).toUpperCase()}
                     </div>
                   )}
@@ -109,10 +109,10 @@ export function TransfersPreviewMini({ teamId, teamName, onViewAll }: TransfersP
                   </div>
                   <div className="flex items-center gap-1.5 mt-0.5 flex-wrap">
                     <Crest slug={item.fromTeam?.slug} alt={item.fromTeam?.name ?? '?'} size="xs" />
-                    <span className="text-[9px] text-muted-foreground">→</span>
+                    <span className="text-[9px] text-foreground-secondary">→</span>
                     <Crest slug={item.toTeam?.slug} alt={item.toTeam?.name ?? '?'} size="xs" />
                     {item.author && (
-                      <span className="text-[9px] text-muted-foreground/80 truncate max-w-[80px]" title={item.author.name}>
+                      <span className="text-[9px] text-foreground-secondary/80 truncate max-w-[80px]" title={item.author.name}>
                         · {item.author.name}
                       </span>
                     )}
@@ -123,7 +123,7 @@ export function TransfersPreviewMini({ teamId, teamName, onViewAll }: TransfersP
           })}
         </div>
       ) : (
-        <p className="text-xs text-muted-foreground py-2">
+        <p className="text-xs text-foreground-secondary py-2">
           Nenhum rumor ou transferência recente.
         </p>
       )}

@@ -46,7 +46,7 @@ export function TeamHeader({
 
   return (
     <div
-      className="rounded-2xl border border-white/5 bg-card p-8 mb-8 relative overflow-hidden"
+      className="rounded-2xl border border-border bg-card p-8 mb-8 relative overflow-hidden"
       style={{
         background: `linear-gradient(135deg, ${team.primaryColor}15 0%, ${team.secondaryColor}15 100%)`,
       }}
@@ -71,7 +71,7 @@ export function TeamHeader({
 
           {/* Club Info */}
           <div className="flex-1 text-center md:text-left">
-            <h1 className="font-display font-bold text-4xl md:text-5xl mb-2 text-foreground">
+            <h1 className="font-bold text-4xl md:text-5xl mb-2 text-foreground">
               {team.name}
             </h1>
             <div className="flex flex-wrap items-center justify-center md:justify-start gap-3 mb-4">
@@ -113,28 +113,28 @@ export function TeamHeader({
 
         {/* Stats Grid */}
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-          <Card className="rounded-2xl border border-white/5 bg-card">
+          <Card className="rounded-2xl border border-border bg-card">
             <CardContent className="p-4 text-center">
               <Trophy className="h-6 w-6 mx-auto mb-2 text-primary" />
               <p className="text-3xl font-bold text-foreground">{team.points}</p>
               <p className="text-sm text-muted-foreground font-medium">Pontos</p>
             </CardContent>
           </Card>
-          <Card className="rounded-2xl border border-white/5 bg-card">
+          <Card className="rounded-2xl border border-border bg-card">
             <CardContent className="p-4 text-center">
               <TrendingUp className="h-6 w-6 mx-auto mb-2 text-success" />
               <p className="text-3xl font-bold text-foreground">{team.wins}</p>
               <p className="text-sm text-muted-foreground font-medium">Vitórias</p>
             </CardContent>
           </Card>
-          <Card className="rounded-2xl border border-white/5 bg-card">
+          <Card className="rounded-2xl border border-border bg-card">
             <CardContent className="p-4 text-center">
               <Shield className="h-6 w-6 mx-auto mb-2 text-warning" />
               <p className="text-3xl font-bold text-foreground">{team.draws}</p>
               <p className="text-sm text-muted-foreground font-medium">Empates</p>
             </CardContent>
           </Card>
-          <Card className="rounded-2xl border border-white/5 bg-card">
+          <Card className="rounded-2xl border border-border bg-card">
             <CardContent className="p-4 text-center">
               <TrendingDown className="h-6 w-6 mx-auto mb-2 text-danger" />
               <p className="text-3xl font-bold text-foreground">{team.losses}</p>
