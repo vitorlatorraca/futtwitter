@@ -1,512 +1,130 @@
+@import url('https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Inter:wght@400;500;600;700&display=swap');
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
-/* LIGHT MODE */
 :root {
-  --button-outline: rgba(0,0,0, .10);
-  --badge-outline: rgba(0,0,0, .05);
-  --opaque-button-border-intensity: -8;
-  --elevate-1: rgba(0,0,0, .03);
-  --elevate-2: rgba(0,0,0, .08);
-  --background: 0 0% 100%;
-  --foreground: 0 0% 9%;
-  --border: 0 0% 91%;
-  --card: 0 0% 98%;
-  --card-foreground: 0 0% 9%;
-  --card-border: 0 0% 94%;
-  --sidebar: 0 0% 96%;
-  --sidebar-foreground: 0 0% 9%;
-  --sidebar-border: 0 0% 92%;
-  --sidebar-primary: 142 76% 36%;
-  --sidebar-primary-foreground: 142 76% 98%;
-  --sidebar-accent: 0 0% 89%;
-  --sidebar-accent-foreground: 0 0% 15%;
-  --sidebar-ring: 142 76% 36%;
-  --popover: 0 0% 94%;
-  --popover-foreground: 0 0% 9%;
-  --popover-border: 0 0% 89%;
-  --primary: 142 76% 36%;
-  --primary-foreground: 142 76% 98%;
-  --secondary: 0 0% 87%;
-  --secondary-foreground: 0 0% 15%;
-  --muted: 0 2% 91%;
-  --muted-foreground: 0 2% 35%;
-  --accent: 142 15% 88%;
-  --accent-foreground: 142 15% 18%;
-  --destructive: 0 72% 41%;
-  --destructive-foreground: 0 72% 98%;
-  --danger: 0 72% 41%;
-  --danger-foreground: 0 72% 98%;
-  --input: 0 0% 75%;
-  --ring: 142 76% 36%;
-  --chart-1: 142 76% 36%;
-  --chart-2: 45 93% 47%;
-  --chart-3: 210 80% 48%;
-  --chart-4: 280 65% 60%;
-  --chart-5: 15 80% 50%;
-  --font-sans: Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-  --font-serif: Georgia, serif;
-  --font-mono: Menlo, monospace;
-  --font-display: "Barlow Condensed", "Inter Tight", Impact, system-ui, sans-serif;
-  --font-body: Inter, system-ui, sans-serif;
-  --font-mono: "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
-  --radius: 1rem;
-  --radius-soft: 1rem;
-  --radius-medium: 0.75rem;
-  --radius-sharp: 0.5rem;
-  --shadow-2xs: 0px 2px 0px 0px hsl(0 0% 0% / 0.00);
-  --shadow-xs: 0px 2px 0px 0px hsl(0 0% 0% / 0.00);
-  --shadow-sm: 0px 2px 0px 0px hsl(0 0% 0% / 0.00), 0px 1px 2px -1px hsl(0 0% 0% / 0.00);
-  --shadow: 0px 2px 0px 0px hsl(0 0% 0% / 0.00), 0px 1px 2px -1px hsl(0 0% 0% / 0.00);
-  --shadow-md: 0px 2px 0px 0px hsl(0 0% 0% / 0.00), 0px 2px 4px -1px hsl(0 0% 0% / 0.00);
-  --shadow-lg: 0px 2px 0px 0px hsl(0 0% 0% / 0.00), 0px 4px 6px -1px hsl(0 0% 0% / 0.00);
-  --shadow-xl: 0px 2px 0px 0px hsl(0 0% 0% / 0.00), 0px 8px 10px -1px hsl(0 0% 0% / 0.00);
-  --shadow-2xl: 0px 2px 0px 0px hsl(0 0% 0% / 0.00);
-  --tracking-normal: 0em;
-  --spacing: 0.25rem;
-
-/* Fallback for older browsers */
-  --sidebar-primary-border: hsl(var(--sidebar-primary));
-  --sidebar-primary-border: hsl(from hsl(var(--sidebar-primary)) h s calc(l + var(--opaque-button-border-intensity)) / alpha);
-
-  /* Fallback for older browsers */
-  --sidebar-accent-border: hsl(var(--sidebar-accent));
-  --sidebar-accent-border: hsl(from hsl(var(--sidebar-accent)) h s calc(l + var(--opaque-button-border-intensity)) / alpha);
-
-  /* Fallback for older browsers */
-  --primary-border: hsl(var(--primary));
-  --primary-border: hsl(from hsl(var(--primary)) h s calc(l + var(--opaque-button-border-intensity)) / alpha);
-
-  /* Fallback for older browsers */
-  --secondary-border: hsl(var(--secondary));
-  --secondary-border: hsl(from hsl(var(--secondary)) h s calc(l + var(--opaque-button-border-intensity)) / alpha);
-
-  /* Fallback for older browsers */
-  --muted-border: hsl(var(--muted));
-  --muted-border: hsl(from hsl(var(--muted)) h s calc(l + var(--opaque-button-border-intensity)) / alpha);
-
-  /* Fallback for older browsers */
-  --accent-border: hsl(var(--accent));
-  --accent-border: hsl(from hsl(var(--accent)) h s calc(l + var(--opaque-button-border-intensity)) / alpha);
-
-  /* Fallback for older browsers */
-  --destructive-border: hsl(var(--destructive));
-  --destructive-border: hsl(from hsl(var(--destructive)) h s calc(l + var(--opaque-button-border-intensity)) / alpha);
-}
-
-.dark {
-  /* === COMPATIBILITY === */
-  --button-outline: rgba(255,255,255, .08);
-  --badge-outline: rgba(255,255,255, .04);
-  --opaque-button-border-intensity: 8;
-  --elevate-1: rgba(255,255,255, .03);
-  --elevate-2: rgba(255,255,255, .07);
-
-  /* ============================================================
-     PALETA: TWITTER/X — preto puro + âmbar
-     ============================================================ */
-
-  /* === FUNDO — preto puro como o Twitter === */
-  --background: 0 0% 0%;               /* #000000 */
-  --background-secondary: 220 9% 5%;   /* #0D0D0D */
-
-  /* === TEXTO — Twitter usa #E7E9EA e #71767B === */
-  --foreground: 207 5% 91%;            /* #E7E9EA */
-  --foreground-secondary: 207 4% 46%;  /* #71767B */
-  --foreground-muted: 207 4% 38%;      /* #5E6368 */
-
-  /* === SURFACES — cinza escuro Twitter === */
-  --surface-card: 220 9% 9%;           /* #16181C */
-  --surface-glass: 220 9% 9% / 0.90;
-  --surface-elevated: 220 9% 12%;      /* #1C1F23 */
-
-  /* === BORDAS — Twitter usa #2F3336 === */
-  --border: 214 7% 20%;                /* #2F3336 */
-  --border-subtle: 214 7% 14%;         /* #222529 */
-  --border-strong: 214 7% 26%;         /* #3D4044 */
-
-  /* === PRIMARY — âmbar mantido como cor de marca === */
-  --primary: 38 90% 55%;               /* #F5A623 */
-  --primary-foreground: 0 0% 0%;
-  --primary-hover: 38 90% 48%;
-  --primary-active: 38 90% 40%;
-
-  /* === ACCENT === */
-  --accent: 220 9% 14%;
-  --accent-foreground: 207 5% 91%;
-
-  /* === CARD === */
-  --card: 220 9% 9%;
-  --card-foreground: 207 5% 91%;
-  --card-border: 214 7% 20%;
-
-  /* === POPOVER === */
-  --popover: 220 9% 9%;
-  --popover-foreground: 207 5% 91%;
-  --popover-border: 214 7% 20%;
-
-  /* === SECONDARY === */
-  --secondary: 220 9% 12%;
-  --secondary-foreground: 207 5% 82%;
-
-  /* === MUTED === */
-  --muted: 220 9% 9%;
-  --muted-foreground: 207 4% 46%;
-
-  /* === RING === */
-  --ring: 38 90% 55%;
-
-  /* === SIDEBAR === */
-  --sidebar: 0 0% 0%;
-  --sidebar-foreground: 207 5% 91%;
-  --sidebar-border: 214 7% 20%;
-  --sidebar-primary: 38 90% 55%;
-  --sidebar-primary-foreground: 0 0% 0%;
-  --sidebar-accent: 220 9% 14%;
-  --sidebar-accent-foreground: 207 5% 82%;
-  --sidebar-ring: 38 90% 55%;
-
-  /* === STATUS === */
-  --destructive: 3 74% 59%;
-  --destructive-foreground: 0 0% 98%;
-  --danger: 3 74% 59%;
-  --danger-foreground: 0 0% 98%;
-  --success: 142 60% 45%;
-  --success-foreground: 0 0% 98%;
-  --warning: 38 90% 55%;
-  --warning-foreground: 0 0% 4%;
-  --info: 210 80% 55%;
-  --info-foreground: 0 0% 98%;
-
-  /* === BADGES === */
-  --badge-journalist: 38 90% 55%;
-  --badge-journalist-foreground: 0 0% 4%;
-  --badge-pending: 38 90% 55%;
-  --badge-pending-foreground: 0 0% 4%;
-  --badge-fan: 210 70% 52%;
-  --badge-fan-foreground: 0 0% 98%;
-  --badge-verified: 38 90% 55%;
-
-  /* === INPUT === */
-  --input: 220 9% 14%;
-
-  /* === CHARTS === */
-  --chart-1: 38 90% 55%;
-  --chart-2: 3 74% 59%;
-  --chart-3: 210 70% 52%;
-  --chart-4: 142 60% 45%;
-  --chart-5: 270 60% 60%;
-
-  /* === SHADOWS — Twitter usa sombras mínimas === */
-  --shadow-2xs: none;
-  --shadow-xs:  none;
-  --shadow-sm:  none;
-  --shadow:     none;
-  --shadow-md:  none;
-  --shadow-lg:  none;
-  --shadow-xl:  none;
-  --shadow-2xl: none;
-  --shadow-card: none;
-  --shadow-hover: none;
-  --shadow-elevated: 0 1px 3px hsl(0 0% 0% / 0.40);
-  --shadow-glow-primary: none;
-  --shadow-glow-accent: none;
-
-  /* === RADIUS === */
-  --radius: 1rem;
-  --radius-soft: 1rem;
-  --radius-medium: 0.75rem;
-  --radius-sharp: 0.25rem;
-
-  /* Fallback for older browsers */
-  --sidebar-primary-border: hsl(var(--sidebar-primary));
-  --sidebar-primary-border: hsl(from hsl(var(--sidebar-primary)) h s calc(l + var(--opaque-button-border-intensity)) / alpha);
-
-  /* Fallback for older browsers */
-  --sidebar-accent-border: hsl(var(--sidebar-accent));
-  --sidebar-accent-border: hsl(from hsl(var(--sidebar-accent)) h s calc(l + var(--opaque-button-border-intensity)) / alpha);
-
-  /* Fallback for older browsers */
-  --primary-border: hsl(var(--primary));
-  --primary-border: hsl(from hsl(var(--primary)) h s calc(l + var(--opaque-button-border-intensity)) / alpha);
-
-  /* Fallback for older browsers */
-  --secondary-border: hsl(var(--secondary));
-  --secondary-border: hsl(from hsl(var(--secondary)) h s calc(l + var(--opaque-button-border-intensity)) / alpha);
-
-  /* Fallback for older browsers */
-  --muted-border: hsl(var(--muted));
-  --muted-border: hsl(from hsl(var(--muted)) h s calc(l + var(--opaque-button-border-intensity)) / alpha);
-
-  /* Fallback for older browsers */
-  --accent-border: hsl(var(--accent));
-  --accent-border: hsl(from hsl(var(--accent)) h s calc(l + var(--opaque-button-border-intensity)) / alpha);
-
-  /* Fallback for older browsers */
-  --destructive-border: hsl(var(--destructive));
-  --destructive-border: hsl(from hsl(var(--destructive)) h s calc(l + var(--opaque-button-border-intensity)) / alpha);
+  --x-bg: #000000;
+  --x-surface: #16181c;
+  --x-border: #2f3336;
+  --x-text-primary: #e7e9ea;
+  --x-text-secondary: #71767b;
+  --x-accent: #1a56db;
+  --x-accent-hover: #1648b8;
+  --x-hover: rgba(255, 255, 255, 0.03);
+  --x-like: #f91880;
+  --x-repost: #00ba7c;
+  --x-search-bg: #202327;
+  --brand-gradient: linear-gradient(135deg, #1a56db, #0a3a8f);
 }
 
 @layer base {
   * {
-    @apply border-border;
+    border-color: var(--x-border);
   }
 
   body {
-    @apply font-sans antialiased bg-background text-foreground;
-    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
-                 Helvetica, Arial, sans-serif;
-    position: relative;
-    min-height: 100vh;
+    background-color: var(--x-bg);
+    color: var(--x-text-primary);
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    margin: 0;
+    padding: 0;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
   }
 
-  h1, h2, h3, h4, h5, h6 {
-    font-weight: 700;
-    letter-spacing: -0.01em;
+  html {
+    scrollbar-width: thin;
+    scrollbar-color: #2f3336 transparent;
   }
 
-  .font-mono,
-  [data-type="number"],
-  [data-type="stat"] {
-    font-family: "SF Mono", SFMono-Regular, Consolas, "Liberation Mono", Menlo, Courier, monospace;
-    font-variant-numeric: tabular-nums;
+  ::-webkit-scrollbar {
+    width: 4px;
+  }
+
+  ::-webkit-scrollbar-track {
+    background: transparent;
+  }
+
+  ::-webkit-scrollbar-thumb {
+    background: #2f3336;
+    border-radius: 4px;
   }
 }
 
-/**
- * Using the elevate system.
- * Automatic contrast adjustment.
- *
- * <element className="hover-elevate" />
- * <element className="active-elevate-2" />
- *
- * // Using the tailwind utility when a data attribute is "on"
- * <element className="toggle-elevate data-[state=on]:toggle-elevated" />
- * // Or manually controlling the toggle state
- * <element className="toggle-elevate toggle-elevated" />
- *
- * Elevation systems have to handle many states.
- * - not-hovered, vs. hovered vs. active  (three mutually exclusive states)
- * - toggled or not
- * - focused or not (this is not handled with these utilities)
- *
- * Even without handling focused or not, this is six possible combinations that
- * need to be distinguished from eachother visually.
- */
 @layer utilities {
-
-  /* ====== PREMIUM SURFACES / TOKENS (used across pages) ====== */
-  .glass-card {
-    @apply bg-surface-glass border border-card-border rounded-soft backdrop-blur-md;
-    box-shadow: var(--shadow-card);
-    transition: transform 200ms cubic-bezier(0.4, 0, 0.2, 1), box-shadow 200ms cubic-bezier(0.4, 0, 0.2, 1), background-color 200ms cubic-bezier(0.4, 0, 0.2, 1), border-color 200ms cubic-bezier(0.4, 0, 0.2, 1);
+  .x-border-b {
+    border-bottom: 1px solid var(--x-border);
+  }
+  .x-border-t {
+    border-top: 1px solid var(--x-border);
+  }
+  .x-border-r {
+    border-right: 1px solid var(--x-border);
+  }
+  .x-border-l {
+    border-left: 1px solid var(--x-border);
   }
 
-  .glass-card-hover {
-    @apply glass-card;
+  .x-hover {
+    transition: background-color 0.2s ease;
+  }
+  .x-hover:hover {
+    background-color: var(--x-hover);
   }
 
-  .glass-card-hover:hover {
-    @apply bg-surface-elevated border-border-strong;
-    box-shadow: var(--shadow-hover);
-    transform: translateY(-2px);
-  }
-
-  .chip {
-    @apply inline-flex items-center rounded-full border border-border-subtle bg-surface-card/70 px-3 py-1 text-xs font-semibold text-foreground-secondary;
-    transition: transform 150ms cubic-bezier(0.4, 0, 0.2, 1), background-color 150ms cubic-bezier(0.4, 0, 0.2, 1), border-color 150ms cubic-bezier(0.4, 0, 0.2, 1);
-  }
-
-  .chip:hover {
-    @apply bg-surface-elevated border-border;
-    transform: translateY(-1px);
-  }
-
-  .badge-journalist {
-    @apply bg-badge-journalist text-white border-transparent;
-    box-shadow: 0 0 18px hsl(var(--badge-journalist) / 0.20);
-  }
-
-  .badge-pending {
-    @apply bg-badge-pending text-badge-pending-foreground border-transparent;
-  }
-
-  .badge-fan {
-    @apply bg-badge-fan text-white border-transparent;
-    box-shadow: 0 0 18px hsl(var(--badge-fan) / 0.18);
-  }
-
-  /* Status badges padronizados (W/D/L, Finished/Live/Upcoming, Rumor/Negociação/Fechado) */
-  .badge-success {
-    @apply bg-success/20 text-success font-semibold;
-  }
-  .badge-warning {
-    @apply bg-warning/20 text-warning font-semibold;
-  }
-  .badge-danger {
-    @apply bg-danger/20 text-danger font-semibold;
-  }
-  .badge-info {
-    @apply bg-info/20 text-info font-semibold;
-  }
-
-  .stat-number {
-    @apply font-mono text-3xl font-bold text-foreground;
-    font-variant-numeric: tabular-nums;
-  }
-
-  .stat-label {
-    @apply text-xs font-semibold text-foreground-secondary uppercase tracking-wider;
-  }
-
-  .focus-ring {
-    @apply focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:ring-offset-background;
-  }
-
-  /* Hide ugly search cancel button in Chrome until we can style it properly */
-  input[type="search"]::-webkit-search-cancel-button {
-    @apply hidden;
-  }
-
-  /* Placeholder styling for contentEditable div */
-  [contenteditable][data-placeholder]:empty::before {
-    content: attr(data-placeholder);
-    color: hsl(var(--muted-foreground));
-    pointer-events: none;
-  }
-
-  /* .no-default-hover-elevate/no-default-active-elevate is an escape hatch so consumers of
-   * buttons/badges can remove the automatic brightness adjustment on interactions
-   * and program their own. */
-  .no-default-hover-elevate {}
-
-  .no-default-active-elevate {}
-
-
-  /**
-   * Toggleable backgrounds go behind the content. Hoverable/active goes on top.
-   * This way they can stack/compound. Both will overlap the parent's borders!
-   * So borders will be automatically adjusted both on toggle, and hover/active,
-   * and they will be compounded.
-   */
-  .toggle-elevate::before,
-  .toggle-elevate-2::before {
-    content: "";
-    pointer-events: none;
-    position: absolute;
-    inset: 0px;
-    /*border-radius: inherit;   match rounded corners */
-    border-radius: inherit;
-    z-index: -1;
-    /* sits behind content but above backdrop */
-  }
-
-  .toggle-elevate.toggle-elevated::before {
-    background-color: var(--elevate-2);
-  }
-
-  /* If there's a 1px border, adjust the inset so that it covers that parent's border */
-  .border.toggle-elevate::before {
-    inset: -1px;
-  }
-
-  /* Does not work on elements with overflow:hidden! */
-  .hover-elevate:not(.no-default-hover-elevate),
-  .active-elevate:not(.no-default-active-elevate),
-  .hover-elevate-2:not(.no-default-hover-elevate),
-  .active-elevate-2:not(.no-default-active-elevate) {
-    position: relative;
-    z-index: 0;
-  }
-
-  .hover-elevate:not(.no-default-hover-elevate)::after,
-  .active-elevate:not(.no-default-active-elevate)::after,
-  .hover-elevate-2:not(.no-default-hover-elevate)::after,
-  .active-elevate-2:not(.no-default-active-elevate)::after {
-    content: "";
-    pointer-events: none;
-    position: absolute;
-    inset: 0px;
-    /*border-radius: inherit;   match rounded corners */
-    border-radius: inherit;
-    z-index: 999;
-    /* sits in front of content */
-  }
-
-  .hover-elevate:hover:not(.no-default-hover-elevate)::after,
-  .active-elevate:active:not(.no-default-active-elevate)::after {
-    background-color: var(--elevate-1);
-  }
-
-  .hover-elevate-2:hover:not(.no-default-hover-elevate)::after,
-  .active-elevate-2:active:not(.no-default-active-elevate)::after {
-    background-color: var(--elevate-2);
-  }
-
-  /* If there's a 1px border, adjust the inset so that it covers that parent's border */
-  .border.hover-elevate:not(.no-hover-interaction-elevate)::after,
-  .border.active-elevate:not(.no-active-interaction-elevate)::after,
-  .border.hover-elevate-2:not(.no-hover-interaction-elevate)::after,
-  .border.active-elevate-2:not(.no-active-interaction-elevate)::after,
-  .border.hover-elevate:not(.no-hover-interaction-elevate)::after {
-    inset: -1px;
-  }
-
-  /* ====== LAYOUT UTILITIES (Premium Sports Editorial) ====== */
-  .page-container {
-    @apply container;
-  }
-
-  .page-grid {
-    @apply grid grid-cols-1 lg:grid-cols-12 gap-6;
-  }
-
-  .page-main {
-    @apply lg:col-span-8 xl:col-span-7;
-  }
-
-  .page-aside {
-    @apply hidden lg:block lg:col-span-4 xl:col-span-5;
-  }
-
-  .page-header {
-    @apply flex flex-col gap-2 pb-6;
-  }
-
-  .page-title {
-    @apply text-xl font-bold text-foreground;
-  }
-
-  .page-subtitle {
-    @apply text-sm text-foreground-secondary;
-  }
-
-  .section-title {
-    @apply text-lg font-bold text-foreground;
-  }
-
-  .section-subtitle {
-    @apply text-sm text-foreground-secondary;
-  }
-
-  /* ====== UX POLISH ====== */
-  .scrollbar-hide {
+  .hide-scrollbar {
     -ms-overflow-style: none;
     scrollbar-width: none;
   }
-  .scrollbar-hide::-webkit-scrollbar {
+  .hide-scrollbar::-webkit-scrollbar {
     display: none;
+  }
+
+  .brand-gradient {
+    background: var(--brand-gradient);
+  }
+
+  .font-brand {
+    font-family: 'Bebas Neue', cursive;
   }
 }
 
-@media (prefers-reduced-motion: reduce) {
-  *,
-  *::before,
-  *::after {
-    animation-duration: 0.01ms !important;
-    animation-iteration-count: 1 !important;
-    transition-duration: 0.01ms !important;
-    scroll-behavior: auto !important;
-  }
+@keyframes heart-pop {
+  0% { transform: scale(1); }
+  25% { transform: scale(1.3); }
+  50% { transform: scale(0.95); }
+  100% { transform: scale(1); }
+}
+
+.heart-animation {
+  animation: heart-pop 0.35s ease-in-out;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(4px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.fade-in {
+  animation: fadeIn 0.2s ease-out;
+}
+
+@keyframes toast-slide {
+  from { transform: translateY(100%); opacity: 0; }
+  to { transform: translateY(0); opacity: 1; }
+}
+
+.toast-animation {
+  animation: toast-slide 0.3s ease-out;
+}
+
+@keyframes pulse-live {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.4; }
+}
+
+.pulse-live {
+  animation: pulse-live 1.5s ease-in-out infinite;
 }

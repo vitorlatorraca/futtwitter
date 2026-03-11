@@ -1,20 +1,17 @@
 import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useAuth } from '@/lib/auth-context';
-import { NewsCard } from '@/components/news-card';
-import { Button } from '@/components/ui/button';
+import { TweetCard } from '@/components/tweet-card';
+import { TweetFeed } from '@/components/tweet-feed';
 import { Input } from '@/components/ui/input';
 import { AppShell } from '@/components/ui/app-shell';
 import { PageHeader } from '@/components/ui/page';
-import { EmptyState } from '@/components/ui/empty-state';
 import { TeamPicker } from '@/components/ui/team-picker';
-import { Panel, SectionHeader, Crest, LoadingSkeleton } from '@/components/ui-premium';
 import { useToast } from '@/hooks/use-toast';
 import { apiRequest, getApiUrl } from '@/lib/queryClient';
 import { TEAMS_DATA } from '@/lib/team-data';
 import type { News } from '@shared/schema';
-import { Link } from 'wouter';
-import { Search, Newspaper, Lock, ArrowRight } from 'lucide-react';
+import { Search, Newspaper, Lock } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 type FeedTab = 'all' | 'my-team' | 'europe';
@@ -84,7 +81,7 @@ export default function DashboardPage() {
       toast({
         variant: 'destructive',
         title: 'Erro',
-        description: error.message || 'Não foi possível registrar sua interação',
+        description: error.message || 'Nao foi possivel registrar sua interacao',
       });
     },
   });
@@ -93,188 +90,139 @@ export default function DashboardPage() {
     interactionMutation.mutate({ newsId, type });
   };
 
-  const selectedTeam =
-    user?.teamId ? TEAMS_DATA.find((t) => t.id === user.teamId) : undefined;
   const isTeamSpecific = activeFilter !== 'all' && activeFilter !== 'my-team' && activeFilter !== 'europe';
 
   return (
     <AppShell>
       <PageHeader
         title="Feed"
-        description="Notícias editoriais, bastidores e análises — com a cara do seu time."
+        description="Noticias editoriais, bastidores e analises."
         actions={
           <div className="hidden md:block w-[320px]">
             <div className="relative">
-              <Search className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-foreground-muted" />
+              <Search className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4" style={{ color: '#657786' }} />
               <Input
                 type="search"
                 placeholder="Buscar (em breve)"
                 value={searchQ}
                 onChange={(e) => setSearchQ(e.target.value)}
                 className="pl-9"
-                aria-label="Buscar no feed (em breve)"
+                aria-label="Buscar no feed"
               />
             </div>
           </div>
         }
       />
 
-      {/* Filters — Twitter-style tabs */}
-      <div className="sticky top-14 z-40 border-b border-border bg-black/90 backdrop-blur-md">
-        <div className="flex items-center">
-          {[
-            { id: "my-team" as FeedTab, label: "Meu time", testId: "filter-my-team" },
-            { id: "all" as FeedTab, label: "Todos", testId: "filter-all" },
-            { id: "europe" as FeedTab, label: "Europa", testId: "filter-europe" },
-          ].map((tab) => (
-            <button
-              key={tab.id}
-              onClick={() => setActiveFilter(tab.id)}
-              data-testid={tab.testId}
-              className={cn(
-                "relative flex-1 flex items-center justify-center h-12 text-sm font-bold transition-colors hover:bg-white/5",
-                activeFilter === tab.id
-                  ? "text-foreground"
-                  : "text-foreground-secondary"
-              )}
-            >
-              {tab.label}
-              {activeFilter === tab.id && (
-                <span className="absolute bottom-0 left-1/2 -translate-x-1/2 w-12 h-1 rounded-full bg-primary" />
-              )}
-            </button>
-          ))}
+      {/* Filters - Twitter-style tabs */}
+      <div className="sticky top-14 z-40" style={{ borderBottom: '1px solid #2f3336', background: 'rgba(0,0,0,0.9)', backdropFilter: 'blur(12px)' }}>
+        <div className="flex justify-center">
+          <div className="w-full max-w-[600px]" style={{ borderLeft: '1px solid #2f3336', borderRight: '1px solid #2f3336' }}>
+            <div className="flex items-center">
+              {[
+                { id: "my-team" as FeedTab, label: "Meu time", testId: "filter-my-team" },
+                { id: "all" as FeedTab, label: "Todos", testId: "filter-all" },
+                { id: "europe" as FeedTab, label: "Europa", testId: "filter-europe" },
+              ].map((tab) => (
+                <button
+                  key={tab.id}
+                  onClick={() => setActiveFilter(tab.id)}
+                  data-testid={tab.testId}
+                  className="relative flex-1 flex items-center justify-center h-12 text-sm font-bold transition-colors"
+                  style={{
+                    color: activeFilter === tab.id ? '#e1e8ed' : '#657786',
+                    background: 'transparent',
+                    border: 'none',
+                    cursor: 'pointer',
+                  }}
+                  onMouseEnter={(e) => { e.currentTarget.style.background = 'rgba(255,255,255,0.03)'; }}
+                  onMouseLeave={(e) => { e.currentTarget.style.background = 'transparent'; }}
+                >
+                  {tab.label}
+                  {activeFilter === tab.id && (
+                    <span
+                      className="absolute bottom-0 left-1/2 -translate-x-1/2 w-12 h-1 rounded-full"
+                      style={{ background: '#1da1f2' }}
+                    />
+                  )}
+                </button>
+              ))}
 
-          <div className="shrink-0 pr-2">
-            <TeamPicker
-              value={isTeamSpecific ? activeFilter : undefined}
-              onValueChange={(teamId) => setActiveFilter(teamId)}
-            />
-          </div>
-        </div>
+              <div className="shrink-0 pr-2">
+                <TeamPicker
+                  value={isTeamSpecific ? activeFilter : undefined}
+                  onValueChange={(teamId: string) => setActiveFilter(teamId as FeedTab)}
+                />
+              </div>
+            </div>
 
-        <div className="flex items-center gap-1.5 px-4 py-2 text-xs text-foreground-muted border-t border-border">
-          <Lock className="h-3 w-3" />
-          Interações só aparecem para notícias do seu time.
-        </div>
+            <div className="flex items-center gap-1.5 px-4 py-2 text-xs" style={{ color: '#657786', borderTop: '1px solid #2f3336' }}>
+              <Lock className="h-3 w-3" />
+              Interacoes so aparecem para noticias do seu time.
+            </div>
 
-        <div className="md:hidden px-4 pb-2">
-          <div className="relative">
-            <Search className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-foreground-muted" />
-            <Input
-              type="search"
-              placeholder="Buscar (em breve)"
-              value={searchQ}
-              onChange={(e) => setSearchQ(e.target.value)}
-              className="pl-9"
-              aria-label="Buscar no feed (em breve)"
-            />
+            <div className="md:hidden px-4 pb-2">
+              <div className="relative">
+                <Search className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4" style={{ color: '#657786' }} />
+                <Input
+                  type="search"
+                  placeholder="Buscar (em breve)"
+                  value={searchQ}
+                  onChange={(e) => setSearchQ(e.target.value)}
+                  className="pl-9"
+                  aria-label="Buscar no feed"
+                />
+              </div>
+            </div>
           </div>
         </div>
       </div>
 
-      {/* Content */}
-      <div className="pt-6">
-        <div className="page-grid">
-          <div className="page-main">
-            <div>
-              {isLoading ? (
-                <>
-                  {[1, 2, 3].map((i) => (
-                    <Panel key={i}>
-                      <LoadingSkeleton variant="row" />
-                      <LoadingSkeleton variant="text" className="mt-4" />
-                    </Panel>
-                  ))}
-                </>
-              ) : newsData && newsData.length > 0 ? (
-                newsData.map((news: any) => {
-                  const scope = news.scope ?? 'ALL';
-                  const canInteract =
-                    scope === 'EUROPE' || (!!user?.teamId && news.teamId === user.teamId);
-                  return (
-                    <NewsCard
-                      key={news.id}
-                      news={news}
-                      canInteract={canInteract}
-                      onInteract={handleInteraction}
-                    />
-                  );
-                })
-              ) : (
-                <EmptyState
-                  icon={Newspaper}
-                  title="Nenhuma notícia por aqui"
-                  description={
-                    activeFilter === "my-team"
-                      ? !user?.teamId
-                        ? "Escolha um time para ver o feed do seu clube."
-                        : "Não há notícias do seu time no momento."
-                      : activeFilter === "europe"
-                        ? "Ainda não há posts sobre Europa."
-                        : "Ainda não há posts."
-                  }
-                />
-              )}
-            </div>
-          </div>
-
-          <aside className="page-aside">
-            <div className="sticky top-24 space-y-4">
-              <Panel>
-                <SectionHeader
-                  title="Seu time"
-                  subtitle="Atalhos e contexto rápido."
-                  action={
-                    <Button variant="outline" size="sm" className="gap-2" asChild>
-                      <Link href="/meu-time">
-                        Ver
-                        <ArrowRight className="h-4 w-4" />
-                      </Link>
-                    </Button>
-                  }
-                />
-                <div className="mt-5 flex items-center gap-3">
-                  {selectedTeam ? (
-                    <>
-                      <Crest slug={selectedTeam.id} alt={selectedTeam.name} size="md" ring />
-                      <div className="min-w-0">
-                        <div className="font-semibold text-foreground truncate">{selectedTeam.name}</div>
-                        <div className="text-xs text-foreground-secondary">
-                          Use “Meu time” para ver só as notícias dele.
-                        </div>
-                      </div>
-                    </>
-                  ) : (
-                    <div className="text-sm text-foreground-secondary">
-                      Selecione um time para personalizar seu feed.
-                    </div>
-                  )}
+      {/* Twitter-Style Feed */}
+      <div className="flex justify-center w-full">
+        <TweetFeed>
+          {isLoading ? (
+            <>
+              {[1, 2, 3, 4, 5].map((i) => (
+                <div key={i} className="tweet-row animate-pulse">
+                  <div className="tweet-avatar" style={{ background: 'rgba(101,119,134,0.2)' }} />
+                  <div className="tweet-content" style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                    <div style={{ height: '16px', background: 'rgba(101,119,134,0.2)', borderRadius: '4px', width: '140px' }} />
+                    <div style={{ height: '48px', background: 'rgba(101,119,134,0.2)', borderRadius: '4px', width: '100%' }} />
+                    <div style={{ height: '16px', background: 'rgba(101,119,134,0.2)', borderRadius: '4px', width: '100px' }} />
+                  </div>
                 </div>
-              </Panel>
-
-              <Panel className={cn(isTeamSpecific && "border-primary/20")}>
-                <SectionHeader title="Filtro atual" />
-                <div className="mt-3 flex flex-wrap gap-2">
-                  <span className="inline-flex items-center rounded-full border border-border bg-muted/60 px-3 py-1 text-xs font-semibold text-foreground">
-                    {activeFilter === "all"
-                      ? "Todos"
-                      : activeFilter === "my-team"
-                        ? "Meu time"
-                        : activeFilter === "europe"
-                          ? "Europa"
-                          : "Time selecionado"}
-                  </span>
-                  {isTeamSpecific ? (
-                    <span className="inline-flex items-center rounded-full border border-border bg-muted/60 px-3 py-1 text-xs font-semibold text-foreground">
-                      {(TEAMS_DATA.find((t) => t.id === activeFilter)?.name) ?? "Time"}
-                    </span>
-                  ) : null}
-                </div>
-              </Panel>
+              ))}
+            </>
+          ) : newsData && newsData.length > 0 ? (
+            newsData.map((news: any) => {
+              const scope = news.scope ?? 'ALL';
+              const canInteract =
+                scope === 'EUROPE' || (!!user?.teamId && news.teamId === user.teamId);
+              return (
+                <TweetCard
+                  key={news.id}
+                  news={news}
+                  canInteract={canInteract}
+                  onInteract={handleInteraction}
+                />
+              );
+            })
+          ) : (
+            <div className="flex flex-col items-center justify-center py-12 px-4">
+              <Newspaper className="h-12 w-12 mb-3" style={{ color: '#657786', opacity: 0.5 }} />
+              <p style={{ color: '#657786', textAlign: 'center' }}>
+                {activeFilter === "my-team"
+                  ? !user?.teamId
+                    ? "Escolha um time para ver o feed do seu clube."
+                    : "Nao ha noticias do seu time no momento."
+                  : activeFilter === "europe"
+                    ? "Ainda nao ha posts sobre Europa."
+                    : "Ainda nao ha posts."}
+              </p>
             </div>
-          </aside>
-        </div>
+          )}
+        </TweetFeed>
       </div>
     </AppShell>
   );

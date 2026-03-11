@@ -5,160 +5,34 @@ const config: Config = {
   content: [
     "./client/index.html",
     "./client/src/**/*.{js,jsx,ts,tsx}",
-    "./pages/**/*.{js,ts,jsx,tsx,mdx}",
-    "./components/**/*.{js,ts,jsx,tsx,mdx}",
-    "./app/**/*.{js,ts,jsx,tsx,mdx}",
   ],
   theme: {
-    container: {
-      center: true,
-      padding: {
-        DEFAULT: "1rem",
-        sm: "1rem",
-        md: "1.25rem",
-        lg: "1.5rem",
-        xl: "2rem",
-      },
-      screens: {
-        "2xl": "1200px",
-      },
-    },
     extend: {
       colors: {
-        // Base colors
-        background: "hsl(var(--background))",
-        "background-secondary": "hsl(var(--background-secondary))",
-        foreground: "hsl(var(--foreground))",
-        "foreground-secondary": "hsl(var(--foreground-secondary))",
-        "foreground-muted": "hsl(var(--foreground-muted))",
-        
-        // Surfaces
-        "surface-card": "hsl(var(--surface-card))",
-        "surface-glass": "hsl(var(--surface-glass))",
-        "surface-elevated": "hsl(var(--surface-elevated))",
-        
-        // Popover (radix / shadcn)
-        popover: {
-          DEFAULT: "hsl(var(--popover))",
-          foreground: "hsl(var(--popover-foreground))",
-        },
-
-        // Borders
-        border: "hsl(var(--border))",
-        "border-subtle": "hsl(var(--border-subtle))",
-        "border-strong": "hsl(var(--border-strong))",
-
-        // Inputs (shadcn)
-        input: "hsl(var(--input))",
-        
-        // Cards
-        card: {
-          DEFAULT: "hsl(var(--card))",
-          foreground: "hsl(var(--card-foreground))",
-          border: "hsl(var(--card-border))",
-        },
-        
-        // Primary (Verde Futebol)
-        primary: {
-          DEFAULT: "hsl(var(--primary))",
-          foreground: "hsl(var(--primary-foreground))",
-          hover: "hsl(var(--primary-hover))",
-          active: "hsl(var(--primary-active))",
-        },
-        
-        // Accent (Dourado)
-        accent: {
-          DEFAULT: "hsl(var(--accent))",
-          foreground: "hsl(var(--accent-foreground))",
-          hover: "hsl(var(--accent-hover))",
-        },
-        
-        // Secondary
-        secondary: {
-          DEFAULT: "hsl(var(--secondary))",
-          foreground: "hsl(var(--secondary-foreground))",
-        },
-        
-        // Muted
-        muted: {
-          DEFAULT: "hsl(var(--muted))",
-          foreground: "hsl(var(--muted-foreground))",
-        },
-        
-        // Status colors
-        success: {
-          DEFAULT: "hsl(var(--success))",
-          foreground: "hsl(var(--success-foreground))",
-        },
-        warning: {
-          DEFAULT: "hsl(var(--warning))",
-          foreground: "hsl(var(--warning-foreground))",
-        },
-        danger: {
-          DEFAULT: "hsl(var(--danger))",
-          foreground: "hsl(var(--danger-foreground))",
-        },
-        info: {
-          DEFAULT: "hsl(var(--info))",
-          foreground: "hsl(var(--info-foreground))",
-        },
-        
-        // Badges
-        "badge-journalist": "hsl(var(--badge-journalist))",
-        "badge-journalist-foreground": "hsl(var(--badge-journalist-foreground))",
-        "badge-pending": "hsl(var(--badge-pending))",
-        "badge-pending-foreground": "hsl(var(--badge-pending-foreground))",
-        "badge-fan": "hsl(var(--badge-fan))",
-        "badge-fan-foreground": "hsl(var(--badge-fan-foreground))",
-        "badge-verified": "hsl(var(--badge-verified))",
-        
-        // Legacy compatibility
-        destructive: {
-          DEFAULT: "hsl(var(--destructive))",
-          foreground: "hsl(var(--destructive-foreground))",
-        },
-        ring: "hsl(var(--ring))",
-        
-        surface: {
-          card: "hsl(var(--surface-card))",
-          elevated: "hsl(var(--surface-elevated))",
-          glass: "hsl(var(--surface-glass))",
-        },
-      },
-      borderRadius: {
-        soft: "1rem",
-        medium: "0.75rem",
-        sharp: "0.25rem",
-        lg: "1rem",
-        md: "0.75rem",
-        sm: "0.5rem",
+        "x-bg": "#000000",
+        "x-surface": "#16181c",
+        "x-border": "#2f3336",
+        "x-text-primary": "#e7e9ea",
+        "x-text-secondary": "#71767b",
+        "x-accent": "#1a56db",
+        "x-accent-hover": "#1648b8",
+        "x-hover": "rgba(255,255,255,0.03)",
+        "x-like": "#f91880",
+        "x-repost": "#00ba7c",
+        "x-search-bg": "#202327",
       },
       fontFamily: {
-        sans: [
-          "-apple-system", "BlinkMacSystemFont", '"Segoe UI"', "Roboto",
-          "Helvetica", "Arial", "sans-serif"
-        ],
-        display: [
-          "-apple-system", "BlinkMacSystemFont", '"Segoe UI"', "Roboto",
-          "Helvetica", "Arial", "sans-serif"
-        ],
-        mono: ['"SF Mono"', "SFMono-Regular", "Consolas", '"Liberation Mono"',
-               "Menlo", "Courier", "monospace"],
+        sans: ["Inter", "-apple-system", "BlinkMacSystemFont", '"Segoe UI"', "Roboto", "Helvetica", "Arial", "sans-serif"],
+        brand: ['"Bebas Neue"', "cursive"],
       },
-      boxShadow: {
-        "card": "var(--shadow-card)",
-        "hover": "var(--shadow-hover)",
-        "elevated": "var(--shadow-elevated)",
-        "glow-primary": "var(--shadow-glow-primary)",
-        "glow-accent": "var(--shadow-glow-accent)",
+      maxWidth: {
+        "feed": "600px",
+        "layout": "1265px",
       },
-      transitionDuration: {
-        "fast": "150ms",
-        "normal": "200ms",
-        "slow": "300ms",
-      },
-      transitionTimingFunction: {
-        "smooth": "cubic-bezier(0.4, 0, 0.2, 1)",
+      width: {
+        "sidebar": "275px",
+        "right-sidebar": "350px",
+        "feed": "600px",
       },
     },
   },

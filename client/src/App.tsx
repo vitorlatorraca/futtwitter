@@ -1,109 +1,64 @@
-import { Switch, Route, Redirect } from "wouter";
-import { queryClient } from "./lib/queryClient";
-import { QueryClientProvider } from "@tanstack/react-query";
-import { Toaster } from "@/components/ui/toaster";
-import { TooltipProvider } from "@/components/ui/tooltip";
-import { AuthProvider, useAuth } from "@/lib/auth-context";
-import LandingPage from "@/pages/landing";
-import LoginPage from "@/pages/login";
-import SignupPage from "@/pages/signup";
-import TeamSelectionPage from "@/pages/team-selection";
-import DashboardPage from "@/pages/dashboard";
-import MeuTimePage from "@/pages/meu-time";
-import MeuTimeElencoPage from "@/pages/meu-time-elenco";
-import MeuTimeComunidadeTopicPage from "@/pages/meu-time-comunidade";
-import { MatchesPage } from "@/features/team/matches";
-import PerfilPage from "@/pages/perfil";
-import JornalistaPage from "@/pages/jornalista";
-import JogosParaSeDivertirPage from "@/pages/jogos-para-se-divertir";
-import LembraDesseElencoPage from "@/pages/jogos/lembra-desse-elenco";
-import AdivinheElencoPage from "@/pages/jogos/adivinhe-elenco";
-import AdivinheOJogadorPage from "@/pages/jogos/adivinhe-o-jogador";
-import VaiEVemPage from "@/pages/vai-e-vem";
-import NotFound from "@/pages/not-found";
+import React, { Suspense, lazy } from "react";
+import { BrowserRouter, Routes, Route } from "react-router-dom";
+import Layout from "./components/layout/Layout";
+import ComposeModal from "./components/modals/ComposeModal";
+import ImageLightbox from "./components/modals/ImageLightbox";
+import Toast from "./components/modals/Toast";
 
-function ProtectedRoute({ component: Component }: { component: () => JSX.Element }) {
-  const { user, isLoading } = useAuth();
+const Home = lazy(() => import("./pages/Home"));
+const Explore = lazy(() => import("./pages/Explore"));
+const Notifications = lazy(() => import("./pages/Notifications"));
+const Messages = lazy(() => import("./pages/Messages"));
+const Profile = lazy(() => import("./pages/Profile"));
+const PostDetail = lazy(() => import("./pages/PostDetail"));
+const Bookmarks = lazy(() => import("./pages/Bookmarks"));
+const Settings = lazy(() => import("./pages/Settings"));
+const MeuTimeFeed = lazy(() => import("./pages/MeuTimeFeed"));
+const VaiEVemFeed = lazy(() => import("./pages/VaiEVemFeed"));
+const JogosFeed = lazy(() => import("./pages/JogosFeed"));
 
-  if (isLoading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="text-center">
-          <div className="text-4xl mb-4">⚽</div>
-          <p className="text-muted-foreground">Carregando...</p>
-        </div>
-      </div>
-    );
-  }
-
-  if (!user) {
-    return <Redirect to="/login" />;
-  }
-
-  // Check if user has selected a team
-  if (!user.teamId && window.location.pathname !== '/selecionar-time') {
-    return <Redirect to="/selecionar-time" />;
-  }
-
-  return <Component />;
-}
-
-function PublicRoute({ component: Component }: { component: () => JSX.Element }) {
-  const { user, isLoading } = useAuth();
-
-  if (isLoading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="text-center">
-          <div className="text-4xl mb-4">⚽</div>
-          <p className="text-muted-foreground">Carregando...</p>
-        </div>
-      </div>
-    );
-  }
-
-  if (user && user.teamId) {
-    return <Redirect to="/dashboard" />;
-  }
-
-  return <Component />;
-}
-
-function Router() {
+function LoadingFallback() {
   return (
-    <Switch>
-      <Route path="/" component={() => <PublicRoute component={LandingPage} />} />
-      <Route path="/login" component={() => <PublicRoute component={LoginPage} />} />
-      <Route path="/cadastro" component={() => <PublicRoute component={SignupPage} />} />
-      <Route path="/selecionar-time" component={TeamSelectionPage} />
-      <Route path="/dashboard" component={() => <ProtectedRoute component={DashboardPage} />} />
-      <Route path="/meu-time" component={() => <ProtectedRoute component={MeuTimePage} />} />
-      <Route path="/meu-time/elenco" component={() => <ProtectedRoute component={MeuTimeElencoPage} />} />
-      <Route path="/meu-time/comunidade/:topicId" component={() => <ProtectedRoute component={MeuTimeComunidadeTopicPage} />} />
-      <Route path="/meu-time/jogos" component={() => <ProtectedRoute component={MatchesPage} />} />
-      <Route path="/jogos" component={() => <ProtectedRoute component={JogosParaSeDivertirPage} />} />
-      <Route path="/jogos/lembra-desse-elenco" component={() => <ProtectedRoute component={LembraDesseElencoPage} />} />
-      <Route path="/jogos/adivinhe-elenco/:slug" component={() => <ProtectedRoute component={AdivinheElencoPage} />} />
-      <Route path="/jogos/adivinhe-o-jogador" component={() => <ProtectedRoute component={AdivinheOJogadorPage} />} />
-      <Route path="/vai-e-vem" component={() => <ProtectedRoute component={VaiEVemPage} />} />
-      <Route path="/perfil" component={() => <ProtectedRoute component={PerfilPage} />} />
-      <Route path="/jornalista" component={() => <ProtectedRoute component={JornalistaPage} />} />
-      <Route component={NotFound} />
-    </Switch>
+    <div className="flex items-center justify-center py-16">
+      <div className="w-8 h-8 border-2 border-x-accent border-t-transparent rounded-full animate-spin" />
+    </div>
   );
 }
 
-function App() {
+function PlaceholderPage({ title }: { title: string }) {
   return (
-    <QueryClientProvider client={queryClient}>
-      <AuthProvider>
-        <TooltipProvider>
-          <Toaster />
-          <Router />
-        </TooltipProvider>
-      </AuthProvider>
-    </QueryClientProvider>
+    <div className="py-16 px-8 text-center">
+      <h2 className="text-3xl font-extrabold mb-2">{title}</h2>
+      <p className="text-x-text-secondary text-[15px]">Esta página estará disponível em breve.</p>
+    </div>
   );
 }
 
-export default App;
+export default function App() {
+  return (
+    <BrowserRouter>
+      <Suspense fallback={<LoadingFallback />}>
+        <Routes>
+          <Route element={<Layout />}>
+            <Route path="/" element={<Home />} />
+            <Route path="/explore" element={<Explore />} />
+            <Route path="/notifications" element={<Notifications />} />
+            <Route path="/messages" element={<Messages />} />
+            <Route path="/messages/:id" element={<Messages />} />
+            <Route path="/profile/:handle" element={<Profile />} />
+            <Route path="/post/:id" element={<PostDetail />} />
+            <Route path="/bookmarks" element={<Bookmarks />} />
+            <Route path="/settings" element={<Settings />} />
+            <Route path="/meu-time" element={<MeuTimeFeed />} />
+            <Route path="/vai-e-vem" element={<VaiEVemFeed />} />
+            <Route path="/jogos" element={<JogosFeed />} />
+            <Route path="*" element={<PlaceholderPage title="Página não encontrada" />} />
+          </Route>
+        </Routes>
+      </Suspense>
+      <ComposeModal />
+      <ImageLightbox />
+      <Toast />
+    </BrowserRouter>
+  );
+}
