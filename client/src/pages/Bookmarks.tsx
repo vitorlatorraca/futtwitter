@@ -2,12 +2,14 @@ import React from "react";
 import { ArrowLeft } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { useAppStore } from "../store/useAppStore";
+import { useAuth } from "../lib/auth-context";
 import { mockPosts } from "../data/mockPosts";
 import PostCard from "../components/feed/PostCard";
 
 export default function Bookmarks() {
   const navigate = useNavigate();
   const { posts: storePosts, currentUser } = useAppStore();
+  const { user: authUser } = useAuth();
   const allPosts = [...storePosts, ...mockPosts];
   const bookmarked = allPosts.filter((p) => p.bookmarked);
 
@@ -23,7 +25,7 @@ export default function Bookmarks() {
         </button>
         <div>
           <h1 className="text-xl font-bold">Salvos</h1>
-          <p className="text-[13px] text-x-text-secondary">@{currentUser.handle}</p>
+          <p className="text-[13px] text-x-text-secondary">@{authUser?.handle ?? currentUser?.handle ?? "user"}</p>
         </div>
       </div>
 

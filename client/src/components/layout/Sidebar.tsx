@@ -46,8 +46,16 @@ export default function Sidebar() {
   const { data: unreadData } = useUnreadCount(!!authUser);
   const unreadCount = unreadData?.count ?? 0;
   const displayUser = authUser
-    ? { displayName: authUser.name, handle: authUser.handle ?? "user", avatar: authUser.avatarUrl ?? "" }
-    : currentUser;
+    ? {
+        displayName: authUser.name,
+        handle: authUser.handle ?? "user",
+        avatar: authUser.avatarUrl ?? "",
+      }
+    : currentUser ?? {
+        displayName: "Usuário",
+        handle: "user",
+        avatar: "",
+      };
   const [moreMenuOpen, setMoreMenuOpen] = useState(false);
   const [userMenuOpen, setUserMenuOpen] = useState(false);
   const isCompact = useMediaQuery("(max-width: 1279px)");
@@ -189,6 +197,9 @@ export default function Sidebar() {
       </div>
 
       <div className="mb-3 relative">
+        {/* Só renderiza o botão de usuário se houver um usuário autenticado */}
+        {!authUser && !currentUser ? null : (
+          <>
         <button
           onClick={() => setUserMenuOpen(!userMenuOpen)}
           className={`flex items-center rounded-full hover:bg-[rgba(26,86,219,0.1)] transition-colors p-3 w-full ${
@@ -234,6 +245,8 @@ export default function Sidebar() {
             </>
           )}
         </AnimatePresence>
+          </>
+        )}
       </div>
     </header>
   );

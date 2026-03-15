@@ -87,18 +87,18 @@ export async function getRosterByTeamAndSeason(
 
   const rows = await query;
 
-  let result = rows.map((r) => ({
-    id: r.id,
-    playerId: r.playerId,
-    squadNumber: r.squadNumber,
-    role: r.role,
-    status: r.status,
-    name: r.name,
-    position: r.position,
-    birthDate: r.birthDate,
-    nationalityPrimary: r.nationalityPrimary,
-    photoUrl: r.photoUrl,
-    sector: r.sector,
+  let result: RosterPlayer[] = rows.map((r) => ({
+    id: r.id as string,
+    playerId: r.playerId as string,
+    squadNumber: r.squadNumber as number | null,
+    role: r.role as string | null,
+    status: r.status as string | null,
+    name: r.name as string,
+    position: r.position as string,
+    birthDate: r.birthDate as string,
+    nationalityPrimary: r.nationalityPrimary as string,
+    photoUrl: r.photoUrl as string | null,
+    sector: r.sector as string | null,
   }));
 
   if (filters?.position) {
@@ -135,8 +135,8 @@ export async function getRosterByTeamLegacy(
       id: players.id,
       playerId: players.id,
       squadNumber: players.shirtNumber,
-      role: null,
-      status: null,
+      role: sql<string | null>`null`,
+      status: sql<string | null>`null`,
       name: players.name,
       position: players.position,
       birthDate: players.birthDate,
@@ -148,18 +148,18 @@ export async function getRosterByTeamLegacy(
     .where(eq(players.teamId, teamId))
     .orderBy(sectorOrder, players.position, players.shirtNumber);
 
-  let result = rows.map((r) => ({
-    id: r.id,
-    playerId: r.playerId,
-    squadNumber: r.squadNumber,
-    role: r.role,
-    status: r.status,
-    name: r.name,
-    position: r.position,
-    birthDate: r.birthDate,
-    nationalityPrimary: r.nationalityPrimary,
-    photoUrl: r.photoUrl,
-    sector: r.sector,
+  let result: RosterPlayer[] = rows.map((r) => ({
+    id: r.id as string,
+    playerId: r.playerId as string,
+    squadNumber: r.squadNumber as number | null,
+    role: r.role as string | null,
+    status: r.status as string | null,
+    name: r.name as string,
+    position: r.position as string,
+    birthDate: r.birthDate as string,
+    nationalityPrimary: r.nationalityPrimary as string,
+    photoUrl: r.photoUrl as string | null,
+    sector: r.sector as string | null,
   }));
 
   if (filters?.position) {

@@ -30,7 +30,12 @@ export default function ComposeBox({ onPost, placeholder = "O que está acontece
         handle: authUser.handle ?? "user",
         avatar: authUser.avatarUrl ?? "",
       }
-    : currentUser;
+    : (currentUser ?? {
+        id: "anon",
+        displayName: "Usuário",
+        handle: "user",
+        avatar: "",
+      });
 
   const charLimit = 280;
   const remaining = charLimit - text.length;
@@ -58,6 +63,7 @@ export default function ComposeBox({ onPost, placeholder = "O que está acontece
       return;
     }
 
+    if (!currentUser) return;
     const newPost: Post = {
       id: `post-${Date.now()}`,
       author: currentUser,

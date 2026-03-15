@@ -223,6 +223,8 @@ export const sessionStore = new PgSession({
   pool,
   tableName: 'user_sessions',
   createTableIfMissing: true,
+  pruneSessionInterval: 60 * 15, // limpar sessões expiradas a cada 15 min
+  errorLog: console.error,
 });
 
 export async function registerRoutes(app: Express): Promise<Server> {
@@ -298,6 +300,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       secret: sessionSecret,
       resave: false,
       saveUninitialized: false,
+      rolling: true, // renova o cookie a cada request
       cookie: {
         maxAge: 30 * 24 * 60 * 60 * 1000, // 30 days
         httpOnly: true,
@@ -420,7 +423,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       await storage.checkAndAwardBadges(user.id);
 
-      req.session.save((err) => {
+      req.session.save((err: unknown) => {
         if (err) {
           console.error("Session save error (register):", err);
           return res.status(500).json({ message: 'Erro ao criar conta' });
@@ -2665,7 +2668,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         fromTeamId,
         toTeamId,
         status: validStatus,
-        feeAmount: feeAmount != null ? Number(feeAmount) : null,
+        feeAmount: feeAmount != null ? String(feeAmount) : null,
         feeCurrency: feeCurrency ?? 'BRL',
         contractUntil: contractUntil ?? null,
         sourceUrl: sourceUrl ?? null,

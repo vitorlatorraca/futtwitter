@@ -1,6 +1,6 @@
 import { createContext, useContext, ReactNode } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { apiRequest, getQueryFn } from './queryClient';
+import { apiRequest, getApiUrl } from './queryClient';
 
 export interface MeUser {
   id: string;
@@ -24,6 +24,7 @@ export interface MeUser {
 interface AuthContextType {
   user: MeUser | null;
   isLoading: boolean;
+  isError: boolean;
   login: (email: string, password: string) => Promise<void>;
   logout: () => Promise<void>;
   register: (name: string, email: string, password: string, teamId?: string, handle?: string) => Promise<void>;
@@ -34,10 +35,21 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 export function AuthProvider({ children }: { children: ReactNode }) {
   const queryClient = useQueryClient();
 
-  const { data: user, isLoading } = useQuery<MeUser | null>({
+  const { data: user, isLoading, isError } = useQuery<MeUser | null>({
     queryKey: ['/api/auth/me'],
-    queryFn: getQueryFn<MeUser | null>({ on401: 'returnNull' }),
+    queryFn: async () => {
+      try {
+        const res = await fetch(getApiUrl('/api/auth/me'), { credentials: 'include' });
+        if (!res.ok) return null;
+        const data = await res.json();
+        return data;
+      } catch {
+        return null; // rede/erro → trata como não logado
+      }
+    },
     retry: false,
+    staleTime: 5 * 60 * 1000,
+    refetchOnWindowFocus: true,
   });
 
   const loginMutation = useMutation({
@@ -82,7 +94,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   };
 
   return (
-    <AuthContext.Provider value={{ user: user ?? null, isLoading, login, logout, register }}>
+    <AuthContext.Provider value={{ user: user ?? null, isLoading, isError: isError ?? false, login, logout, register }}>
       {children}
     </AuthContext.Provider>
   );

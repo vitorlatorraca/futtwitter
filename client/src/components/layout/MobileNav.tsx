@@ -7,7 +7,7 @@ import { useAuth } from "../../lib/auth-context";
 export default function MobileNav() {
   const { currentUser } = useAppStore();
   const { user: authUser } = useAuth();
-  const profileHandle = authUser?.handle ?? currentUser.handle;
+  const profileHandle = authUser?.handle ?? currentUser?.handle ?? "user";
   const location = useLocation();
 
   const items = [

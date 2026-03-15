@@ -78,7 +78,7 @@ export interface Conversation {
 }
 
 interface AppState {
-  currentUser: User;
+  currentUser: User | null;
   posts: Post[];
   notifications: Notification[];
   conversations: Conversation[];
@@ -108,20 +108,7 @@ interface AppState {
 }
 
 export const useAppStore = create<AppState>((set, get) => ({
-  currentUser: {
-    id: "current",
-    displayName: "Vitor Souza",
-    handle: "vitorsouza",
-    avatar: "https://pbs.twimg.com/profile_images/1683325380441128960/yRsRRjGO_400x400.jpg",
-    bio: "Software developer. Building cool stuff. 🇧🇷",
-    coverPhoto: "https://pbs.twimg.com/profile_banners/44196397/1690621312/1500x500",
-    location: "São Paulo, Brasil",
-    website: "github.com/vitorsouza",
-    joinDate: "March 2020",
-    following: 342,
-    followers: 1283,
-    verified: true,
-  },
+  currentUser: null,
   posts: [],
   notifications: [],
   conversations: [],

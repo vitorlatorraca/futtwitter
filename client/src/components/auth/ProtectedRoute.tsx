@@ -10,8 +10,13 @@ interface ProtectedRouteProps {
  * Shows loading spinner while auth state is being determined.
  */
 export function ProtectedRoute({ children }: ProtectedRouteProps) {
-  const { user, isLoading } = useAuth();
+  const { user, isLoading, isError } = useAuth();
   const location = useLocation();
+
+  // Erro (rede, 500, etc.) → trata como não autenticado, evita spinner infinito
+  if (isError) {
+    return <Navigate to="/login" state={{ from: location }} replace />;
+  }
 
   if (isLoading) {
     return (
