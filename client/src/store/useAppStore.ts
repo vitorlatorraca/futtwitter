@@ -7,12 +7,19 @@ export interface User {
   avatar: string;
   bio: string;
   coverPhoto: string;
+  coverPhotoUrl?: string;
   location: string;
   website: string;
   joinDate: string;
   following: number;
   followers: number;
+  followersCount?: number;
+  followingCount?: number;
   verified: boolean;
+  /** "fan" | "journalist" - for role badge display */
+  userRole?: "fan" | "journalist";
+  /** True for verified journalists (📰 badge) */
+  isVerifiedJournalist?: boolean;
 }
 
 export interface Post {
@@ -77,7 +84,7 @@ interface AppState {
   conversations: Conversation[];
   unreadNotifications: number;
   unreadMessages: number;
-  activeTab: "for-you" | "following";
+  activeTab: "torcida" | "influencers" | "posts";
   composeModalOpen: boolean;
   imageModalOpen: boolean;
   imageModalImages: string[];
@@ -88,7 +95,7 @@ interface AppState {
   toggleLike: (postId: string) => void;
   toggleRepost: (postId: string) => void;
   toggleBookmark: (postId: string) => void;
-  setActiveTab: (tab: "for-you" | "following") => void;
+  setActiveTab: (tab: "torcida" | "influencers" | "posts") => void;
   setComposeModalOpen: (open: boolean) => void;
   openImageModal: (images: string[], index: number) => void;
   closeImageModal: () => void;
@@ -120,7 +127,7 @@ export const useAppStore = create<AppState>((set, get) => ({
   conversations: [],
   unreadNotifications: 0,
   unreadMessages: 0,
-  activeTab: "for-you",
+  activeTab: "torcida",
   composeModalOpen: false,
   imageModalOpen: false,
   imageModalImages: [],

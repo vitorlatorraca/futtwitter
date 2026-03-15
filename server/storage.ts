@@ -60,10 +60,28 @@ import {
   type InsertTransferRumorComment,
 } from "@shared/schema";
 
+export interface NotificationWithActor {
+  id: string;
+  type: string;
+  title: string;
+  message: string;
+  referenceId: string | null;
+  isRead: boolean;
+  createdAt: Date;
+  actor: {
+    id: string;
+    name: string;
+    handle: string;
+    avatarUrl: string | null;
+    userType: string;
+  } | null;
+}
+
 export interface IStorage {
   // Users
   getUser(id: string): Promise<User | undefined>;
   getUserByEmail(email: string): Promise<User | undefined>;
+  getUserByHandle(handle: string): Promise<User | undefined>;
   createUser(user: InsertUser): Promise<User>;
   updateUser(id: string, data: Partial<User>): Promise<User | undefined>;
 
@@ -213,6 +231,11 @@ export class DatabaseStorage implements IStorage {
 
   async getUserByEmail(email: string): Promise<User | undefined> {
     const [user] = await db.select().from(users).where(eq(users.email, email));
+    return user || undefined;
+  }
+
+  async getUserByHandle(handle: string): Promise<User | undefined> {
+    const [user] = await db.select().from(users).where(eq(users.handle, handle));
     return user || undefined;
   }
 
@@ -1292,13 +1315,93 @@ export class DatabaseStorage implements IStorage {
     return newNotification;
   }
 
-  async getUserNotifications(userId: string, limit = 50): Promise<Notification[]> {
-    return await db
-      .select()
+  async getUserNotifications(userId: string, limit = 50): Promise<NotificationWithActor[]> {
+    const rows = await db
+      .select({
+        id: notifications.id,
+        type: notifications.type,
+        title: notifications.title,
+        message: notifications.message,
+        referenceId: notifications.referenceId,
+        isRead: notifications.isRead,
+        createdAt: notifications.createdAt,
+        actorId: notifications.actorId,
+        actorName: users.name,
+        actorHandle: users.handle,
+        actorAvatarUrl: users.avatarUrl,
+        actorUserType: users.userType,
+      })
       .from(notifications)
+      .leftJoin(users, eq(notifications.actorId, users.id))
       .where(eq(notifications.userId, userId))
       .orderBy(desc(notifications.createdAt))
       .limit(limit);
+
+    return rows.map((r) => ({
+      id: r.id,
+      type: r.type,
+      title: r.title,
+      message: r.message,
+      referenceId: r.referenceId ?? null,
+      isRead: r.isRead,
+      createdAt: r.createdAt,
+      actor: r.actorId
+        ? {
+            id: r.actorId,
+            name: r.actorName ?? "",
+            handle: r.actorHandle ?? "",
+            avatarUrl: r.actorAvatarUrl ?? null,
+            userType: r.actorUserType ?? "FAN",
+          }
+        : null,
+    }));
+  }
+
+  async createSocialNotification({
+    recipientId,
+    actorId,
+    type,
+    title,
+    message,
+    referenceId,
+  }: {
+    recipientId: string;
+    actorId: string;
+    type: "LIKE" | "FOLLOW" | "REPLY" | "REPOST";
+    title: string;
+    message: string;
+    referenceId?: string;
+  }): Promise<void> {
+    if (recipientId === actorId) return;
+
+    if (type === "LIKE" || type === "FOLLOW") {
+      const fiveMinutesAgo = new Date(Date.now() - 5 * 60 * 1000);
+      const conditions = [
+        eq(notifications.userId, recipientId),
+        eq(notifications.actorId, actorId),
+        eq(notifications.type, type),
+        sql`${notifications.createdAt} > ${fiveMinutesAgo}`,
+      ];
+      if (referenceId) {
+        conditions.push(eq(notifications.referenceId, referenceId));
+      }
+      const existing = await db
+        .select({ id: notifications.id })
+        .from(notifications)
+        .where(and(...conditions))
+        .limit(1);
+      if (existing.length > 0) return;
+    }
+
+    await this.createNotification({
+      userId: recipientId,
+      actorId,
+      type,
+      title,
+      message,
+      referenceId,
+      isRead: false,
+    });
   }
 
   async markNotificationAsRead(userId: string, notificationId: string): Promise<boolean> {

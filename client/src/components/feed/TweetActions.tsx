@@ -1,5 +1,6 @@
 import React, { useState } from "react";
-import { MessageCircle, Repeat2, Heart, BarChart2, Bookmark, Share, Link2, Mail, Code } from "lucide-react";
+import { useNavigate } from "react-router-dom";
+import { MessageCircle, Repeat2, Heart, BarChart2, Bookmark, Share, Link2 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useAppStore } from "../../store/useAppStore";
 import { formatNumber } from "../../utils/parseText";
@@ -7,10 +8,15 @@ import type { Post } from "../../store/useAppStore";
 
 interface TweetActionsProps {
   post: Post;
+  /** Custom like handler for API-backed posts. Receives id and current liked state for toggle. */
+  onLike?: (id: string, currentlyLiked: boolean) => void;
+  /** Custom bookmark handler for API-backed posts. */
+  onBookmark?: (id: string) => void;
 }
 
-const TweetActions = React.memo(function TweetActions({ post }: TweetActionsProps) {
+const TweetActions = React.memo(function TweetActions({ post, onLike, onBookmark }: TweetActionsProps) {
   const { toggleLike, toggleRepost, toggleBookmark, showToast } = useAppStore();
+  const navigate = useNavigate();
   const [repostMenuOpen, setRepostMenuOpen] = useState(false);
   const [shareMenuOpen, setShareMenuOpen] = useState(false);
   const [animatingLike, setAnimatingLike] = useState(false);
@@ -21,7 +27,11 @@ const TweetActions = React.memo(function TweetActions({ post }: TweetActionsProp
       setAnimatingLike(true);
       setTimeout(() => setAnimatingLike(false), 350);
     }
-    toggleLike(post.id);
+    if (onLike) {
+      onLike(post.id, post.liked);
+    } else {
+      toggleLike(post.id);
+    }
   };
 
   const handleRepost = (e: React.MouseEvent) => {
@@ -31,7 +41,11 @@ const TweetActions = React.memo(function TweetActions({ post }: TweetActionsProp
 
   const handleBookmark = (e: React.MouseEvent) => {
     e.stopPropagation();
-    toggleBookmark(post.id);
+    if (onBookmark) {
+      onBookmark(post.id);
+    } else {
+      toggleBookmark(post.id);
+    }
   };
 
   const handleShare = (e: React.MouseEvent) => {
@@ -49,6 +63,7 @@ const TweetActions = React.memo(function TweetActions({ post }: TweetActionsProp
     <div className="flex items-center justify-between mt-3 -ml-2 max-w-[425px]" onClick={(e) => e.stopPropagation()}>
       {/* Reply */}
       <button
+        onClick={(e) => { e.stopPropagation(); navigate(`/post/${post.id}`); }}
         className="group flex items-center gap-1"
         aria-label={`Reply, ${post.replies} replies`}
       >
@@ -101,7 +116,10 @@ const TweetActions = React.memo(function TweetActions({ post }: TweetActionsProp
                   <Repeat2 className="w-5 h-5" />
                   {post.reposted ? "Desfazer repost" : "Repostar"}
                 </button>
-                <button className="w-full px-4 py-3 flex items-center gap-3 text-[15px] font-bold hover:bg-[rgba(231,233,234,0.03)]">
+                <button
+                  onClick={(e) => { e.stopPropagation(); setRepostMenuOpen(false); showToast("Citar — em breve"); }}
+                  className="w-full px-4 py-3 flex items-center gap-3 text-[15px] font-bold hover:bg-[rgba(231,233,234,0.03)]"
+                >
                   <svg viewBox="0 0 24 24" className="w-5 h-5 fill-current">
                     <path d="M14.23 2.854c.98-.977 2.56-.977 3.54 0l3.38 3.378c.97.977.97 2.559 0 3.536L9.91 20.998c-.36.359-.81.612-1.3.726l-6.06 1.42c-.41.097-.84-.013-1.14-.315-.3-.3-.41-.726-.31-1.14l1.42-6.063c.11-.49.37-.942.73-1.3zm2.12 1.414c-.2-.195-.51-.195-.71 0L4.41 15.497l-.96 4.082 4.08-.96L18.77 7.39c.19-.196.19-.512 0-.708z" />
                   </svg>
@@ -180,12 +198,6 @@ const TweetActions = React.memo(function TweetActions({ post }: TweetActionsProp
                 >
                   <button onClick={handleCopyLink} className="w-full px-4 py-3 flex items-center gap-3 text-[15px] hover:bg-[rgba(231,233,234,0.03)]">
                     <Link2 className="w-5 h-5" /> Copiar link
-                  </button>
-                  <button className="w-full px-4 py-3 flex items-center gap-3 text-[15px] hover:bg-[rgba(231,233,234,0.03)]">
-                    <Mail className="w-5 h-5" /> Enviar por DM
-                  </button>
-                  <button className="w-full px-4 py-3 flex items-center gap-3 text-[15px] hover:bg-[rgba(231,233,234,0.03)]">
-                    <Code className="w-5 h-5" /> Incorporar post
                   </button>
                 </motion.div>
               </>

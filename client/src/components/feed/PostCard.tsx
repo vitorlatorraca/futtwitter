@@ -9,9 +9,31 @@ import MediaGrid from "./MediaGrid";
 import LinkPreview from "./LinkPreview";
 import TweetActions from "./TweetActions";
 
+function getInitials(name: string): string {
+  return (name || "?")
+    .split(" ")
+    .map((n) => n[0])
+    .join("")
+    .toUpperCase()
+    .slice(0, 2);
+}
+
+function hashToColor(str: string): string {
+  let h = 0;
+  for (let i = 0; i < str.length; i++) h = (h << 5) - h + str.charCodeAt(i);
+  const colors = ["#1a56db", "#16a34a", "#ca8a04", "#dc2626", "#7c3aed", "#0d9488"];
+  return colors[Math.abs(h) % colors.length];
+}
+
 interface PostCardProps {
   post: Post;
   isQuoted?: boolean;
+  /** Override navigation destination (e.g. /news/:id for news posts) */
+  navigateTo?: string;
+  /** Custom like handler for API-backed posts. Receives id and current liked state for toggle. */
+  onLike?: (id: string, currentlyLiked: boolean) => void;
+  /** Custom bookmark handler for API-backed posts. */
+  onBookmark?: (id: string) => void;
 }
 
 const VerifiedBadge = () => (
@@ -20,22 +42,68 @@ const VerifiedBadge = () => (
   </svg>
 );
 
-const PostCard = React.memo(function PostCard({ post, isQuoted = false }: PostCardProps) {
+/** Journalist badge: newspapers icon. Display when isVerifiedJournalist is true. */
+const JournalistBadge = () => (
+  <span className="inline-flex items-center gap-0.5 text-[13px] text-x-accent font-medium" title="Jornalista verificado">
+    📰
+  </span>
+);
+
+const PostCard = React.memo(function PostCard({ post, isQuoted = false, navigateTo, onLike, onBookmark }: PostCardProps) {
   const navigate = useNavigate();
   const [menuOpen, setMenuOpen] = useState(false);
   const [showMore, setShowMore] = useState(false);
   const textParts = parsePostText(post.text);
   const isLongText = post.text.length > 280;
+  const avatarUrl = post.author.avatar && post.author.avatar.trim() ? post.author.avatar : null;
+  const displayName = post.author.displayName || "Usuário";
+  const handle = post.author.handle || "user";
 
   const handleCardClick = () => {
     if (!isQuoted) {
-      navigate(`/post/${post.id}`);
+      navigate(navigateTo || `/post/${post.id}`);
     }
   };
 
   const handleProfileClick = (e: React.MouseEvent) => {
     e.stopPropagation();
-    navigate(`/profile/${post.author.handle}`);
+    navigate(`/profile/${handle}`);
+  };
+
+  const AvatarEl = () => {
+    if (avatarUrl) {
+      return (
+        <img
+          src={avatarUrl}
+          alt={displayName}
+          onClick={handleProfileClick}
+          className="w-10 h-10 rounded-full object-cover flex-shrink-0 cursor-pointer hover:opacity-90"
+        />
+      );
+    }
+    return (
+      <div
+        onClick={handleProfileClick}
+        className="w-10 h-10 rounded-full flex-shrink-0 cursor-pointer flex items-center justify-center text-white font-bold text-sm"
+        style={{ backgroundColor: hashToColor(post.author.id || "0") }}
+      >
+        {getInitials(displayName)}
+      </div>
+    );
+  };
+
+  const AvatarElSmall = () => {
+    if (avatarUrl) {
+      return <img src={avatarUrl} alt="" className="w-5 h-5 rounded-full object-cover" />;
+    }
+    return (
+      <div
+        className="w-5 h-5 rounded-full flex items-center justify-center text-white font-bold text-[10px]"
+        style={{ backgroundColor: hashToColor(post.author.id || "0") }}
+      >
+        {getInitials(displayName)}
+      </div>
+    );
   };
 
   const renderText = () => {
@@ -80,9 +148,13 @@ const PostCard = React.memo(function PostCard({ post, isQuoted = false }: PostCa
         onClick={(e) => { e.stopPropagation(); navigate(`/post/${post.id}`); }}
       >
         <div className="flex items-center gap-1.5">
-          <img src={post.author.avatar} alt="" className="w-5 h-5 rounded-full object-cover" />
-          <span className="text-[13px] font-bold truncate">{post.author.displayName}</span>
-          {post.author.verified && <VerifiedBadge />}
+          <AvatarElSmall />
+          <span className="text-[13px] font-bold truncate">{displayName}</span>
+          {post.author.isVerifiedJournalist ? (
+            <span className="text-[12px] text-x-accent font-medium ml-0.5">📰 Journalist</span>
+          ) : post.author.verified && !post.author.isVerifiedJournalist ? (
+            <VerifiedBadge />
+          ) : null}
           <span className="text-[13px] text-x-text-secondary truncate">@{post.author.handle}</span>
           <span className="text-[13px] text-x-text-secondary">·</span>
           <span className="text-[13px] text-x-text-secondary">{formatTimestamp(post.timestamp)}</span>
@@ -106,12 +178,7 @@ const PostCard = React.memo(function PostCard({ post, isQuoted = false }: PostCa
       )}
 
       <div className="flex">
-        <img
-          src={post.author.avatar}
-          alt={post.author.displayName}
-          onClick={handleProfileClick}
-          className="w-10 h-10 rounded-full object-cover flex-shrink-0 cursor-pointer hover:opacity-90"
-        />
+        <AvatarEl />
         <div className="flex-1 ml-3 min-w-0">
           {/* Header */}
           <div className="flex items-start justify-between">
@@ -120,10 +187,14 @@ const PostCard = React.memo(function PostCard({ post, isQuoted = false }: PostCa
                 className="text-[15px] font-bold truncate hover:underline cursor-pointer"
                 onClick={handleProfileClick}
               >
-                {post.author.displayName}
+                {displayName}
               </span>
-              {post.author.verified && <VerifiedBadge />}
-              <span className="text-[15px] text-x-text-secondary truncate">@{post.author.handle}</span>
+              {post.author.isVerifiedJournalist ? (
+                <span className="text-[13px] text-x-accent font-medium ml-0.5">📰 Journalist</span>
+              ) : post.author.verified && !post.author.isVerifiedJournalist ? (
+                <VerifiedBadge />
+              ) : null}
+              <span className="text-[15px] text-x-text-secondary truncate">@{handle}</span>
               <span className="text-x-text-secondary">·</span>
               <time className="text-[15px] text-x-text-secondary hover:underline flex-shrink-0">
                 {formatTimestamp(post.timestamp)}
@@ -201,7 +272,7 @@ const PostCard = React.memo(function PostCard({ post, isQuoted = false }: PostCa
           {post.quotedPost && <PostCard post={post.quotedPost} isQuoted />}
 
           {/* Actions */}
-          <TweetActions post={post} />
+          <TweetActions post={post} onLike={onLike} onBookmark={onBookmark} />
         </div>
       </div>
     </article>

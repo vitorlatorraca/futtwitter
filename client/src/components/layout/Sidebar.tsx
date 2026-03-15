@@ -10,13 +10,14 @@ import {
   MoreHorizontal,
   Feather,
   LogOut,
-  UserPlus,
   Shield,
   ArrowLeftRight,
   Calendar,
 } from "lucide-react";
 import { useAppStore } from "../../store/useAppStore";
+import { useAuth } from "../../lib/auth-context";
 import { useMediaQuery } from "../../hooks/useMediaQuery";
+import { useUnreadCount } from "../../hooks/useNotifications";
 
 const FuteAppLogo = () => (
   <svg viewBox="0 0 32 32" aria-hidden="true" className="w-8 h-8">
@@ -40,7 +41,13 @@ interface NavItem {
 }
 
 export default function Sidebar() {
-  const { currentUser, unreadNotifications, unreadMessages, setComposeModalOpen } = useAppStore();
+  const { currentUser, unreadMessages, setComposeModalOpen } = useAppStore();
+  const { user: authUser, logout } = useAuth();
+  const { data: unreadData } = useUnreadCount(!!authUser);
+  const unreadCount = unreadData?.count ?? 0;
+  const displayUser = authUser
+    ? { displayName: authUser.name, handle: authUser.handle ?? "user", avatar: authUser.avatarUrl ?? "" }
+    : currentUser;
   const [moreMenuOpen, setMoreMenuOpen] = useState(false);
   const [userMenuOpen, setUserMenuOpen] = useState(false);
   const isCompact = useMediaQuery("(max-width: 1279px)");
@@ -50,7 +57,7 @@ export default function Sidebar() {
   if (isMobile) return null;
 
   const topNav: NavItem[] = [
-    { label: "Home", icon: Home, path: "/" },
+    { label: "Home", icon: Home, path: "/feed" },
     { label: "Explorar", icon: Search, path: "/explore" },
   ];
 
@@ -61,13 +68,13 @@ export default function Sidebar() {
   ];
 
   const bottomNav: NavItem[] = [
-    { label: "Notificações", icon: Bell, path: "/notifications", badge: unreadNotifications || undefined },
+    { label: "Notificações", icon: Bell, path: "/notifications", badge: unreadCount > 0 ? unreadCount : undefined },
     { label: "Mensagens", icon: Mail, path: "/messages", badge: unreadMessages || undefined },
-    { label: "Perfil", icon: User, path: `/profile/${currentUser.handle}` },
+    { label: "Perfil", icon: User, path: `/profile/${displayUser.handle}` },
   ];
 
   const renderNavItem = (item: NavItem) => {
-    const isActive = location.pathname === item.path || (item.path === "/" && location.pathname === "/");
+    const isActive = location.pathname === item.path || (item.path === "/feed" && location.pathname === "/feed");
     const Icon = item.icon;
 
     return (
@@ -125,7 +132,7 @@ export default function Sidebar() {
     <header className={`sticky top-0 h-screen flex flex-col justify-between ${isCompact ? "w-[88px] items-center" : "w-[275px]"}`}>
       <div className={`flex flex-col ${isCompact ? "items-center" : "items-start"} py-1`}>
         <NavLink
-          to="/"
+          to="/feed"
           className="p-3 rounded-full hover:bg-[rgba(26,86,219,0.1)] transition-colors mb-0.5 flex items-center gap-2"
           aria-label="FuteApp Home"
         >
@@ -190,15 +197,15 @@ export default function Sidebar() {
           aria-label="Menu da conta"
         >
           <img
-            src={currentUser.avatar}
-            alt={currentUser.displayName}
+            src={displayUser.avatar || "https://api.dicebear.com/7.x/avataaars/svg?seed=default"}
+            alt={displayUser.displayName}
             className="w-10 h-10 rounded-full object-cover"
           />
           {!isCompact && (
             <>
               <div className="ml-3 flex-1 text-left min-w-0">
-                <p className="text-[15px] font-bold leading-5 truncate">{currentUser.displayName}</p>
-                <p className="text-[15px] text-x-text-secondary leading-5 truncate">@{currentUser.handle}</p>
+                <p className="text-[15px] font-bold leading-5 truncate">{displayUser.displayName}</p>
+                <p className="text-[15px] text-x-text-secondary leading-5 truncate">@{displayUser.handle}</p>
               </div>
               <MoreHorizontal className="w-5 h-5 text-x-text-secondary ml-2 flex-shrink-0" />
             </>
@@ -215,13 +222,13 @@ export default function Sidebar() {
                 exit={{ opacity: 0, y: 10 }}
                 className="absolute bottom-full left-0 mb-2 w-[300px] bg-black rounded-2xl shadow-[0_0_15px_rgba(255,255,255,0.2)] border border-x-border z-50 py-3 overflow-hidden"
               >
-                <button className="w-full text-left px-4 py-3 hover:bg-[rgba(231,233,234,0.03)] text-[15px] flex items-center gap-3">
-                  <UserPlus className="w-5 h-5" />
-                  Adicionar conta existente
-                </button>
-                <button className="w-full text-left px-4 py-3 hover:bg-[rgba(231,233,234,0.03)] text-[15px] flex items-center gap-3">
+                <button
+                  onClick={() => logout().catch(() => {})}
+                  className="w-full text-left px-4 py-3 hover:bg-[rgba(231,233,234,0.03)] text-[15px] flex items-center gap-3"
+                  data-testid="button-logout"
+                >
                   <LogOut className="w-5 h-5" />
-                  Sair de @{currentUser.handle}
+                  Sair de @{displayUser.handle}
                 </button>
               </motion.div>
             </>

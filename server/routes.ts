@@ -10,8 +10,15 @@ import path from "path";
 import multer from "multer";
 import { randomBytes } from "crypto";
 import { fileURLToPath } from "url";
-import { insertUserSchema, insertNewsSchema, insertPlayerRatingSchema, insertCommentSchema } from "@shared/schema";
+import { insertUserSchema, insertNewsSchema, insertPlayerRatingSchema, insertCommentSchema, users, journalists } from "@shared/schema";
+import { eq, asc } from "drizzle-orm";
+import { db } from "./db";
+import rateLimit from "express-rate-limit";
+import { z } from "zod";
 import { deleteAvatarByUrl, saveAvatar } from "./services/avatarStorage";
+import { generateUniqueHandle } from "./utils/handleUtils";
+import { feedRouter } from "./routes/feed";
+import { socialRouter } from "./routes/social";
 
 const PgSession = ConnectPgSimple(session);
 
@@ -219,6 +226,39 @@ export const sessionStore = new PgSession({
 });
 
 export async function registerRoutes(app: Express): Promise<Server> {
+
+  // ============================================
+  // RATE LIMITERS — proteção contra força bruta
+  // ============================================
+
+  /** Login: 10 tentativas falhas por IP a cada 15 min */
+  const loginLimiter = rateLimit({
+    windowMs: 15 * 60 * 1000,
+    max: 10,
+    standardHeaders: true,
+    legacyHeaders: false,
+    skipSuccessfulRequests: true, // só conta tentativas com falha (401/500)
+    message: { message: "Muitas tentativas de login. Tente novamente em 15 minutos." },
+  });
+
+  /** Signup: 5 contas por IP por hora */
+  const signupLimiter = rateLimit({
+    windowMs: 60 * 60 * 1000,
+    max: 5,
+    standardHeaders: true,
+    legacyHeaders: false,
+    message: { message: "Muitas contas criadas. Tente novamente em 1 hora." },
+  });
+
+  /** Check-handle: 30 verificações por IP por minuto */
+  const handleCheckLimiter = rateLimit({
+    windowMs: 60 * 1000,
+    max: 30,
+    standardHeaders: true,
+    legacyHeaders: false,
+    message: { message: "Muitas verificações de handle. Aguarde um momento." },
+  });
+
   const sessionSecret = process.env.SESSION_SECRET;
   if (!sessionSecret) {
     throw new Error("SESSION_SECRET must be set (required for session cookies)");
@@ -268,6 +308,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
     })
   );
 
+  app.use("/api/feed", feedRouter);
+  app.use("/api", socialRouter);
+
   // Health check (no auth, no secrets) - for platforms and load balancers
   app.get("/api/health", async (_req, res) => {
     let dbStatus: "ok" | "error" = "ok";
@@ -310,15 +353,53 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // AUTHENTICATION ROUTES
   // ============================================
 
+  // GET /api/auth/check-handle?handle=xxx — verifica se um handle está disponível
+  app.get('/api/auth/check-handle', handleCheckLimiter, async (req: any, res: any) => {
+    const handle = String(req.query.handle || '').trim().toLowerCase();
+
+    if (!handle || !/^[a-z0-9_]{3,30}$/.test(handle)) {
+      return res.json({ available: false, reason: 'invalid' });
+    }
+
+    try {
+      const existing = await db
+        .select({ id: users.id })
+        .from(users)
+        .where(eq(users.handle, handle))
+        .limit(1);
+
+      return res.json({ available: existing.length === 0 });
+    } catch (err) {
+      console.error('[check-handle] error:', err);
+      return res.status(500).json({ available: false, reason: 'error' });
+    }
+  });
+
   // Signup/Register handler
   const signupHandler = async (req: any, res: any) => {
     try {
       const { name, email, password, teamId } = insertUserSchema.parse(req.body);
 
+      // Handle escolhido pelo usuário (obrigatório)
+      const rawHandle = String(req.body.handle || '').trim().toLowerCase();
+      if (!rawHandle || !/^[a-z0-9_]{3,30}$/.test(rawHandle)) {
+        return res.status(400).json({ message: 'Handle inválido. Use letras minúsculas, números e _ (mín. 3 caracteres).' });
+      }
+
       // Check if user already exists
       const existingUser = await storage.getUserByEmail(email);
       if (existingUser) {
         return res.status(400).json({ message: 'Email já cadastrado' });
+      }
+
+      // Verifica unicidade do handle
+      const existingHandle = await db
+        .select({ id: users.id })
+        .from(users)
+        .where(eq(users.handle, rawHandle))
+        .limit(1);
+      if (existingHandle.length > 0) {
+        return res.status(409).json({ message: `O handle @${rawHandle} já está em uso. Escolha outro.` });
       }
 
       // Hash password
@@ -331,6 +412,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         password: hashedPassword,
         teamId: teamId || null,
         userType: 'FAN',
+        handle: rawHandle,
       });
 
       req.session.userId = user.id;
@@ -352,12 +434,21 @@ export async function registerRoutes(app: Express): Promise<Server> {
   };
 
   // Support both /signup and /register for compatibility
-  app.post('/api/auth/signup', signupHandler);
-  app.post('/api/auth/register', signupHandler);
+  app.post('/api/auth/signup', signupLimiter, signupHandler);
+  app.post('/api/auth/register', signupLimiter, signupHandler);
 
-  app.post('/api/auth/login', async (req, res) => {
+  app.post('/api/auth/login', loginLimiter, async (req, res) => {
     try {
-      const { email, password } = req.body;
+      // Validação de tipos antes de qualquer operação (evita erros de tipo e ataques)
+      const loginSchema = z.object({
+        email: z.string().email("Email inválido"),
+        password: z.string().min(1, "Senha é obrigatória"),
+      });
+      const parsed = loginSchema.safeParse(req.body);
+      if (!parsed.success) {
+        return res.status(400).json({ message: "Email ou senha inválidos." });
+      }
+      const { email, password } = parsed.data;
 
       const user = await storage.getUserByEmail(email);
       if (!user) {
@@ -423,6 +514,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
         journalistStatus,
         isJournalist,
         isAdmin: isAdminUser,
+        handle: user.handle ?? null,
+        bio: user.bio ?? null,
+        location: user.location ?? null,
+        website: user.website ?? null,
+        coverPhotoUrl: user.coverPhotoUrl ?? null,
+        followersCount: user.followersCount ?? 0,
+        followingCount: user.followingCount ?? 0,
       });
     } catch (error) {
       console.error("Me error:", error);
@@ -1361,6 +1459,24 @@ export async function registerRoutes(app: Express): Promise<Server> {
     });
   });
 
+  /** Post image upload - any authenticated user (fan or journalist) */
+  app.post("/api/uploads/post-image", requireAuth, (req, res) => {
+    uploadImage.single("file")(req as any, res as any, (err: any) => {
+      if (err) {
+        const isTooLarge = err?.code === "LIMIT_FILE_SIZE";
+        const message = isTooLarge
+          ? "Arquivo muito grande. Tamanho máximo: 5MB."
+          : err?.message || "Erro ao enviar imagem.";
+        return res.status(400).json({ message });
+      }
+      const file = (req as any).file as { filename?: string } | undefined;
+      if (!file?.filename) {
+        return res.status(400).json({ message: 'Campo "file" é obrigatório.' });
+      }
+      return res.json({ imageUrl: `/uploads/${file.filename}` });
+    });
+  });
+
   app.post("/api/uploads/news-image", requireJournalist, (req, res) => {
     uploadNewsImage.single("image")(req as any, res as any, (err: any) => {
       if (err) {
@@ -1916,10 +2032,30 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.put('/api/profile', requireAuth, async (req, res) => {
     try {
-      const { name, email } = req.body;
       const userId = req.session.userId!;
+      const { handle, bio, location, website, coverPhotoUrl, name, email } = req.body;
 
-      const updatedUser = await storage.updateUser(userId, { name, email });
+      const updates: Record<string, unknown> = {};
+      if (name !== undefined) updates.name = name;
+      if (email !== undefined) updates.email = email;
+      if (bio !== undefined) updates.bio = bio || null;
+      if (location !== undefined) updates.location = location || null;
+      if (website !== undefined) updates.website = website || null;
+      if (coverPhotoUrl !== undefined) updates.coverPhotoUrl = coverPhotoUrl || null;
+
+      if (handle !== undefined && handle !== null && String(handle).trim()) {
+        const h = String(handle).trim().toLowerCase();
+        if (!/^[a-z0-9_]{3,30}$/.test(h)) {
+          return res.status(400).json({ message: 'Handle inválido. Use 3-30 caracteres: letras minúsculas, números e underscores.' });
+        }
+        const existing = await storage.getUserByHandle(h);
+        if (existing && existing.id !== userId) {
+          return res.status(409).json({ message: 'Este handle já está em uso' });
+        }
+        updates.handle = h;
+      }
+
+      const updatedUser = await storage.updateUser(userId, updates as any);
       if (!updatedUser) {
         return res.status(404).json({ message: 'Usuário não encontrado' });
       }
@@ -2045,8 +2181,119 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // ============================================
+  // JOURNALIST APPLICATION (user-facing)
+  // ============================================
+
+  app.get('/api/journalist-application/status', requireAuth, async (req, res) => {
+    try {
+      const userId = req.session.userId!;
+      const journalist = await storage.getJournalist(userId);
+      if (!journalist) {
+        return res.json({ status: null });
+      }
+      res.json({
+        status: journalist.status,
+        organization: journalist.organization,
+        professionalId: journalist.professionalId,
+        portfolioUrl: journalist.portfolioUrl,
+        createdAt: journalist.createdAt,
+      });
+    } catch (error) {
+      console.error('Journalist application status error:', error);
+      res.status(500).json({ message: 'Erro ao buscar status' });
+    }
+  });
+
+  const applySchema = z.object({
+    organization: z.string().min(2).max(255),
+    professionalId: z.string().min(2).max(100),
+    portfolioUrl: z.string().url().optional().or(z.literal('')),
+  });
+
+  app.post('/api/journalist-application/apply', requireAuth, async (req, res) => {
+    try {
+      const userId = req.session.userId!;
+      const parsed = applySchema.safeParse(req.body);
+      if (!parsed.success) {
+        return res.status(400).json({ message: 'Dados inválidos.', errors: parsed.error.flatten() });
+      }
+      const { organization, professionalId, portfolioUrl } = parsed.data;
+
+      const user = await storage.getUser(userId);
+      if (!user) {
+        return res.status(404).json({ message: 'Usuário não encontrado' });
+      }
+      if (user.userType === 'JOURNALIST' || user.userType === 'ADMIN') {
+        return res.status(400).json({ message: 'Você já é jornalista.' });
+      }
+
+      const existingJournalist = await storage.getJournalist(userId);
+      if (existingJournalist) {
+        if (existingJournalist.status === 'PENDING' || existingJournalist.status === 'APPROVED') {
+          return res.status(409).json({ message: 'Você já possui uma solicitação em andamento.' });
+        }
+        if (existingJournalist.status === 'REJECTED') {
+          await storage.deleteJournalistByUserId(userId);
+        }
+      }
+
+      await storage.createJournalist({
+        userId,
+        organization,
+        professionalId,
+        portfolioUrl: portfolioUrl || null,
+      });
+
+      res.status(201).json({ message: 'Solicitação enviada com sucesso.', status: 'PENDING' });
+    } catch (error) {
+      console.error('Journalist application apply error:', error);
+      res.status(500).json({ message: 'Erro ao enviar solicitação' });
+    }
+  });
+
+  // ============================================
   // ADMIN ROUTES
   // ============================================
+
+  app.get('/api/admin/journalist-applications', requireAuth, requireAdmin, async (req, res) => {
+    try {
+      const rows = await db
+        .select({
+          journalistId: journalists.id,
+          userId: journalists.userId,
+          userName: users.name,
+          userHandle: users.handle,
+          userAvatarUrl: users.avatarUrl,
+          userTeamId: users.teamId,
+          organization: journalists.organization,
+          professionalId: journalists.professionalId,
+          portfolioUrl: journalists.portfolioUrl,
+          createdAt: journalists.createdAt,
+        })
+        .from(journalists)
+        .innerJoin(users, eq(journalists.userId, users.id))
+        .where(eq(journalists.status, 'PENDING'))
+        .orderBy(asc(journalists.createdAt));
+
+      const result = rows.map((r) => ({
+        journalistId: r.journalistId,
+        userId: r.userId,
+        userName: r.userName,
+        userHandle: r.userHandle ?? '',
+        userAvatarUrl: r.userAvatarUrl ?? null,
+        userTeamId: r.userTeamId ?? null,
+        organization: r.organization,
+        professionalId: r.professionalId,
+        portfolioUrl: r.portfolioUrl ?? null,
+        createdAt: r.createdAt,
+      }));
+
+      res.json(result);
+    } catch (error) {
+      console.error('Admin journalist applications error:', error);
+      res.status(500).json({ message: 'Erro ao buscar solicitações' });
+    }
+  });
 
   app.get('/api/admin/users/search', requireAuth, requireAdmin, async (req, res) => {
     try {

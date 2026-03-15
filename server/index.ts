@@ -1,5 +1,6 @@
 import "dotenv/config";
 import express, { type Request, Response, NextFunction } from "express";
+import helmet from "helmet";
 import cors from "cors";
 import fs from "fs";
 import path from "path";
@@ -22,8 +23,46 @@ if (process.env.NODE_ENV === "production") {
   app.set("trust proxy", 1);
 }
 
-// Configure CORS — always active so preflight OPTIONS succeeds
-const isDev = process.env.NODE_ENV === "development";
+// Derive env flags first — needed by both helmet and CORS below
+const isDev = process.env.NODE_ENV !== "production";
+const isProd = !isDev;
+
+// ============================================
+// HTTP SECURITY HEADERS (helmet)
+// CSP desativado em dev para não bloquear Vite HMR
+// ============================================
+app.use(
+  helmet({
+    contentSecurityPolicy: isDev
+      ? false
+      : {
+          directives: {
+            defaultSrc: ["'self'"],
+            scriptSrc: ["'self'"],
+            styleSrc: ["'self'", "'unsafe-inline'"],
+            imgSrc: ["'self'", "data:", "https:"],
+            connectSrc: ["'self'", "wss:", "https:"],
+            fontSrc: ["'self'", "https:"],
+            objectSrc: ["'none'"],
+            upgradeInsecureRequests: [],
+          },
+        },
+    // X-Frame-Options: DENY — previne clickjacking
+    frameguard: { action: "deny" },
+    // X-Content-Type-Options: nosniff
+    noSniff: true,
+    // Strict-Transport-Security — só significativo em prod com HTTPS
+    hsts: isProd
+      ? { maxAge: 31536000, includeSubDomains: true, preload: true }
+      : false,
+    // Referrer-Policy
+    referrerPolicy: { policy: "strict-origin-when-cross-origin" },
+  })
+);
+
+// ============================================
+// CORS
+// ============================================
 const extraOrigins = (process.env.CORS_ORIGIN ?? process.env.CLIENT_URL ?? "")
   .split(",")
   .map((o) => o.trim())
@@ -63,18 +102,25 @@ const corsOptions: cors.CorsOptions = {
 app.use(cors(corsOptions));
 app.options("*", cors(corsOptions));
 
+// ============================================
+// BODY PARSERS (com limite explícito)
+// ============================================
 declare module 'http' {
   interface IncomingMessage {
     rawBody: unknown
   }
 }
 app.use(express.json({
+  limit: "1mb",
   verify: (req, _res, buf) => {
     req.rawBody = buf;
-  }
+  },
 }));
-app.use(express.urlencoded({ extended: false }));
+app.use(express.urlencoded({ extended: false, limit: "1mb" }));
 
+// ============================================
+// REQUEST LOGGING (sem dados sensíveis em prod)
+// ============================================
 app.use((req, res, next) => {
   const start = Date.now();
   const path = req.path;
@@ -90,7 +136,7 @@ app.use((req, res, next) => {
     const duration = Date.now() - start;
     if (path.startsWith("/api")) {
       let logLine = `${req.method} ${path} ${res.statusCode} in ${duration}ms`;
-      // Avoid logging response bodies in production (can contain sensitive data)
+      // Evita logar corpos de resposta em produção (pode conter dados sensíveis)
       if (capturedJsonResponse && app.get("env") === "development") {
         logLine += ` :: ${JSON.stringify(capturedJsonResponse)}`;
       }
@@ -112,14 +158,18 @@ app.use((req, res, next) => {
   // Initialize WebSocket server for real-time notifications
   initNotificationGateway(server, sessionStore);
 
+  // ============================================
+  // ERROR HANDLER GLOBAL
+  // Stack traces apenas em dev — nunca expor em produção
+  // ============================================
   app.use((err: any, _req: Request, res: Response, _next: NextFunction) => {
     const status = err.status || err.statusCode || 500;
     const message = err.message || "Internal Server Error";
 
     res.status(status).json({ message });
-    // Log full stack in dev so we can see the real cause of 500s
     console.error("[express] Error handler:", message);
-    if (err.stack) console.error(err.stack);
+    // Só loga stack trace em desenvolvimento
+    if (isDev && err.stack) console.error(err.stack);
   });
 
   // importantly only setup vite in development and after

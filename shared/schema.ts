@@ -26,7 +26,10 @@ export const userTypeEnum = pgEnum("user_type", ["FAN", "JOURNALIST", "ADMIN"]);
 export const newsCategoryEnum = pgEnum("news_category", ["NEWS", "ANALYSIS", "BACKSTAGE", "MARKET"]);
 export const interactionTypeEnum = pgEnum("interaction_type", ["LIKE", "DISLIKE"]);
 export const journalistStatusEnum = pgEnum("journalist_status", ["PENDING", "APPROVED", "REJECTED", "SUSPENDED"]);
-export const notificationTypeEnum = pgEnum("notification_type", ["NEW_NEWS", "UPCOMING_MATCH", "BADGE_EARNED", "MATCH_RESULT"]);
+export const notificationTypeEnum = pgEnum("notification_type", [
+  "NEW_NEWS", "UPCOMING_MATCH", "BADGE_EARNED", "MATCH_RESULT",
+  "LIKE", "FOLLOW", "REPLY", "REPOST",
+]);
 /** Feed scope: ALL = Todos, TEAM = Meu time (teamId required), EUROPE = Aba Europa */
 export const postScopeEnum = pgEnum("post_scope", ["ALL", "TEAM", "EUROPE"]);
 export const transferStatusEnum = pgEnum("transfer_status", ["RUMOR", "NEGOCIACAO", "FECHADO"]);
@@ -83,6 +86,13 @@ export const users = pgTable("users", {
   avatarUrl: text("avatar_url"),
   userType: userTypeEnum("user_type").notNull().default("FAN"),
   teamId: varchar("team_id", { length: 36 }),
+  handle: varchar("handle", { length: 50 }).unique(),
+  bio: text("bio"),
+  location: varchar("location", { length: 100 }),
+  website: text("website"),
+  coverPhotoUrl: text("cover_photo_url"),
+  followersCount: integer("followers_count").notNull().default(0),
+  followingCount: integer("following_count").notNull().default(0),
   createdAt: timestamp("created_at").notNull().defaultNow(),
   updatedAt: timestamp("updated_at").notNull().defaultNow(),
 });
@@ -644,6 +654,7 @@ export const userBadges = pgTable("user_badges", {
 export const notifications = pgTable("notifications", {
   id: varchar("id", { length: 36 }).primaryKey().default(sql`gen_random_uuid()`),
   userId: varchar("user_id", { length: 36 }).notNull(),
+  actorId: varchar("actor_id", { length: 36 }),
   type: notificationTypeEnum("type").notNull(),
   title: varchar("title", { length: 200 }).notNull(),
   message: text("message").notNull(),
@@ -865,6 +876,75 @@ export const teamsForumReplies = pgTable(
   })
 );
 
+export const posts = pgTable("posts", {
+  id: varchar("id", { length: 36 }).primaryKey().default(sql`gen_random_uuid()`),
+  userId: varchar("user_id", { length: 36 })
+    .notNull()
+    .references(() => users.id, { onDelete: "cascade" }),
+  content: text("content").notNull(),
+  imageUrl: text("image_url"),
+  parentPostId: varchar("parent_post_id", { length: 36 }),
+  replyCount: integer("reply_count").notNull().default(0),
+  likeCount: integer("like_count").notNull().default(0),
+  repostCount: integer("repost_count").notNull().default(0),
+  bookmarkCount: integer("bookmark_count").notNull().default(0),
+  viewCount: integer("view_count").notNull().default(0),
+  relatedNewsId: varchar("related_news_id", { length: 36 }),
+  createdAt: timestamp("created_at").notNull().defaultNow(),
+  updatedAt: timestamp("updated_at").notNull().defaultNow(),
+});
+
+export const postLikes = pgTable(
+  "post_likes",
+  {
+    id: varchar("id", { length: 36 }).primaryKey().default(sql`gen_random_uuid()`),
+    postId: varchar("post_id", { length: 36 })
+      .notNull()
+      .references(() => posts.id, { onDelete: "cascade" }),
+    userId: varchar("user_id", { length: 36 })
+      .notNull()
+      .references(() => users.id, { onDelete: "cascade" }),
+    createdAt: timestamp("created_at").notNull().defaultNow(),
+  },
+  (t) => ({
+    uniqueUserPost: uniqueIndex("post_likes_user_post_unique").on(t.userId, t.postId),
+  })
+);
+
+export const postBookmarks = pgTable(
+  "post_bookmarks",
+  {
+    id: varchar("id", { length: 36 }).primaryKey().default(sql`gen_random_uuid()`),
+    postId: varchar("post_id", { length: 36 })
+      .notNull()
+      .references(() => posts.id, { onDelete: "cascade" }),
+    userId: varchar("user_id", { length: 36 })
+      .notNull()
+      .references(() => users.id, { onDelete: "cascade" }),
+    createdAt: timestamp("created_at").notNull().defaultNow(),
+  },
+  (t) => ({
+    uniqueUserPost: uniqueIndex("post_bookmarks_user_post_unique").on(t.userId, t.postId),
+  })
+);
+
+export const userFollows = pgTable(
+  "user_follows",
+  {
+    id: varchar("id", { length: 36 }).primaryKey().default(sql`gen_random_uuid()`),
+    followerId: varchar("follower_id", { length: 36 })
+      .notNull()
+      .references(() => users.id, { onDelete: "cascade" }),
+    followingId: varchar("following_id", { length: 36 })
+      .notNull()
+      .references(() => users.id, { onDelete: "cascade" }),
+    createdAt: timestamp("created_at").notNull().defaultNow(),
+  },
+  (t) => ({
+    uniqueFollow: uniqueIndex("user_follows_unique").on(t.followerId, t.followingId),
+  })
+);
+
 export const teamsForumLikes = pgTable(
   "teams_forum_likes",
   {
@@ -1045,6 +1125,11 @@ export const usersRelations = relations(users, ({ one, many }) => ({
   transferRumorsCreated: many(transferRumors),
   transferRumorVotes: many(transferRumorVotes),
   transferRumorComments: many(transferRumorComments),
+  posts: many(posts),
+  postLikes: many(postLikes),
+  postBookmarks: many(postBookmarks),
+  followers: many(userFollows, { relationName: "asFollowing" }),
+  following: many(userFollows, { relationName: "asFollower" }),
 }));
 
 export const journalistsRelations = relations(journalists, ({ one, many }) => ({
@@ -1445,6 +1530,30 @@ export const teamsForumLikesRelations = relations(teamsForumLikes, ({ one }) => 
   reply: one(teamsForumReplies, { fields: [teamsForumLikes.replyId], references: [teamsForumReplies.id] }),
 }));
 
+export const postsRelations = relations(posts, ({ one, many }) => ({
+  user: one(users, { fields: [posts.userId], references: [users.id] }),
+  parentPost: one(posts, { fields: [posts.parentPostId], references: [posts.id], relationName: "postReplies" }),
+  replies: many(posts, { relationName: "postReplies" }),
+  likes: many(postLikes),
+  bookmarks: many(postBookmarks),
+  relatedNews: one(news, { fields: [posts.relatedNewsId], references: [news.id] }),
+}));
+
+export const postLikesRelations = relations(postLikes, ({ one }) => ({
+  post: one(posts, { fields: [postLikes.postId], references: [posts.id] }),
+  user: one(users, { fields: [postLikes.userId], references: [users.id] }),
+}));
+
+export const postBookmarksRelations = relations(postBookmarks, ({ one }) => ({
+  post: one(posts, { fields: [postBookmarks.postId], references: [posts.id] }),
+  user: one(users, { fields: [postBookmarks.userId], references: [users.id] }),
+}));
+
+export const userFollowsRelations = relations(userFollows, ({ one }) => ({
+  follower: one(users, { fields: [userFollows.followerId], references: [users.id], relationName: "asFollower" }),
+  following: one(users, { fields: [userFollows.followingId], references: [users.id], relationName: "asFollowing" }),
+}));
+
 export const badgesRelations = relations(badges, ({ many }) => ({
   userBadges: many(userBadges),
 }));
@@ -1597,6 +1706,22 @@ export const insertForumReplySchema = createInsertSchema(teamsForumReplies, {
 }).omit({ id: true, topicId: true, authorId: true, likesCount: true, createdAt: true });
 export const selectForumReplySchema = createSelectSchema(teamsForumReplies);
 
+// Post schemas
+export const insertPostSchema = createInsertSchema(posts, {
+  content: z.string().min(1).max(280),
+  imageUrl: z.string().url().optional().or(z.literal("")),
+}).omit({
+  id: true,
+  userId: true,
+  likeCount: true,
+  replyCount: true,
+  repostCount: true,
+  bookmarkCount: true,
+  viewCount: true,
+  createdAt: true,
+  updatedAt: true,
+});
+
 // Game schemas (for seed/admin only; API uses custom validation)
 export const insertGameSetSchema = createInsertSchema(gameSets);
 export const insertGameSetPlayerSchema = createInsertSchema(gameSetPlayers);
@@ -1680,6 +1805,12 @@ export type InsertForumTopic = z.infer<typeof insertForumTopicSchema>;
 
 export type ForumReply = typeof teamsForumReplies.$inferSelect;
 export type InsertForumReply = z.infer<typeof insertForumReplySchema>;
+
+export type Post = typeof posts.$inferSelect;
+export type InsertPost = z.infer<typeof insertPostSchema>;
+export type PostLike = typeof postLikes.$inferSelect;
+export type PostBookmark = typeof postBookmarks.$inferSelect;
+export type UserFollow = typeof userFollows.$inferSelect;
 
 export type ForumLike = typeof teamsForumLikes.$inferSelect;
 

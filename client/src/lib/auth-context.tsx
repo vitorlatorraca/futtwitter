@@ -12,6 +12,13 @@ export interface MeUser {
   journalistStatus?: 'APPROVED' | 'PENDING' | 'REJECTED' | 'SUSPENDED' | null;
   isJournalist?: boolean;
   isAdmin?: boolean;
+  handle?: string | null;
+  bio?: string | null;
+  location?: string | null;
+  website?: string | null;
+  coverPhotoUrl?: string | null;
+  followersCount?: number;
+  followingCount?: number;
 }
 
 interface AuthContextType {
@@ -19,7 +26,7 @@ interface AuthContextType {
   isLoading: boolean;
   login: (email: string, password: string) => Promise<void>;
   logout: () => Promise<void>;
-  register: (name: string, email: string, password: string, teamId?: string) => Promise<void>;
+  register: (name: string, email: string, password: string, teamId?: string, handle?: string) => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -49,12 +56,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     onSuccess: () => {
       queryClient.setQueryData(['/api/auth/me'], null);
       queryClient.clear();
+      window.location.href = '/login';
     },
   });
 
   const registerMutation = useMutation({
-    mutationFn: async ({ name, email, password, teamId }: { name: string; email: string; password: string; teamId?: string }) => {
-      return await apiRequest('POST', '/api/auth/register', { name, email, password, teamId });
+    mutationFn: async ({ name, email, password, teamId, handle }: { name: string; email: string; password: string; teamId?: string; handle?: string }) => {
+      return await apiRequest('POST', '/api/auth/register', { name, email, password, teamId, handle });
     },
     onSuccess: async () => {
       await queryClient.refetchQueries({ queryKey: ['/api/auth/me'] });
@@ -69,8 +77,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     await logoutMutation.mutateAsync();
   };
 
-  const register = async (name: string, email: string, password: string, teamId?: string) => {
-    await registerMutation.mutateAsync({ name, email, password, teamId });
+  const register = async (name: string, email: string, password: string, teamId?: string, handle?: string) => {
+    await registerMutation.mutateAsync({ name, email, password, teamId, handle });
   };
 
   return (

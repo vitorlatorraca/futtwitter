@@ -2,17 +2,20 @@ import React from "react";
 import { NavLink, useLocation } from "react-router-dom";
 import { Home, Calendar, ArrowLeftRight, Shield, User } from "lucide-react";
 import { useAppStore } from "../../store/useAppStore";
+import { useAuth } from "../../lib/auth-context";
 
 export default function MobileNav() {
   const { currentUser } = useAppStore();
+  const { user: authUser } = useAuth();
+  const profileHandle = authUser?.handle ?? currentUser.handle;
   const location = useLocation();
 
   const items = [
-    { icon: Home, path: "/", label: "Home" },
+    { icon: Home, path: "/feed", label: "Home" },
     { icon: Calendar, path: "/jogos", label: "Jogos" },
     { icon: ArrowLeftRight, path: "/vai-e-vem", label: "Vai e Vem" },
     { icon: Shield, path: "/meu-time", label: "Meu Time" },
-    { icon: User, path: `/profile/${currentUser.handle}`, label: "Perfil" },
+    { icon: User, path: `/profile/${profileHandle}`, label: "Perfil" },
   ];
 
   return (
