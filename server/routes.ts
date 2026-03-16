@@ -17,8 +17,8 @@ import rateLimit from "express-rate-limit";
 import { z } from "zod";
 import { deleteAvatarByUrl, saveAvatar } from "./services/avatarStorage";
 import { generateUniqueHandle } from "./utils/handleUtils";
-import { feedRouter } from "./routes/feed";
-import { socialRouter } from "./routes/social";
+import { feedRouter } from "./route-handlers/feed";
+import { socialRouter } from "./route-handlers/social";
 
 const PgSession = ConnectPgSimple(session);
 
