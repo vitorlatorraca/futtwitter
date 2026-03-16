@@ -40,3 +40,6 @@ next-env.d.ts
 
 # uploads (stored on disk, not in git)
 /server/uploads/
+
+# generated serverless bundle (produced by esbuild at build time)
+/api/index.js

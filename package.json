@@ -10,7 +10,7 @@
     "dev:all": "npm run dev:server",
     "kill:5000": "powershell -NoProfile -Command \"$lines = netstat -ano | findstr ':5000' | findstr 'LISTENING'; if ($lines) { $lines | ForEach-Object { $p = $_.Trim().Split()[-1]; if ($p -match '^\\d+$') { taskkill /PID $p /F 2>$null } } }; exit 0\"",
     "dev:clean": "npm run kill:5000 && npm run dev:server",
-    "build": "vite build && esbuild server/index.ts --platform=node --packages=external --bundle --format=esm --outdir=dist",
+    "build": "vite build && esbuild server/index.ts --platform=node --packages=external --bundle --format=esm --outdir=dist && esbuild api/index.ts --platform=node --packages=external --bundle --format=esm --outfile=api/index.js",
     "start": "npm run db:push && cross-env NODE_ENV=production node dist/index.js",
     "start:prod": "cross-env NODE_ENV=production node dist/index.js",
     "check": "tsc -p tsconfig.check.json",
