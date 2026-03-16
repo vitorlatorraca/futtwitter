@@ -24,12 +24,21 @@ const PgSession = ConnectPgSimple(session);
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
-const UPLOADS_DIR = path.resolve(__dirname, "uploads");
+// Vercel serverless: filesystem is read-only except /tmp. Use /tmp/uploads there.
+// Note: /tmp files don't persist across cold starts; for durable uploads use cloud storage.
+const UPLOADS_DIR = process.env.VERCEL
+  ? "/tmp/uploads"
+  : path.resolve(__dirname, "uploads");
 const MAX_IMAGE_UPLOAD_BYTES = 5 * 1024 * 1024; // 5MB
 const ALLOWED_IMAGE_EXTENSIONS = new Set([".jpg", ".jpeg", ".png", ".webp", ".gif"]);
 const ALLOWED_IMAGE_MIME_TYPES = new Set(["image/jpeg", "image/png", "image/webp", "image/gif"]);
 const MAX_AVATAR_UPLOAD_BYTES = 2 * 1024 * 1024; // 2MB
-fs.mkdirSync(UPLOADS_DIR, { recursive: true });
+try {
+  fs.mkdirSync(UPLOADS_DIR, { recursive: true });
+} catch (e) {
+  // May fail in read-only environments — uploads will be unavailable but server still starts
+  console.warn("[server] Could not create uploads dir:", (e as Error).message);
+}
 
 const uploadImage = multer({
   storage: multer.diskStorage({

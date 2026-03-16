@@ -5681,12 +5681,16 @@ var socialRouter = router2;
 var PgSession = ConnectPgSimple(session);
 var __filename2 = fileURLToPath2(import.meta.url);
 var __dirname2 = path2.dirname(__filename2);
-var UPLOADS_DIR = path2.resolve(__dirname2, "uploads");
+var UPLOADS_DIR = process.env.VERCEL ? "/tmp/uploads" : path2.resolve(__dirname2, "uploads");
 var MAX_IMAGE_UPLOAD_BYTES = 5 * 1024 * 1024;
 var ALLOWED_IMAGE_EXTENSIONS = /* @__PURE__ */ new Set([".jpg", ".jpeg", ".png", ".webp", ".gif"]);
 var ALLOWED_IMAGE_MIME_TYPES = /* @__PURE__ */ new Set(["image/jpeg", "image/png", "image/webp", "image/gif"]);
 var MAX_AVATAR_UPLOAD_BYTES = 2 * 1024 * 1024;
-fs2.mkdirSync(UPLOADS_DIR, { recursive: true });
+try {
+  fs2.mkdirSync(UPLOADS_DIR, { recursive: true });
+} catch (e) {
+  console.warn("[server] Could not create uploads dir:", e.message);
+}
 var uploadImage = multer({
   storage: multer.diskStorage({
     destination: (_req, _file, cb) => {
