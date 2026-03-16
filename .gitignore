@@ -41,5 +41,5 @@ next-env.d.ts
 # uploads (stored on disk, not in git)
 /server/uploads/
 
-# generated serverless bundle (produced by esbuild at build time)
-/api/index.js
+# api/index.js is intentionally tracked — Vercel scans api/ from git source
+# esbuild regenerates it fresh during every `npm run build`
