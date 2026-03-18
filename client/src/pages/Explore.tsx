@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { useSearchParams, Link } from "react-router-dom";
-import { Search, MoreHorizontal, Settings, User } from "lucide-react";
+import { Search, MoreHorizontal, Settings } from "lucide-react";
 import { SearchBar } from "../components/SearchBar";
 import { useSearch, SearchUser, SearchPost } from "../hooks/useSearch";
 import PostCard from "../components/feed/PostCard";
@@ -125,74 +125,126 @@ export default function Explore() {
 
       {isSearching ? (
         <>
-          {/* Tabs de filtro de busca */}
-          <div className="flex border-b border-x-border sticky top-14 bg-black z-10">
-            {[
-              { key: "all" as const, label: "Tudo" },
-              { key: "users" as const, label: "Usuários" },
-              { key: "posts" as const, label: "Posts" },
-            ].map((tab) => (
-              <button
-                key={tab.key}
-                onClick={() => setActiveTab(tab.key)}
-                className={`flex-1 py-4 text-sm font-semibold transition-colors hover:bg-[rgba(231,233,234,0.03)] ${
-                  activeTab === tab.key
-                    ? "text-x-text-primary border-b-2 border-x-accent"
-                    : "text-x-text-secondary"
-                }`}
-              >
-                {tab.label}
-              </button>
-            ))}
+          {/* Tabs de filtro */}
+          <div className="flex border-b border-x-border sticky top-[52px] bg-black z-10">
+            {(["all", "users", "posts"] as const).map((key) => {
+              const label = key === "all" ? "Tudo" : key === "users" ? "Usuários" : "Posts";
+              const active = activeTab === key;
+              return (
+                <button
+                  key={key}
+                  onClick={() => setActiveTab(key)}
+                  className={`flex-1 py-[18px] text-[15px] font-bold transition-colors hover:bg-white/[0.03] relative ${
+                    active ? "text-x-text-primary" : "text-x-text-secondary"
+                  }`}
+                >
+                  {label}
+                  {active && (
+                    <span className="absolute bottom-0 left-1/2 -translate-x-1/2 w-14 h-1 bg-x-accent rounded-full" />
+                  )}
+                </button>
+              );
+            })}
           </div>
 
+          {/* Skeleton de loading */}
           {loading && (
-            <div className="flex items-center justify-center py-12">
-              <div className="w-6 h-6 border-2 border-x-accent border-t-transparent rounded-full animate-spin" />
+            <div className="animate-pulse">
+              {[...Array(5)].map((_, i) => (
+                <div key={i} className="flex items-center gap-3 px-4 py-4 border-b border-x-border">
+                  <div className="w-12 h-12 rounded-full bg-x-border flex-shrink-0" />
+                  <div className="flex-1 space-y-2">
+                    <div className="h-3.5 bg-x-border rounded-full w-1/3" />
+                    <div className="h-3 bg-x-border rounded-full w-1/5 opacity-60" />
+                    <div className="h-3 bg-x-border rounded-full w-2/3 opacity-40" />
+                  </div>
+                  <div className="w-20 h-8 rounded-full bg-x-border" />
+                </div>
+              ))}
             </div>
           )}
 
           {!loading && (
             <div>
+              {/* Seção: Pessoas */}
               {(activeTab === "all" || activeTab === "users") && searchUsers.length > 0 && (
                 <div>
                   {activeTab === "all" && (
-                    <h2 className="px-4 py-3 text-xl font-bold text-x-text-primary border-b border-x-border">
-                      Pessoas
-                    </h2>
+                    <div className="px-4 py-3 border-b border-x-border">
+                      <p className="text-[20px] font-extrabold text-x-text-primary">Pessoas</p>
+                    </div>
                   )}
-                  {searchUsers.map((user: SearchUser) => (
-                    <Link
-                      key={user.id}
-                      to={`/profile/${user.handle ?? user.id}`}
-                      className="flex items-center gap-3 px-4 py-3 hover:bg-[rgba(231,233,234,0.03)] transition-colors border-b border-x-border"
-                    >
-                      <div className="w-12 h-12 rounded-full bg-x-border overflow-hidden flex-shrink-0">
-                        {user.avatarUrl ? (
-                          <img src={user.avatarUrl} alt={user.name} className="w-full h-full object-cover" />
-                        ) : (
-                          <div className="w-full h-full flex items-center justify-center">
-                            <User className="w-6 h-6 text-x-text-secondary" />
+                  {searchUsers.map((user: SearchUser) => {
+                    const initial = user.name.charAt(0).toUpperCase();
+                    const avatarColors = ["bg-blue-600","bg-purple-600","bg-green-600","bg-orange-500","bg-pink-600","bg-teal-600"];
+                    const avatarColor = avatarColors[user.name.charCodeAt(0) % avatarColors.length];
+                    return (
+                      <Link
+                        key={user.id}
+                        to={`/profile/${user.handle ?? user.id}`}
+                        className="flex items-start gap-3 px-4 py-4 hover:bg-white/[0.02] transition-colors border-b border-x-border"
+                      >
+                        {/* Avatar */}
+                        <div className="w-12 h-12 rounded-full overflow-hidden flex-shrink-0 ring-1 ring-x-border">
+                          {user.avatarUrl ? (
+                            <img src={user.avatarUrl} alt={user.name} className="w-full h-full object-cover" />
+                          ) : (
+                            <div className={`w-full h-full flex items-center justify-center ${avatarColor}`}>
+                              <span className="text-white text-lg font-bold">{initial}</span>
+                            </div>
+                          )}
+                        </div>
+
+                        {/* Info */}
+                        <div className="flex-1 min-w-0">
+                          <div className="flex items-center gap-1 mb-0.5">
+                            <span className="text-x-text-primary font-bold text-[15px] truncate leading-tight">
+                              {user.name}
+                            </span>
+                            {user.userType === "JOURNALIST" && (
+                              <svg className="w-4 h-4 text-x-accent flex-shrink-0" viewBox="0 0 24 24" fill="currentColor">
+                                <path d="M22.25 12c0-1.43-.88-2.67-2.19-3.34.46-1.39.2-2.9-.81-3.91s-2.52-1.27-3.91-.81c-.66-1.31-1.91-2.19-3.34-2.19s-2.67.88-3.33 2.19c-1.4-.46-2.91-.2-3.92.81s-1.26 2.52-.8 3.91c-1.31.67-2.2 1.91-2.2 3.34s.89 2.67 2.2 3.34c-.46 1.39-.21 2.9.8 3.91s2.52 1.26 3.91.81c.67 1.31 1.91 2.19 3.34 2.19s2.68-.88 3.34-2.19c1.39.45 2.9.2 3.91-.81s1.27-2.52.81-3.91c1.31-.67 2.19-1.91 2.19-3.34zm-11.71 4.2L6.8 12.46l1.41-1.42 2.26 2.26 4.8-5.23 1.47 1.36-6.2 6.77z" />
+                              </svg>
+                            )}
                           </div>
-                        )}
-                      </div>
-                      <div className="flex-1 min-w-0">
-                        <p className="text-x-text-primary font-bold text-sm">{user.name}</p>
-                        {user.handle && <p className="text-x-text-secondary text-sm">@{user.handle}</p>}
-                        {user.bio && <p className="text-x-text-secondary text-sm mt-0.5 truncate">{user.bio}</p>}
-                        <p className="text-x-text-secondary text-xs mt-0.5">{user.followersCount} seguidores</p>
-                      </div>
-                    </Link>
-                  ))}
+                          {user.handle && (
+                            <p className="text-x-text-secondary text-[13px] mb-1">@{user.handle}</p>
+                          )}
+                          {user.bio && (
+                            <p className="text-x-text-primary text-[14px] leading-snug line-clamp-2">{user.bio}</p>
+                          )}
+                          {user.followersCount > 0 && (
+                            <p className="text-x-text-secondary text-[13px] mt-1">
+                              <span className="font-bold text-x-text-primary">
+                                {user.followersCount > 999
+                                  ? `${(user.followersCount / 1000).toFixed(1)}K`
+                                  : user.followersCount}
+                              </span>{" "}
+                              seguidores
+                            </p>
+                          )}
+                        </div>
+
+                        {/* Botão decorativo Seguir */}
+                        <div
+                          className="flex-shrink-0 px-4 py-1.5 rounded-full border border-x-text-primary text-x-text-primary text-[14px] font-bold hover:bg-white/[0.08] transition-colors"
+                          onClick={(e) => e.preventDefault()}
+                        >
+                          Seguir
+                        </div>
+                      </Link>
+                    );
+                  })}
                 </div>
               )}
 
+              {/* Seção: Posts */}
               {(activeTab === "all" || activeTab === "posts") && searchPosts.length > 0 && (
                 <div>
                   {activeTab === "all" && (
-                    <h2 className="px-4 py-3 text-xl font-bold text-x-text-primary border-b border-x-border">
-                      Posts
-                    </h2>
+                    <div className="px-4 py-3 border-b border-x-border">
+                      <p className="text-[20px] font-extrabold text-x-text-primary">Posts</p>
+                    </div>
                   )}
                   {searchPosts.map((post) => (
                     <PostCard key={post.id} post={searchPostToPost(post)} />
@@ -200,14 +252,18 @@ export default function Explore() {
                 </div>
               )}
 
-              {!loading && searchUsers.length === 0 && searchPosts.length === 0 && (
-                <div className="flex flex-col items-center justify-center py-16 px-8 text-center">
-                  <Search className="w-12 h-12 text-x-text-secondary mb-4" />
-                  <h3 className="text-xl font-bold text-x-text-primary mb-2">
-                    Nenhum resultado para &quot;{query}&quot;
+              {/* Empty state */}
+              {searchUsers.length === 0 && searchPosts.length === 0 && (
+                <div className="flex flex-col items-center justify-center py-20 px-8 text-center">
+                  <div className="w-16 h-16 rounded-full bg-x-search-bg flex items-center justify-center mb-5">
+                    <Search className="w-8 h-8 text-x-text-secondary" />
+                  </div>
+                  <h3 className="text-[23px] font-extrabold text-x-text-primary mb-2 leading-tight">
+                    Nenhum resultado para<br />
+                    <span className="text-x-accent">&ldquo;{query}&rdquo;</span>
                   </h3>
-                  <p className="text-x-text-secondary text-sm">
-                    Tente outras palavras-chave ou verifique a ortografia.
+                  <p className="text-x-text-secondary text-[15px] max-w-[260px]">
+                    Tente palavras diferentes ou verifique a ortografia.
                   </p>
                 </div>
               )}
