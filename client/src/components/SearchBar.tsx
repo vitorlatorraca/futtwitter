@@ -229,7 +229,7 @@ export function SearchBar({
               }`}
             >
               <div className="w-10 h-10 rounded-full bg-x-accent/10 border border-x-accent/20 flex items-center justify-center flex-shrink-0">
-                <Search className="w-[18px] h-[18px] text-x-accent" />
+                <Search className="w-4 h-4 text-x-accent" />
               </div>
               <span className="text-x-text-primary text-[15px]">
                 Buscar por{" "}

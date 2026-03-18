@@ -226,12 +226,13 @@ export default function Explore() {
                         </div>
 
                         {/* Botão decorativo Seguir */}
-                        <div
+                        <button
+                          type="button"
                           className="flex-shrink-0 px-4 py-1.5 rounded-full border border-x-text-primary text-x-text-primary text-[14px] font-bold hover:bg-white/[0.08] transition-colors"
-                          onClick={(e) => e.preventDefault()}
+                          onClick={(e) => { e.preventDefault(); e.stopPropagation(); }}
                         >
                           Seguir
-                        </div>
+                        </button>
                       </Link>
                     );
                   })}
@@ -262,7 +263,7 @@ export default function Explore() {
                     Nenhum resultado para<br />
                     <span className="text-x-accent">&ldquo;{query}&rdquo;</span>
                   </h3>
-                  <p className="text-x-text-secondary text-[15px] max-w-[260px]">
+                  <p className="text-x-text-secondary text-[15px] max-w-[260px] mx-auto">
                     Tente palavras diferentes ou verifique a ortografia.
                   </p>
                 </div>
