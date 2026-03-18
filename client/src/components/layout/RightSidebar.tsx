@@ -1,6 +1,7 @@
 import React, { useState } from "react";
-import { Search, MoreHorizontal, X } from "lucide-react";
+import { MoreHorizontal } from "lucide-react";
 import { useMediaQuery } from "../../hooks/useMediaQuery";
+import { SearchBar } from "../SearchBar";
 import { useTrending, useUpcomingMatches } from "../../hooks/useFeed";
 import { useSuggestedUsers, useToggleFollow } from "../../hooks/useFollow";
 import { influencerSuggestedUsers } from "../../data/mockPosts";
@@ -23,8 +24,6 @@ function formatMatchDate(iso: string): string {
 export default function RightSidebar() {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
-  const [searchFocused, setSearchFocused] = useState(false);
-  const [searchValue, setSearchValue] = useState("");
   const [followedUsers, setFollowedUsers] = useState<Set<string>>(new Set());
   const isHidden = useMediaQuery("(max-width: 1023px)");
   const location = useLocation();
@@ -64,29 +63,7 @@ export default function RightSidebar() {
     <aside className="w-[350px] min-h-screen pl-7 py-1">
       {/* Search */}
       <div className="sticky top-0 pt-1 pb-3 bg-black z-10">
-        <div
-          className={`flex items-center rounded-full px-4 py-2.5 transition-colors ${
-            searchFocused
-              ? "bg-black border border-x-accent"
-              : "bg-x-search-bg border border-transparent"
-          }`}
-        >
-          <Search className={`w-[18px] h-[18px] ${searchFocused ? "text-x-accent" : "text-x-text-secondary"}`} />
-          <input
-            type="text"
-            placeholder="Buscar no FuteApp"
-            value={searchValue}
-            onChange={(e) => setSearchValue(e.target.value)}
-            onFocus={() => setSearchFocused(true)}
-            onBlur={() => setSearchFocused(false)}
-            className="ml-3 bg-transparent text-[15px] text-x-text-primary placeholder-x-text-secondary outline-none flex-1"
-          />
-          {searchValue && (
-            <button onClick={() => setSearchValue("")} className="text-x-accent" aria-label="Limpar busca">
-              <X className="w-5 h-5" />
-            </button>
-          )}
-        </div>
+        <SearchBar className="w-full" />
       </div>
 
       {/* FuteApp Pro Card */}

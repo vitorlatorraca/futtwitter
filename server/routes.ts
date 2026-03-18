@@ -10,8 +10,8 @@ import path from "path";
 import multer from "multer";
 import { randomBytes } from "crypto";
 import { fileURLToPath } from "url";
-import { insertUserSchema, insertNewsSchema, insertPlayerRatingSchema, insertCommentSchema, users, journalists } from "@shared/schema";
-import { eq, asc } from "drizzle-orm";
+import { insertUserSchema, insertNewsSchema, insertPlayerRatingSchema, insertCommentSchema, users, journalists, posts } from "@shared/schema";
+import { eq, asc, ilike, or, and, isNull, desc } from "drizzle-orm";
 import { db } from "./db";
 import rateLimit from "express-rate-limit";
 import { z } from "zod";
@@ -322,6 +322,132 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.use("/api/feed", feedRouter);
   app.use("/api", socialRouter);
+
+  // GET /api/search/suggestions?q=texto — autocomplete de usuários
+  app.get("/api/search/suggestions", async (req, res) => {
+    const q = (req.query.q as string)?.trim() ?? "";
+    if (!q || q.length < 1) return res.json({ users: [] });
+    try {
+      const term = `%${q}%`;
+      const matchedUsers = await db
+        .select({
+          id: users.id,
+          name: users.name,
+          handle: users.handle,
+          avatarUrl: users.avatarUrl,
+          userType: users.userType,
+          followersCount: users.followersCount,
+        })
+        .from(users)
+        .where(or(ilike(users.name, term), ilike(users.handle, term)))
+        .orderBy(desc(users.followersCount))
+        .limit(5);
+      return res.json({ users: matchedUsers });
+    } catch (err) {
+      console.error("[search] suggestions error:", err);
+      return res.status(500).json({ users: [] });
+    }
+  });
+
+  // GET /api/search?q=texto&type=all|users|posts&page=1 — busca completa
+  app.get("/api/search", async (req, res) => {
+    const q = (req.query.q as string)?.trim() ?? "";
+    const type = (req.query.type as string) ?? "all";
+    const page = parseInt((req.query.page as string) ?? "1", 10);
+    const limit = 20;
+    const offset = (page - 1) * limit;
+
+    if (!q) return res.json({ users: [], posts: [], total: 0 });
+
+    try {
+      const term = `%${q}%`;
+      let matchedUsers: any[] = [];
+      let matchedPosts: any[] = [];
+
+      if (type === "all" || type === "users") {
+        matchedUsers = await db
+          .select({
+            id: users.id,
+            name: users.name,
+            handle: users.handle,
+            avatarUrl: users.avatarUrl,
+            bio: users.bio,
+            userType: users.userType,
+            followersCount: users.followersCount,
+            followingCount: users.followingCount,
+          })
+          .from(users)
+          .where(or(ilike(users.name, term), ilike(users.handle, term)))
+          .orderBy(desc(users.followersCount))
+          .limit(type === "all" ? 5 : limit)
+          .offset(type === "all" ? 0 : offset);
+      }
+
+      if (type === "all" || type === "posts") {
+        const postRows = await db
+          .select({
+            id: posts.id,
+            content: posts.content,
+            imageUrl: posts.imageUrl,
+            likeCount: posts.likeCount,
+            repostCount: posts.repostCount,
+            replyCount: posts.replyCount,
+            viewCount: posts.viewCount,
+            createdAt: posts.createdAt,
+            parentPostId: posts.parentPostId,
+            authorId: users.id,
+            authorName: users.name,
+            authorHandle: users.handle,
+            authorAvatarUrl: users.avatarUrl,
+            authorUserType: users.userType,
+          })
+          .from(posts)
+          .innerJoin(users, eq(posts.userId, users.id))
+          .where(
+            and(
+              ilike(posts.content, term),
+              isNull(posts.parentPostId)
+            )
+          )
+          .orderBy(desc(posts.createdAt))
+          .limit(type === "all" ? 10 : limit)
+          .offset(type === "all" ? 0 : offset);
+
+        matchedPosts = postRows.map((row) => ({
+          id: row.id,
+          content: row.content,
+          imageUrl: row.imageUrl,
+          likeCount: row.likeCount,
+          repostCount: row.repostCount,
+          replyCount: row.replyCount,
+          viewCount: row.viewCount,
+          createdAt: row.createdAt,
+          parentPostId: row.parentPostId,
+          author: {
+            id: row.authorId,
+            name: row.authorName,
+            handle: row.authorHandle,
+            avatarUrl: row.authorAvatarUrl,
+            userType: row.authorUserType,
+          },
+        }));
+      }
+
+      return res.json({
+        users: matchedUsers,
+        posts: matchedPosts,
+        total: matchedUsers.length + matchedPosts.length,
+      });
+    } catch (err) {
+      console.error("[search] search error:", err);
+      return res.status(500).json({
+        users: [],
+        posts: [],
+        total: 0,
+        error: "Erro ao buscar",
+      });
+    }
+  });
 
   // Health check (no auth, no secrets) - for platforms and load balancers
   app.get("/api/health", async (_req, res) => {

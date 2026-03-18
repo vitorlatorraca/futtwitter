@@ -4672,7 +4672,7 @@ import path2 from "path";
 import multer from "multer";
 import { randomBytes as randomBytes2 } from "crypto";
 import { fileURLToPath as fileURLToPath2 } from "url";
-import { eq as eq12, asc as asc2 } from "drizzle-orm";
+import { eq as eq12, asc as asc2, ilike as ilike4, or as or6, and as and11, isNull, desc as desc8 } from "drizzle-orm";
 import rateLimit from "express-rate-limit";
 import { z as z2 } from "zod";
 
@@ -5916,6 +5916,104 @@ async function registerRoutes(app2) {
   );
   app2.use("/api/feed", feedRouter);
   app2.use("/api", socialRouter);
+  app2.get("/api/search/suggestions", async (req, res) => {
+    const q = req.query.q?.trim() ?? "";
+    if (!q || q.length < 1) return res.json({ users: [] });
+    try {
+      const term = `%${q}%`;
+      const matchedUsers = await db.select({
+        id: users.id,
+        name: users.name,
+        handle: users.handle,
+        avatarUrl: users.avatarUrl,
+        userType: users.userType,
+        followersCount: users.followersCount
+      }).from(users).where(or6(ilike4(users.name, term), ilike4(users.handle, term))).orderBy(desc8(users.followersCount)).limit(5);
+      return res.json({ users: matchedUsers });
+    } catch (err) {
+      console.error("[search] suggestions error:", err);
+      return res.status(500).json({ users: [] });
+    }
+  });
+  app2.get("/api/search", async (req, res) => {
+    const q = req.query.q?.trim() ?? "";
+    const type = req.query.type ?? "all";
+    const page = parseInt(req.query.page ?? "1", 10);
+    const limit = 20;
+    const offset = (page - 1) * limit;
+    if (!q) return res.json({ users: [], posts: [], total: 0 });
+    try {
+      const term = `%${q}%`;
+      let matchedUsers = [];
+      let matchedPosts = [];
+      if (type === "all" || type === "users") {
+        matchedUsers = await db.select({
+          id: users.id,
+          name: users.name,
+          handle: users.handle,
+          avatarUrl: users.avatarUrl,
+          bio: users.bio,
+          userType: users.userType,
+          followersCount: users.followersCount,
+          followingCount: users.followingCount
+        }).from(users).where(or6(ilike4(users.name, term), ilike4(users.handle, term))).orderBy(desc8(users.followersCount)).limit(type === "all" ? 5 : limit).offset(type === "all" ? 0 : offset);
+      }
+      if (type === "all" || type === "posts") {
+        const postRows = await db.select({
+          id: posts.id,
+          content: posts.content,
+          imageUrl: posts.imageUrl,
+          likeCount: posts.likeCount,
+          repostCount: posts.repostCount,
+          replyCount: posts.replyCount,
+          viewCount: posts.viewCount,
+          createdAt: posts.createdAt,
+          parentPostId: posts.parentPostId,
+          authorId: users.id,
+          authorName: users.name,
+          authorHandle: users.handle,
+          authorAvatarUrl: users.avatarUrl,
+          authorUserType: users.userType
+        }).from(posts).innerJoin(users, eq12(posts.userId, users.id)).where(
+          and11(
+            ilike4(posts.content, term),
+            isNull(posts.parentPostId)
+          )
+        ).orderBy(desc8(posts.createdAt)).limit(type === "all" ? 10 : limit).offset(type === "all" ? 0 : offset);
+        matchedPosts = postRows.map((row) => ({
+          id: row.id,
+          content: row.content,
+          imageUrl: row.imageUrl,
+          likeCount: row.likeCount,
+          repostCount: row.repostCount,
+          replyCount: row.replyCount,
+          viewCount: row.viewCount,
+          createdAt: row.createdAt,
+          parentPostId: row.parentPostId,
+          author: {
+            id: row.authorId,
+            name: row.authorName,
+            handle: row.authorHandle,
+            avatarUrl: row.authorAvatarUrl,
+            userType: row.authorUserType
+          }
+        }));
+      }
+      return res.json({
+        users: matchedUsers,
+        posts: matchedPosts,
+        total: matchedUsers.length + matchedPosts.length
+      });
+    } catch (err) {
+      console.error("[search] search error:", err);
+      return res.status(500).json({
+        users: [],
+        posts: [],
+        total: 0,
+        error: "Erro ao buscar"
+      });
+    }
+  });
   app2.get("/api/health", async (_req, res) => {
     let dbStatus = "ok";
     try {

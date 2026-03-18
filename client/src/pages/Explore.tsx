@@ -1,5 +1,45 @@
 import React, { useState } from "react";
-import { Search, MoreHorizontal, Settings } from "lucide-react";
+import { useSearchParams, Link } from "react-router-dom";
+import { Search, MoreHorizontal, Settings, User } from "lucide-react";
+import { SearchBar } from "../components/SearchBar";
+import { useSearch, SearchUser, SearchPost } from "../hooks/useSearch";
+import PostCard from "../components/feed/PostCard";
+import { getApiUrl } from "../lib/queryClient";
+import type { Post } from "../store/useAppStore";
+
+function searchPostToPost(sp: SearchPost): Post {
+  const avatar = sp.author.avatarUrl
+    ? (sp.author.avatarUrl.startsWith("http") ? sp.author.avatarUrl : getApiUrl(sp.author.avatarUrl))
+    : "";
+  return {
+    id: sp.id,
+    text: sp.content,
+    timestamp: new Date(sp.createdAt),
+    images: sp.imageUrl ? [sp.imageUrl.startsWith("http") ? sp.imageUrl : getApiUrl(sp.imageUrl)] : [],
+    author: {
+      id: sp.author.id,
+      displayName: sp.author.name,
+      handle: sp.author.handle ?? "user",
+      avatar,
+      bio: "",
+      coverPhoto: "",
+      location: "",
+      website: "",
+      joinDate: "",
+      following: 0,
+      followers: 0,
+      verified: false,
+      isVerifiedJournalist: sp.author.userType === "JOURNALIST",
+    },
+    liked: false,
+    reposted: false,
+    bookmarked: false,
+    likes: sp.likeCount,
+    reposts: sp.repostCount,
+    replies: sp.replyCount,
+    views: sp.viewCount,
+  };
+}
 
 const tabs = ["Para você", "Trending", "Notícias", "Esportes", "Entretenimento"];
 
@@ -52,57 +92,150 @@ const newsItems = [
 ];
 
 export default function Explore() {
-  const [activeTab, setActiveTab] = useState("Para você");
-  const [searchValue, setSearchValue] = useState("");
-  const [searchFocused, setSearchFocused] = useState(false);
+  const [searchParams, setSearchParams] = useSearchParams();
+  const query = searchParams.get("q") ?? "";
+  const [activeTab, setActiveTab] = useState<"all" | "users" | "posts">("all");
+  const [defaultTab, setDefaultTab] = useState("Para você");
+
+  const { users: searchUsers, posts: searchPosts, loading } = useSearch(query, activeTab);
+
+  const isSearching = query.trim().length > 0;
+
+  function handleSearch(q: string) {
+    setSearchParams({ q: q.trim() });
+    setActiveTab("all");
+  }
 
   return (
-    <div>
+    <div className="min-h-screen">
       {/* Search */}
-      <div className="sticky top-0 z-20 bg-black/80 backdrop-blur-md px-4 py-1.5">
+      <div className="sticky top-0 z-20 bg-black/80 backdrop-blur-md px-4 py-2">
         <div className="flex items-center gap-3">
-          <div
-            className={`flex-1 flex items-center rounded-full px-4 py-2.5 transition-colors ${
-              searchFocused ? "bg-black border border-x-accent" : "bg-x-search-bg border border-transparent"
-            }`}
-          >
-            <Search className={`w-[18px] h-[18px] flex-shrink-0 ${searchFocused ? "text-x-accent" : "text-x-text-secondary"}`} />
-            <input
-              type="text"
-              placeholder="Buscar no FuteApp"
-              value={searchValue}
-              onChange={(e) => setSearchValue(e.target.value)}
-              onFocus={() => setSearchFocused(true)}
-              onBlur={() => setSearchFocused(false)}
-              className="ml-3 bg-transparent text-[15px] text-x-text-primary placeholder-x-text-secondary outline-none flex-1"
-            />
-          </div>
+          <SearchBar
+            initialValue={query}
+            onSearch={handleSearch}
+            autoFocus={!isSearching}
+            className="flex-1"
+          />
           <button className="p-2 rounded-full border border-x-border hover:bg-[rgba(231,233,234,0.1)] transition-colors" aria-label="Settings">
             <Settings className="w-5 h-5" />
           </button>
         </div>
       </div>
 
-      {/* Tabs */}
-      <div className="flex border-b border-x-border overflow-x-auto hide-scrollbar">
-        {tabs.map((tab) => (
-          <button
-            key={tab}
-            onClick={() => setActiveTab(tab)}
-            className="flex-1 min-w-[80px] py-4 text-center hover:bg-[rgba(231,233,234,0.03)] transition-colors relative text-[15px] whitespace-nowrap px-4"
-          >
-            <span className={activeTab === tab ? "font-bold" : "text-x-text-secondary"}>
-              {tab}
-            </span>
-            {activeTab === tab && (
-              <div className="absolute bottom-0 left-1/2 -translate-x-1/2 w-[56px] h-1 bg-x-accent rounded-full" />
-            )}
-          </button>
-        ))}
-      </div>
+      {isSearching ? (
+        <>
+          {/* Tabs de filtro de busca */}
+          <div className="flex border-b border-x-border sticky top-14 bg-black z-10">
+            {[
+              { key: "all" as const, label: "Tudo" },
+              { key: "users" as const, label: "Usuários" },
+              { key: "posts" as const, label: "Posts" },
+            ].map((tab) => (
+              <button
+                key={tab.key}
+                onClick={() => setActiveTab(tab.key)}
+                className={`flex-1 py-4 text-sm font-semibold transition-colors hover:bg-[rgba(231,233,234,0.03)] ${
+                  activeTab === tab.key
+                    ? "text-x-text-primary border-b-2 border-x-accent"
+                    : "text-x-text-secondary"
+                }`}
+              >
+                {tab.label}
+              </button>
+            ))}
+          </div>
 
-      {/* Trending Cards */}
-      <div className="grid grid-cols-2 gap-0.5">
+          {loading && (
+            <div className="flex items-center justify-center py-12">
+              <div className="w-6 h-6 border-2 border-x-accent border-t-transparent rounded-full animate-spin" />
+            </div>
+          )}
+
+          {!loading && (
+            <div>
+              {(activeTab === "all" || activeTab === "users") && searchUsers.length > 0 && (
+                <div>
+                  {activeTab === "all" && (
+                    <h2 className="px-4 py-3 text-xl font-bold text-x-text-primary border-b border-x-border">
+                      Pessoas
+                    </h2>
+                  )}
+                  {searchUsers.map((user: SearchUser) => (
+                    <Link
+                      key={user.id}
+                      to={`/profile/${user.handle ?? user.id}`}
+                      className="flex items-center gap-3 px-4 py-3 hover:bg-[rgba(231,233,234,0.03)] transition-colors border-b border-x-border"
+                    >
+                      <div className="w-12 h-12 rounded-full bg-x-border overflow-hidden flex-shrink-0">
+                        {user.avatarUrl ? (
+                          <img src={user.avatarUrl} alt={user.name} className="w-full h-full object-cover" />
+                        ) : (
+                          <div className="w-full h-full flex items-center justify-center">
+                            <User className="w-6 h-6 text-x-text-secondary" />
+                          </div>
+                        )}
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <p className="text-x-text-primary font-bold text-sm">{user.name}</p>
+                        {user.handle && <p className="text-x-text-secondary text-sm">@{user.handle}</p>}
+                        {user.bio && <p className="text-x-text-secondary text-sm mt-0.5 truncate">{user.bio}</p>}
+                        <p className="text-x-text-secondary text-xs mt-0.5">{user.followersCount} seguidores</p>
+                      </div>
+                    </Link>
+                  ))}
+                </div>
+              )}
+
+              {(activeTab === "all" || activeTab === "posts") && searchPosts.length > 0 && (
+                <div>
+                  {activeTab === "all" && (
+                    <h2 className="px-4 py-3 text-xl font-bold text-x-text-primary border-b border-x-border">
+                      Posts
+                    </h2>
+                  )}
+                  {searchPosts.map((post) => (
+                    <PostCard key={post.id} post={searchPostToPost(post)} />
+                  ))}
+                </div>
+              )}
+
+              {!loading && searchUsers.length === 0 && searchPosts.length === 0 && (
+                <div className="flex flex-col items-center justify-center py-16 px-8 text-center">
+                  <Search className="w-12 h-12 text-x-text-secondary mb-4" />
+                  <h3 className="text-xl font-bold text-x-text-primary mb-2">
+                    Nenhum resultado para &quot;{query}&quot;
+                  </h3>
+                  <p className="text-x-text-secondary text-sm">
+                    Tente outras palavras-chave ou verifique a ortografia.
+                  </p>
+                </div>
+              )}
+            </div>
+          )}
+        </>
+      ) : (
+        <>
+          {/* Tabs do conteúdo padrão */}
+          <div className="flex border-b border-x-border overflow-x-auto hide-scrollbar">
+            {tabs.map((tab) => (
+              <button
+                key={tab}
+                onClick={() => setDefaultTab(tab)}
+                className="flex-1 min-w-[80px] py-4 text-center hover:bg-[rgba(231,233,234,0.03)] transition-colors relative text-[15px] whitespace-nowrap px-4"
+              >
+                <span className={defaultTab === tab ? "font-bold" : "text-x-text-secondary"}>
+                  {tab}
+                </span>
+                {defaultTab === tab && (
+                  <div className="absolute bottom-0 left-1/2 -translate-x-1/2 w-[56px] h-1 bg-x-accent rounded-full" />
+                )}
+              </button>
+            ))}
+          </div>
+
+          {/* Trending Cards */}
+          <div className="grid grid-cols-2 gap-0.5">
         {trendingTopics.map((topic, i) => (
           <div
             key={i}
@@ -165,6 +298,8 @@ export default function Explore() {
           </div>
         ))}
       </div>
+    </>
+      )}
     </div>
   );
 }
