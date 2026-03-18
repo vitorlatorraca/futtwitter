@@ -1,5 +1,7 @@
 import React, { useState } from "react";
-import { ArrowLeftRight, ArrowRight } from "lucide-react";
+import { ArrowLeftRight, ArrowRight, Plus, Lock } from "lucide-react";
+import { useAuth } from "../lib/auth-context";
+import { CreateTransferRumorDialog } from "../features/journalist-transfer-rumors/CreateTransferRumorDialog";
 
 const filterTabs = ["Chegadas", "Saídas", "Rumores"] as const;
 type FilterTab = typeof filterTabs[number];
@@ -38,6 +40,9 @@ const statusColors: Record<TransferStatus, string> = {
 
 export default function VaiEVemFeed() {
   const [activeFilter, setActiveFilter] = useState<FilterTab>("Chegadas");
+  const [dialogOpen, setDialogOpen] = useState(false);
+  const { user } = useAuth();
+  const isJournalist = user?.isJournalist === true;
 
   const filteredTransfers = transfers.filter((t) => {
     if (activeFilter === "Chegadas") return t.type === "in";
@@ -49,12 +54,33 @@ export default function VaiEVemFeed() {
     <div>
       {/* Header with tabs */}
       <div className="sticky top-0 z-20 bg-black/80 backdrop-blur-md border-b border-x-border">
-        <div className="px-4 py-3 flex items-center gap-3">
-          <ArrowLeftRight className="w-6 h-6 text-x-accent" />
-          <div>
-            <h1 className="text-xl font-extrabold">Vai e Vem</h1>
-            <p className="text-[13px] text-x-text-secondary">Transferências e rumores</p>
+        <div className="px-4 py-3 flex items-center justify-between gap-3">
+          <div className="flex items-center gap-3">
+            <ArrowLeftRight className="w-6 h-6 text-x-accent" />
+            <div>
+              <h1 className="text-xl font-extrabold">Vai e Vem</h1>
+              <p className="text-[13px] text-x-text-secondary">Transferências e rumores</p>
+            </div>
           </div>
+
+          {/* Botão: só jornalistas publicam */}
+          {isJournalist ? (
+            <button
+              onClick={() => setDialogOpen(true)}
+              className="flex items-center gap-1.5 bg-x-accent hover:bg-x-accent-hover text-white text-[13px] font-bold px-3 py-1.5 rounded-full transition-colors flex-shrink-0"
+            >
+              <Plus className="w-4 h-4" />
+              Nova negociação
+            </button>
+          ) : user ? (
+            <div
+              className="flex items-center gap-1.5 text-x-text-secondary text-[12px] flex-shrink-0"
+              title="Apenas jornalistas verificados podem publicar negociações"
+            >
+              <Lock className="w-3.5 h-3.5" />
+              <span className="hidden sm:inline">Só jornalistas</span>
+            </div>
+          ) : null}
         </div>
         <div className="flex">
           {filterTabs.map((tab) => (
@@ -110,6 +136,15 @@ export default function VaiEVemFeed() {
           </div>
         ))}
       </div>
+
+      {/* Dialog de criação — só renderiza para jornalistas */}
+      {isJournalist && (
+        <CreateTransferRumorDialog
+          open={dialogOpen}
+          onOpenChange={setDialogOpen}
+          onSuccess={() => setDialogOpen(false)}
+        />
+      )}
     </div>
   );
 }
