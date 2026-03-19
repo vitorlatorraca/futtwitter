@@ -74,6 +74,23 @@ export function useMyTransferRumors() {
   });
 }
 
+export function useTransferRumors(status?: TransferRumorStatus | 'ALL') {
+  const params = new URLSearchParams();
+  if (status && status !== 'ALL') params.set('status', status);
+  params.set('limit', '50');
+
+  return useQuery<TransferRumorItem[]>({
+    queryKey: ['/api/transfer-rumors', status ?? 'ALL'],
+    queryFn: async () => {
+      const res = await fetch(getApiUrl(`/api/transfer-rumors?${params}`), {
+        credentials: 'include',
+      });
+      if (!res.ok) throw new Error('Falha ao buscar negociações');
+      return res.json();
+    },
+  });
+}
+
 export function useCreateTransferRumor() {
   const queryClient = useQueryClient();
   return useMutation({
