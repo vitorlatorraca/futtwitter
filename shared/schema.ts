@@ -65,6 +65,10 @@ export const forumTopicCategoryEnum = pgEnum("forum_topic_category", [
 export const forumModerationStatusEnum = pgEnum("forum_moderation_status", ["PENDING", "APPROVED", "REMOVED"]);
 /** Game attempts: in_progress | completed | abandoned */
 export const gameAttemptStatusEnum = pgEnum("game_attempt_status", ["in_progress", "completed", "abandoned"]);
+/** Hashtag category for Explore page */
+export const hashtagCategoryEnum = pgEnum("hashtag_category", ["time", "campeonato", "geral", "transferencia"]);
+/** Trending period */
+export const trendingPeriodEnum = pgEnum("trending_period", ["1h", "6h", "24h"]);
 
 // ============================================
 // TABLES
@@ -890,9 +894,60 @@ export const posts = pgTable("posts", {
   bookmarkCount: integer("bookmark_count").notNull().default(0),
   viewCount: integer("view_count").notNull().default(0),
   relatedNewsId: varchar("related_news_id", { length: 36 }),
+  hashtags: text("hashtags").array(),
   createdAt: timestamp("created_at").notNull().defaultNow(),
   updatedAt: timestamp("updated_at").notNull().defaultNow(),
 });
+
+export const hashtags = pgTable(
+  "hashtags",
+  {
+    id: varchar("id", { length: 36 }).primaryKey().default(sql`gen_random_uuid()`),
+    name: varchar("name", { length: 100 }).notNull().unique(),
+    postCount: integer("post_count").notNull().default(0),
+    category: hashtagCategoryEnum("category").notNull().default("geral"),
+    updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
+  },
+  (t) => ({
+    nameIdx: index("hashtags_name_idx").on(t.name),
+    postCountIdx: index("hashtags_post_count_idx").on(t.postCount),
+  })
+);
+
+export const postHashtags = pgTable(
+  "post_hashtags",
+  {
+    postId: varchar("post_id", { length: 36 })
+      .notNull()
+      .references(() => posts.id, { onDelete: "cascade" }),
+    hashtagId: varchar("hashtag_id", { length: 36 })
+      .notNull()
+      .references(() => hashtags.id, { onDelete: "cascade" }),
+  },
+  (t) => ({
+    postHashtagUnique: uniqueIndex("post_hashtags_post_hashtag_unique").on(t.postId, t.hashtagId),
+    postIdx: index("post_hashtags_post_idx").on(t.postId),
+    hashtagIdx: index("post_hashtags_hashtag_idx").on(t.hashtagId),
+  })
+);
+
+export const trendingTopics = pgTable(
+  "trending_topics",
+  {
+    id: varchar("id", { length: 36 }).primaryKey().default(sql`gen_random_uuid()`),
+    title: varchar("title", { length: 200 }).notNull(),
+    subtitle: text("subtitle"),
+    category: hashtagCategoryEnum("category").notNull().default("geral"),
+    postCount: integer("post_count").notNull().default(0),
+    teamId: varchar("team_id", { length: 36 }).references(() => teams.id, { onDelete: "set null" }),
+    period: trendingPeriodEnum("period").notNull().default("24h"),
+    createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+  },
+  (t) => ({
+    periodIdx: index("trending_topics_period_idx").on(t.period),
+    categoryIdx: index("trending_topics_category_idx").on(t.category),
+  })
+);
 
 export const postLikes = pgTable(
   "post_likes",

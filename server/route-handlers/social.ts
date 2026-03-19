@@ -10,6 +10,8 @@ import {
   userFollows,
   news,
   journalists,
+  hashtags,
+  postHashtags,
 } from "@shared/schema";
 import { insertPostSchema } from "@shared/schema";
 
@@ -560,6 +562,32 @@ router.post("/posts", requireAuth, async (req, res) => {
       .returning();
 
     if (!post) return res.status(500).json({ message: "Erro ao criar post" });
+
+    // Extract and save hashtags from content
+    const hashtagMatches = content.match(/#[\w\u00C0-\u024F]+/g) ?? [];
+    const uniqueTags = [...new Set(hashtagMatches.map((t) => t.slice(1).replace(/[^a-zA-Z0-9\u00C0-\u024F]/g, "")))]
+      .filter((t) => t.length >= 2);
+    const hashtagStrings = uniqueTags.map((t) => `#${t}`);
+
+    if (uniqueTags.length > 0) {
+      for (const tag of uniqueTags) {
+        const [upserted] = await db
+          .insert(hashtags)
+          .values({ name: tag, postCount: 1, category: "geral" })
+          .onConflictDoUpdate({
+            target: hashtags.name,
+            set: { postCount: sql`${hashtags.postCount} + 1`, updatedAt: new Date() },
+          })
+          .returning({ id: hashtags.id });
+        if (upserted) {
+          await db
+            .insert(postHashtags)
+            .values({ postId: post.id, hashtagId: upserted.id })
+            .onConflictDoNothing({ target: [postHashtags.postId, postHashtags.hashtagId] });
+        }
+      }
+      await db.update(posts).set({ hashtags: hashtagStrings, updatedAt: new Date() }).where(eq(posts.id, post.id));
+    }
 
     if (parentPostId) {
       await db

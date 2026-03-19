@@ -123,6 +123,7 @@ export function useCreatePost() {
     onSuccess: (_, variables) => {
       queryClient.invalidateQueries({ queryKey: ["posts"] });
       queryClient.invalidateQueries({ queryKey: ["feed", "torcida"] });
+      queryClient.invalidateQueries({ queryKey: ["explore"] });
       if (variables.parentPostId) {
         queryClient.invalidateQueries({ queryKey: ["posts", variables.parentPostId] });
       }

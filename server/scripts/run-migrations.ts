@@ -24,6 +24,7 @@ const MIGRATION_FILES = [
   "0011_vaievem_transfer_rumors.sql",
   "0012_transfer_rumors_note.sql",
   "0013_game_daily_player.sql",
+  "0014_explore_hashtags_trending.sql",
 ];
 
 async function runMigrations() {

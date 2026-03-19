@@ -19,6 +19,7 @@ import { deleteAvatarByUrl, saveAvatar } from "./services/avatarStorage";
 import { generateUniqueHandle } from "./utils/handleUtils";
 import { feedRouter } from "./route-handlers/feed";
 import { socialRouter } from "./route-handlers/social";
+import { exploreRouter } from "./route-handlers/explore";
 
 const PgSession = ConnectPgSimple(session);
 
@@ -321,6 +322,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   );
 
   app.use("/api/feed", feedRouter);
+  app.use("/api/explore", exploreRouter);
   app.use("/api", socialRouter);
 
   // GET /api/search/suggestions?q=texto — autocomplete de usuários

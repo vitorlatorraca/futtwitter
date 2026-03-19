@@ -34,6 +34,7 @@
     "seed:standings": "npx tsx server/scripts/seed-standings.ts",
     "seed:last-match-ratings": "npx tsx server/scripts/seed-last-match-ratings.ts",
     "seed:games": "npx tsx server/db/seed/games.seed.ts",
+    "seed:explore": "npx tsx server/scripts/seed-explore.mjs",
     "fetch:corinthians-photos": "npx tsx server/scripts/fetch-corinthians-photos.ts",
     "cleanup:transfer-rumors": "npx tsx server/scripts/cleanupTransferRumors.ts",
     "sync:player-photos": "npx tsx server/scripts/syncCorinthiansPlayerPhotos.ts",
