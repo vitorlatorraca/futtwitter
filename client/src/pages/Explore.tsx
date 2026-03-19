@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { useSearchParams, Link } from "react-router-dom";
-import { Search, MoreHorizontal, Settings, TrendingUp } from "lucide-react";
+import { Search, MoreHorizontal, Settings, TrendingUp, ArrowLeft } from "lucide-react";
 import { SearchBar } from "../components/SearchBar";
 import { useSearch, SearchUser, SearchPost } from "../hooks/useSearch";
 import PostCard from "../components/feed/PostCard";
@@ -138,6 +138,21 @@ export default function Explore() {
 
       {isSearching ? (
         <>
+          {/* Header de resultado com botão voltar */}
+          <div className="flex items-center gap-3 px-4 py-3 border-b border-x-border">
+            <button
+              onClick={() => setSearchParams({})}
+              className="p-2 -ml-2 rounded-full hover:bg-white/[0.08] transition-colors"
+              aria-label="Voltar"
+            >
+              <ArrowLeft className="w-5 h-5" />
+            </button>
+            <div>
+              <p className="text-[20px] font-extrabold leading-tight">"{query}"</p>
+              <p className="text-[13px] text-x-text-secondary">Posts, pessoas e mais</p>
+            </div>
+          </div>
+
           {/* Tabs de filtro */}
           <div className="flex border-b border-x-border sticky top-[52px] bg-black z-10">
             {(["all", "users", "posts"] as const).map((key) => {
@@ -304,11 +319,12 @@ export default function Explore() {
             ))}
           </div>
 
-          {/* Trending Cards */}
+          {/* Trending Cards — clique abre feed de posts */}
           <div className="grid grid-cols-2 gap-0.5">
         {trendingTopics.map((topic, i) => (
           <div
             key={i}
+            onClick={() => handleSearch(topic.topic.replace(/^#/, ""))}
             className={`relative overflow-hidden cursor-pointer group ${i === 0 ? "col-span-2 h-[200px]" : "h-[150px]"}`}
           >
             <img
@@ -338,6 +354,7 @@ export default function Explore() {
         ].map((item, i) => (
           <div
             key={i}
+            onClick={() => handleSearch(item.topic.replace(/^#/, ""))}
             className="px-4 py-3 hover:bg-[rgba(231,233,234,0.03)] transition-colors cursor-pointer flex justify-between"
           >
             <div>
@@ -345,19 +362,24 @@ export default function Explore() {
               <p className="text-[15px] font-bold mt-0.5">{item.topic}</p>
               <p className="text-[13px] text-x-text-secondary mt-0.5">{item.posts} posts</p>
             </div>
-            <button className="p-1.5 -m-1.5 rounded-full hover:bg-[rgba(29,155,240,0.1)] h-fit" aria-label="More">
+            <button
+              className="p-1.5 -m-1.5 rounded-full hover:bg-[rgba(29,155,240,0.1)] h-fit"
+              aria-label="More"
+              onClick={(e) => e.stopPropagation()}
+            >
               <MoreHorizontal className="w-[18px] h-[18px] text-x-text-secondary" />
             </button>
           </div>
         ))}
       </div>
 
-      {/* News */}
+      {/* News — clique busca pela manchete */}
       <div className="border-t border-x-border py-3">
         <h2 className="text-xl font-extrabold px-4 py-2">Notícias</h2>
         {newsItems.map((item, i) => (
           <div
             key={i}
+            onClick={() => handleSearch(item.headline.split(" ").slice(0, 3).join(" "))}
             className="px-4 py-3 hover:bg-[rgba(231,233,234,0.03)] transition-colors cursor-pointer flex gap-3"
           >
             <div className="flex-1">
