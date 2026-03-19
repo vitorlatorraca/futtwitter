@@ -72,12 +72,12 @@ export default function Sidebar() {
   const futeAppNav: NavItem[] = [
     { label: "Meu Time", subtitle: "Seu clube do coração", icon: Shield, path: "/meu-time", isFuteApp: true },
     { label: "Vai e Vem", subtitle: "Transferências e rumores", icon: ArrowLeftRight, path: "/vai-e-vem", isFuteApp: true },
-    { label: "Jogos", subtitle: "Agenda e resultados", icon: Calendar, path: "/jogos", isFuteApp: true },
+    // { label: "Jogos", subtitle: "Agenda e resultados", icon: Calendar, path: "/jogos", isFuteApp: true },
   ];
 
   const bottomNav: NavItem[] = [
     { label: "Notificações", icon: Bell, path: "/notifications", badge: unreadCount > 0 ? unreadCount : undefined },
-    { label: "Mensagens", icon: Mail, path: "/messages", badge: unreadMessages || undefined },
+    // { label: "Mensagens", icon: Mail, path: "/messages", badge: unreadMessages || undefined },
     { label: "Perfil", icon: User, path: `/profile/${displayUser.handle}` },
   ];
 
@@ -173,14 +173,14 @@ export default function Sidebar() {
 
           {bottomNav.map(renderNavItem)}
 
-          <button
+          {/* <button
             onClick={() => setMoreMenuOpen(!moreMenuOpen)}
             className="group flex items-center rounded-full hover:bg-[rgba(26,86,219,0.1)] transition-colors py-3 px-3 w-full"
             aria-label="Mais"
           >
             <MoreHorizontal className="w-[26px] h-[26px] stroke-[1.75]" />
             {!isCompact && <span className="ml-5 text-xl leading-6">Mais</span>}
-          </button>
+          </button> */}
         </nav>
 
         <button

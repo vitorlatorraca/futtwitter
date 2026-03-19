@@ -12,7 +12,7 @@ export default function MobileNav() {
 
   const items = [
     { icon: Home, path: "/feed", label: "Home" },
-    { icon: Calendar, path: "/jogos", label: "Jogos" },
+    // { icon: Calendar, path: "/jogos", label: "Jogos" },
     { icon: ArrowLeftRight, path: "/vai-e-vem", label: "Vai e Vem" },
     { icon: Shield, path: "/meu-time", label: "Meu Time" },
     { icon: User, path: `/profile/${profileHandle}`, label: "Perfil" },
