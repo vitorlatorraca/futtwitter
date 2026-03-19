@@ -68,13 +68,13 @@ async function fetchJson<T>(url: string): Promise<T> {
   return res.json();
 }
 
-export function useInfluencersFeed() {
+export function useInfluencersFeed(teamFilter: "mine" | "all" = "all") {
   return useInfiniteQuery<InfluencerFeedItem[]>({
-    queryKey: ["feed", "influencers"],
+    queryKey: ["feed", "influencers", teamFilter],
     queryFn: async ({ pageParam = 0 }) => {
       const offset = pageParam as number;
       return fetchJson<InfluencerFeedItem[]>(
-        `/api/feed/influencers?limit=${PAGE_SIZE}&offset=${offset}`
+        `/api/feed/influencers?limit=${PAGE_SIZE}&offset=${offset}&teamFilter=${teamFilter}`
       );
     },
     initialPageParam: 0,
@@ -202,20 +202,3 @@ export function useUpcomingMatches(teamId?: string) {
   });
 }
 
-export function useBookmarkNewsMutation() {
-  const queryClient = useQueryClient();
-  return useMutation({
-    mutationFn: async ({ newsId }: { newsId: string }) => {
-      const res = await fetch(getApiUrl(`/api/feed/news/${newsId}/bookmark`), {
-        method: "POST",
-        credentials: "include",
-        headers: { "Content-Type": "application/json" },
-      });
-      if (!res.ok) throw new Error("Falha ao salvar");
-      return res.json();
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["feed", "influencers"] });
-    },
-  });
-}

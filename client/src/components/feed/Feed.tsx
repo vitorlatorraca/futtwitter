@@ -82,7 +82,8 @@ function torcidaToPost(item: TorcidaFeedItem): Post {
 
 export default function Feed() {
   const { activeTab, setActiveTab } = useAppStore();
-  const influencersQuery = useInfluencersFeed();
+  const [influencerFilter, setInfluencerFilter] = useState<"mine" | "all">("all");
+  const influencersQuery = useInfluencersFeed(influencerFilter);
   const torcidaQuery = useTorcidaFeed();
   const postsQuery = usePostsFeed();
   const likeMutation = useLikeNewsMutation();
@@ -237,6 +238,32 @@ export default function Feed() {
           ))}
         </div>
       </div>
+
+      {activeTab === "influencers" && (
+        <div className="flex items-center gap-2 px-4 py-2 border-b border-x-border bg-black/60">
+          <span className="text-xs text-x-text-secondary font-medium mr-1">Mostrar:</span>
+          <button
+            onClick={() => setInfluencerFilter("all")}
+            className={`px-4 py-1.5 rounded-full text-xs font-semibold transition-colors border ${
+              influencerFilter === "all"
+                ? "bg-[#1a56db] text-white border-[#1a56db]"
+                : "bg-transparent text-x-text-secondary border-x-border hover:border-x-text-secondary"
+            }`}
+          >
+            Todos os Times
+          </button>
+          <button
+            onClick={() => setInfluencerFilter("mine")}
+            className={`px-4 py-1.5 rounded-full text-xs font-semibold transition-colors border ${
+              influencerFilter === "mine"
+                ? "bg-[#1a56db] text-white border-[#1a56db]"
+                : "bg-transparent text-x-text-secondary border-x-border hover:border-x-text-secondary"
+            }`}
+          >
+            Meu Time
+          </button>
+        </div>
+      )}
 
       {activeTab !== "influencers" && (
         <div className="border-b border-x-border">

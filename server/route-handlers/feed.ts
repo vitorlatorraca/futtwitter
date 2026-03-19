@@ -36,10 +36,31 @@ function userToHandle(user: { name: string; email?: string; id?: string }): stri
 const router = Router();
 
 // GET /api/feed/influencers - published news with journalist + team
+// Query params:
+//   teamFilter=mine  → only news for the logged-in user's team
+//   teamFilter=all   → all news (default)
 router.get("/influencers", async (req, res) => {
   try {
     const limit = Math.min(parseInt(String(req.query.limit || 20), 10) || 20, 50);
     const offset = Math.max(parseInt(String(req.query.offset || 0), 10) || 0, 0);
+    const teamFilter = String(req.query.teamFilter || "all");
+
+    const viewerUserId = (req.session as any)?.userId ?? null;
+    let viewerTeamId: string | null = null;
+    if (viewerUserId) {
+      const [viewer] = await db
+        .select({ teamId: users.teamId })
+        .from(users)
+        .where(eq(users.id, viewerUserId))
+        .limit(1);
+      viewerTeamId = viewer?.teamId ?? null;
+    }
+
+    // Build where conditions
+    const conditions = [eq(news.isPublished, true)] as ReturnType<typeof eq>[];
+    if (teamFilter === "mine" && viewerTeamId) {
+      conditions.push(eq(news.teamId, viewerTeamId));
+    }
 
     const rows = await db
       .select({
@@ -61,12 +82,11 @@ router.get("/influencers", async (req, res) => {
       .innerJoin(journalists, eq(news.journalistId, journalists.id))
       .innerJoin(users, eq(journalists.userId, users.id))
       .leftJoin(teams, eq(news.teamId, teams.id))
-      .where(eq(news.isPublished, true))
+      .where(and(...conditions))
       .orderBy(desc(news.publishedAt))
       .limit(limit)
       .offset(offset);
 
-    const viewerUserId = (req.session as any)?.userId ?? null;
     const items: Array<{
       id: string;
       title: string;
