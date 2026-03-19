@@ -1,6 +1,6 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useSearchParams, Link } from "react-router-dom";
-import { Search, MoreHorizontal, Settings } from "lucide-react";
+import { Search, MoreHorizontal, Settings, TrendingUp } from "lucide-react";
 import { SearchBar } from "../components/SearchBar";
 import { useSearch, SearchUser, SearchPost } from "../hooks/useSearch";
 import PostCard from "../components/feed/PostCard";
@@ -43,30 +43,31 @@ function searchPostToPost(sp: SearchPost): Post {
 
 const tabs = ["Para você", "Trending", "Notícias", "Esportes", "Entretenimento"];
 
+// ─── Imagens estáveis do Unsplash (IDs diretos, não URLs que expiram) ─────────
 const trendingTopics = [
   {
     category: "Esportes · Trending",
     topic: "Brasileirão",
     posts: "342K",
-    image: "https://images.unsplash.com/photo-1431324155629-1a6deb1dec8d?w=400",
+    image: "https://images.unsplash.com/photo-1431324155629-1a6deb1dec8d?auto=format&fit=crop&w=400&q=80",
   },
   {
     category: "Trending no Brasil",
     topic: "#Libertadores",
     posts: "189K",
-    image: "https://images.unsplash.com/photo-1574629810360-7efbbe195018?w=400",
+    image: "https://images.unsplash.com/photo-1574629810360-7efbbe195018?auto=format&fit=crop&w=400&q=80",
   },
   {
     category: "Esportes · Trending",
     topic: "Champions League",
     posts: "892K",
-    image: "https://images.unsplash.com/photo-1522778119026-d647f0596c20?w=400",
+    image: "https://images.unsplash.com/photo-1522778119026-d647f0596c20?auto=format&fit=crop&w=400&q=80",
   },
   {
     category: "Futebol · Trending",
     topic: "Janela de Transferências",
     posts: "156K",
-    image: "https://images.unsplash.com/photo-1489944440615-453fc2b6a9a9?w=400",
+    image: "https://images.unsplash.com/photo-1489944440615-453fc2b6a9a9?auto=format&fit=crop&w=400&q=80",
   },
 ];
 
@@ -75,19 +76,20 @@ const newsItems = [
     source: "ESPN Brasil",
     time: "2h atrás",
     headline: "Corinthians anuncia novo técnico para a temporada 2026",
-    image: "https://images.unsplash.com/photo-1553778263-73a83bab9b0c?w=200",
+    image: "https://images.unsplash.com/photo-1553778263-73a83bab9b0c?auto=format&fit=crop&w=200&q=80",
   },
   {
     source: "ge",
     time: "4h atrás",
     headline: "VAR: novas regras são aprovadas para o Brasileirão",
-    image: "https://images.unsplash.com/photo-1560272564-c83b66b1ad12?w=200",
+    image: "https://images.unsplash.com/photo-1560272564-c83b66b1ad12?auto=format&fit=crop&w=200&q=80",
   },
   {
     source: "UOL Esporte",
-    time: "6h ago",
+    time: "6h atrás",
     headline: "Seleção Brasileira convoca 23 jogadores para as eliminatórias",
-    image: "https://images.unsplash.com/photo-1508098682722-e99c43a406b2?w=200",
+    // imagem substituída — URL anterior estava expirada
+    image: "https://images.unsplash.com/photo-1517466787929-bc90951d0974?auto=format&fit=crop&w=200&q=80",
   },
 ];
 
@@ -99,7 +101,18 @@ export default function Explore() {
 
   const { users: searchUsers, posts: searchPosts, loading } = useSearch(query, activeTab);
 
+  // Evita flash de "sem resultados" enquanto o debounce ainda não disparou
+  const [hasSearched, setHasSearched] = useState(false);
+  useEffect(() => {
+    if (query.trim().length > 0) {
+      setHasSearched(false);
+      const t = setTimeout(() => setHasSearched(true), 500); // > debounce 400ms
+      return () => clearTimeout(t);
+    }
+  }, [query]);
+
   const isSearching = query.trim().length > 0;
+  const showEmpty = hasSearched && !loading && searchUsers.length === 0 && searchPosts.length === 0;
 
   function handleSearch(q: string) {
     setSearchParams({ q: q.trim() });
@@ -147,24 +160,24 @@ export default function Explore() {
             })}
           </div>
 
-          {/* Skeleton de loading */}
-          {loading && (
+          {/* Skeleton de loading — cor visível no modo escuro */}
+          {(loading || !hasSearched) && (
             <div className="animate-pulse">
               {[...Array(5)].map((_, i) => (
                 <div key={i} className="flex items-center gap-3 px-4 py-4 border-b border-x-border">
-                  <div className="w-12 h-12 rounded-full bg-x-border flex-shrink-0" />
+                  <div className="w-12 h-12 rounded-full bg-gray-800 flex-shrink-0" />
                   <div className="flex-1 space-y-2">
-                    <div className="h-3.5 bg-x-border rounded-full w-1/3" />
-                    <div className="h-3 bg-x-border rounded-full w-1/5 opacity-60" />
-                    <div className="h-3 bg-x-border rounded-full w-2/3 opacity-40" />
+                    <div className="h-3.5 bg-gray-800 rounded-full w-1/3" />
+                    <div className="h-3 bg-gray-700 rounded-full w-1/5" />
+                    <div className="h-3 bg-gray-700 rounded-full w-2/3" />
                   </div>
-                  <div className="w-20 h-8 rounded-full bg-x-border" />
+                  <div className="w-20 h-8 rounded-full bg-gray-800" />
                 </div>
               ))}
             </div>
           )}
 
-          {!loading && (
+          {!loading && hasSearched && (
             <div>
               {/* Seção: Pessoas */}
               {(activeTab === "all" || activeTab === "users") && searchUsers.length > 0 && (
@@ -254,7 +267,7 @@ export default function Explore() {
               )}
 
               {/* Empty state */}
-              {searchUsers.length === 0 && searchPosts.length === 0 && (
+              {showEmpty && (
                 <div className="flex flex-col items-center justify-center py-20 px-8 text-center">
                   <div className="w-16 h-16 rounded-full bg-x-search-bg flex items-center justify-center mb-5">
                     <Search className="w-8 h-8 text-x-text-secondary" />
