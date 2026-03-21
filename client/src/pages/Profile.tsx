@@ -4,9 +4,9 @@ import { ArrowLeft, MapPin, Link2, CalendarDays, Loader2 } from "lucide-react";
 import { useAuth } from "../lib/auth-context";
 import { useUserProfile, useToggleFollow } from "../hooks/useFollow";
 import { usePostsFeed, useLikePost, useBookmarkPost } from "../hooks/usePosts";
+import { postFeedItemToPost, avatarFallback } from "../utils/postTransforms";
 import PostCard from "../components/feed/PostCard";
 import PostSkeleton from "../components/feed/PostSkeleton";
-import type { Post } from "../store/useAppStore";
 
 const profileTabs = ["Posts", "Respostas", "Destaques", "Mídia", "Curtidas"];
 
@@ -15,58 +15,6 @@ const VerifiedBadge = () => (
     <path d="M20.396 11c-.018-.646-.215-1.275-.57-1.816-.354-.54-.852-.972-1.438-1.246.223-.607.27-1.264.14-1.897-.131-.634-.437-1.218-.882-1.687-.47-.445-1.053-.75-1.687-.882-.633-.13-1.29-.083-1.897.14-.273-.587-.704-1.086-1.245-1.44S11.647 1.62 11 1.604c-.646.017-1.273.213-1.813.568s-.969.855-1.245-1.44c-.608.223-1.267.272-1.902.14-.635-.13-1.22-.436-1.69-.882-.445-.47-.751-1.054-.882-1.69-.13-.633-.08-1.29.144-1.896-.586-.274-1.084-.705-1.438-1.246-.354-.54-.551-1.17-.569-1.816zM9.662 14.85l-3.429-3.428 1.293-1.302 2.072 2.072 4.4-4.794 1.347 1.246z" />
   </svg>
 );
-
-function postFeedItemToPost(item: {
-  id: string;
-  content: string;
-  imageUrl: string | null;
-  likeCount: number;
-  replyCount: number;
-  repostCount: number;
-  viewCount: number;
-  createdAt: string;
-  author: {
-    id: string;
-    name: string;
-    handle: string;
-    avatarUrl: string | null;
-    userRole?: "fan" | "journalist";
-    isVerifiedJournalist?: boolean;
-  };
-  viewerHasLiked: boolean;
-  viewerHasBookmarked: boolean;
-}): Post {
-  const isVerified = !!item.author.isVerifiedJournalist;
-  return {
-    id: item.id,
-    author: {
-      id: item.author.id,
-      displayName: item.author.name,
-      handle: item.author.handle,
-      avatar: item.author.avatarUrl || "",
-      bio: "",
-      coverPhoto: "",
-      location: "",
-      website: "",
-      joinDate: "",
-      following: 0,
-      followers: 0,
-      verified: isVerified,
-      userRole: item.author.userRole ?? "fan",
-      isVerifiedJournalist: isVerified,
-    },
-    text: item.content,
-    timestamp: new Date(item.createdAt),
-    images: item.imageUrl ? [item.imageUrl] : [],
-    liked: item.viewerHasLiked,
-    reposted: false,
-    bookmarked: item.viewerHasBookmarked,
-    likes: item.likeCount,
-    reposts: item.repostCount,
-    replies: item.replyCount,
-    views: item.viewCount,
-  };
-}
 
 export default function Profile() {
   const { handle } = useParams<{ handle: string }>();
@@ -154,8 +102,9 @@ export default function Profile() {
       <div className="px-4 pb-3">
         <div className="flex justify-between items-start -mt-[10%]">
           <img
-            src={user.avatarUrl || "https://api.dicebear.com/7.x/avataaars/svg?seed=default"}
+            src={user.avatarUrl || avatarFallback(user.name)}
             alt={user.name}
+            onError={(e) => { (e.currentTarget as HTMLImageElement).src = avatarFallback(user.name); }}
             className="w-[133px] h-[133px] rounded-full border-4 border-black object-cover"
           />
           <div className="mt-[75px]">

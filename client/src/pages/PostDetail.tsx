@@ -1,15 +1,16 @@
 import React from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import { ArrowLeft } from "lucide-react";
-import { useAppStore } from "../store/useAppStore";
-import { mockPosts } from "../data/mockPosts";
+import { ArrowLeft, Loader2 } from "lucide-react";
+import { usePost, postFeedItemToPost } from "../hooks/usePosts";
 import PostCard from "../components/feed/PostCard";
+import PostSkeleton from "../components/feed/PostSkeleton";
 import ComposeBox from "../components/feed/ComposeBox";
-import { formatFullDate } from "../utils/formatDate";
-import { formatNumber, parsePostText } from "../utils/parseText";
 import TweetActions from "../components/feed/TweetActions";
 import MediaGrid from "../components/feed/MediaGrid";
 import LinkPreview from "../components/feed/LinkPreview";
+import { formatFullDate } from "../utils/formatDate";
+import { formatNumber, parsePostText } from "../utils/parseText";
+import { avatarFallback } from "../utils/postTransforms";
 
 const VerifiedBadge = () => (
   <svg viewBox="0 0 22 22" className="w-5 h-5 fill-x-accent inline-block flex-shrink-0">
@@ -20,27 +21,55 @@ const VerifiedBadge = () => (
 export default function PostDetail() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
-  const { posts: storePosts } = useAppStore();
 
-  const allPosts = [...storePosts, ...mockPosts];
-  const post = allPosts.find((p) => p.id === id);
+  const { data, isLoading, isError, error } = usePost(id);
 
-  if (!post) {
+  const post = data ? postFeedItemToPost(data) : null;
+  const replies = (data?.replies ?? []).map(postFeedItemToPost);
+
+  /* ── Loading ─────────────────────────────────────────────────── */
+  if (isLoading) {
     return (
-      <div className="py-16 text-center">
-        <h2 className="text-xl font-bold">Post não encontrado</h2>
-        <p className="text-x-text-secondary mt-2">Este post não existe ou foi removido.</p>
-        <button
-          onClick={() => navigate("/")}
-          className="mt-4 text-x-accent hover:underline"
-        >
-          Voltar para o início
-        </button>
+      <div>
+        <div className="sticky top-0 z-20 bg-black/80 backdrop-blur-md flex items-center gap-6 px-4 h-[53px]">
+          <button onClick={() => navigate(-1)} className="p-2 -m-2 rounded-full hover:bg-[rgba(231,233,234,0.1)] transition-colors">
+            <ArrowLeft className="w-5 h-5" />
+          </button>
+          <h1 className="text-xl font-bold">Post</h1>
+        </div>
+        <div className="px-4 pt-6 flex justify-center">
+          <Loader2 className="w-6 h-6 animate-spin text-x-accent" />
+        </div>
+        <PostSkeleton />
+        <PostSkeleton />
+        <PostSkeleton />
       </div>
     );
   }
 
-  const replies = allPosts.filter((p) => p.parentId === id);
+  /* ── Error / Not found ───────────────────────────────────────── */
+  if (isError || !post) {
+    const msg = error instanceof Error ? error.message : "Post não encontrado";
+    return (
+      <div>
+        <div className="sticky top-0 z-20 bg-black/80 backdrop-blur-md flex items-center gap-6 px-4 h-[53px]">
+          <button onClick={() => navigate(-1)} className="p-2 -m-2 rounded-full hover:bg-[rgba(231,233,234,0.1)] transition-colors">
+            <ArrowLeft className="w-5 h-5" />
+          </button>
+          <h1 className="text-xl font-bold">Post</h1>
+        </div>
+        <div className="py-16 text-center px-4">
+          <h2 className="text-xl font-bold">Post não encontrado</h2>
+          <p className="text-x-text-secondary mt-2 text-sm">{msg}</p>
+          <button onClick={() => navigate("/")} className="mt-4 text-x-accent hover:underline text-sm">
+            Voltar para o início
+          </button>
+        </div>
+      </div>
+    );
+  }
+
+  /* ── Content ─────────────────────────────────────────────────── */
   const textParts = parsePostText(post.text);
 
   return (
@@ -50,25 +79,27 @@ export default function PostDetail() {
         <button
           onClick={() => navigate(-1)}
           className="p-2 -m-2 rounded-full hover:bg-[rgba(231,233,234,0.1)] transition-colors"
-          aria-label="Back"
+          aria-label="Voltar"
         >
           <ArrowLeft className="w-5 h-5" />
         </button>
         <h1 className="text-xl font-bold">Post</h1>
       </div>
 
-      {/* Post */}
+      {/* Post principal */}
       <article className="px-4 pt-3">
         <div className="flex items-center gap-3">
           <img
-            src={post.author.avatar}
+            src={post.author.avatar || avatarFallback(post.author.displayName)}
             alt={post.author.displayName}
-            className="w-10 h-10 rounded-full object-cover cursor-pointer"
+            onError={(e) => { (e.currentTarget as HTMLImageElement).src = avatarFallback(post.author.displayName); }}
+            className="w-10 h-10 rounded-full object-cover cursor-pointer flex-shrink-0"
             onClick={() => navigate(`/profile/${post.author.handle}`)}
           />
           <div className="flex-1 min-w-0">
-            <div className="flex items-center gap-1">
-              <span className="font-bold text-[15px] hover:underline cursor-pointer"
+            <div className="flex items-center gap-1 flex-wrap">
+              <span
+                className="font-bold text-[15px] hover:underline cursor-pointer"
                 onClick={() => navigate(`/profile/${post.author.handle}`)}
               >
                 {post.author.displayName}
@@ -83,10 +114,18 @@ export default function PostDetail() {
           <p className="text-[17px] leading-6 whitespace-pre-wrap break-words">
             {textParts.map((part, i) => {
               if (part.type === "hashtag" || part.type === "mention") {
-                return <span key={i} className="text-x-accent hover:underline cursor-pointer">{part.content}</span>;
+                return (
+                  <span key={i} className="text-x-accent hover:underline cursor-pointer">
+                    {part.content}
+                  </span>
+                );
               }
               if (part.type === "url") {
-                return <a key={i} href={part.content} className="text-x-accent hover:underline">{part.content}</a>;
+                return (
+                  <a key={i} href={part.content} target="_blank" rel="noopener noreferrer" className="text-x-accent hover:underline">
+                    {part.content}
+                  </a>
+                );
               }
               return <span key={i}>{part.content}</span>;
             })}
@@ -111,27 +150,36 @@ export default function PostDetail() {
           <time className="text-[15px] text-x-text-secondary">{formatFullDate(post.timestamp)}</time>
         </div>
 
-        <div className="py-3 flex gap-5 border-b border-x-border text-[14px]">
-          <span>
-            <strong>{formatNumber(post.reposts)}</strong>{" "}
-            <span className="text-x-text-secondary">Reposts</span>
-          </span>
-          <span>
-            <strong>{formatNumber(post.likes)}</strong>{" "}
-            <span className="text-x-text-secondary">Curtidas</span>
-          </span>
-          <span>
-            <strong>{formatNumber(post.views)}</strong>{" "}
-            <span className="text-x-text-secondary">Visualizações</span>
-          </span>
-        </div>
+        {/* Counters */}
+        {(post.reposts > 0 || post.likes > 0 || post.views > 0) && (
+          <div className="py-3 flex gap-5 border-b border-x-border text-[14px]">
+            {post.reposts > 0 && (
+              <span>
+                <strong>{formatNumber(post.reposts)}</strong>{" "}
+                <span className="text-x-text-secondary">Reposts</span>
+              </span>
+            )}
+            {post.likes > 0 && (
+              <span>
+                <strong>{formatNumber(post.likes)}</strong>{" "}
+                <span className="text-x-text-secondary">Curtidas</span>
+              </span>
+            )}
+            {post.views > 0 && (
+              <span>
+                <strong>{formatNumber(post.views)}</strong>{" "}
+                <span className="text-x-text-secondary">Visualizações</span>
+              </span>
+            )}
+          </div>
+        )}
 
         <div className="border-b border-x-border py-1">
           <TweetActions post={post} />
         </div>
       </article>
 
-      {/* Reply Compose */}
+      {/* Compose reply */}
       <div className="border-b border-x-border">
         <ComposeBox
           placeholder={`Responder para @${post.author.handle}`}
@@ -140,11 +188,13 @@ export default function PostDetail() {
       </div>
 
       {/* Replies */}
-      <div>
-        {replies.map((reply) => (
-          <PostCard key={reply.id} post={reply} />
-        ))}
-      </div>
+      {replies.length > 0 ? (
+        replies.map((reply) => <PostCard key={reply.id} post={reply} />)
+      ) : (
+        <div className="py-10 text-center text-x-text-secondary text-sm">
+          Nenhuma resposta ainda. Seja o primeiro!
+        </div>
+      )}
     </div>
   );
 }

@@ -12,73 +12,9 @@ import {
   type TorcidaFeedItem,
 } from "../../hooks/useFeed";
 import { usePostsFeed, useLikePost, useBookmarkPost, postFeedItemToPost, type PostFeedItem } from "../../hooks/usePosts";
+import { influencerToPost, torcidaToPost } from "../../utils/postTransforms";
 import type { Post } from "../../store/useAppStore";
 import { Loader2 } from "lucide-react";
-
-function influencerToPost(item: InfluencerFeedItem): Post {
-  const body = item.content || item.summary || item.title || "";
-  return {
-    id: item.id,
-    author: {
-      id: item.journalist.id,
-      displayName: item.journalist.name || "Autor",
-      handle: item.journalist.handle || "autor",
-      avatar: item.journalist.avatarUrl || "",
-      bio: "",
-      coverPhoto: "",
-      location: "",
-      website: "",
-      joinDate: "",
-      following: 0,
-      followers: 0,
-      verified: item.journalist.verified ?? true,
-    },
-    text: body,
-    timestamp: new Date(item.publishedAt),
-    images: item.imageUrl ? [item.imageUrl] : [],
-    liked: item.userInteraction === "LIKE",
-    reposted: false,
-    bookmarked: false,
-    likes: item.engagement?.likes ?? 0,
-    reposts: item.engagement?.reposts ?? 0,
-    replies: 0,
-    views: item.engagement?.views ?? 0,
-    linkPreview: item.sourceUrl
-      ? { url: item.sourceUrl, title: item.title, description: "", image: "", domain: new URL(item.sourceUrl).hostname }
-      : undefined,
-  };
-}
-
-function torcidaToPost(item: TorcidaFeedItem): Post {
-  return {
-    id: item.id,
-    author: {
-      id: item.user.id,
-      displayName: item.user.name || "Usuário",
-      handle: item.user.handle || "user",
-      avatar: item.user.avatarUrl || "",
-      bio: "",
-      coverPhoto: "",
-      location: "",
-      website: "",
-      joinDate: "",
-      following: 0,
-      followers: 0,
-      verified: false,
-    },
-    text: item.content,
-    timestamp: new Date(item.createdAt),
-    images: item.imageUrl ? [item.imageUrl] : [],
-    liked: item.viewerHasLiked,
-    reposted: false,
-    bookmarked: false,
-    likes: item.likes,
-    reposts: 0,
-    replies: item.replies,
-    views: 0,
-    parentId: item.relatedNews?.id,
-  };
-}
 
 export default function Feed() {
   const { activeTab, setActiveTab } = useAppStore();

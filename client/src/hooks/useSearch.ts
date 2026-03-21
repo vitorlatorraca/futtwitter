@@ -67,10 +67,12 @@ export function useSearch(query: string, type: "all" | "users" | "posts" = "all"
     setLoading(true);
     try {
       const res = await fetch(getApiUrl(`/api/search?q=${encodeURIComponent(q)}&type=${t}`), { credentials: "include" });
-      const data = await res.json();
+      if (!res.ok) throw new Error(`Busca falhou: ${res.status} ${res.statusText}`);
+      const data = await res.json() as { users?: SearchUser[]; posts?: SearchPost[] };
       setUsers(data.users ?? []);
       setPosts(data.posts ?? []);
-    } catch {
+    } catch (err) {
+      console.error("[useSearch] erro na busca:", err);
       setUsers([]);
       setPosts([]);
     } finally {

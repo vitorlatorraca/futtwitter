@@ -1,9 +1,10 @@
-import React, { useState, useRef } from "react";
-import { Image, FileVideo, BarChart3, Smile, CalendarClock, MapPin, X } from "lucide-react";
+import React, { useState, useRef, useEffect } from "react";
+import { Image, X } from "lucide-react";
 import { useAppStore } from "../../store/useAppStore";
 import { useAuth } from "../../lib/auth-context";
 import { useCreatePost } from "../../hooks/usePosts";
 import { getApiUrl } from "../../lib/queryClient";
+import { avatarFallback } from "../../utils/postTransforms";
 import type { Post } from "../../store/useAppStore";
 
 interface ComposeBoxProps {
@@ -13,15 +14,57 @@ interface ComposeBoxProps {
   autoFocus?: boolean;
 }
 
-export default function ComposeBox({ onPost, placeholder = "O que está acontecendo no futebol?", replyTo, autoFocus }: ComposeBoxProps) {
+const DRAFT_KEY = "futtwitter:compose_draft";
+
+export default function ComposeBox({
+  onPost,
+  placeholder = "O que está acontecendo no futebol?",
+  replyTo,
+  autoFocus,
+}: ComposeBoxProps) {
   const { currentUser, addPost, showToast } = useAppStore();
   const { user: authUser } = useAuth();
   const createPost = useCreatePost();
-  const [text, setText] = useState("");
   const [imageUrl, setImageUrl] = useState<string | null>(null);
   const [uploadingImage, setUploadingImage] = useState(false);
   const imageInputRef = useRef<HTMLInputElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
+
+  // Rascunho — só persiste posts raiz (não replies)
+  const draftKey = replyTo ? null : DRAFT_KEY;
+
+  const [text, setText] = useState<string>(() => {
+    if (!draftKey) return "";
+    try {
+      return localStorage.getItem(draftKey) ?? "";
+    } catch {
+      return "";
+    }
+  });
+
+  // Salva rascunho em tempo real
+  useEffect(() => {
+    if (!draftKey) return;
+    try {
+      if (text) {
+        localStorage.setItem(draftKey, text);
+      } else {
+        localStorage.removeItem(draftKey);
+      }
+    } catch {
+      /* storage indisponível */
+    }
+  }, [text, draftKey]);
+
+  // Ajusta altura do textarea ao montar (se havia rascunho)
+  useEffect(() => {
+    const ta = textareaRef.current;
+    if (ta && text) {
+      ta.style.height = "auto";
+      ta.style.height = ta.scrollHeight + "px";
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   const displayUser = authUser
     ? {
@@ -43,6 +86,15 @@ export default function ComposeBox({ onPost, placeholder = "O que está acontece
   const overLimit = remaining < 0;
   const isSubmitting = createPost.isPending;
 
+  const clearForm = () => {
+    setText("");
+    setImageUrl(null);
+    if (textareaRef.current) textareaRef.current.style.height = "auto";
+    if (draftKey) {
+      try { localStorage.removeItem(draftKey); } catch { /* noop */ }
+    }
+  };
+
   const handleSubmit = async () => {
     if (!text.trim() || overLimit || isSubmitting) return;
 
@@ -53,16 +105,15 @@ export default function ComposeBox({ onPost, placeholder = "O que está acontece
           imageUrl: imageUrl || undefined,
           parentPostId: replyTo,
         });
-        setText("");
-        setImageUrl(null);
-        if (textareaRef.current) textareaRef.current.style.height = "auto";
+        clearForm();
         showToast("Post publicado!");
       } catch (err) {
-        showToast(err instanceof Error ? err.message : "Erro ao publicar");
+        showToast(err instanceof Error ? err.message : "Erro ao publicar. Tente novamente.");
       }
       return;
     }
 
+    // Modo offline / sem login
     if (!currentUser) return;
     const newPost: Post = {
       id: `post-${Date.now()}`,
@@ -81,8 +132,7 @@ export default function ComposeBox({ onPost, placeholder = "O que está acontece
     };
     addPost(newPost);
     onPost?.(newPost);
-    setText("");
-    if (textareaRef.current) textareaRef.current.style.height = "auto";
+    clearForm();
   };
 
   const handleTextChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
@@ -90,6 +140,14 @@ export default function ComposeBox({ onPost, placeholder = "O que está acontece
     const ta = e.target;
     ta.style.height = "auto";
     ta.style.height = ta.scrollHeight + "px";
+  };
+
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
+    // Ctrl+Enter / Cmd+Enter para postar
+    if ((e.ctrlKey || e.metaKey) && e.key === "Enter") {
+      e.preventDefault();
+      handleSubmit();
+    }
   };
 
   const handleImageSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -113,10 +171,10 @@ export default function ComposeBox({ onPost, placeholder = "O que está acontece
         credentials: "include",
       });
       if (!res.ok) {
-        const err = await res.json().catch(() => ({}));
-        throw new Error(err.message || "Erro ao enviar imagem");
+        const errData = await res.json().catch(() => ({})) as { message?: string };
+        throw new Error(errData.message || "Erro ao enviar imagem");
       }
-      const data = await res.json();
+      const data = await res.json() as { imageUrl: string };
       setImageUrl(data.imageUrl);
     } catch (err) {
       showToast(err instanceof Error ? err.message : "Erro ao enviar imagem");
@@ -128,27 +186,14 @@ export default function ComposeBox({ onPost, placeholder = "O que está acontece
 
   const circumference = 2 * Math.PI * 10;
   const strokeDashoffset = circumference * (1 - progress);
-
-  const toolbarIcons = [
-    {
-      icon: Image,
-      label: "Media",
-      onClick: authUser
-        ? () => imageInputRef.current?.click()
-        : undefined,
-    },
-    { icon: FileVideo, label: "GIF" },
-    { icon: BarChart3, label: "Poll" },
-    { icon: Smile, label: "Emoji" },
-    { icon: CalendarClock, label: "Schedule" },
-    { icon: MapPin, label: "Location" },
-  ];
+  const avatarSrc = displayUser.avatar || avatarFallback(displayUser.displayName);
 
   return (
     <div className="flex px-4 pt-3 pb-2">
       <img
-        src={displayUser.avatar || "https://api.dicebear.com/7.x/avataaars/svg?seed=default"}
+        src={avatarSrc}
         alt={displayUser.displayName}
+        onError={(e) => { (e.currentTarget as HTMLImageElement).src = avatarFallback(displayUser.displayName); }}
         className="w-10 h-10 rounded-full object-cover flex-shrink-0 mt-1"
       />
       <div className="flex-1 ml-3">
@@ -156,16 +201,19 @@ export default function ComposeBox({ onPost, placeholder = "O que está acontece
           ref={textareaRef}
           value={text}
           onChange={handleTextChange}
+          onKeyDown={handleKeyDown}
           placeholder={placeholder}
           autoFocus={autoFocus}
           className="w-full bg-transparent text-xl text-x-text-primary placeholder-x-text-secondary outline-none resize-none min-h-[52px] py-3"
           rows={1}
+          aria-label="Escrever post"
         />
+
         {imageUrl && (
           <div className="relative mt-2 rounded-2xl overflow-hidden border border-x-border">
             <img
               src={imageUrl.startsWith("/") ? getApiUrl(imageUrl) : imageUrl}
-              alt="Preview"
+              alt="Preview da imagem"
               className="max-h-[280px] w-full object-cover"
             />
             <button
@@ -180,6 +228,7 @@ export default function ComposeBox({ onPost, placeholder = "O que está acontece
         )}
 
         <div className="flex items-center justify-between border-t border-x-border pt-3 pb-1">
+          {/* Toolbar — só o botão de imagem está implementado */}
           <div className="flex items-center gap-1 -ml-2">
             <input
               ref={imageInputRef}
@@ -189,34 +238,27 @@ export default function ComposeBox({ onPost, placeholder = "O que está acontece
               onChange={handleImageSelect}
               disabled={uploadingImage}
             />
-            {toolbarIcons.map(({ icon: Icon, label, onClick }) => (
-              <button
-                key={label}
-                type="button"
-                onClick={onClick}
-                disabled={label === "Media" && uploadingImage}
-                className="p-2 rounded-full hover:bg-[rgba(29,155,240,0.1)] transition-colors disabled:opacity-50"
-                aria-label={label}
-              >
-                <Icon className="w-5 h-5 text-x-accent" />
-              </button>
-            ))}
+            <button
+              type="button"
+              onClick={() => authUser && imageInputRef.current?.click()}
+              disabled={uploadingImage || !authUser}
+              className="p-2 rounded-full hover:bg-[rgba(29,155,240,0.1)] transition-colors disabled:opacity-40"
+              aria-label={uploadingImage ? "Enviando imagem..." : "Adicionar imagem"}
+              title="Adicionar imagem"
+            >
+              <Image className="w-5 h-5 text-x-accent" />
+            </button>
           </div>
 
           <div className="flex items-center gap-3">
+            {/* Contador circular — aparece quando está digitando */}
             {text.length > 0 && (
               <div className="flex items-center gap-2">
-                <div className="relative w-[30px] h-[30px]">
+                <div className="relative w-[30px] h-[30px]" aria-label={`${remaining} caracteres restantes`}>
                   <svg className="w-full h-full -rotate-90" viewBox="0 0 24 24">
+                    <circle cx="12" cy="12" r="10" fill="none" stroke="#2f3336" strokeWidth="2" />
                     <circle
-                      cx="12" cy="12" r="10"
-                      fill="none"
-                      stroke="#2f3336"
-                      strokeWidth="2"
-                    />
-                    <circle
-                      cx="12" cy="12" r="10"
-                      fill="none"
+                      cx="12" cy="12" r="10" fill="none"
                       stroke={overLimit ? "#f4212e" : remaining <= 20 ? "#ffd400" : "#1a56db"}
                       strokeWidth="2"
                       strokeDasharray={circumference}
@@ -233,12 +275,14 @@ export default function ComposeBox({ onPost, placeholder = "O que está acontece
                 <div className="w-px h-[30px] bg-x-border" />
               </div>
             )}
+
             <button
-              onClick={() => handleSubmit()}
+              onClick={handleSubmit}
               disabled={!text.trim() || overLimit || isSubmitting}
+              title="Postar (Ctrl+Enter)"
               className="brand-gradient hover:opacity-90 disabled:opacity-50 disabled:cursor-not-allowed text-white font-bold text-[15px] rounded-full px-4 py-1.5 transition-opacity"
             >
-              {isSubmitting ? "Postando..." : "Postar"}
+              {isSubmitting ? "Postando…" : "Postar"}
             </button>
           </div>
         </div>

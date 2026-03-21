@@ -114,7 +114,7 @@ export function useCreatePost() {
       parentPostId?: string;
       relatedNewsId?: string;
     }) => {
-      return fetchJson<PostFeedItem & { author: unknown }>("/api/posts", {
+      return fetchJson<PostFeedItem>("/api/posts", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(body),
