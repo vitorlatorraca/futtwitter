@@ -5,8 +5,10 @@ import { cn } from "@/lib/utils";
 const DEFAULT_CREST = "/assets/crests/default.png";
 
 export interface CrestProps {
-  /** Team slug (corinthians, palmeiras, etc). Corinthians ALWAYS uses corinthians.png. */
+  /** Team slug (corinthians, palmeiras, etc.) — used for the crest lookup. */
   slug: string | null | undefined;
+  /** Direct logo URL (e.g. from DB/API). Takes priority over slug lookup when provided. */
+  logoUrl?: string | null;
   alt?: string;
   size?: "xs" | "sm" | "md" | "lg";
   className?: string;
@@ -23,14 +25,17 @@ const sizeClasses = {
 
 export function Crest({
   slug,
+  logoUrl,
   alt = "Escudo",
   size = "md",
   className,
   ring = false,
 }: CrestProps) {
-  const crestUrl = getTeamCrest(slug);
+  const slugCrestUrl = getTeamCrest(slug);
+  // Priority: direct logoUrl → slug lookup → default
+  const resolvedUrl = (logoUrl && logoUrl.trim()) ? logoUrl : slugCrestUrl;
   const [errored, setErrored] = useState(false);
-  const src = errored ? DEFAULT_CREST : crestUrl;
+  const src = errored ? DEFAULT_CREST : resolvedUrl;
 
   const handleError = useCallback(() => setErrored(true), []);
 

@@ -107,7 +107,7 @@ export default function TeamSelectionPage() {
                     : undefined
                 }
               >
-                <Crest slug={t.id} alt={t.name} size="lg" className="w-full h-full" />
+                <Crest slug={t.id} logoUrl={t.logoUrl} alt={t.name} size="lg" className="w-full h-full" />
                 {selectedTeam === t.id && (
                   <div
                     className="absolute bottom-0 right-0 w-6 h-6 rounded-full flex items-center justify-center"
@@ -136,7 +136,7 @@ export default function TeamSelectionPage() {
                     className="w-24 h-24 rounded-full overflow-hidden border-2 flex items-center justify-center p-2"
                     style={{ borderColor: team.primaryColor }}
                   >
-                    <Crest slug={team.id} alt={team.name} size="lg" className="w-full h-full" />
+                    <Crest slug={team.id} logoUrl={team.logoUrl} alt={team.name} size="lg" className="w-full h-full" />
                   </div>
                   <div>
                     <p className="font-bold text-xl mb-2">{team.name}</p>

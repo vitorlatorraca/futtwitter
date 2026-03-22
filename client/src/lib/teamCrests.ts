@@ -1,30 +1,33 @@
 /**
  * Single source of truth for team crests (escudos).
- * Corinthians ALWAYS uses corinthians.png. No badge.svg, no logoUrl from DB.
+ * Uses API-Football CDN (media.api-sports.io) as primary source —
+ * the same URLs stored in the Neon DB after the image seed.
+ * Fallback chain: slug match → /assets/crests/default.png
  */
 
 const CRESTS: Record<string, string> = {
-  corinthians: '/assets/crests/corinthians.png',
-  palmeiras: '/assets/crests/palmeiras.svg',
-  'rb-bragantino': '/assets/crests/default.png',
-  bragantino: '/assets/crests/default.png',
-  'sao-paulo': '/assets/crests/default.png',
-  flamengo: '/assets/crests/default.png',
-  santos: '/assets/crests/default.png',
-  'atletico-mineiro': '/assets/crests/default.png',
-  internacional: '/assets/crests/default.png',
-  gremio: '/assets/crests/default.png',
-  fluminense: '/assets/crests/default.png',
-  botafogo: '/assets/crests/default.png',
-  'vasco-da-gama': '/assets/crests/default.png',
-  cruzeiro: '/assets/crests/default.png',
-  'athletico-paranaense': '/assets/crests/default.png',
-  bahia: '/assets/crests/default.png',
-  fortaleza: '/assets/crests/default.png',
-  cuiaba: '/assets/crests/default.png',
-  goias: '/assets/crests/default.png',
-  coritiba: '/assets/crests/default.png',
-  'america-mineiro': '/assets/crests/default.png',
+  // ── Série A / Série B ─────────────────────────────────────────────────────
+  flamengo:              'https://media.api-sports.io/football/teams/127.png',
+  palmeiras:             'https://media.api-sports.io/football/teams/121.png',
+  corinthians:           'https://media.api-sports.io/football/teams/131.png',
+  botafogo:              'https://media.api-sports.io/football/teams/120.png',
+  fluminense:            'https://media.api-sports.io/football/teams/124.png',
+  'sao-paulo':           'https://media.api-sports.io/football/teams/126.png',
+  internacional:         'https://media.api-sports.io/football/teams/119.png',
+  gremio:                'https://media.api-sports.io/football/teams/130.png',
+  cruzeiro:              'https://media.api-sports.io/football/teams/135.png',
+  bahia:                 'https://media.api-sports.io/football/teams/118.png',
+  fortaleza:             'https://media.api-sports.io/football/teams/154.png',
+  'vasco-da-gama':       'https://media.api-sports.io/football/teams/133.png',
+  'athletico-paranaense':'https://media.api-sports.io/football/teams/134.png',
+  'atletico-mineiro':    'https://media.api-sports.io/football/teams/1062.png',
+  'rb-bragantino':       'https://media.api-sports.io/football/teams/794.png',
+  bragantino:            'https://media.api-sports.io/football/teams/794.png',
+  cuiaba:                'https://media.api-sports.io/football/teams/1193.png',
+  santos:                'https://media.api-sports.io/football/teams/152.png',
+  'america-mineiro':     'https://media.api-sports.io/football/teams/143.png',
+  coritiba:              'https://media.api-sports.io/football/teams/148.png',
+  goias:                 'https://media.api-sports.io/football/teams/142.png',
 };
 
 function toSlug(idOrName: string | null | undefined): string {
