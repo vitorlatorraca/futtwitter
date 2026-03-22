@@ -6810,6 +6810,7 @@ async function registerRoutes(app2) {
       "athletico-paranaense",
       "atletico-mineiro",
       "bragantino",
+      "rb-bragantino",
       "santos",
       "coritiba",
       "mirassol",
@@ -6852,11 +6853,14 @@ async function registerRoutes(app2) {
           "remo"
         ]);
         const filtered = season === "2026" && competitionId === "comp-brasileirao-serie-a" ? allTeams.filter((t) => SERIE_A_2026_IDS.has(t.id) || SERIE_A_2026_NAMES.has(t.name.toLowerCase())) : allTeams;
+        const BRAGANTINO_IDS = /* @__PURE__ */ new Set(["bragantino", "rb-bragantino"]);
         const seen = /* @__PURE__ */ new Map();
         for (const t of filtered) {
-          const nameKey = t.name.toLowerCase();
+          const nameKey = BRAGANTINO_IDS.has(t.id) ? "__bragantino__" : t.name.toLowerCase();
           const existing = seen.get(nameKey);
-          if (!existing || SERIE_A_2026_IDS.has(t.id) && !SERIE_A_2026_IDS.has(existing.id)) {
+          const tPts = t.points ?? 0;
+          const ePts = existing ? existing.points ?? 0 : -1;
+          if (!existing || tPts > ePts || tPts === ePts && SERIE_A_2026_IDS.has(t.id) && !SERIE_A_2026_IDS.has(existing.id)) {
             seen.set(nameKey, t);
           }
         }

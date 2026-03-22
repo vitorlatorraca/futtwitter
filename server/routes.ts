@@ -1039,10 +1039,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
     if (!competitionId) return res.status(400).json({ message: "competitionId inválido" });
 
     // Official Brasileirão Série A 2026 team slug-IDs
+    // Note: 'rb-bragantino' is also included as some DBs use that ID variant
     const SERIE_A_2026_IDS = new Set([
       'flamengo', 'palmeiras', 'corinthians', 'botafogo', 'fluminense',
       'sao-paulo', 'internacional', 'gremio', 'cruzeiro', 'bahia',
-      'vasco-da-gama', 'athletico-paranaense', 'atletico-mineiro', 'bragantino',
+      'vasco-da-gama', 'athletico-paranaense', 'atletico-mineiro',
+      'bragantino', 'rb-bragantino',
       'santos', 'coritiba', 'mirassol', 'vitoria', 'chapecoense', 'remo',
     ]);
     // Old teams NOT in 2026 (relegated / not promoted) — used to detect stale standings rows
@@ -1071,13 +1073,17 @@ export async function registerRoutes(app: Express): Promise<Server> {
         const filtered = season === "2026" && competitionId === "comp-brasileirao-serie-a"
           ? allTeams.filter((t) => SERIE_A_2026_IDS.has(t.id) || SERIE_A_2026_NAMES.has(t.name.toLowerCase()))
           : allTeams;
-        // Deduplicate: prefer slug-ID entry over UUID entry for same team name
+        // Deduplicate: prefer entry with most points; for bragantino variants, always use same key
+        const BRAGANTINO_IDS = new Set(['bragantino', 'rb-bragantino']);
         const seen = new Map<string, typeof allTeams[0]>();
         for (const t of filtered) {
-          const nameKey = t.name.toLowerCase();
+          // Normalize bragantino variants to the same dedup key
+          const nameKey = BRAGANTINO_IDS.has(t.id) ? '__bragantino__' : t.name.toLowerCase();
           const existing = seen.get(nameKey);
-          // Prefer slug-ID over UUID (slug IDs are shorter and don't contain hyphens in UUID format)
-          if (!existing || (SERIE_A_2026_IDS.has(t.id) && !SERIE_A_2026_IDS.has(existing.id))) {
+          const tPts = t.points ?? 0;
+          const ePts = existing ? (existing.points ?? 0) : -1;
+          // Keep entry with most points; tie-break by preferring slug-IDs over UUIDs
+          if (!existing || tPts > ePts || (tPts === ePts && SERIE_A_2026_IDS.has(t.id) && !SERIE_A_2026_IDS.has(existing.id))) {
             seen.set(nameKey, t);
           }
         }
