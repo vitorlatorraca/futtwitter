@@ -5,8 +5,8 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { useToast } from '@/hooks/use-toast';
-import { Loader2, Lock, Mail, Eye, EyeOff, Rss, Users, Shield } from 'lucide-react';
-import { motion } from 'framer-motion';
+import { Loader2, Lock, Mail, Eye, EyeOff, Rss, Users, Shield, AlertCircle } from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
 
 export default function LoginPage() {
   const navigate = useNavigate();
@@ -14,6 +14,7 @@ export default function LoginPage() {
   const { toast } = useToast();
   const [isLoading, setIsLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
+  const [errorMsg, setErrorMsg] = useState<string | null>(null);
   const [formData, setFormData] = useState({
     email: '',
     password: '',
@@ -24,12 +25,12 @@ export default function LoginPage() {
       e.preventDefault();
 
       if (!formData.email || !formData.password) {
-        const msg = 'Preencha todos os campos';
-        toast({ variant: 'destructive', title: 'Erro', description: msg });
+        setErrorMsg('Preencha todos os campos');
         return;
       }
 
       setIsLoading(true);
+      setErrorMsg(null);
 
       try {
         await login(formData.email, formData.password);
@@ -37,7 +38,7 @@ export default function LoginPage() {
         navigate('/', { replace: true });
       } catch (err: unknown) {
         const msg = err instanceof Error ? err.message : 'Verifique suas credenciais e tente novamente';
-        toast({ variant: 'destructive', title: 'Erro ao fazer login', description: msg });
+        setErrorMsg(msg);
       } finally {
         setIsLoading(false);
       }
@@ -120,7 +121,7 @@ export default function LoginPage() {
                   type="email"
                   placeholder="seu@email.com"
                   value={formData.email}
-                  onChange={(e) => setFormData((p) => ({ ...p, email: e.target.value }))}
+                  onChange={(e) => { setFormData((p) => ({ ...p, email: e.target.value })); setErrorMsg(null); }}
                   disabled={isLoading}
                   data-testid="input-email"
                   className="pl-9 border-border focus-visible:ring-primary focus-visible:border-primary"
@@ -140,7 +141,7 @@ export default function LoginPage() {
                   type={showPassword ? 'text' : 'password'}
                   placeholder="••••••••"
                   value={formData.password}
-                  onChange={(e) => setFormData((p) => ({ ...p, password: e.target.value }))}
+                  onChange={(e) => { setFormData((p) => ({ ...p, password: e.target.value })); setErrorMsg(null); }}
                   disabled={isLoading}
                   data-testid="input-password"
                   className="pl-9 pr-10 border-border focus-visible:ring-primary focus-visible:border-primary"
@@ -157,6 +158,23 @@ export default function LoginPage() {
                 </button>
               </div>
             </div>
+
+            <AnimatePresence>
+              {errorMsg && (
+                <motion.div
+                  key="error"
+                  initial={{ opacity: 0, y: -6 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -6 }}
+                  transition={{ duration: 0.2 }}
+                  className="flex items-start gap-2.5 rounded-xl border border-rose-500/40 bg-rose-500/10 px-4 py-3 text-sm text-rose-400"
+                  role="alert"
+                >
+                  <AlertCircle className="mt-0.5 h-4 w-4 shrink-0" />
+                  <span>{errorMsg}</span>
+                </motion.div>
+              )}
+            </AnimatePresence>
 
             <Button
               type="submit"
