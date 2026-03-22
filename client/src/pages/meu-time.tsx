@@ -23,7 +23,7 @@ import { LineupSection, resolvePlayerPhoto } from '@/features/my-team-v2';
 import { PerformanceChart } from '@/components/team/performance-chart';
 import { LeagueTable } from '@/components/team/league-table';
 import { ForumTab } from '@/features/forum';
-import { ClassificacaoTab } from '@/features/meu-time';
+import { ClassificacaoTab, SimulacaoTab } from '@/features/meu-time';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
 import { Slider } from '@/components/ui/slider';
 import { Textarea } from '@/components/ui/textarea';
@@ -87,7 +87,7 @@ export default function MeuTimePage() {
     if (typeof window !== 'undefined') {
       const p = new URLSearchParams(window.location.search);
       const t = p.get('tab');
-      if (t && ['overview', 'classificacao', 'news', 'matches', 'performance', 'vai-e-vem', 'comunidade'].includes(t)) return t;
+      if (t && ['overview', 'classificacao', 'simulacao', 'news', 'matches', 'performance', 'vai-e-vem', 'comunidade'].includes(t)) return t;
     }
     return 'overview';
   });
@@ -668,6 +668,10 @@ export default function MeuTimePage() {
 
           <TabsContent value="classificacao" className="space-y-6">
             <ClassificacaoTab userTeamId={teamId} />
+          </TabsContent>
+
+          <TabsContent value="simulacao" className="space-y-6">
+            <SimulacaoTab userTeamId={teamId} />
           </TabsContent>
 
           <TabsContent value="news" className="space-y-6">

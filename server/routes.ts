@@ -10,7 +10,7 @@ import path from "path";
 import multer from "multer";
 import { randomBytes } from "crypto";
 import { fileURLToPath } from "url";
-import { insertUserSchema, insertNewsSchema, insertPlayerRatingSchema, insertCommentSchema, users, journalists, posts } from "@shared/schema";
+import { insertUserSchema, insertNewsSchema, insertPlayerRatingSchema, insertCommentSchema, users, journalists, posts, matches as matchesTable } from "@shared/schema";
 import { eq, asc, ilike, or, and, isNull, desc } from "drizzle-orm";
 import { db } from "./db";
 import rateLimit from "express-rate-limit";
@@ -1094,6 +1094,54 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error: any) {
       console.error("[standings] GET error:", error);
       return res.status(500).json({ message: "Falha ao buscar classificação" });
+    }
+  });
+
+  // ── Upcoming fixtures for simulation mode ─────────────────────────────────
+  app.get('/api/competitions/:competitionId/upcoming-fixtures', async (req, res) => {
+    try {
+      const allTeams = await storage.getAllTeams();
+      const teamsById = new Map(allTeams.map((t) => [t.id, t]));
+
+      function slugify(s: string) {
+        return s
+          .trim()
+          .toLowerCase()
+          .normalize('NFD')
+          .replace(/[\u0300-\u036f]/g, '')
+          .replace(/[^a-z0-9]+/g, '-')
+          .replace(/^-+|-+$/g, '');
+      }
+
+      // Build name → team lookup (slug-based for accent tolerance)
+      const teamsBySlug = new Map(allTeams.map((t) => [slugify(t.name), t]));
+
+      const homeMatches = await db
+        .select()
+        .from(matchesTable)
+        .where(and(eq(matchesTable.status, 'SCHEDULED'), eq(matchesTable.isHomeMatch, true)))
+        .orderBy(asc(matchesTable.matchDate));
+
+      const fixturesList = homeMatches.map((m) => {
+        const homeTeam = teamsById.get(m.teamId);
+        const awayTeam =
+          teamsBySlug.get(slugify(m.opponent)) ??
+          allTeams.find((t) => t.name.toLowerCase() === m.opponent.toLowerCase());
+        return {
+          id: m.id,
+          homeTeamId: m.teamId,
+          homeTeamName: homeTeam?.name ?? m.teamId,
+          awayTeamId: awayTeam?.id ?? slugify(m.opponent),
+          awayTeamName: m.opponent,
+          round: m.championshipRound,
+          matchDate: m.matchDate,
+        };
+      });
+
+      return res.json({ fixtures: fixturesList });
+    } catch (error: any) {
+      console.error('[upcoming-fixtures] error:', error);
+      return res.status(500).json({ message: 'Falha ao buscar jogos agendados' });
     }
   });
 
