@@ -1059,11 +1059,30 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Fallback: se não houver standings no banco (ou dados estiverem desatualizados), monta a partir dos times
       if (rows.length === 0 || isStale) {
         const allTeams = await storage.getAllTeams();
-        // For 2026 Brasileirão, filter to only the official 20 Série A teams (slug IDs)
+        // For 2026 Brasileirão, filter to only the official 20 Série A teams.
+        // Primary: match by slug ID. Fallback: match by team name (for UUID-ID teams).
+        const SERIE_A_2026_NAMES = new Set([
+          'flamengo', 'palmeiras', 'corinthians', 'botafogo', 'fluminense',
+          'são paulo', 'sao paulo', 'internacional', 'grêmio', 'gremio', 'cruzeiro', 'bahia',
+          'vasco da gama', 'athletico paranaense', 'atlético mineiro', 'atletico mineiro',
+          'rb bragantino', 'bragantino', 'santos', 'coritiba',
+          'mirassol', 'vitória', 'vitoria', 'chapecoense', 'remo',
+        ]);
         const filtered = season === "2026" && competitionId === "comp-brasileirao-serie-a"
-          ? allTeams.filter((t) => SERIE_A_2026_IDS.has(t.id))
+          ? allTeams.filter((t) => SERIE_A_2026_IDS.has(t.id) || SERIE_A_2026_NAMES.has(t.name.toLowerCase()))
           : allTeams;
-        const sorted = filtered
+        // Deduplicate: prefer slug-ID entry over UUID entry for same team name
+        const seen = new Map<string, typeof allTeams[0]>();
+        for (const t of filtered) {
+          const nameKey = t.name.toLowerCase();
+          const existing = seen.get(nameKey);
+          // Prefer slug-ID over UUID (slug IDs are shorter and don't contain hyphens in UUID format)
+          if (!existing || (SERIE_A_2026_IDS.has(t.id) && !SERIE_A_2026_IDS.has(existing.id))) {
+            seen.set(nameKey, t);
+          }
+        }
+        const deduped = Array.from(seen.values());
+        const sorted = deduped
           .slice()
           .sort((a, b) => {
             if ((b.points ?? 0) !== (a.points ?? 0)) return (b.points ?? 0) - (a.points ?? 0);

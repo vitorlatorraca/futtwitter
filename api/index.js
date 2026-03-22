@@ -6825,8 +6825,44 @@ async function registerRoutes(app2) {
       const isStale = season === "2026" && rows.some((r) => STALE_TEAM_IDS_2026.has(r.teamId));
       if (rows.length === 0 || isStale) {
         const allTeams = await storage.getAllTeams();
-        const filtered = season === "2026" && competitionId === "comp-brasileirao-serie-a" ? allTeams.filter((t) => SERIE_A_2026_IDS.has(t.id)) : allTeams;
-        const sorted = filtered.slice().sort((a, b) => {
+        const SERIE_A_2026_NAMES = /* @__PURE__ */ new Set([
+          "flamengo",
+          "palmeiras",
+          "corinthians",
+          "botafogo",
+          "fluminense",
+          "s\xE3o paulo",
+          "sao paulo",
+          "internacional",
+          "gr\xEAmio",
+          "gremio",
+          "cruzeiro",
+          "bahia",
+          "vasco da gama",
+          "athletico paranaense",
+          "atl\xE9tico mineiro",
+          "atletico mineiro",
+          "rb bragantino",
+          "bragantino",
+          "santos",
+          "coritiba",
+          "mirassol",
+          "vit\xF3ria",
+          "vitoria",
+          "chapecoense",
+          "remo"
+        ]);
+        const filtered = season === "2026" && competitionId === "comp-brasileirao-serie-a" ? allTeams.filter((t) => SERIE_A_2026_IDS.has(t.id) || SERIE_A_2026_NAMES.has(t.name.toLowerCase())) : allTeams;
+        const seen = /* @__PURE__ */ new Map();
+        for (const t of filtered) {
+          const nameKey = t.name.toLowerCase();
+          const existing = seen.get(nameKey);
+          if (!existing || SERIE_A_2026_IDS.has(t.id) && !SERIE_A_2026_IDS.has(existing.id)) {
+            seen.set(nameKey, t);
+          }
+        }
+        const deduped = Array.from(seen.values());
+        const sorted = deduped.slice().sort((a, b) => {
           if ((b.points ?? 0) !== (a.points ?? 0)) return (b.points ?? 0) - (a.points ?? 0);
           const gdA = (a.goalsFor ?? 0) - (a.goalsAgainst ?? 0);
           const gdB = (b.goalsFor ?? 0) - (b.goalsAgainst ?? 0);
