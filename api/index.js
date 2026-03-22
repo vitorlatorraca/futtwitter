@@ -6795,11 +6795,13 @@ async function registerRoutes(app2) {
     const competitionId = String(req.params.competitionId || "").trim();
     const season = typeof req.query.season === "string" ? req.query.season.trim() : "2026";
     if (!competitionId) return res.status(400).json({ message: "competitionId inv\xE1lido" });
+    const STALE_TEAM_IDS_2026 = /* @__PURE__ */ new Set(["cuiaba", "goias", "america-mineiro", "fortaleza"]);
     try {
       const { getStandingsByCompetition: getStandingsByCompetition2, getCompetitionById: getCompetitionById2 } = await Promise.resolve().then(() => (init_standings_repo(), standings_repo_exports));
       const competition = await getCompetitionById2(competitionId);
       const rows = await getStandingsByCompetition2(competitionId, season);
-      if (rows.length === 0) {
+      const isStale = season === "2026" && rows.some((r) => STALE_TEAM_IDS_2026.has(r.teamId));
+      if (rows.length === 0 || isStale) {
         const allTeams = await storage.getAllTeams();
         const sorted = allTeams.slice().sort((a, b) => {
           if ((b.points ?? 0) !== (a.points ?? 0)) return (b.points ?? 0) - (a.points ?? 0);
@@ -8061,6 +8063,123 @@ async function registerRoutes(app2) {
     } catch (error) {
       console.error("Recalculate standings error:", error);
       res.status(500).json({ message: "Erro ao recalcular classifica\xE7\xE3o" });
+    }
+  });
+  app2.post("/api/admin/brasileirao-2026/seed", requireAuth4, requireAdmin, async (req, res) => {
+    try {
+      const STANDINGS = {
+        "palmeiras": [16, 7, 5, 1, 1, 16, 7],
+        "sao-paulo": [16, 7, 5, 1, 1, 14, 8],
+        "bahia": [14, 7, 4, 2, 1, 10, 5],
+        "flamengo": [13, 7, 4, 1, 2, 15, 8],
+        "fluminense": [13, 7, 4, 1, 2, 14, 10],
+        "coritiba": [13, 7, 4, 1, 2, 10, 7],
+        "gremio": [11, 7, 3, 2, 2, 10, 9],
+        "atletico-mineiro": [10, 7, 3, 1, 3, 11, 10],
+        "vasco-da-gama": [10, 7, 3, 1, 3, 11, 11],
+        "athletico-paranaense": [9, 7, 3, 0, 4, 9, 12],
+        "vitoria": [8, 7, 2, 2, 3, 8, 10],
+        "chapecoense": [8, 7, 2, 2, 3, 8, 10],
+        "bragantino": [7, 7, 2, 1, 4, 8, 12],
+        "corinthians": [7, 7, 2, 1, 4, 7, 11],
+        "mirassol": [6, 7, 1, 3, 3, 8, 10],
+        "santos": [6, 7, 1, 3, 3, 7, 9],
+        "internacional": [5, 7, 1, 2, 4, 5, 10],
+        "botafogo": [5, 7, 1, 2, 4, 5, 11],
+        "cruzeiro": [3, 7, 1, 0, 6, 5, 13],
+        "remo": [3, 7, 1, 0, 6, 4, 17]
+      };
+      const SERIE_A_2026_TEAMS = [
+        { id: "flamengo", name: "Flamengo", shortName: "FLA", logoUrl: "https://media.api-sports.io/football/teams/127.png" },
+        { id: "palmeiras", name: "Palmeiras", shortName: "PAL", logoUrl: "https://media.api-sports.io/football/teams/121.png" },
+        { id: "corinthians", name: "Corinthians", shortName: "COR", logoUrl: "https://media.api-sports.io/football/teams/131.png" },
+        { id: "botafogo", name: "Botafogo", shortName: "BOT", logoUrl: "https://media.api-sports.io/football/teams/120.png" },
+        { id: "fluminense", name: "Fluminense", shortName: "FLU", logoUrl: "https://media.api-sports.io/football/teams/124.png" },
+        { id: "sao-paulo", name: "S\xE3o Paulo", shortName: "SAO", logoUrl: "https://media.api-sports.io/football/teams/126.png" },
+        { id: "internacional", name: "Internacional", shortName: "INT", logoUrl: "https://media.api-sports.io/football/teams/119.png" },
+        { id: "gremio", name: "Gr\xEAmio", shortName: "GRE", logoUrl: "https://media.api-sports.io/football/teams/130.png" },
+        { id: "cruzeiro", name: "Cruzeiro", shortName: "CRU", logoUrl: "https://media.api-sports.io/football/teams/135.png" },
+        { id: "bahia", name: "Bahia", shortName: "BAH", logoUrl: "https://media.api-sports.io/football/teams/118.png" },
+        { id: "vasco-da-gama", name: "Vasco da Gama", shortName: "VAS", logoUrl: "https://media.api-sports.io/football/teams/133.png" },
+        { id: "athletico-paranaense", name: "Athletico Paranaense", shortName: "CAP", logoUrl: "https://media.api-sports.io/football/teams/134.png" },
+        { id: "atletico-mineiro", name: "Atl\xE9tico Mineiro", shortName: "CAM", logoUrl: "https://media.api-sports.io/football/teams/1062.png" },
+        { id: "bragantino", name: "RB Bragantino", shortName: "BRA", logoUrl: "https://media.api-sports.io/football/teams/794.png" },
+        { id: "santos", name: "Santos", shortName: "SAN", logoUrl: "https://media.api-sports.io/football/teams/152.png" },
+        { id: "coritiba", name: "Coritiba", shortName: "CFC", logoUrl: "https://media.api-sports.io/football/teams/148.png" },
+        { id: "mirassol", name: "Mirassol", shortName: "MIR", logoUrl: "https://media.api-sports.io/football/teams/1185.png" },
+        { id: "vitoria", name: "Vit\xF3ria", shortName: "VIT", logoUrl: "https://media.api-sports.io/football/teams/1177.png" },
+        { id: "chapecoense", name: "Chapecoense", shortName: "CHA", logoUrl: "https://media.api-sports.io/football/teams/741.png" },
+        { id: "remo", name: "Remo", shortName: "REM", logoUrl: "https://media.api-sports.io/football/teams/1220.png" }
+      ];
+      const { teams: teamsTable, matches: matchesTableLocal } = await Promise.resolve().then(() => (init_schema(), schema_exports));
+      const { sql: drizzleSql } = await import("drizzle-orm");
+      for (const t of SERIE_A_2026_TEAMS) {
+        const s = STANDINGS[t.id];
+        if (!s) continue;
+        const [pts, played, wins, draws, losses, gf, ga] = s;
+        const position = Object.entries(STANDINGS).sort((a, b) => b[1][0] - a[1][0]).findIndex(([id]) => id === t.id) + 1;
+        await db.execute(drizzleSql`
+          INSERT INTO teams (id, name, short_name, logo_url, points, wins, draws, losses, goals_for, goals_against, current_position)
+          VALUES (${t.id}, ${t.name}, ${t.shortName}, ${t.logoUrl}, ${pts}, ${wins}, ${draws}, ${losses}, ${gf}, ${ga}, ${position})
+          ON CONFLICT (id) DO UPDATE SET
+            name = EXCLUDED.name,
+            short_name = EXCLUDED.short_name,
+            logo_url = EXCLUDED.logo_url,
+            points = EXCLUDED.points,
+            wins = EXCLUDED.wins,
+            draws = EXCLUDED.draws,
+            losses = EXCLUDED.losses,
+            goals_for = EXCLUDED.goals_for,
+            goals_against = EXCLUDED.goals_against,
+            current_position = EXCLUDED.current_position,
+            updated_at = NOW()
+        `);
+      }
+      await db.execute(drizzleSql`
+        DELETE FROM standings
+        WHERE competition_id = 'comp-brasileirao-serie-a' AND season = '2026'
+        AND team_id IN ('cuiaba','goias','america-mineiro','fortaleza','fluminense','atletico-paranaense','bragantino','corinthians','bahia','cruzeiro','santos','vasco-da-gama','coritiba','athletico-paranaense','vitoria','chapecoense','mirassol','remo','botafogo','internacional')
+      `);
+      await db.execute(drizzleSql`
+        DELETE FROM standings
+        WHERE competition_id = 'comp-brasileirao-serie-a' AND season = '2026'
+        AND team_id NOT IN ('palmeiras','sao-paulo','bahia','flamengo','fluminense','coritiba','gremio','atletico-mineiro','vasco-da-gama','athletico-paranaense','vitoria','chapecoense','bragantino','corinthians','mirassol','santos','internacional','botafogo','cruzeiro','remo')
+      `);
+      await db.execute(drizzleSql`DELETE FROM matches WHERE is_mock = true`);
+      const round8Fixtures = [
+        { home: "flamengo", away: "palmeiras" },
+        { home: "sao-paulo", away: "atletico-mineiro" },
+        { home: "gremio", away: "fluminense" },
+        { home: "corinthians", away: "bahia" },
+        { home: "botafogo", away: "bragantino" },
+        { home: "vasco-da-gama", away: "santos" },
+        { home: "coritiba", away: "internacional" },
+        { home: "athletico-paranaense", away: "mirassol" },
+        { home: "cruzeiro", away: "chapecoense" },
+        { home: "vitoria", away: "remo" }
+      ];
+      const allTeamsForSeed = await storage.getAllTeams();
+      const teamNameMap = new Map(allTeamsForSeed.map((t) => [t.id, t.name]));
+      for (const f of round8Fixtures) {
+        const homeName = teamNameMap.get(f.home) ?? f.home;
+        const awayName = teamNameMap.get(f.away) ?? f.away;
+        const matchDate = /* @__PURE__ */ new Date("2026-03-29T16:00:00Z");
+        await db.execute(drizzleSql`
+          INSERT INTO matches (team_id, opponent, is_home_match, match_date, championship_round, status, competition, is_mock)
+          VALUES
+            (${f.home}, ${awayName},  true,  ${matchDate}, 8, 'SCHEDULED', 'Brasileirão Série A', true),
+            (${f.away}, ${homeName}, false, ${matchDate}, 8, 'SCHEDULED', 'Brasileirão Série A', true)
+          ON CONFLICT DO NOTHING
+        `);
+      }
+      res.json({
+        message: "Brasileir\xE3o 2026 seed aplicado com sucesso!",
+        teamsUpdated: SERIE_A_2026_TEAMS.length,
+        roundLabel: "Rodada 8 fixtures inseridos"
+      });
+    } catch (error) {
+      console.error("[seed-brasileirao-2026] error:", error);
+      res.status(500).json({ message: error.message || "Erro ao aplicar seed" });
     }
   });
   app2.get("/api/teams/:teamId/forum/stats", requireAuth4, async (req, res) => {
