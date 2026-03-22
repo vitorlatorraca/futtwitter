@@ -90,22 +90,85 @@ export function useUserFollowing(handle: string | undefined) {
   });
 }
 
+type InfiniteFollowData = { pages: FollowListItem[][]; pageParams: unknown[] };
+
+/** Flips isFollowing for a specific handle in an infinite-query cache entry. */
+function patchFollowInCache(
+  data: InfiniteFollowData | undefined,
+  targetHandle: string,
+  follow: boolean,
+): InfiniteFollowData | undefined {
+  if (!data) return data;
+  return {
+    ...data,
+    pages: data.pages.map((page) =>
+      page.map((item) =>
+        item.handle === targetHandle ? { ...item, isFollowing: follow } : item,
+      ),
+    ),
+  };
+}
+
 export function useToggleFollow() {
   const queryClient = useQueryClient();
 
   return useMutation({
     mutationFn: async ({ handle, follow }: { handle: string; follow: boolean }) => {
       const url = `/api/users/${encodeURIComponent(handle)}/follow`;
-      if (follow) {
-        return fetchJson<{ following: boolean; followersCount: number }>(url, { method: "POST" });
-      } else {
-        return fetchJson<{ following: boolean; followersCount: number }>(url, { method: "DELETE" });
-      }
+      return fetchJson<{ following: boolean; followersCount: number }>(url, {
+        method: follow ? "POST" : "DELETE",
+      });
     },
-    onSuccess: (_, variables) => {
+
+    // ─── Optimistic update ──────────────────────────────────────────────────
+    onMutate: async ({ handle, follow }) => {
+      // Cancel in-flight refetches so they don't overwrite our optimistic data
+      await queryClient.cancelQueries({ queryKey: ["user", "followers"] });
+      await queryClient.cancelQueries({ queryKey: ["user", "following"] });
+
+      // Snapshot every cached followers / following list
+      const prevFollowers = queryClient.getQueriesData<InfiniteFollowData>({
+        queryKey: ["user", "followers"],
+      });
+      const prevFollowing = queryClient.getQueriesData<InfiniteFollowData>({
+        queryKey: ["user", "following"],
+      });
+
+      // Optimistically flip the button in every list that contains this user
+      queryClient.setQueriesData<InfiniteFollowData>(
+        { queryKey: ["user", "followers"] },
+        (old) => patchFollowInCache(old, handle, follow),
+      );
+      queryClient.setQueriesData<InfiniteFollowData>(
+        { queryKey: ["user", "following"] },
+        (old) => patchFollowInCache(old, handle, follow),
+      );
+
+      // Also flip in suggested users (flat array, not infinite)
+      queryClient.setQueryData<SuggestedUser[]>(["users", "suggested"], (old) =>
+        old?.map((u) => (u.handle === handle ? { ...u, isFollowing: follow } : u)),
+      );
+
+      return { prevFollowers, prevFollowing };
+    },
+
+    // ─── Roll back on network error ─────────────────────────────────────────
+    onError: (_err, _vars, context) => {
+      context?.prevFollowers?.forEach(([key, data]) =>
+        queryClient.setQueryData(key, data),
+      );
+      context?.prevFollowing?.forEach(([key, data]) =>
+        queryClient.setQueryData(key, data),
+      );
+    },
+
+    // ─── Sync server truth after success ────────────────────────────────────
+    onSuccess: (_data, variables) => {
+      // Refresh the profile whose count changed
       queryClient.invalidateQueries({ queryKey: ["user", "profile", variables.handle] });
-      queryClient.invalidateQueries({ queryKey: ["user", "followers", variables.handle] });
-      queryClient.invalidateQueries({ queryKey: ["user", "following", variables.handle] });
+      // Refresh ALL followers/following lists (not just for variables.handle)
+      queryClient.invalidateQueries({ queryKey: ["user", "followers"] });
+      queryClient.invalidateQueries({ queryKey: ["user", "following"] });
       queryClient.invalidateQueries({ queryKey: ["users", "suggested"] });
       queryClient.invalidateQueries({ queryKey: ["/api/auth/me"] });
     },

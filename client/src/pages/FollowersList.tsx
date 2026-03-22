@@ -3,6 +3,7 @@ import { ArrowLeft } from "lucide-react";
 import { useNavigate, useParams } from "react-router-dom";
 import { useUserFollowers, useToggleFollow, useUserProfile } from "../hooks/useFollow";
 import type { FollowListItem } from "../hooks/useFollow";
+import { avatarFallback } from "../utils/postTransforms";
 
 function UserCard({
   item,
@@ -21,13 +22,12 @@ function UserCard({
         className="w-10 h-10 rounded-full bg-x-border flex-shrink-0 overflow-hidden cursor-pointer mt-0.5"
         onClick={onNavigate}
       >
-        {item.avatarUrl ? (
-          <img src={item.avatarUrl} alt={item.name} className="w-full h-full object-cover" />
-        ) : (
-          <div className="w-full h-full flex items-center justify-center text-sm font-bold text-x-text-secondary">
-            {item.name.charAt(0).toUpperCase()}
-          </div>
-        )}
+        <img
+          src={item.avatarUrl || avatarFallback(item.name)}
+          alt={item.name}
+          className="w-full h-full object-cover"
+          onError={(e) => { (e.currentTarget as HTMLImageElement).src = avatarFallback(item.name); }}
+        />
       </div>
       <div className="flex-1 min-w-0">
         <div className="flex items-center justify-between gap-2">
