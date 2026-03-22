@@ -1038,7 +1038,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
     const season = typeof req.query.season === "string" ? req.query.season.trim() : "2026";
     if (!competitionId) return res.status(400).json({ message: "competitionId inválido" });
 
-    // Teams that are NOT in Brasileirão Série A 2026 (relegated / not promoted)
+    // Official Brasileirão Série A 2026 team slug-IDs
+    const SERIE_A_2026_IDS = new Set([
+      'flamengo', 'palmeiras', 'corinthians', 'botafogo', 'fluminense',
+      'sao-paulo', 'internacional', 'gremio', 'cruzeiro', 'bahia',
+      'vasco-da-gama', 'athletico-paranaense', 'atletico-mineiro', 'bragantino',
+      'santos', 'coritiba', 'mirassol', 'vitoria', 'chapecoense', 'remo',
+    ]);
+    // Old teams NOT in 2026 (relegated / not promoted) — used to detect stale standings rows
     const STALE_TEAM_IDS_2026 = new Set(['cuiaba', 'goias', 'america-mineiro', 'fortaleza']);
 
     try {
@@ -1052,7 +1059,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Fallback: se não houver standings no banco (ou dados estiverem desatualizados), monta a partir dos times
       if (rows.length === 0 || isStale) {
         const allTeams = await storage.getAllTeams();
-        const sorted = allTeams
+        // For 2026 Brasileirão, filter to only the official 20 Série A teams (slug IDs)
+        const filtered = season === "2026" && competitionId === "comp-brasileirao-serie-a"
+          ? allTeams.filter((t) => SERIE_A_2026_IDS.has(t.id))
+          : allTeams;
+        const sorted = filtered
           .slice()
           .sort((a, b) => {
             if ((b.points ?? 0) !== (a.points ?? 0)) return (b.points ?? 0) - (a.points ?? 0);

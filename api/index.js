@@ -6795,6 +6795,28 @@ async function registerRoutes(app2) {
     const competitionId = String(req.params.competitionId || "").trim();
     const season = typeof req.query.season === "string" ? req.query.season.trim() : "2026";
     if (!competitionId) return res.status(400).json({ message: "competitionId inv\xE1lido" });
+    const SERIE_A_2026_IDS = /* @__PURE__ */ new Set([
+      "flamengo",
+      "palmeiras",
+      "corinthians",
+      "botafogo",
+      "fluminense",
+      "sao-paulo",
+      "internacional",
+      "gremio",
+      "cruzeiro",
+      "bahia",
+      "vasco-da-gama",
+      "athletico-paranaense",
+      "atletico-mineiro",
+      "bragantino",
+      "santos",
+      "coritiba",
+      "mirassol",
+      "vitoria",
+      "chapecoense",
+      "remo"
+    ]);
     const STALE_TEAM_IDS_2026 = /* @__PURE__ */ new Set(["cuiaba", "goias", "america-mineiro", "fortaleza"]);
     try {
       const { getStandingsByCompetition: getStandingsByCompetition2, getCompetitionById: getCompetitionById2 } = await Promise.resolve().then(() => (init_standings_repo(), standings_repo_exports));
@@ -6803,7 +6825,8 @@ async function registerRoutes(app2) {
       const isStale = season === "2026" && rows.some((r) => STALE_TEAM_IDS_2026.has(r.teamId));
       if (rows.length === 0 || isStale) {
         const allTeams = await storage.getAllTeams();
-        const sorted = allTeams.slice().sort((a, b) => {
+        const filtered = season === "2026" && competitionId === "comp-brasileirao-serie-a" ? allTeams.filter((t) => SERIE_A_2026_IDS.has(t.id)) : allTeams;
+        const sorted = filtered.slice().sort((a, b) => {
           if ((b.points ?? 0) !== (a.points ?? 0)) return (b.points ?? 0) - (a.points ?? 0);
           const gdA = (a.goalsFor ?? 0) - (a.goalsAgainst ?? 0);
           const gdB = (b.goalsFor ?? 0) - (b.goalsAgainst ?? 0);
