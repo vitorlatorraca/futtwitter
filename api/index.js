@@ -6843,7 +6843,6 @@ async function registerRoutes(app2) {
           "atl\xE9tico mineiro",
           "atletico mineiro",
           "rb bragantino",
-          "bragantino",
           "santos",
           "coritiba",
           "mirassol",

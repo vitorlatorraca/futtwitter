@@ -1065,7 +1065,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
           'flamengo', 'palmeiras', 'corinthians', 'botafogo', 'fluminense',
           'são paulo', 'sao paulo', 'internacional', 'grêmio', 'gremio', 'cruzeiro', 'bahia',
           'vasco da gama', 'athletico paranaense', 'atlético mineiro', 'atletico mineiro',
-          'rb bragantino', 'bragantino', 'santos', 'coritiba',
+          'rb bragantino', 'santos', 'coritiba',
           'mirassol', 'vitória', 'vitoria', 'chapecoense', 'remo',
         ]);
         const filtered = season === "2026" && competitionId === "comp-brasileirao-serie-a"
