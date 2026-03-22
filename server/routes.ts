@@ -743,8 +743,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
         }));
       }
 
+      const COMPLETED_STATUSES = new Set(["FT", "COMPLETED", "AET", "PEN"]);
       const finished = rawMatches
-        .filter((m) => m.status === "FT" && m.homeScore != null && m.awayScore != null)
+        .filter((m) => COMPLETED_STATUSES.has(m.status) && m.homeScore != null && m.awayScore != null)
         .sort((a, b) => new Date(b.kickoffAt).getTime() - new Date(a.kickoffAt).getTime())
         .slice(0, 5);
 
@@ -1308,45 +1309,47 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(404).json({ message: 'Time não encontrado' });
       }
 
-      const matches = await storage.getMatchesByTeam(teamId, 20);
-      const allTeams = await storage.getAllTeams();
+      const [matches, allTeams] = await Promise.all([
+        storage.getMatchesByTeam(teamId, 20),
+        storage.getAllTeams(),
+      ]);
 
-      let stadium = {
-        name: 'Estádio Principal',
-        capacity: 50000,
+      // ── Stadium: prefer DB values over hardcoded fallback ──────────────────
+      const stadium = {
+        name: team.stadiumName ?? 'Estádio Principal',
+        capacity: team.stadiumCapacity ?? 50000,
         pitchCondition: 'Excelente' as const,
         stadiumCondition: 'Boa' as const,
         homeFactor: 75,
-        yearBuilt: 2000,
+        yearBuilt: team.foundedYear ?? 2000,
       };
-      let clubInfo = {
+
+      // ── Club info ──────────────────────────────────────────────────────────
+      const clubInfo = {
         league: 'Brasileirão Série A',
         season: String(new Date().getFullYear()),
         country: 'Brasil',
         clubStatus: 'Profissional' as const,
         reputation: 4,
       };
-      let corinthiansClub: any = null;
 
-      const clubFile = teamId === 'corinthians' ? 'corinthians.club.json' : teamId === 'palmeiras' ? 'palmeiras.club.json' : null;
+      // ── Optional per-club JSON (corinthians / palmeiras) ───────────────────
+      let corinthiansClub: any = null;
+      const clubFile = teamId === 'corinthians' ? 'corinthians.club.json'
+                     : teamId === 'palmeiras'   ? 'palmeiras.club.json'
+                     : null;
       if (clubFile) {
         try {
           const clubPath = path.join(__dirname, 'data', clubFile);
           if (fs.existsSync(clubPath)) {
-            const raw = fs.readFileSync(clubPath, 'utf-8');
-            corinthiansClub = JSON.parse(raw);
-            stadium = {
-              name: corinthiansClub.stadium?.name ?? stadium.name,
-              capacity: corinthiansClub.stadium?.capacity ?? stadium.capacity,
-              pitchCondition: 'Excelente',
-              stadiumCondition: 'Boa',
-              homeFactor: 80,
-              yearBuilt: corinthiansClub.stadium?.inaugurated ?? stadium.yearBuilt,
-            };
-            clubInfo = {
-              ...clubInfo,
-              country: corinthiansClub.country ?? clubInfo.country,
-            };
+            corinthiansClub = JSON.parse(fs.readFileSync(clubPath, 'utf-8'));
+            // File overrides DB stadium values for these two teams
+            if (corinthiansClub.stadium?.name) {
+              stadium.name = corinthiansClub.stadium.name;
+              stadium.capacity = corinthiansClub.stadium.capacity ?? stadium.capacity;
+              stadium.yearBuilt = corinthiansClub.stadium.inaugurated ?? stadium.yearBuilt;
+              stadium.homeFactor = 80;
+            }
           }
         } catch (_) {}
       }
