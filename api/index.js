@@ -35,6 +35,8 @@ __export(schema_exports, {
   gameDailyPlayer: () => gameDailyPlayer,
   gameSetPlayers: () => gameSetPlayers,
   gameSets: () => gameSets,
+  hashtagCategoryEnum: () => hashtagCategoryEnum,
+  hashtags: () => hashtags,
   injuries: () => injuries,
   injuriesRelations: () => injuriesRelations,
   injuryStatusEnum: () => injuryStatusEnum,
@@ -100,6 +102,7 @@ __export(schema_exports, {
   playersRelations: () => playersRelations,
   postBookmarks: () => postBookmarks,
   postBookmarksRelations: () => postBookmarksRelations,
+  postHashtags: () => postHashtags,
   postLikes: () => postLikes,
   postLikesRelations: () => postLikesRelations,
   postScopeEnum: () => postScopeEnum,
@@ -168,6 +171,8 @@ __export(schema_exports, {
   transfersRelations: () => transfersRelations,
   transfersSport: () => transfersSport,
   transfersSportRelations: () => transfersSportRelations,
+  trendingPeriodEnum: () => trendingPeriodEnum,
+  trendingTopics: () => trendingTopics,
   userBadges: () => userBadges,
   userBadgesRelations: () => userBadgesRelations,
   userFollows: () => userFollows,
@@ -200,7 +205,7 @@ import {
 import { relations } from "drizzle-orm";
 import { createInsertSchema, createSelectSchema } from "drizzle-zod";
 import { z } from "zod";
-var userTypeEnum, newsCategoryEnum, interactionTypeEnum, journalistStatusEnum, notificationTypeEnum, postScopeEnum, transferStatusEnum, transferVoteEnum, transferVoteSideEnum, transferVoteValueEnum, transferRumorStatusEnum, fixtureStatusEnum, preferredFootEnum, primaryPositionEnum, rosterRoleEnum, rosterStatusEnum, matchStatusEnum, matchEventTypeEnum, injuryStatusEnum, transferStatusSportEnum, forumTopicCategoryEnum, forumModerationStatusEnum, gameAttemptStatusEnum, countries, users, journalists, teams, players, matches, competitions, venues, seasons, teamRosters, contracts, matchGames, matchEvents, matchLineups, matchLineupPlayers, playerMatchStats, teamMatchStats, injuries, transfersSport, fixtures, standings, teamMatchRatings, matchPlayers, news, newsInteractions, playerRatings, comments, commentLikes, badges, userBadges, notifications, userLineups, userSessions, transfers, transferVotes, transferRumors, transferRumorVotes, transferRumorComments, teamsForumTopics, teamsForumReplies, posts, postLikes, postBookmarks, userFollows, teamsForumLikes, gameSets, gameSetPlayers, gameAttempts, gameAttemptGuesses, gameDailyPlayer, gameDailyGuessProgress, usersRelations, journalistsRelations, teamsRelations, countriesRelations, competitionsRelations, standingsRelations, seasonsRelations, venuesRelations, teamRostersRelations, contractsRelations, matchGamesRelations, matchEventsRelations, matchLineupsRelations, matchLineupPlayersRelations, playerMatchStatsRelations, teamMatchStatsRelations, injuriesRelations, transfersSportRelations, fixturesRelations, playersRelations, matchesRelations, matchPlayersRelations, newsRelations, newsInteractionsRelations, playerRatingsRelations, commentsRelations, commentLikesRelations, userLineupsRelations, transfersRelations, transferVotesRelations, transferRumorsRelations, transferRumorVotesRelations, transferRumorCommentsRelations, teamsForumTopicsRelations, teamsForumRepliesRelations, teamsForumLikesRelations, postsRelations, postLikesRelations, postBookmarksRelations, userFollowsRelations, badgesRelations, userBadgesRelations, insertUserSchema, selectUserSchema, insertJournalistSchema, selectJournalistSchema, insertTeamSchema, selectTeamSchema, insertPlayerSchema, selectPlayerSchema, insertMatchSchema, selectMatchSchema, insertCompetitionSchema, selectCompetitionSchema, insertFixtureSchema, selectFixtureSchema, insertStandingSchema, selectStandingSchema, insertNewsSchema, selectNewsSchema, insertNewsInteractionSchema, selectNewsInteractionSchema, insertPlayerRatingSchema, selectPlayerRatingSchema, insertCommentSchema, selectCommentSchema, insertCommentLikeSchema, selectCommentLikeSchema, insertBadgeSchema, selectBadgeSchema, insertUserBadgeSchema, selectUserBadgeSchema, insertNotificationSchema, selectNotificationSchema, insertUserLineupSchema, selectUserLineupSchema, insertTransferSchema, selectTransferSchema, insertTransferVoteSchema, selectTransferVoteSchema, insertTransferRumorSchema, selectTransferRumorSchema, insertTransferRumorVoteSchema, selectTransferRumorVoteSchema, insertTransferRumorCommentSchema, selectTransferRumorCommentSchema, insertForumTopicSchema, selectForumTopicSchema, insertForumReplySchema, selectForumReplySchema, insertPostSchema, insertGameSetSchema, insertGameSetPlayerSchema, insertGameAttemptSchema, insertGameAttemptGuessSchema;
+var userTypeEnum, newsCategoryEnum, interactionTypeEnum, journalistStatusEnum, notificationTypeEnum, postScopeEnum, transferStatusEnum, transferVoteEnum, transferVoteSideEnum, transferVoteValueEnum, transferRumorStatusEnum, fixtureStatusEnum, preferredFootEnum, primaryPositionEnum, rosterRoleEnum, rosterStatusEnum, matchStatusEnum, matchEventTypeEnum, injuryStatusEnum, transferStatusSportEnum, forumTopicCategoryEnum, forumModerationStatusEnum, gameAttemptStatusEnum, hashtagCategoryEnum, trendingPeriodEnum, countries, users, journalists, teams, players, matches, competitions, venues, seasons, teamRosters, contracts, matchGames, matchEvents, matchLineups, matchLineupPlayers, playerMatchStats, teamMatchStats, injuries, transfersSport, fixtures, standings, teamMatchRatings, matchPlayers, news, newsInteractions, playerRatings, comments, commentLikes, badges, userBadges, notifications, userLineups, userSessions, transfers, transferVotes, transferRumors, transferRumorVotes, transferRumorComments, teamsForumTopics, teamsForumReplies, posts, hashtags, postHashtags, trendingTopics, postLikes, postBookmarks, userFollows, teamsForumLikes, gameSets, gameSetPlayers, gameAttempts, gameAttemptGuesses, gameDailyPlayer, gameDailyGuessProgress, usersRelations, journalistsRelations, teamsRelations, countriesRelations, competitionsRelations, standingsRelations, seasonsRelations, venuesRelations, teamRostersRelations, contractsRelations, matchGamesRelations, matchEventsRelations, matchLineupsRelations, matchLineupPlayersRelations, playerMatchStatsRelations, teamMatchStatsRelations, injuriesRelations, transfersSportRelations, fixturesRelations, playersRelations, matchesRelations, matchPlayersRelations, newsRelations, newsInteractionsRelations, playerRatingsRelations, commentsRelations, commentLikesRelations, userLineupsRelations, transfersRelations, transferVotesRelations, transferRumorsRelations, transferRumorVotesRelations, transferRumorCommentsRelations, teamsForumTopicsRelations, teamsForumRepliesRelations, teamsForumLikesRelations, postsRelations, postLikesRelations, postBookmarksRelations, userFollowsRelations, badgesRelations, userBadgesRelations, insertUserSchema, selectUserSchema, insertJournalistSchema, selectJournalistSchema, insertTeamSchema, selectTeamSchema, insertPlayerSchema, selectPlayerSchema, insertMatchSchema, selectMatchSchema, insertCompetitionSchema, selectCompetitionSchema, insertFixtureSchema, selectFixtureSchema, insertStandingSchema, selectStandingSchema, insertNewsSchema, selectNewsSchema, insertNewsInteractionSchema, selectNewsInteractionSchema, insertPlayerRatingSchema, selectPlayerRatingSchema, insertCommentSchema, selectCommentSchema, insertCommentLikeSchema, selectCommentLikeSchema, insertBadgeSchema, selectBadgeSchema, insertUserBadgeSchema, selectUserBadgeSchema, insertNotificationSchema, selectNotificationSchema, insertUserLineupSchema, selectUserLineupSchema, insertTransferSchema, selectTransferSchema, insertTransferVoteSchema, selectTransferVoteSchema, insertTransferRumorSchema, selectTransferRumorSchema, insertTransferRumorVoteSchema, selectTransferRumorVoteSchema, insertTransferRumorCommentSchema, selectTransferRumorCommentSchema, insertForumTopicSchema, selectForumTopicSchema, insertForumReplySchema, selectForumReplySchema, insertPostSchema, insertGameSetSchema, insertGameSetPlayerSchema, insertGameAttemptSchema, insertGameAttemptGuessSchema;
 var init_schema = __esm({
   "shared/schema.ts"() {
     "use strict";
@@ -284,6 +289,8 @@ var init_schema = __esm({
     ]);
     forumModerationStatusEnum = pgEnum("forum_moderation_status", ["PENDING", "APPROVED", "REMOVED"]);
     gameAttemptStatusEnum = pgEnum("game_attempt_status", ["in_progress", "completed", "abandoned"]);
+    hashtagCategoryEnum = pgEnum("hashtag_category", ["time", "campeonato", "geral", "transferencia"]);
+    trendingPeriodEnum = pgEnum("trending_period", ["1h", "6h", "24h"]);
     countries = pgTable("countries", {
       id: varchar("id", { length: 36 }).primaryKey().default(sql`gen_random_uuid()`),
       name: varchar("name", { length: 255 }).notNull(),
@@ -970,9 +977,53 @@ var init_schema = __esm({
       bookmarkCount: integer("bookmark_count").notNull().default(0),
       viewCount: integer("view_count").notNull().default(0),
       relatedNewsId: varchar("related_news_id", { length: 36 }),
+      hashtags: text("hashtags").array(),
       createdAt: timestamp("created_at").notNull().defaultNow(),
       updatedAt: timestamp("updated_at").notNull().defaultNow()
     });
+    hashtags = pgTable(
+      "hashtags",
+      {
+        id: varchar("id", { length: 36 }).primaryKey().default(sql`gen_random_uuid()`),
+        name: varchar("name", { length: 100 }).notNull().unique(),
+        postCount: integer("post_count").notNull().default(0),
+        category: hashtagCategoryEnum("category").notNull().default("geral"),
+        updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow()
+      },
+      (t) => ({
+        nameIdx: index("hashtags_name_idx").on(t.name),
+        postCountIdx: index("hashtags_post_count_idx").on(t.postCount)
+      })
+    );
+    postHashtags = pgTable(
+      "post_hashtags",
+      {
+        postId: varchar("post_id", { length: 36 }).notNull().references(() => posts.id, { onDelete: "cascade" }),
+        hashtagId: varchar("hashtag_id", { length: 36 }).notNull().references(() => hashtags.id, { onDelete: "cascade" })
+      },
+      (t) => ({
+        postHashtagUnique: uniqueIndex("post_hashtags_post_hashtag_unique").on(t.postId, t.hashtagId),
+        postIdx: index("post_hashtags_post_idx").on(t.postId),
+        hashtagIdx: index("post_hashtags_hashtag_idx").on(t.hashtagId)
+      })
+    );
+    trendingTopics = pgTable(
+      "trending_topics",
+      {
+        id: varchar("id", { length: 36 }).primaryKey().default(sql`gen_random_uuid()`),
+        title: varchar("title", { length: 200 }).notNull(),
+        subtitle: text("subtitle"),
+        category: hashtagCategoryEnum("category").notNull().default("geral"),
+        postCount: integer("post_count").notNull().default(0),
+        teamId: varchar("team_id", { length: 36 }).references(() => teams.id, { onDelete: "set null" }),
+        period: trendingPeriodEnum("period").notNull().default("24h"),
+        createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow()
+      },
+      (t) => ({
+        periodIdx: index("trending_topics_period_idx").on(t.period),
+        categoryIdx: index("trending_topics_category_idx").on(t.category)
+      })
+    );
     postLikes = pgTable(
       "post_likes",
       {
@@ -1849,17 +1900,17 @@ __export(games_seed_exports, {
   seedGames: () => seedGames
 });
 import "dotenv/config";
-import { eq as eq4 } from "drizzle-orm";
+import { eq as eq5 } from "drizzle-orm";
 function normalizeName(name) {
   return name.normalize("NFD").replace(/\p{Diacritic}/gu, "").toLowerCase().trim().replace(/[.,\-']/g, "").replace(/\s+/g, " ");
 }
 async function seedGames() {
-  const [existing] = await db.select().from(gameSets).where(eq4(gameSets.slug, SLUG)).limit(1);
+  const [existing] = await db.select().from(gameSets).where(eq5(gameSets.slug, SLUG)).limit(1);
   let setId;
   let wasNew = false;
   if (existing) {
     setId = existing.id;
-    await db.delete(gameSetPlayers).where(eq4(gameSetPlayers.setId, setId));
+    await db.delete(gameSetPlayers).where(eq5(gameSetPlayers.setId, setId));
     console.log(`[games.seed] Set "${SLUG}" j\xE1 existia. Recriando ${CORINTHIANS_2005_PLAYERS.length} jogadores.`);
   } else {
     const [set] = await db.insert(gameSets).values({
@@ -1959,7 +2010,7 @@ __export(matches_repo_exports, {
   getMatchDetails: () => getMatchDetails,
   getMatchesByTeam: () => getMatchesByTeam
 });
-import { eq as eq5, and as and4, or as or2, desc as desc4, gt as gt3, lt as lt3, inArray as inArray4 } from "drizzle-orm";
+import { eq as eq6, and as and5, or as or3, desc as desc5, gt as gt3, lt as lt3, inArray as inArray5 } from "drizzle-orm";
 function positionToGroup(code) {
   if (!code) return "UNK";
   const u = code.toUpperCase().trim();
@@ -1981,16 +2032,16 @@ async function getMatchesByTeam(teamId, options = {}) {
   const limit = options.limit ?? 20;
   const now = /* @__PURE__ */ new Date();
   const conditions = [
-    or2(
-      eq5(matchGames.homeTeamId, teamId),
-      eq5(matchGames.awayTeamId, teamId)
+    or3(
+      eq6(matchGames.homeTeamId, teamId),
+      eq6(matchGames.awayTeamId, teamId)
     )
   ];
   if (options.competitionId) {
-    conditions.push(eq5(matchGames.competitionId, options.competitionId));
+    conditions.push(eq6(matchGames.competitionId, options.competitionId));
   }
   if (options.seasonYear) {
-    conditions.push(eq5(seasons.year, options.seasonYear));
+    conditions.push(eq6(seasons.year, options.seasonYear));
   }
   const selectFields = {
     id: matchGames.id,
@@ -2011,7 +2062,7 @@ async function getMatchesByTeam(teamId, options = {}) {
   };
   let rows;
   if (options.type === "upcoming") {
-    const withTime = and4(...conditions, gt3(matchGames.kickoffAt, now));
+    const withTime = and5(...conditions, gt3(matchGames.kickoffAt, now));
     rows = await db.select({
       id: matchGames.id,
       kickoffAt: matchGames.kickoffAt,
@@ -2028,9 +2079,9 @@ async function getMatchesByTeam(teamId, options = {}) {
       venueId: matchGames.venueId,
       venueName: venues.name,
       venueCity: venues.city
-    }).from(matchGames).leftJoin(competitions, eq5(matchGames.competitionId, competitions.id)).leftJoin(seasons, eq5(matchGames.seasonId, seasons.id)).leftJoin(venues, eq5(matchGames.venueId, venues.id)).where(withTime).orderBy(matchGames.kickoffAt).limit(limit);
+    }).from(matchGames).leftJoin(competitions, eq6(matchGames.competitionId, competitions.id)).leftJoin(seasons, eq6(matchGames.seasonId, seasons.id)).leftJoin(venues, eq6(matchGames.venueId, venues.id)).where(withTime).orderBy(matchGames.kickoffAt).limit(limit);
   } else if (options.type === "recent") {
-    const withTime = and4(...conditions, lt3(matchGames.kickoffAt, now));
+    const withTime = and5(...conditions, lt3(matchGames.kickoffAt, now));
     rows = await db.select({
       id: matchGames.id,
       kickoffAt: matchGames.kickoffAt,
@@ -2047,7 +2098,7 @@ async function getMatchesByTeam(teamId, options = {}) {
       venueId: matchGames.venueId,
       venueName: venues.name,
       venueCity: venues.city
-    }).from(matchGames).leftJoin(competitions, eq5(matchGames.competitionId, competitions.id)).leftJoin(seasons, eq5(matchGames.seasonId, seasons.id)).leftJoin(venues, eq5(matchGames.venueId, venues.id)).where(withTime).orderBy(desc4(matchGames.kickoffAt)).limit(limit);
+    }).from(matchGames).leftJoin(competitions, eq6(matchGames.competitionId, competitions.id)).leftJoin(seasons, eq6(matchGames.seasonId, seasons.id)).leftJoin(venues, eq6(matchGames.venueId, venues.id)).where(withTime).orderBy(desc5(matchGames.kickoffAt)).limit(limit);
   } else {
     rows = await db.select({
       id: matchGames.id,
@@ -2065,14 +2116,14 @@ async function getMatchesByTeam(teamId, options = {}) {
       venueId: matchGames.venueId,
       venueName: venues.name,
       venueCity: venues.city
-    }).from(matchGames).leftJoin(competitions, eq5(matchGames.competitionId, competitions.id)).leftJoin(seasons, eq5(matchGames.seasonId, seasons.id)).leftJoin(venues, eq5(matchGames.venueId, venues.id)).where(and4(...conditions)).orderBy(desc4(matchGames.kickoffAt)).limit(limit);
+    }).from(matchGames).leftJoin(competitions, eq6(matchGames.competitionId, competitions.id)).leftJoin(seasons, eq6(matchGames.seasonId, seasons.id)).leftJoin(venues, eq6(matchGames.venueId, venues.id)).where(and5(...conditions)).orderBy(desc5(matchGames.kickoffAt)).limit(limit);
   }
   const teamIds = /* @__PURE__ */ new Set();
   for (const r of rows) {
     if (r.homeTeamId) teamIds.add(r.homeTeamId);
     if (r.awayTeamId) teamIds.add(r.awayTeamId);
   }
-  const teamList = teamIds.size > 0 ? await db.select({ id: teams.id, name: teams.name }).from(teams).where(inArray4(teams.id, [...teamIds])) : [];
+  const teamList = teamIds.size > 0 ? await db.select({ id: teams.id, name: teams.name }).from(teams).where(inArray5(teams.id, [...teamIds])) : [];
   const teamMap = new Map(teamList.map((t) => [t.id, t.name]));
   return rows.map((r) => ({
     id: r.id,
@@ -2112,10 +2163,10 @@ async function getMatchDetails(matchId) {
     venueName: venues.name,
     venueCity: venues.city,
     venueCapacity: venues.capacity
-  }).from(matchGames).leftJoin(competitions, eq5(matchGames.competitionId, competitions.id)).leftJoin(seasons, eq5(matchGames.seasonId, seasons.id)).leftJoin(venues, eq5(matchGames.venueId, venues.id)).where(eq5(matchGames.id, matchId)).limit(1);
+  }).from(matchGames).leftJoin(competitions, eq6(matchGames.competitionId, competitions.id)).leftJoin(seasons, eq6(matchGames.seasonId, seasons.id)).leftJoin(venues, eq6(matchGames.venueId, venues.id)).where(eq6(matchGames.id, matchId)).limit(1);
   if (!matchRow) return null;
   const teamIds = [matchRow.homeTeamId, matchRow.awayTeamId].filter(Boolean);
-  const teamList = teamIds.length > 0 ? await db.select({ id: teams.id, name: teams.name }).from(teams).where(inArray4(teams.id, teamIds)) : [];
+  const teamList = teamIds.length > 0 ? await db.select({ id: teams.id, name: teams.name }).from(teams).where(inArray5(teams.id, teamIds)) : [];
   const teamMap = new Map(teamList.map((t) => [t.id, t.name]));
   const match = {
     id: matchRow.id,
@@ -2150,9 +2201,9 @@ async function getMatchDetails(matchId) {
     playerName: players.name,
     relatedPlayerId: matchEvents.relatedPlayerId,
     detail: matchEvents.detail
-  }).from(matchEvents).leftJoin(players, eq5(matchEvents.playerId, players.id)).where(eq5(matchEvents.matchId, matchId)).orderBy(matchEvents.minute);
+  }).from(matchEvents).leftJoin(players, eq6(matchEvents.playerId, players.id)).where(eq6(matchEvents.matchId, matchId)).orderBy(matchEvents.minute);
   const relatedIds = eventsRows.map((e) => e.relatedPlayerId).filter(Boolean);
-  const relatedNames = relatedIds.length > 0 ? await db.select({ id: players.id, name: players.name }).from(players).where(inArray4(players.id, relatedIds)) : [];
+  const relatedNames = relatedIds.length > 0 ? await db.select({ id: players.id, name: players.name }).from(players).where(inArray5(players.id, relatedIds)) : [];
   const relatedMap = new Map(relatedNames.map((p) => [p.id, p.name]));
   const events = eventsRows.map((e) => ({
     id: e.id,
@@ -2175,7 +2226,7 @@ async function getMatchDetails(matchId) {
     positionCode: matchLineupPlayers.positionCode,
     minutesPlayed: matchLineupPlayers.minutesPlayed,
     playerName: players.name
-  }).from(matchLineups).innerJoin(matchLineupPlayers, eq5(matchLineups.id, matchLineupPlayers.matchLineupId)).innerJoin(players, eq5(matchLineupPlayers.playerId, players.id)).where(eq5(matchLineups.matchId, matchId));
+  }).from(matchLineups).innerJoin(matchLineupPlayers, eq6(matchLineups.id, matchLineupPlayers.matchLineupId)).innerJoin(players, eq6(matchLineupPlayers.playerId, players.id)).where(eq6(matchLineups.matchId, matchId));
   const lineupByTeam = /* @__PURE__ */ new Map();
   for (const r of lineupsRows) {
     if (!lineupByTeam.has(r.teamId)) {
@@ -2210,7 +2261,7 @@ async function getMatchDetails(matchId) {
     rating: playerMatchStats.rating,
     goals: playerMatchStats.goals,
     assists: playerMatchStats.assists
-  }).from(playerMatchStats).innerJoin(players, eq5(playerMatchStats.playerId, players.id)).where(eq5(playerMatchStats.matchId, matchId));
+  }).from(playerMatchStats).innerJoin(players, eq6(playerMatchStats.playerId, players.id)).where(eq6(playerMatchStats.matchId, matchId));
   const playerStats = statsRows.map((r) => ({
     playerId: r.playerId,
     name: r.name,
@@ -2226,7 +2277,7 @@ async function getMatchDetails(matchId) {
     shotsOnTarget: teamMatchStats.shotsOnTarget,
     corners: teamMatchStats.corners,
     fouls: teamMatchStats.fouls
-  }).from(teamMatchStats).where(eq5(teamMatchStats.matchId, matchId));
+  }).from(teamMatchStats).where(eq6(teamMatchStats.matchId, matchId));
   const teamStats = teamStatsRows.map((r) => ({
     teamId: r.teamId,
     teamName: teamMap.get(r.teamId) ?? "TBD",
@@ -2253,25 +2304,25 @@ async function getLastMatchRatings(teamId) {
     homeScore: matchGames.homeScore,
     awayScore: matchGames.awayScore,
     competitionName: competitions.name
-  }).from(matchGames).leftJoin(competitions, eq5(matchGames.competitionId, competitions.id)).where(
-    and4(
-      or2(eq5(matchGames.homeTeamId, teamId), eq5(matchGames.awayTeamId, teamId)),
-      eq5(matchGames.status, "FT")
+  }).from(matchGames).leftJoin(competitions, eq6(matchGames.competitionId, competitions.id)).where(
+    and5(
+      or3(eq6(matchGames.homeTeamId, teamId), eq6(matchGames.awayTeamId, teamId)),
+      eq6(matchGames.status, "FT")
     )
-  ).orderBy(desc4(matchGames.kickoffAt)).limit(1);
+  ).orderBy(desc5(matchGames.kickoffAt)).limit(1);
   if (!lastMatch) return null;
   const teamIds = [lastMatch.homeTeamId, lastMatch.awayTeamId].filter(Boolean);
-  const teamList = teamIds.length > 0 ? await db.select({ id: teams.id, name: teams.name }).from(teams).where(inArray4(teams.id, teamIds)) : [];
+  const teamList = teamIds.length > 0 ? await db.select({ id: teams.id, name: teams.name }).from(teams).where(inArray5(teams.id, teamIds)) : [];
   const teamMap = new Map(teamList.map((t) => [t.id, t.name]));
   const [ourLineup] = await db.select({ id: matchLineups.id, formation: matchLineups.formation }).from(matchLineups).where(
-    and4(eq5(matchLineups.matchId, lastMatch.id), eq5(matchLineups.teamId, teamId))
+    and5(eq6(matchLineups.matchId, lastMatch.id), eq6(matchLineups.teamId, teamId))
   ).limit(1);
   const lineupPositionByPlayer = /* @__PURE__ */ new Map();
   if (ourLineup) {
     const lineupPlayers = await db.select({
       playerId: matchLineupPlayers.playerId,
       positionCode: matchLineupPlayers.positionCode
-    }).from(matchLineupPlayers).where(eq5(matchLineupPlayers.matchLineupId, ourLineup.id));
+    }).from(matchLineupPlayers).where(eq6(matchLineupPlayers.matchLineupId, ourLineup.id));
     for (const lp of lineupPlayers) {
       lineupPositionByPlayer.set(lp.playerId, lp.positionCode);
     }
@@ -2286,8 +2337,8 @@ async function getLastMatchRatings(teamId) {
     primaryPosition: players.primaryPosition,
     position: players.position,
     photoUrl: players.photoUrl
-  }).from(playerMatchStats).innerJoin(players, eq5(playerMatchStats.playerId, players.id)).where(
-    and4(eq5(playerMatchStats.matchId, lastMatch.id), eq5(playerMatchStats.teamId, teamId))
+  }).from(playerMatchStats).innerJoin(players, eq6(playerMatchStats.playerId, players.id)).where(
+    and5(eq6(playerMatchStats.matchId, lastMatch.id), eq6(playerMatchStats.teamId, teamId))
   );
   const rawRatings = statsRows.filter((r) => r.rating != null && (starterPlayerIds === null || starterPlayerIds.has(r.playerId))).map((r) => {
     const positionCode = lineupPositionByPlayer.get(r.playerId) ?? r.primaryPosition ?? r.position ?? "UNK";
@@ -2370,7 +2421,7 @@ __export(standings_repo_exports, {
   getCompetitionById: () => getCompetitionById,
   getStandingsByCompetition: () => getStandingsByCompetition
 });
-import { eq as eq6, and as and5, asc } from "drizzle-orm";
+import { eq as eq7, and as and6, asc } from "drizzle-orm";
 async function getStandingsByCompetition(competitionId, season = "2026") {
   const rows = await db.select({
     standing: standings,
@@ -2380,7 +2431,7 @@ async function getStandingsByCompetition(competitionId, season = "2026") {
       shortName: teams.shortName,
       logoUrl: teams.logoUrl
     }
-  }).from(standings).innerJoin(teams, eq6(standings.teamId, teams.id)).where(and5(eq6(standings.competitionId, competitionId), eq6(standings.season, season))).orderBy(asc(standings.position));
+  }).from(standings).innerJoin(teams, eq7(standings.teamId, teams.id)).where(and6(eq7(standings.competitionId, competitionId), eq7(standings.season, season))).orderBy(asc(standings.position));
   return rows.map((r) => ({
     id: r.standing.id,
     competitionId: r.standing.competitionId,
@@ -2405,7 +2456,7 @@ async function getStandingsByCompetition(competitionId, season = "2026") {
   }));
 }
 async function getCompetitionById(id) {
-  const [c] = await db.select().from(competitions).where(eq6(competitions.id, id));
+  const [c] = await db.select().from(competitions).where(eq7(competitions.id, id));
   return c ?? null;
 }
 var init_standings_repo = __esm({
@@ -2422,23 +2473,23 @@ __export(roster_repo_exports, {
   getRosterByTeamAndSeason: () => getRosterByTeamAndSeason,
   getRosterByTeamLegacy: () => getRosterByTeamLegacy
 });
-import { eq as eq7, and as and6, sql as sql5 } from "drizzle-orm";
+import { eq as eq8, and as and7, sql as sql6 } from "drizzle-orm";
 async function getRosterByTeamAndSeason(teamId, season, filters) {
   let seasonId;
   if (typeof season === "string") {
     seasonId = season;
   } else {
-    const [s] = await db.select({ id: seasons.id }).from(seasons).where(eq7(seasons.year, season)).limit(1);
+    const [s] = await db.select({ id: seasons.id }).from(seasons).where(eq8(seasons.year, season)).limit(1);
     if (!s) return [];
     seasonId = s.id;
   }
   const conditions = [
-    eq7(teamRosters.teamId, teamId),
-    eq7(teamRosters.seasonId, seasonId)
+    eq8(teamRosters.teamId, teamId),
+    eq8(teamRosters.seasonId, seasonId)
   ];
-  if (filters?.role) conditions.push(eq7(teamRosters.role, filters.role));
-  if (filters?.status) conditions.push(eq7(teamRosters.status, filters.status));
-  const sectorOrder = sql5`case
+  if (filters?.role) conditions.push(eq8(teamRosters.role, filters.role));
+  if (filters?.status) conditions.push(eq8(teamRosters.status, filters.status));
+  const sectorOrder = sql6`case
     when coalesce(${players.sector}, '') = 'GK' then 1
     when coalesce(${players.sector}, '') = 'DEF' then 2
     when coalesce(${players.sector}, '') = 'MID' then 3
@@ -2457,7 +2508,7 @@ async function getRosterByTeamAndSeason(teamId, season, filters) {
     nationalityPrimary: players.nationalityPrimary,
     photoUrl: players.photoUrl,
     sector: players.sector
-  }).from(teamRosters).innerJoin(players, eq7(teamRosters.playerId, players.id)).where(and6(...conditions)).orderBy(sectorOrder, players.position, teamRosters.squadNumber);
+  }).from(teamRosters).innerJoin(players, eq8(teamRosters.playerId, players.id)).where(and7(...conditions)).orderBy(sectorOrder, players.position, teamRosters.squadNumber);
   const rows = await query;
   let result = rows.map((r) => ({
     id: r.id,
@@ -2483,7 +2534,7 @@ async function getRosterByTeamAndSeason(teamId, season, filters) {
   return result;
 }
 async function getRosterByTeamLegacy(teamId, filters) {
-  const sectorOrder = sql5`case
+  const sectorOrder = sql6`case
     when coalesce(${players.sector}, '') = 'GK' then 1
     when coalesce(${players.sector}, '') = 'DEF' then 2
     when coalesce(${players.sector}, '') = 'MID' then 3
@@ -2494,15 +2545,15 @@ async function getRosterByTeamLegacy(teamId, filters) {
     id: players.id,
     playerId: players.id,
     squadNumber: players.shirtNumber,
-    role: sql5`null`,
-    status: sql5`null`,
+    role: sql6`null`,
+    status: sql6`null`,
     name: players.name,
     position: players.position,
     birthDate: players.birthDate,
     nationalityPrimary: players.nationalityPrimary,
     photoUrl: players.photoUrl,
     sector: players.sector
-  }).from(players).where(eq7(players.teamId, teamId)).orderBy(sectorOrder, players.position, players.shirtNumber);
+  }).from(players).where(eq8(players.teamId, teamId)).orderBy(sectorOrder, players.position, players.shirtNumber);
   let result = rows.map((r) => ({
     id: r.id,
     playerId: r.playerId,
@@ -2539,16 +2590,16 @@ var players_repo_exports = {};
 __export(players_repo_exports, {
   getTopRatedByTeam: () => getTopRatedByTeam
 });
-import { eq as eq8, or as or3, and as and7, desc as desc6, sql as sql6, inArray as inArray5 } from "drizzle-orm";
+import { eq as eq9, or as or4, and as and8, desc as desc7, sql as sql7, inArray as inArray6 } from "drizzle-orm";
 async function getTopRatedByTeam(teamId, options = {}) {
   const limit = options.limit ?? 3;
   const lastN = options.lastNMatches ?? 10;
   const recentMatchIds = await db.select({ id: matchGames.id }).from(matchGames).where(
-    or3(
-      eq8(matchGames.homeTeamId, teamId),
-      eq8(matchGames.awayTeamId, teamId)
+    or4(
+      eq9(matchGames.homeTeamId, teamId),
+      eq9(matchGames.awayTeamId, teamId)
     )
-  ).orderBy(desc6(matchGames.kickoffAt)).limit(lastN);
+  ).orderBy(desc7(matchGames.kickoffAt)).limit(lastN);
   const matchIds = recentMatchIds.map((r) => r.id);
   if (matchIds.length === 0) return [];
   const rows = await db.select({
@@ -2557,20 +2608,20 @@ async function getTopRatedByTeam(teamId, options = {}) {
     photoUrl: players.photoUrl,
     position: players.position,
     shirtNumber: players.shirtNumber,
-    avgRating: sql6`avg(${playerMatchStats.rating})::real`.as("avg_rating"),
-    matchesPlayed: sql6`count(*)::int`.as("matches_played"),
-    totalGoals: sql6`coalesce(sum(${playerMatchStats.goals}), 0)::int`.as("total_goals"),
-    totalAssists: sql6`coalesce(sum(${playerMatchStats.assists}), 0)::int`.as("total_assists")
-  }).from(playerMatchStats).innerJoin(players, eq8(playerMatchStats.playerId, players.id)).where(and7(
-    eq8(playerMatchStats.teamId, teamId),
-    inArray5(playerMatchStats.matchId, matchIds)
+    avgRating: sql7`avg(${playerMatchStats.rating})::real`.as("avg_rating"),
+    matchesPlayed: sql7`count(*)::int`.as("matches_played"),
+    totalGoals: sql7`coalesce(sum(${playerMatchStats.goals}), 0)::int`.as("total_goals"),
+    totalAssists: sql7`coalesce(sum(${playerMatchStats.assists}), 0)::int`.as("total_assists")
+  }).from(playerMatchStats).innerJoin(players, eq9(playerMatchStats.playerId, players.id)).where(and8(
+    eq9(playerMatchStats.teamId, teamId),
+    inArray6(playerMatchStats.matchId, matchIds)
   )).groupBy(
     playerMatchStats.playerId,
     players.name,
     players.photoUrl,
     players.position,
     players.shirtNumber
-  ).orderBy(desc6(sql6`avg(${playerMatchStats.rating})`)).limit(limit);
+  ).orderBy(desc7(sql7`avg(${playerMatchStats.rating})`)).limit(limit);
   return rows.map((r) => ({
     playerId: r.playerId,
     name: r.name,
@@ -2604,40 +2655,40 @@ __export(forum_repo_exports, {
   toggleForumReplyLike: () => toggleForumReplyLike,
   toggleForumTopicLike: () => toggleForumTopicLike
 });
-import { eq as eq9, and as and8, desc as desc7, sql as sql7, ilike as ilike2, or as or4, gt as gt4, inArray as inArray6 } from "drizzle-orm";
+import { eq as eq10, and as and9, desc as desc8, sql as sql8, ilike as ilike3, or as or5, gt as gt4, inArray as inArray7 } from "drizzle-orm";
 async function listForumTopics(teamId, options = {}) {
   const limit = Math.min(options.limit ?? 24, 50);
   const offset = options.offset ?? 0;
   const conditions = [
-    eq9(teamsForumTopics.teamId, teamId),
-    eq9(teamsForumTopics.isRemoved, false),
-    eq9(teamsForumTopics.moderationStatus, "APPROVED")
+    eq10(teamsForumTopics.teamId, teamId),
+    eq10(teamsForumTopics.isRemoved, false),
+    eq10(teamsForumTopics.moderationStatus, "APPROVED")
   ];
   if (options.category && options.category !== "base") {
-    conditions.push(eq9(teamsForumTopics.category, options.category));
+    conditions.push(eq10(teamsForumTopics.category, options.category));
   }
   if (options.search?.trim()) {
     conditions.push(
-      or4(
-        ilike2(teamsForumTopics.title, `%${options.search.trim()}%`),
-        ilike2(teamsForumTopics.content, `%${options.search.trim()}%`)
+      or5(
+        ilike3(teamsForumTopics.title, `%${options.search.trim()}%`),
+        ilike3(teamsForumTopics.content, `%${options.search.trim()}%`)
       )
     );
   }
-  const orderByClause = options.trending ? [desc7(teamsForumTopics.isPinned), desc7(teamsForumTopics.likesCount), desc7(teamsForumTopics.repliesCount), desc7(teamsForumTopics.updatedAt)] : [desc7(teamsForumTopics.isPinned), desc7(teamsForumTopics.updatedAt)];
+  const orderByClause = options.trending ? [desc8(teamsForumTopics.isPinned), desc8(teamsForumTopics.likesCount), desc8(teamsForumTopics.repliesCount), desc8(teamsForumTopics.updatedAt)] : [desc8(teamsForumTopics.isPinned), desc8(teamsForumTopics.updatedAt)];
   const rows = await db.select({
     topic: teamsForumTopics,
     authorName: users.name,
     authorAvatar: users.avatarUrl,
     authorType: users.userType
-  }).from(teamsForumTopics).innerJoin(users, eq9(teamsForumTopics.authorId, users.id)).where(and8(...conditions)).orderBy(...orderByClause).limit(limit).offset(offset);
+  }).from(teamsForumTopics).innerJoin(users, eq10(teamsForumTopics.authorId, users.id)).where(and9(...conditions)).orderBy(...orderByClause).limit(limit).offset(offset);
   const topicIds = rows.map((r) => r.topic.id);
   let viewerLikes = /* @__PURE__ */ new Set();
   if (options.viewerUserId && topicIds.length > 0) {
     const likes = await db.select({ topicId: teamsForumLikes.topicId }).from(teamsForumLikes).where(
-      and8(
-        eq9(teamsForumLikes.userId, options.viewerUserId),
-        inArray6(teamsForumLikes.topicId, topicIds)
+      and9(
+        eq10(teamsForumLikes.userId, options.viewerUserId),
+        inArray7(teamsForumLikes.topicId, topicIds)
       )
     );
     viewerLikes = new Set(likes.map((l) => l.topicId).filter(Boolean));
@@ -2673,23 +2724,23 @@ async function getForumTopicById(topicId, teamId, options = {}) {
     authorName: users.name,
     authorAvatar: users.avatarUrl,
     authorType: users.userType
-  }).from(teamsForumTopics).innerJoin(users, eq9(teamsForumTopics.authorId, users.id)).where(
-    and8(
-      eq9(teamsForumTopics.id, topicId),
-      eq9(teamsForumTopics.teamId, teamId),
-      eq9(teamsForumTopics.isRemoved, false)
+  }).from(teamsForumTopics).innerJoin(users, eq10(teamsForumTopics.authorId, users.id)).where(
+    and9(
+      eq10(teamsForumTopics.id, topicId),
+      eq10(teamsForumTopics.teamId, teamId),
+      eq10(teamsForumTopics.isRemoved, false)
     )
   );
   if (!row) return null;
   if (options.incrementView) {
-    await db.update(teamsForumTopics).set({ viewsCount: sql7`${teamsForumTopics.viewsCount} + 1` }).where(eq9(teamsForumTopics.id, topicId));
+    await db.update(teamsForumTopics).set({ viewsCount: sql8`${teamsForumTopics.viewsCount} + 1` }).where(eq10(teamsForumTopics.id, topicId));
   }
   let viewerHasLiked = false;
   if (options.viewerUserId) {
     const [like] = await db.select().from(teamsForumLikes).where(
-      and8(
-        eq9(teamsForumLikes.userId, options.viewerUserId),
-        eq9(teamsForumLikes.topicId, topicId)
+      and9(
+        eq10(teamsForumLikes.userId, options.viewerUserId),
+        eq10(teamsForumLikes.topicId, topicId)
       )
     );
     viewerHasLiked = !!like;
@@ -2728,7 +2779,7 @@ async function createForumTopic(teamId, authorId, data) {
     category: data.category ?? "base",
     coverImageUrl: data.coverImageUrl ?? null
   }).returning();
-  const [user] = await db.select().from(users).where(eq9(users.id, authorId));
+  const [user] = await db.select().from(users).where(eq10(users.id, authorId));
   return {
     id: topic.id,
     teamId: topic.teamId,
@@ -2761,14 +2812,14 @@ async function listForumReplies(topicId, options = {}) {
     authorName: users.name,
     authorAvatar: users.avatarUrl,
     authorType: users.userType
-  }).from(teamsForumReplies).innerJoin(users, eq9(teamsForumReplies.authorId, users.id)).where(eq9(teamsForumReplies.topicId, topicId)).orderBy(teamsForumReplies.createdAt).limit(limit).offset(offset);
+  }).from(teamsForumReplies).innerJoin(users, eq10(teamsForumReplies.authorId, users.id)).where(eq10(teamsForumReplies.topicId, topicId)).orderBy(teamsForumReplies.createdAt).limit(limit).offset(offset);
   let viewerLikes = /* @__PURE__ */ new Set();
   if (options.viewerUserId && rows.length > 0) {
     const replyIds = rows.map((r) => r.reply.id);
     const likes = await db.select({ replyId: teamsForumLikes.replyId }).from(teamsForumLikes).where(
-      and8(
-        eq9(teamsForumLikes.userId, options.viewerUserId),
-        inArray6(teamsForumLikes.replyId, replyIds)
+      and9(
+        eq10(teamsForumLikes.userId, options.viewerUserId),
+        inArray7(teamsForumLikes.replyId, replyIds)
       )
     );
     viewerLikes = new Set(likes.map((l) => l.replyId).filter(Boolean));
@@ -2793,10 +2844,10 @@ async function listForumReplies(topicId, options = {}) {
 async function createForumReply(topicId, authorId, content) {
   const [reply] = await db.insert(teamsForumReplies).values({ topicId, authorId, content }).returning();
   await db.update(teamsForumTopics).set({
-    repliesCount: sql7`${teamsForumTopics.repliesCount} + 1`,
+    repliesCount: sql8`${teamsForumTopics.repliesCount} + 1`,
     updatedAt: /* @__PURE__ */ new Date()
-  }).where(eq9(teamsForumTopics.id, topicId));
-  const [user] = await db.select().from(users).where(eq9(users.id, authorId));
+  }).where(eq10(teamsForumTopics.id, topicId));
+  const [user] = await db.select().from(users).where(eq10(users.id, authorId));
   return {
     id: reply.id,
     topicId: reply.topicId,
@@ -2815,74 +2866,74 @@ async function createForumReply(topicId, authorId, content) {
 }
 async function toggleForumTopicLike(topicId, userId) {
   const [existing] = await db.select().from(teamsForumLikes).where(
-    and8(
-      eq9(teamsForumLikes.userId, userId),
-      eq9(teamsForumLikes.topicId, topicId)
+    and9(
+      eq10(teamsForumLikes.userId, userId),
+      eq10(teamsForumLikes.topicId, topicId)
     )
   );
   if (existing) {
     await db.delete(teamsForumLikes).where(
-      and8(
-        eq9(teamsForumLikes.userId, userId),
-        eq9(teamsForumLikes.topicId, topicId)
+      and9(
+        eq10(teamsForumLikes.userId, userId),
+        eq10(teamsForumLikes.topicId, topicId)
       )
     );
-    await db.update(teamsForumTopics).set({ likesCount: sql7`GREATEST(0, ${teamsForumTopics.likesCount} - 1)` }).where(eq9(teamsForumTopics.id, topicId));
-    const [topic] = await db.select({ likesCount: teamsForumTopics.likesCount }).from(teamsForumTopics).where(eq9(teamsForumTopics.id, topicId));
+    await db.update(teamsForumTopics).set({ likesCount: sql8`GREATEST(0, ${teamsForumTopics.likesCount} - 1)` }).where(eq10(teamsForumTopics.id, topicId));
+    const [topic] = await db.select({ likesCount: teamsForumTopics.likesCount }).from(teamsForumTopics).where(eq10(teamsForumTopics.id, topicId));
     return { liked: false, likesCount: Math.max(0, (topic?.likesCount ?? 1) - 1) };
   } else {
     await db.insert(teamsForumLikes).values({ userId, topicId });
-    await db.update(teamsForumTopics).set({ likesCount: sql7`${teamsForumTopics.likesCount} + 1` }).where(eq9(teamsForumTopics.id, topicId));
-    const [topic] = await db.select({ likesCount: teamsForumTopics.likesCount }).from(teamsForumTopics).where(eq9(teamsForumTopics.id, topicId));
+    await db.update(teamsForumTopics).set({ likesCount: sql8`${teamsForumTopics.likesCount} + 1` }).where(eq10(teamsForumTopics.id, topicId));
+    const [topic] = await db.select({ likesCount: teamsForumTopics.likesCount }).from(teamsForumTopics).where(eq10(teamsForumTopics.id, topicId));
     return { liked: true, likesCount: (topic?.likesCount ?? 0) + 1 };
   }
 }
 async function getForumReplyTeamId(replyId) {
-  const [row] = await db.select({ teamId: teamsForumTopics.teamId }).from(teamsForumReplies).innerJoin(teamsForumTopics, eq9(teamsForumReplies.topicId, teamsForumTopics.id)).where(eq9(teamsForumReplies.id, replyId));
+  const [row] = await db.select({ teamId: teamsForumTopics.teamId }).from(teamsForumReplies).innerJoin(teamsForumTopics, eq10(teamsForumReplies.topicId, teamsForumTopics.id)).where(eq10(teamsForumReplies.id, replyId));
   return row?.teamId ?? null;
 }
 async function toggleForumReplyLike(replyId, userId) {
   const [existing] = await db.select().from(teamsForumLikes).where(
-    and8(
-      eq9(teamsForumLikes.userId, userId),
-      eq9(teamsForumLikes.replyId, replyId)
+    and9(
+      eq10(teamsForumLikes.userId, userId),
+      eq10(teamsForumLikes.replyId, replyId)
     )
   );
   if (existing) {
     await db.delete(teamsForumLikes).where(
-      and8(
-        eq9(teamsForumLikes.userId, userId),
-        eq9(teamsForumLikes.replyId, replyId)
+      and9(
+        eq10(teamsForumLikes.userId, userId),
+        eq10(teamsForumLikes.replyId, replyId)
       )
     );
-    await db.update(teamsForumReplies).set({ likesCount: sql7`GREATEST(0, ${teamsForumReplies.likesCount} - 1)` }).where(eq9(teamsForumReplies.id, replyId));
-    const [reply] = await db.select({ likesCount: teamsForumReplies.likesCount }).from(teamsForumReplies).where(eq9(teamsForumReplies.id, replyId));
+    await db.update(teamsForumReplies).set({ likesCount: sql8`GREATEST(0, ${teamsForumReplies.likesCount} - 1)` }).where(eq10(teamsForumReplies.id, replyId));
+    const [reply] = await db.select({ likesCount: teamsForumReplies.likesCount }).from(teamsForumReplies).where(eq10(teamsForumReplies.id, replyId));
     return { liked: false, likesCount: Math.max(0, (reply?.likesCount ?? 1) - 1) };
   } else {
     await db.insert(teamsForumLikes).values({ userId, replyId });
-    await db.update(teamsForumReplies).set({ likesCount: sql7`${teamsForumReplies.likesCount} + 1` }).where(eq9(teamsForumReplies.id, replyId));
-    const [reply] = await db.select({ likesCount: teamsForumReplies.likesCount }).from(teamsForumReplies).where(eq9(teamsForumReplies.id, replyId));
+    await db.update(teamsForumReplies).set({ likesCount: sql8`${teamsForumReplies.likesCount} + 1` }).where(eq10(teamsForumReplies.id, replyId));
+    const [reply] = await db.select({ likesCount: teamsForumReplies.likesCount }).from(teamsForumReplies).where(eq10(teamsForumReplies.id, replyId));
     return { liked: true, likesCount: (reply?.likesCount ?? 0) + 1 };
   }
 }
 async function getForumStats(teamId) {
   const oneDayAgo = new Date(Date.now() - 24 * 60 * 60 * 1e3);
-  const [totalTopics] = await db.select({ count: sql7`count(*)::int` }).from(teamsForumTopics).where(
-    and8(
-      eq9(teamsForumTopics.teamId, teamId),
-      eq9(teamsForumTopics.isRemoved, false)
+  const [totalTopics] = await db.select({ count: sql8`count(*)::int` }).from(teamsForumTopics).where(
+    and9(
+      eq10(teamsForumTopics.teamId, teamId),
+      eq10(teamsForumTopics.isRemoved, false)
     )
   );
-  const [totalReplies] = await db.select({ count: sql7`count(*)::int` }).from(teamsForumReplies).innerJoin(teamsForumTopics, eq9(teamsForumReplies.topicId, teamsForumTopics.id)).where(
-    and8(
-      eq9(teamsForumTopics.teamId, teamId),
-      eq9(teamsForumTopics.isRemoved, false)
+  const [totalReplies] = await db.select({ count: sql8`count(*)::int` }).from(teamsForumReplies).innerJoin(teamsForumTopics, eq10(teamsForumReplies.topicId, teamsForumTopics.id)).where(
+    and9(
+      eq10(teamsForumTopics.teamId, teamId),
+      eq10(teamsForumTopics.isRemoved, false)
     )
   );
-  const trendingRows = await db.selectDistinct({ topicId: teamsForumTopics.id }).from(teamsForumTopics).innerJoin(teamsForumReplies, eq9(teamsForumReplies.topicId, teamsForumTopics.id)).where(
-    and8(
-      eq9(teamsForumTopics.teamId, teamId),
-      eq9(teamsForumTopics.isRemoved, false),
+  const trendingRows = await db.selectDistinct({ topicId: teamsForumTopics.id }).from(teamsForumTopics).innerJoin(teamsForumReplies, eq10(teamsForumReplies.topicId, teamsForumTopics.id)).where(
+    and9(
+      eq10(teamsForumTopics.teamId, teamId),
+      eq10(teamsForumTopics.isRemoved, false),
       gt4(teamsForumReplies.createdAt, oneDayAgo)
     )
   );
@@ -2913,8 +2964,8 @@ __export(games_repo_exports, {
   resetAttempt: () => resetAttempt,
   startOrGetAttempt: () => startOrGetAttempt
 });
-import { eq as eq10, and as and9 } from "drizzle-orm";
-import { sql as sql8 } from "drizzle-orm";
+import { eq as eq11, and as and10 } from "drizzle-orm";
+import { sql as sql9 } from "drizzle-orm";
 import levenshtein from "fast-levenshtein";
 function normalizeForMatch(text2) {
   return text2.normalize("NFD").replace(/\p{Diacritic}/gu, "").toLowerCase().trim().replace(/[.,\-']/g, "").replace(/\s+/g, " ");
@@ -2935,7 +2986,7 @@ async function listGameSets() {
   const sets = await db.select().from(gameSets).orderBy(gameSets.createdAt);
   const result = [];
   for (const s of sets) {
-    const [countRow] = await db.select({ count: sql8`count(*)::int` }).from(gameSetPlayers).where(eq10(gameSetPlayers.setId, s.id));
+    const [countRow] = await db.select({ count: sql9`count(*)::int` }).from(gameSetPlayers).where(eq11(gameSetPlayers.setId, s.id));
     const playerCount = Number(countRow?.count ?? 0);
     result.push({
       id: s.id,
@@ -2954,14 +3005,14 @@ async function listGameSets() {
   return result;
 }
 async function getGameSetBySlug(slug) {
-  const [set] = await db.select().from(gameSets).where(eq10(gameSets.slug, slug)).limit(1);
+  const [set] = await db.select().from(gameSets).where(eq11(gameSets.slug, slug)).limit(1);
   if (!set) return null;
   const players2 = await db.select({
     id: gameSetPlayers.id,
     jerseyNumber: gameSetPlayers.jerseyNumber,
     displayName: gameSetPlayers.displayName,
     sortOrder: gameSetPlayers.sortOrder
-  }).from(gameSetPlayers).where(eq10(gameSetPlayers.setId, set.id)).orderBy(gameSetPlayers.sortOrder);
+  }).from(gameSetPlayers).where(eq11(gameSetPlayers.setId, set.id)).orderBy(gameSetPlayers.sortOrder);
   return {
     id: set.id,
     slug: set.slug,
@@ -2973,25 +3024,25 @@ async function getGameSetBySlug(slug) {
   };
 }
 async function startOrGetAttempt(userId, setSlug) {
-  const [set] = await db.select().from(gameSets).where(eq10(gameSets.slug, setSlug)).limit(1);
+  const [set] = await db.select().from(gameSets).where(eq11(gameSets.slug, setSlug)).limit(1);
   if (!set) throw new Error("Set n\xE3o encontrado");
-  const [existing] = await db.select().from(gameAttempts).where(and9(eq10(gameAttempts.userId, userId), eq10(gameAttempts.setId, set.id))).limit(1);
+  const [existing] = await db.select().from(gameAttempts).where(and10(eq11(gameAttempts.userId, userId), eq11(gameAttempts.setId, set.id))).limit(1);
   let attemptId;
   if (existing) {
     if (existing.status === "in_progress") {
-      const guesses = await db.select({ setPlayerId: gameAttemptGuesses.setPlayerId }).from(gameAttemptGuesses).where(eq10(gameAttemptGuesses.attemptId, existing.id));
+      const guesses = await db.select({ setPlayerId: gameAttemptGuesses.setPlayerId }).from(gameAttemptGuesses).where(eq11(gameAttemptGuesses.attemptId, existing.id));
       return {
         attemptId: existing.id,
         guessedIds: guesses.map((g) => g.setPlayerId)
       };
     }
-    await db.delete(gameAttemptGuesses).where(eq10(gameAttemptGuesses.attemptId, existing.id));
+    await db.delete(gameAttemptGuesses).where(eq11(gameAttemptGuesses.attemptId, existing.id));
     await db.update(gameAttempts).set({
       status: "in_progress",
       completedAt: null,
       guessesCount: 0,
       updatedAt: /* @__PURE__ */ new Date()
-    }).where(eq10(gameAttempts.id, existing.id));
+    }).where(eq11(gameAttempts.id, existing.id));
     attemptId = existing.id;
   } else {
     const [inserted] = await db.insert(gameAttempts).values({
@@ -3005,17 +3056,17 @@ async function startOrGetAttempt(userId, setSlug) {
   return { attemptId, guessedIds: [] };
 }
 async function getAttempt(attemptId, userId) {
-  const [attempt] = await db.select().from(gameAttempts).where(and9(eq10(gameAttempts.id, attemptId), eq10(gameAttempts.userId, userId))).limit(1);
+  const [attempt] = await db.select().from(gameAttempts).where(and10(eq11(gameAttempts.id, attemptId), eq11(gameAttempts.userId, userId))).limit(1);
   if (!attempt) return null;
-  const guesses = await db.select({ setPlayerId: gameAttemptGuesses.setPlayerId }).from(gameAttemptGuesses).where(eq10(gameAttemptGuesses.attemptId, attemptId));
-  const [set] = await db.select().from(gameSets).where(eq10(gameSets.id, attempt.setId)).limit(1);
+  const guesses = await db.select({ setPlayerId: gameAttemptGuesses.setPlayerId }).from(gameAttemptGuesses).where(eq11(gameAttemptGuesses.attemptId, attemptId));
+  const [set] = await db.select().from(gameSets).where(eq11(gameSets.id, attempt.setId)).limit(1);
   if (!set) return null;
   const players2 = await db.select({
     id: gameSetPlayers.id,
     jerseyNumber: gameSetPlayers.jerseyNumber,
     displayName: gameSetPlayers.displayName,
     sortOrder: gameSetPlayers.sortOrder
-  }).from(gameSetPlayers).where(eq10(gameSetPlayers.setId, set.id)).orderBy(gameSetPlayers.sortOrder);
+  }).from(gameSetPlayers).where(eq11(gameSetPlayers.setId, set.id)).orderBy(gameSetPlayers.sortOrder);
   return {
     id: attempt.id,
     status: attempt.status,
@@ -3028,14 +3079,14 @@ async function getAttempt(attemptId, userId) {
   };
 }
 async function processGuess(attemptId, userId, text2) {
-  const [attempt] = await db.select().from(gameAttempts).where(and9(eq10(gameAttempts.id, attemptId), eq10(gameAttempts.userId, userId))).limit(1);
+  const [attempt] = await db.select().from(gameAttempts).where(and10(eq11(gameAttempts.id, attemptId), eq11(gameAttempts.userId, userId))).limit(1);
   if (!attempt) throw new Error("Attempt n\xE3o encontrado");
   if (attempt.status !== "in_progress") throw new Error("Attempt n\xE3o est\xE1 em progresso");
   const normalizedInput = normalizeForMatch(text2);
   if (!normalizedInput) return { matched: false, reason: "no_match" };
-  const guessedIds = await db.select({ setPlayerId: gameAttemptGuesses.setPlayerId }).from(gameAttemptGuesses).where(eq10(gameAttemptGuesses.attemptId, attemptId));
+  const guessedIds = await db.select({ setPlayerId: gameAttemptGuesses.setPlayerId }).from(gameAttemptGuesses).where(eq11(gameAttemptGuesses.attemptId, attemptId));
   const guessedSet = new Set(guessedIds.map((g) => g.setPlayerId));
-  const players2 = await db.select().from(gameSetPlayers).where(eq10(gameSetPlayers.setId, attempt.setId));
+  const players2 = await db.select().from(gameSetPlayers).where(eq11(gameSetPlayers.setId, attempt.setId));
   const notYetGuessed = players2.filter((p) => !guessedSet.has(p.id));
   for (const p of players2) {
     if (guessedSet.has(p.id)) {
@@ -3057,7 +3108,7 @@ async function processGuess(attemptId, userId, text2) {
       await recordGuess(attemptId, p.id, text2, 1);
       const all = guessedSet.size + 1;
       if (all >= players2.length) {
-        await db.update(gameAttempts).set({ status: "completed", completedAt: /* @__PURE__ */ new Date(), updatedAt: /* @__PURE__ */ new Date() }).where(eq10(gameAttempts.id, attemptId));
+        await db.update(gameAttempts).set({ status: "completed", completedAt: /* @__PURE__ */ new Date(), updatedAt: /* @__PURE__ */ new Date() }).where(eq11(gameAttempts.id, attemptId));
       }
       return {
         matched: true,
@@ -3075,7 +3126,7 @@ async function processGuess(attemptId, userId, text2) {
         await recordGuess(attemptId, p.id, text2, 1);
         const all = guessedSet.size + 1;
         if (all >= players2.length) {
-          await db.update(gameAttempts).set({ status: "completed", completedAt: /* @__PURE__ */ new Date(), updatedAt: /* @__PURE__ */ new Date() }).where(eq10(gameAttempts.id, attemptId));
+          await db.update(gameAttempts).set({ status: "completed", completedAt: /* @__PURE__ */ new Date(), updatedAt: /* @__PURE__ */ new Date() }).where(eq11(gameAttempts.id, attemptId));
         }
         return {
           matched: true,
@@ -3096,7 +3147,7 @@ async function processGuess(attemptId, userId, text2) {
         await recordGuess(attemptId, p.id, text2, sim);
         const all = guessedSet.size + 1;
         if (all >= players2.length) {
-          await db.update(gameAttempts).set({ status: "completed", completedAt: /* @__PURE__ */ new Date(), updatedAt: /* @__PURE__ */ new Date() }).where(eq10(gameAttempts.id, attemptId));
+          await db.update(gameAttempts).set({ status: "completed", completedAt: /* @__PURE__ */ new Date(), updatedAt: /* @__PURE__ */ new Date() }).where(eq11(gameAttempts.id, attemptId));
         }
         return {
           matched: true,
@@ -3120,7 +3171,7 @@ async function processGuess(attemptId, userId, text2) {
     await recordGuess(attemptId, best.player.id, text2, best.score);
     const all = guessedSet.size + 1;
     if (all >= players2.length) {
-      await db.update(gameAttempts).set({ status: "completed", completedAt: /* @__PURE__ */ new Date(), updatedAt: /* @__PURE__ */ new Date() }).where(eq10(gameAttempts.id, attemptId));
+      await db.update(gameAttempts).set({ status: "completed", completedAt: /* @__PURE__ */ new Date(), updatedAt: /* @__PURE__ */ new Date() }).where(eq11(gameAttempts.id, attemptId));
     }
     return {
       matched: true,
@@ -3133,7 +3184,7 @@ async function processGuess(attemptId, userId, text2) {
   await db.update(gameAttempts).set({
     guessesCount: attempt.guessesCount + 1,
     updatedAt: /* @__PURE__ */ new Date()
-  }).where(eq10(gameAttempts.id, attemptId));
+  }).where(eq11(gameAttempts.id, attemptId));
   return { matched: false, reason: "no_match" };
 }
 async function recordGuess(attemptId, setPlayerId, guessedText, score) {
@@ -3145,24 +3196,24 @@ async function recordGuess(attemptId, setPlayerId, guessedText, score) {
   });
 }
 async function resetAttempt(attemptId, userId) {
-  const [attempt] = await db.select().from(gameAttempts).where(and9(eq10(gameAttempts.id, attemptId), eq10(gameAttempts.userId, userId))).limit(1);
+  const [attempt] = await db.select().from(gameAttempts).where(and10(eq11(gameAttempts.id, attemptId), eq11(gameAttempts.userId, userId))).limit(1);
   if (!attempt) return false;
-  await db.delete(gameAttemptGuesses).where(eq10(gameAttemptGuesses.attemptId, attemptId));
+  await db.delete(gameAttemptGuesses).where(eq11(gameAttemptGuesses.attemptId, attemptId));
   await db.update(gameAttempts).set({
     status: "in_progress",
     completedAt: null,
     guessesCount: 0,
     updatedAt: /* @__PURE__ */ new Date()
-  }).where(eq10(gameAttempts.id, attemptId));
+  }).where(eq11(gameAttempts.id, attemptId));
   return true;
 }
 async function abandonAttempt(attemptId, userId) {
-  const [attempt] = await db.select().from(gameAttempts).where(and9(eq10(gameAttempts.id, attemptId), eq10(gameAttempts.userId, userId))).limit(1);
+  const [attempt] = await db.select().from(gameAttempts).where(and10(eq11(gameAttempts.id, attemptId), eq11(gameAttempts.userId, userId))).limit(1);
   if (!attempt) return false;
   await db.update(gameAttempts).set({
     status: "abandoned",
     updatedAt: /* @__PURE__ */ new Date()
-  }).where(eq10(gameAttempts.id, attemptId));
+  }).where(eq11(gameAttempts.id, attemptId));
   return true;
 }
 var init_games_repo = __esm({
@@ -3184,7 +3235,7 @@ __export(guess_player_repo_exports, {
   searchPlayersForGame: () => searchPlayersForGame
 });
 import crypto from "crypto";
-import { eq as eq11, and as and10, or as or5, ilike as ilike3, isNotNull as isNotNull2 } from "drizzle-orm";
+import { eq as eq12, and as and11, or as or6, ilike as ilike4, isNotNull as isNotNull2 } from "drizzle-orm";
 import levenshtein2 from "fast-levenshtein";
 function getTodayDateKey() {
   const now = /* @__PURE__ */ new Date();
@@ -3217,7 +3268,7 @@ function computeBlurPercent(wrongAttempts) {
   return Math.max(0, 100 - wrongAttempts * 10);
 }
 async function getOrCreateDailyPlayer(dateKey, teamId) {
-  const [existing] = await db.select().from(gameDailyPlayer).where(and10(eq11(gameDailyPlayer.dateKey, dateKey), eq11(gameDailyPlayer.teamId, teamId))).limit(1);
+  const [existing] = await db.select().from(gameDailyPlayer).where(and11(eq12(gameDailyPlayer.dateKey, dateKey), eq12(gameDailyPlayer.teamId, teamId))).limit(1);
   if (existing) {
     const [player2] = await db.select({
       id: players.id,
@@ -3226,12 +3277,12 @@ async function getOrCreateDailyPlayer(dateKey, teamId) {
       photoUrl: players.photoUrl,
       position: players.position,
       shirtNumber: players.shirtNumber
-    }).from(players).where(eq11(players.id, existing.playerId)).limit(1);
+    }).from(players).where(eq12(players.id, existing.playerId)).limit(1);
     return { daily: existing, player: player2 ?? null };
   }
-  const teamPlayers = await db.select({ id: players.id }).from(players).where(and10(eq11(players.teamId, teamId), isNotNull2(players.photoUrl))).orderBy(players.id);
+  const teamPlayers = await db.select({ id: players.id }).from(players).where(and11(eq12(players.teamId, teamId), isNotNull2(players.photoUrl))).orderBy(players.id);
   if (teamPlayers.length === 0) {
-    const allTeamPlayers = await db.select({ id: players.id }).from(players).where(eq11(players.teamId, teamId)).orderBy(players.id);
+    const allTeamPlayers = await db.select({ id: players.id }).from(players).where(eq12(players.teamId, teamId)).orderBy(players.id);
     if (allTeamPlayers.length === 0) return null;
     teamPlayers.push(...allTeamPlayers);
   }
@@ -3254,11 +3305,11 @@ async function getOrCreateDailyPlayer(dateKey, teamId) {
     photoUrl: players.photoUrl,
     position: players.position,
     shirtNumber: players.shirtNumber
-  }).from(players).where(eq11(players.id, chosenPlayerId)).limit(1);
+  }).from(players).where(eq12(players.id, chosenPlayerId)).limit(1);
   return { daily: inserted, player: player ?? null };
 }
 async function getOrCreateProgress(userId, dateKey, dailyPlayerId) {
-  const [existing] = await db.select().from(gameDailyGuessProgress).where(and10(eq11(gameDailyGuessProgress.userId, userId), eq11(gameDailyGuessProgress.dateKey, dateKey))).limit(1);
+  const [existing] = await db.select().from(gameDailyGuessProgress).where(and11(eq12(gameDailyGuessProgress.userId, userId), eq12(gameDailyGuessProgress.dateKey, dateKey))).limit(1);
   if (existing) return existing;
   const [inserted] = await db.insert(gameDailyGuessProgress).values({
     userId,
@@ -3364,7 +3415,7 @@ async function processGuess2(userId, teamId, guessText) {
       guessed: true,
       guesses: updatedGuesses,
       updatedAt: /* @__PURE__ */ new Date()
-    }).where(eq11(gameDailyGuessProgress.id, progress.id));
+    }).where(eq12(gameDailyGuessProgress.id, progress.id));
     return {
       correct: true,
       feedback: "correct",
@@ -3383,7 +3434,7 @@ async function processGuess2(userId, teamId, guessText) {
     lost: hasLost,
     guesses: updatedGuesses,
     updatedAt: /* @__PURE__ */ new Date()
-  }).where(eq11(gameDailyGuessProgress.id, progress.id));
+  }).where(eq12(gameDailyGuessProgress.id, progress.id));
   const sim = similarity2(normalizedGuess, realNameNormalized);
   const feedback = sim >= 0.5 ? "close" : "wrong";
   return {
@@ -3406,11 +3457,11 @@ async function searchPlayersForGame(teamId, query, limit = 10) {
     photoUrl: players.photoUrl,
     position: players.position
   }).from(players).where(
-    and10(
-      eq11(players.teamId, teamId),
-      or5(
-        ilike3(players.name, `%${term}%`),
-        ilike3(players.knownName, `%${term}%`)
+    and11(
+      eq12(players.teamId, teamId),
+      or6(
+        ilike4(players.name, `%${term}%`),
+        ilike4(players.knownName, `%${term}%`)
       )
     )
   ).orderBy(players.name).limit(limit);
@@ -4672,7 +4723,7 @@ import path2 from "path";
 import multer from "multer";
 import { randomBytes as randomBytes2 } from "crypto";
 import { fileURLToPath as fileURLToPath2 } from "url";
-import { eq as eq12, asc as asc2, ilike as ilike4, or as or6, and as and11, isNull, desc as desc8 } from "drizzle-orm";
+import { eq as eq13, asc as asc2, ilike as ilike5, or as or7, and as and12, isNull, desc as desc9 } from "drizzle-orm";
 import rateLimit from "express-rate-limit";
 import { z as z2 } from "zod";
 
@@ -4768,6 +4819,17 @@ router.get("/influencers", async (req, res) => {
   try {
     const limit = Math.min(parseInt(String(req.query.limit || 20), 10) || 20, 50);
     const offset = Math.max(parseInt(String(req.query.offset || 0), 10) || 0, 0);
+    const teamFilter = String(req.query.teamFilter || "all");
+    const viewerUserId = req.session?.userId ?? null;
+    let viewerTeamId = null;
+    if (viewerUserId) {
+      const [viewer] = await db.select({ teamId: users.teamId }).from(users).where(eq2(users.id, viewerUserId)).limit(1);
+      viewerTeamId = viewer?.teamId ?? null;
+    }
+    const conditions = [eq2(news.isPublished, true)];
+    if (teamFilter === "mine" && viewerTeamId) {
+      conditions.push(eq2(news.teamId, viewerTeamId));
+    }
     const rows = await db.select({
       id: news.id,
       title: news.title,
@@ -4782,8 +4844,7 @@ router.get("/influencers", async (req, res) => {
       journalistAvatarUrl: users.avatarUrl,
       teamName: teams.name,
       teamLogoUrl: teams.logoUrl
-    }).from(news).innerJoin(journalists, eq2(news.journalistId, journalists.id)).innerJoin(users, eq2(journalists.userId, users.id)).leftJoin(teams, eq2(news.teamId, teams.id)).where(eq2(news.isPublished, true)).orderBy(desc2(news.publishedAt)).limit(limit).offset(offset);
-    const viewerUserId = req.session?.userId ?? null;
+    }).from(news).innerJoin(journalists, eq2(news.journalistId, journalists.id)).innerJoin(users, eq2(journalists.userId, users.id)).leftJoin(teams, eq2(news.teamId, teams.id)).where(and2(...conditions)).orderBy(desc2(news.publishedAt)).limit(limit).offset(offset);
     const items = rows.map((r) => ({
       id: r.id,
       title: r.title,
@@ -5430,6 +5491,21 @@ router2.post("/posts", requireAuth2, async (req, res) => {
       relatedNewsId: relatedNewsId || null
     }).returning();
     if (!post) return res.status(500).json({ message: "Erro ao criar post" });
+    const hashtagMatches = content.match(/#[\w\u00C0-\u024F]+/g) ?? [];
+    const uniqueTags = [...new Set(hashtagMatches.map((t) => t.slice(1).replace(/[^a-zA-Z0-9\u00C0-\u024F]/g, "")))].filter((t) => t.length >= 2);
+    const hashtagStrings = uniqueTags.map((t) => `#${t}`);
+    if (uniqueTags.length > 0) {
+      for (const tag of uniqueTags) {
+        const [upserted] = await db.insert(hashtags).values({ name: tag, postCount: 1, category: "geral" }).onConflictDoUpdate({
+          target: hashtags.name,
+          set: { postCount: sql4`${hashtags.postCount} + 1`, updatedAt: /* @__PURE__ */ new Date() }
+        }).returning({ id: hashtags.id });
+        if (upserted) {
+          await db.insert(postHashtags).values({ postId: post.id, hashtagId: upserted.id }).onConflictDoNothing({ target: [postHashtags.postId, postHashtags.hashtagId] });
+        }
+      }
+      await db.update(posts).set({ hashtags: hashtagStrings, updatedAt: /* @__PURE__ */ new Date() }).where(eq3(posts.id, post.id));
+    }
     if (parentPostId) {
       await db.update(posts).set({
         replyCount: sql4`${posts.replyCount} + 1`,
@@ -5677,6 +5753,254 @@ router2.post("/posts/:id/bookmark", requireAuth2, async (req, res) => {
 });
 var socialRouter = router2;
 
+// server/route-handlers/explore.ts
+init_db();
+init_schema();
+import { Router as Router3 } from "express";
+import { eq as eq4, and as and4, desc as desc4, sql as sql5, ilike as ilike2, or as or2, not as not2, inArray as inArray4 } from "drizzle-orm";
+function requireAuth3(req, res, next) {
+  if (!req.session?.userId) {
+    return res.status(401).json({ message: "N\xE3o autenticado" });
+  }
+  next();
+}
+var router3 = Router3();
+router3.get("/trending", async (req, res) => {
+  try {
+    const period = req.query.period || "24h";
+    const category = req.query.category;
+    let q = db.select({
+      id: trendingTopics.id,
+      title: trendingTopics.title,
+      subtitle: trendingTopics.subtitle,
+      category: trendingTopics.category,
+      postCount: trendingTopics.postCount,
+      teamId: trendingTopics.teamId
+    }).from(trendingTopics).where(eq4(trendingTopics.period, period)).orderBy(desc4(trendingTopics.postCount));
+    const rows = await q;
+    const teamIds = [...new Set(rows.map((r) => r.teamId).filter(Boolean))];
+    const teamMap = /* @__PURE__ */ new Map();
+    if (teamIds.length > 0) {
+      const teamRows = await db.select({ id: teams.id, shortName: teams.shortName }).from(teams).where(inArray4(teams.id, teamIds));
+      for (const t of teamRows) {
+        teamMap.set(t.id, { slug: (t.shortName || t.id).toLowerCase().replace(/\s+/g, "-") });
+      }
+    }
+    let items = rows.map((r) => ({
+      id: r.id,
+      title: r.title,
+      subtitle: r.subtitle,
+      category: r.category,
+      post_count: r.postCount,
+      team_slug: r.teamId ? teamMap.get(r.teamId)?.slug ?? null : null
+    }));
+    if (category) {
+      items = items.filter((i) => i.category === category);
+    }
+    res.json(items);
+  } catch (err) {
+    console.error("[explore] GET /trending error:", err);
+    res.status(500).json({ message: "Erro ao carregar trending" });
+  }
+});
+router3.get("/hashtags", async (req, res) => {
+  try {
+    const limit = Math.min(parseInt(String(req.query.limit || 10), 10) || 10, 20);
+    const rows = await db.select({
+      id: hashtags.id,
+      name: hashtags.name,
+      postCount: hashtags.postCount,
+      category: hashtags.category
+    }).from(hashtags).orderBy(desc4(hashtags.postCount)).limit(limit);
+    res.json(rows.map((r) => ({ id: r.id, name: r.name, post_count: r.postCount, category: r.category })));
+  } catch (err) {
+    console.error("[explore] GET /hashtags error:", err);
+    res.status(500).json({ message: "Erro ao carregar hashtags" });
+  }
+});
+router3.get("/search", async (req, res) => {
+  try {
+    const q = req.query.q?.trim() ?? "";
+    if (!q) return res.json({ posts: [], users: [], hashtags: [], teams: [] });
+    const term = `%${q}%`;
+    const viewerUserId = req.session?.userId ?? null;
+    const limit = 5;
+    const [matchedPosts, matchedUsers, matchedHashtags, matchedTeams] = await Promise.all([
+      db.select({
+        id: posts.id,
+        content: posts.content,
+        imageUrl: posts.imageUrl,
+        likeCount: posts.likeCount,
+        repostCount: posts.repostCount,
+        replyCount: posts.replyCount,
+        viewCount: posts.viewCount,
+        createdAt: posts.createdAt,
+        authorId: users.id,
+        authorName: users.name,
+        authorHandle: users.handle,
+        authorAvatarUrl: users.avatarUrl,
+        authorUserType: users.userType,
+        journalistStatus: journalists.status,
+        teamName: teams.name
+      }).from(posts).innerJoin(users, eq4(posts.userId, users.id)).leftJoin(journalists, eq4(users.id, journalists.userId)).leftJoin(teams, eq4(users.teamId, teams.id)).where(and4(ilike2(posts.content, term), sql5`${posts.parentPostId} IS NULL`)).orderBy(desc4(posts.createdAt)).limit(limit),
+      db.select({
+        id: users.id,
+        name: users.name,
+        handle: users.handle,
+        avatarUrl: users.avatarUrl,
+        bio: users.bio,
+        userType: users.userType,
+        followersCount: users.followersCount
+      }).from(users).where(or2(ilike2(users.name, term), ilike2(users.handle, term))).orderBy(desc4(users.followersCount)).limit(limit),
+      db.select({ id: hashtags.id, name: hashtags.name, postCount: hashtags.postCount, category: hashtags.category }).from(hashtags).where(ilike2(hashtags.name, term)).orderBy(desc4(hashtags.postCount)).limit(limit),
+      db.select({ id: teams.id, name: teams.name, shortName: teams.shortName, logoUrl: teams.logoUrl }).from(teams).where(or2(ilike2(teams.name, term), ilike2(teams.shortName, term))).limit(limit)
+    ]);
+    let followingIds = [];
+    if (viewerUserId) {
+      const f = await db.select({ followingId: userFollows.followingId }).from(userFollows).where(eq4(userFollows.followerId, viewerUserId));
+      followingIds = f.map((x) => x.followingId);
+    }
+    const postsOut = matchedPosts.map((p) => ({
+      id: p.id,
+      content: p.content,
+      imageUrl: p.imageUrl,
+      likeCount: p.likeCount,
+      repostCount: p.repostCount,
+      replyCount: p.replyCount,
+      viewCount: p.viewCount,
+      createdAt: p.createdAt,
+      author: {
+        id: p.authorId,
+        name: p.authorName,
+        username: p.authorHandle ?? "user",
+        avatar: p.authorAvatarUrl,
+        verified: p.authorUserType === "JOURNALIST" && p.journalistStatus === "APPROVED",
+        team_name: p.teamName
+      }
+    }));
+    const usersOut = matchedUsers.map((u) => ({
+      id: u.id,
+      name: u.name,
+      handle: u.handle,
+      avatarUrl: u.avatarUrl,
+      bio: u.bio,
+      userType: u.userType,
+      followersCount: u.followersCount,
+      is_following: followingIds.includes(u.id)
+    }));
+    const hashtagsOut = matchedHashtags.map((h) => ({
+      id: h.id,
+      name: h.name,
+      post_count: h.postCount,
+      category: h.category
+    }));
+    const teamsOut = matchedTeams.map((t) => ({
+      id: t.id,
+      name: t.name,
+      shortName: t.shortName,
+      logoUrl: t.logoUrl
+    }));
+    res.json({ posts: postsOut, users: usersOut, hashtags: hashtagsOut, teams: teamsOut });
+  } catch (err) {
+    console.error("[explore] GET /search error:", err);
+    res.status(500).json({ message: "Erro ao buscar", posts: [], users: [], hashtags: [], teams: [] });
+  }
+});
+router3.get("/posts-by-hashtag/:name", async (req, res) => {
+  try {
+    const name = decodeURIComponent((req.params.name || "").trim());
+    if (!name) return res.status(400).json({ message: "Hashtag inv\xE1lida" });
+    const hashtagName = name.startsWith("#") ? name.slice(1) : name;
+    const [hashtagRow] = await db.select().from(hashtags).where(ilike2(hashtags.name, hashtagName)).limit(1);
+    if (!hashtagRow) return res.json([]);
+    const postRows = await db.select({
+      id: posts.id,
+      content: posts.content,
+      imageUrl: posts.imageUrl,
+      likeCount: posts.likeCount,
+      repostCount: posts.repostCount,
+      replyCount: posts.replyCount,
+      viewCount: posts.viewCount,
+      createdAt: posts.createdAt,
+      authorId: users.id,
+      authorName: users.name,
+      authorHandle: users.handle,
+      authorAvatarUrl: users.avatarUrl,
+      authorUserType: users.userType,
+      journalistStatus: journalists.status,
+      teamName: teams.name
+    }).from(posts).innerJoin(postHashtags, eq4(posts.id, postHashtags.postId)).innerJoin(users, eq4(posts.userId, users.id)).leftJoin(journalists, eq4(users.id, journalists.userId)).leftJoin(teams, eq4(users.teamId, teams.id)).where(and4(eq4(postHashtags.hashtagId, hashtagRow.id), sql5`${posts.parentPostId} IS NULL`)).orderBy(desc4(posts.createdAt)).limit(20);
+    const viewerUserId = req.session?.userId ?? null;
+    let likedIds = /* @__PURE__ */ new Set();
+    let bookmarkedIds = /* @__PURE__ */ new Set();
+    if (viewerUserId) {
+      const postIds = postRows.map((p) => p.id);
+      const [likes, bookmarks] = await Promise.all([
+        db.select({ postId: postLikes.postId }).from(postLikes).where(and4(eq4(postLikes.userId, viewerUserId), inArray4(postLikes.postId, postIds))),
+        db.select({ postId: postBookmarks.postId }).from(postBookmarks).where(and4(eq4(postBookmarks.userId, viewerUserId), inArray4(postBookmarks.postId, postIds)))
+      ]);
+      likes.forEach((l) => likedIds.add(l.postId));
+      bookmarks.forEach((b) => bookmarkedIds.add(b.postId));
+    }
+    const items = postRows.map((p) => ({
+      id: p.id,
+      content: p.content,
+      imageUrl: p.imageUrl,
+      likeCount: p.likeCount,
+      repostCount: p.repostCount,
+      replyCount: p.replyCount,
+      viewCount: p.viewCount,
+      createdAt: p.createdAt,
+      author: {
+        id: p.authorId,
+        name: p.authorName,
+        username: p.authorHandle ?? "user",
+        avatar: p.authorAvatarUrl,
+        verified: p.authorUserType === "JOURNALIST" && p.journalistStatus === "APPROVED",
+        team_name: p.teamName
+      },
+      viewerHasLiked: likedIds.has(p.id),
+      viewerHasBookmarked: bookmarkedIds.has(p.id)
+    }));
+    res.json(items);
+  } catch (err) {
+    console.error("[explore] GET /posts-by-hashtag error:", err);
+    res.status(500).json({ message: "Erro ao carregar posts" });
+  }
+});
+router3.get("/suggested-users", requireAuth3, async (req, res) => {
+  try {
+    const viewerUserId = req.session.userId;
+    const limit = 5;
+    const followed = await db.select({ followingId: userFollows.followingId }).from(userFollows).where(eq4(userFollows.followerId, viewerUserId));
+    const excludeIds = [viewerUserId, ...followed.map((f) => f.followingId)];
+    const rows = await db.select({
+      id: users.id,
+      name: users.name,
+      handle: users.handle,
+      avatarUrl: users.avatarUrl,
+      bio: users.bio,
+      userType: users.userType,
+      followersCount: users.followersCount
+    }).from(users).where(and4(not2(inArray4(users.id, excludeIds)), sql5`${users.handle} IS NOT NULL`)).orderBy(desc4(users.followersCount)).limit(limit);
+    const items = rows.map((u) => ({
+      id: u.id,
+      name: u.name,
+      handle: u.handle ?? "user",
+      avatarUrl: u.avatarUrl,
+      bio: u.bio,
+      userType: u.userType,
+      followersCount: u.followersCount,
+      is_following: false
+    }));
+    res.json(items);
+  } catch (err) {
+    console.error("[explore] GET /suggested-users error:", err);
+    res.status(500).json({ message: "Erro ao carregar sugest\xF5es" });
+  }
+});
+var exploreRouter = router3;
+
 // server/routes.ts
 var PgSession = ConnectPgSimple(session);
 var __filename2 = fileURLToPath2(import.meta.url);
@@ -5749,7 +6073,7 @@ var uploadAvatar = multer({
   storage: multer.memoryStorage(),
   limits: { fileSize: MAX_AVATAR_UPLOAD_BYTES }
 });
-function requireAuth3(req, res, next) {
+function requireAuth4(req, res, next) {
   if (!req.session.userId) {
     return res.status(401).json({ message: "N\xE3o autenticado" });
   }
@@ -5915,6 +6239,7 @@ async function registerRoutes(app2) {
     })
   );
   app2.use("/api/feed", feedRouter);
+  app2.use("/api/explore", exploreRouter);
   app2.use("/api", socialRouter);
   app2.get("/api/search/suggestions", async (req, res) => {
     const q = req.query.q?.trim() ?? "";
@@ -5928,7 +6253,7 @@ async function registerRoutes(app2) {
         avatarUrl: users.avatarUrl,
         userType: users.userType,
         followersCount: users.followersCount
-      }).from(users).where(or6(ilike4(users.name, term), ilike4(users.handle, term))).orderBy(desc8(users.followersCount)).limit(5);
+      }).from(users).where(or7(ilike5(users.name, term), ilike5(users.handle, term))).orderBy(desc9(users.followersCount)).limit(5);
       return res.json({ users: matchedUsers });
     } catch (err) {
       console.error("[search] suggestions error:", err);
@@ -5956,7 +6281,7 @@ async function registerRoutes(app2) {
           userType: users.userType,
           followersCount: users.followersCount,
           followingCount: users.followingCount
-        }).from(users).where(or6(ilike4(users.name, term), ilike4(users.handle, term))).orderBy(desc8(users.followersCount)).limit(type === "all" ? 5 : limit).offset(type === "all" ? 0 : offset);
+        }).from(users).where(or7(ilike5(users.name, term), ilike5(users.handle, term))).orderBy(desc9(users.followersCount)).limit(type === "all" ? 5 : limit).offset(type === "all" ? 0 : offset);
       }
       if (type === "all" || type === "posts") {
         const postRows = await db.select({
@@ -5974,12 +6299,12 @@ async function registerRoutes(app2) {
           authorHandle: users.handle,
           authorAvatarUrl: users.avatarUrl,
           authorUserType: users.userType
-        }).from(posts).innerJoin(users, eq12(posts.userId, users.id)).where(
-          and11(
-            ilike4(posts.content, term),
+        }).from(posts).innerJoin(users, eq13(posts.userId, users.id)).where(
+          and12(
+            ilike5(posts.content, term),
             isNull(posts.parentPostId)
           )
-        ).orderBy(desc8(posts.createdAt)).limit(type === "all" ? 10 : limit).offset(type === "all" ? 0 : offset);
+        ).orderBy(desc9(posts.createdAt)).limit(type === "all" ? 10 : limit).offset(type === "all" ? 0 : offset);
         matchedPosts = postRows.map((row) => ({
           id: row.id,
           content: row.content,
@@ -6051,7 +6376,7 @@ async function registerRoutes(app2) {
       return res.json({ available: false, reason: "invalid" });
     }
     try {
-      const existing = await db.select({ id: users.id }).from(users).where(eq12(users.handle, handle)).limit(1);
+      const existing = await db.select({ id: users.id }).from(users).where(eq13(users.handle, handle)).limit(1);
       return res.json({ available: existing.length === 0 });
     } catch (err) {
       console.error("[check-handle] error:", err);
@@ -6069,7 +6394,7 @@ async function registerRoutes(app2) {
       if (existingUser) {
         return res.status(400).json({ message: "Email j\xE1 cadastrado" });
       }
-      const existingHandle = await db.select({ id: users.id }).from(users).where(eq12(users.handle, rawHandle)).limit(1);
+      const existingHandle = await db.select({ id: users.id }).from(users).where(eq13(users.handle, rawHandle)).limit(1);
       if (existingHandle.length > 0) {
         return res.status(409).json({ message: `O handle @${rawHandle} j\xE1 est\xE1 em uso. Escolha outro.` });
       }
@@ -6177,7 +6502,7 @@ async function registerRoutes(app2) {
       res.status(500).json({ message: "Erro ao buscar usu\xE1rio" });
     }
   });
-  app2.get("/api/my-team/overview", requireAuth3, async (req, res) => {
+  app2.get("/api/my-team/overview", requireAuth4, async (req, res) => {
     try {
       const user = await storage.getUser(req.session.userId);
       if (!user?.teamId) {
@@ -6232,7 +6557,8 @@ async function registerRoutes(app2) {
           teamRating: "teamRating" in f ? f.teamRating : null
         }));
       }
-      const finished = rawMatches.filter((m) => m.status === "FT" && m.homeScore != null && m.awayScore != null).sort((a, b) => new Date(b.kickoffAt).getTime() - new Date(a.kickoffAt).getTime()).slice(0, 5);
+      const COMPLETED_STATUSES = /* @__PURE__ */ new Set(["FT", "COMPLETED", "AET", "PEN"]);
+      const finished = rawMatches.filter((m) => COMPLETED_STATUSES.has(m.status) && m.homeScore != null && m.awayScore != null).sort((a, b) => new Date(b.kickoffAt).getTime() - new Date(a.kickoffAt).getTime()).slice(0, 5);
       const form = deriveFormFromMatches2(finished, teamId, 5);
       const lastMatches = finished.map((m) => ({
         id: m.id,
@@ -6272,7 +6598,7 @@ async function registerRoutes(app2) {
       return res.status(500).json({ message: "Falha ao buscar overview do time" });
     }
   });
-  app2.get("/api/teams/:teamId/summary", requireAuth3, async (req, res) => {
+  app2.get("/api/teams/:teamId/summary", requireAuth4, async (req, res) => {
     const teamId = String(req.params.teamId || "").trim();
     if (!teamId) return res.status(400).json({ message: "teamId inv\xE1lido" });
     try {
@@ -6296,7 +6622,7 @@ async function registerRoutes(app2) {
       return res.status(500).json({ message: "Falha ao buscar resumo do time" });
     }
   });
-  app2.get("/api/teams/:teamId/fixtures", requireAuth3, async (req, res) => {
+  app2.get("/api/teams/:teamId/fixtures", requireAuth4, async (req, res) => {
     const teamId = String(req.params.teamId || "").trim();
     if (!teamId) return res.status(400).json({ message: "teamId inv\xE1lido" });
     const rangeRaw = typeof req.query.range === "string" ? req.query.range.trim().toLowerCase() : "next";
@@ -6327,7 +6653,7 @@ async function registerRoutes(app2) {
       return res.status(500).json({ message: "Falha ao buscar jogos do time" });
     }
   });
-  app2.get("/api/teams/:teamId/matches", requireAuth3, async (req, res) => {
+  app2.get("/api/teams/:teamId/matches", requireAuth4, async (req, res) => {
     const teamId = String(req.params.teamId || "").trim();
     if (!teamId) return res.status(400).json({ message: "teamId inv\xE1lido" });
     const typeRaw = typeof req.query.type === "string" ? req.query.type.trim().toLowerCase() : "all";
@@ -6399,7 +6725,7 @@ async function registerRoutes(app2) {
       return res.status(500).json({ message: "Falha ao buscar jogos do time" });
     }
   });
-  app2.post("/api/teams/:teamId/matches", requireAuth3, requireAdmin, async (req, res) => {
+  app2.post("/api/teams/:teamId/matches", requireAuth4, requireAdmin, async (req, res) => {
     const teamId = String(req.params.teamId || "").trim();
     if (!teamId) return res.status(400).json({ message: "teamId inv\xE1lido" });
     try {
@@ -6415,7 +6741,7 @@ async function registerRoutes(app2) {
       return res.status(500).json({ message: "Falha ao criar jogo" });
     }
   });
-  app2.put("/api/matches/:matchId", requireAuth3, requireAdmin, async (req, res) => {
+  app2.put("/api/matches/:matchId", requireAuth4, requireAdmin, async (req, res) => {
     const matchId = String(req.params.matchId || "").trim();
     if (!matchId) return res.status(400).json({ message: "matchId inv\xE1lido" });
     try {
@@ -6435,7 +6761,7 @@ async function registerRoutes(app2) {
       return res.status(500).json({ message: "Falha ao atualizar jogo" });
     }
   });
-  app2.get("/api/teams/:teamId/stats", requireAuth3, async (req, res) => {
+  app2.get("/api/teams/:teamId/stats", requireAuth4, async (req, res) => {
     const teamId = String(req.params.teamId || "").trim();
     if (!teamId) return res.status(400).json({ message: "teamId inv\xE1lido" });
     try {
@@ -6521,7 +6847,36 @@ async function registerRoutes(app2) {
       return res.status(500).json({ message: "Falha ao buscar classifica\xE7\xE3o" });
     }
   });
-  app2.get("/api/leagues/:leagueId/standings", requireAuth3, async (req, res) => {
+  app2.get("/api/competitions/:competitionId/upcoming-fixtures", async (req, res) => {
+    try {
+      let slugify2 = function(s) {
+        return s.trim().toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "");
+      };
+      var slugify = slugify2;
+      const allTeams = await storage.getAllTeams();
+      const teamsById = new Map(allTeams.map((t) => [t.id, t]));
+      const teamsBySlug = new Map(allTeams.map((t) => [slugify2(t.name), t]));
+      const homeMatches = await db.select().from(matches).where(and12(eq13(matches.status, "SCHEDULED"), eq13(matches.isHomeMatch, true))).orderBy(asc2(matches.matchDate));
+      const fixturesList = homeMatches.map((m) => {
+        const homeTeam = teamsById.get(m.teamId);
+        const awayTeam = teamsBySlug.get(slugify2(m.opponent)) ?? allTeams.find((t) => t.name.toLowerCase() === m.opponent.toLowerCase());
+        return {
+          id: m.id,
+          homeTeamId: m.teamId,
+          homeTeamName: homeTeam?.name ?? m.teamId,
+          awayTeamId: awayTeam?.id ?? slugify2(m.opponent),
+          awayTeamName: m.opponent,
+          round: m.championshipRound,
+          matchDate: m.matchDate
+        };
+      });
+      return res.json({ fixtures: fixturesList });
+    } catch (error) {
+      console.error("[upcoming-fixtures] error:", error);
+      return res.status(500).json({ message: "Falha ao buscar jogos agendados" });
+    }
+  });
+  app2.get("/api/leagues/:leagueId/standings", requireAuth4, async (req, res) => {
     const leagueId = Number.parseInt(String(req.params.leagueId || "").trim(), 10);
     if (!Number.isFinite(leagueId) || leagueId <= 0) {
       return res.status(400).json({ message: "leagueId inv\xE1lido" });
@@ -6580,7 +6935,7 @@ async function registerRoutes(app2) {
       res.status(500).json({ message: "Erro ao buscar time" });
     }
   });
-  app2.get("/api/teams/:teamId/players", requireAuth3, async (req, res) => {
+  app2.get("/api/teams/:teamId/players", requireAuth4, async (req, res) => {
     const teamId = String(req.params.teamId || "").trim();
     if (!teamId) return res.status(400).json({ message: "teamId inv\xE1lido" });
     try {
@@ -6593,7 +6948,7 @@ async function registerRoutes(app2) {
       return res.status(500).json({ message: "Erro ao buscar elenco" });
     }
   });
-  app2.get("/api/teams/:teamId/roster", requireAuth3, async (req, res) => {
+  app2.get("/api/teams/:teamId/roster", requireAuth4, async (req, res) => {
     const teamId = String(req.params.teamId || "").trim();
     if (!teamId) return res.status(400).json({ message: "teamId inv\xE1lido" });
     const seasonParam = typeof req.query.season === "string" ? req.query.season.trim() : String((/* @__PURE__ */ new Date()).getFullYear());
@@ -6614,7 +6969,7 @@ async function registerRoutes(app2) {
       return res.status(500).json({ message: "Erro ao buscar elenco" });
     }
   });
-  app2.get("/api/teams/:teamId/top-rated", requireAuth3, async (req, res) => {
+  app2.get("/api/teams/:teamId/top-rated", requireAuth4, async (req, res) => {
     const teamId = String(req.params.teamId || "").trim();
     if (!teamId) return res.status(400).json({ message: "teamId inv\xE1lido" });
     const limit = parseLimitParam(req.query.limit, 3, 10);
@@ -6630,7 +6985,7 @@ async function registerRoutes(app2) {
       return res.status(500).json({ message: "Erro ao buscar top avaliados" });
     }
   });
-  app2.get("/api/lineups/me", requireAuth3, async (req, res) => {
+  app2.get("/api/lineups/me", requireAuth4, async (req, res) => {
     const teamId = String(req.query.teamId || "").trim();
     if (!teamId) return res.status(400).json({ message: "teamId \xE9 obrigat\xF3rio" });
     try {
@@ -6641,7 +6996,7 @@ async function registerRoutes(app2) {
       return res.status(500).json({ message: "Erro ao buscar t\xE1tica" });
     }
   });
-  app2.post("/api/lineups/me", requireAuth3, async (req, res) => {
+  app2.post("/api/lineups/me", requireAuth4, async (req, res) => {
     const teamId = String(req.body?.teamId || "").trim();
     const formation = String(req.body?.formation || "4-3-3").trim();
     const slots = Array.isArray(req.body?.slots) ? req.body.slots : [];
@@ -6685,24 +7040,26 @@ async function registerRoutes(app2) {
       return res.status(500).json({ message: "Failed to fetch squad" });
     }
   });
-  app2.get("/api/teams/:id/extended", requireAuth3, async (req, res) => {
+  app2.get("/api/teams/:id/extended", requireAuth4, async (req, res) => {
     try {
       const teamId = req.params.id;
       const team = await storage.getTeam(teamId);
       if (!team) {
         return res.status(404).json({ message: "Time n\xE3o encontrado" });
       }
-      const matches2 = await storage.getMatchesByTeam(teamId, 20);
-      const allTeams = await storage.getAllTeams();
-      let stadium = {
-        name: "Est\xE1dio Principal",
-        capacity: 5e4,
+      const [matches2, allTeams] = await Promise.all([
+        storage.getMatchesByTeam(teamId, 20),
+        storage.getAllTeams()
+      ]);
+      const stadium = {
+        name: team.stadiumName ?? "Est\xE1dio Principal",
+        capacity: team.stadiumCapacity ?? 5e4,
         pitchCondition: "Excelente",
         stadiumCondition: "Boa",
         homeFactor: 75,
-        yearBuilt: 2e3
+        yearBuilt: team.foundedYear ?? 2e3
       };
-      let clubInfo = {
+      const clubInfo = {
         league: "Brasileir\xE3o S\xE9rie A",
         season: String((/* @__PURE__ */ new Date()).getFullYear()),
         country: "Brasil",
@@ -6715,20 +7072,13 @@ async function registerRoutes(app2) {
         try {
           const clubPath = path2.join(__dirname2, "data", clubFile);
           if (fs2.existsSync(clubPath)) {
-            const raw = fs2.readFileSync(clubPath, "utf-8");
-            corinthiansClub = JSON.parse(raw);
-            stadium = {
-              name: corinthiansClub.stadium?.name ?? stadium.name,
-              capacity: corinthiansClub.stadium?.capacity ?? stadium.capacity,
-              pitchCondition: "Excelente",
-              stadiumCondition: "Boa",
-              homeFactor: 80,
-              yearBuilt: corinthiansClub.stadium?.inaugurated ?? stadium.yearBuilt
-            };
-            clubInfo = {
-              ...clubInfo,
-              country: corinthiansClub.country ?? clubInfo.country
-            };
+            corinthiansClub = JSON.parse(fs2.readFileSync(clubPath, "utf-8"));
+            if (corinthiansClub.stadium?.name) {
+              stadium.name = corinthiansClub.stadium.name;
+              stadium.capacity = corinthiansClub.stadium.capacity ?? stadium.capacity;
+              stadium.yearBuilt = corinthiansClub.stadium.inaugurated ?? stadium.yearBuilt;
+              stadium.homeFactor = 80;
+            }
           }
         } catch (_) {
         }
@@ -6747,7 +7097,7 @@ async function registerRoutes(app2) {
       res.status(500).json({ message: "Erro ao buscar dados do time" });
     }
   });
-  app2.get("/api/teams/:teamId/upcoming-match", requireAuth3, async (req, res) => {
+  app2.get("/api/teams/:teamId/upcoming-match", requireAuth4, async (req, res) => {
     try {
       const { teamId } = req.params;
       const match = await storage.getNextMatch(teamId);
@@ -6769,7 +7119,7 @@ async function registerRoutes(app2) {
       res.status(500).json({ message: "Erro ao buscar pr\xF3ximo jogo" });
     }
   });
-  app2.get("/api/teams/:teamId/last-match", requireAuth3, async (req, res) => {
+  app2.get("/api/teams/:teamId/last-match", requireAuth4, async (req, res) => {
     try {
       const { teamId } = req.params;
       const data = await storage.getLastMatchWithRatings(teamId);
@@ -6790,7 +7140,7 @@ async function registerRoutes(app2) {
       res.status(500).json({ message: "Erro ao buscar \xFAltima partida" });
     }
   });
-  app2.get("/api/teams/:teamId/last-match/ratings", requireAuth3, async (req, res) => {
+  app2.get("/api/teams/:teamId/last-match/ratings", requireAuth4, async (req, res) => {
     try {
       const { teamId } = req.params;
       const { getLastMatchRatings: getLastMatchRatings2 } = await Promise.resolve().then(() => (init_matches_repo(), matches_repo_exports));
@@ -6875,7 +7225,7 @@ async function registerRoutes(app2) {
       res.status(500).json({ message: "Erro ao buscar notas" });
     }
   });
-  app2.get("/api/matches/:id/my-ratings", requireAuth3, async (req, res) => {
+  app2.get("/api/matches/:id/my-ratings", requireAuth4, async (req, res) => {
     try {
       const userId = req.session.userId;
       const ratings = await storage.getUserRatingsForMatch(userId, req.params.id);
@@ -6886,7 +7236,7 @@ async function registerRoutes(app2) {
       res.status(500).json({ message: "Erro ao buscar suas notas" });
     }
   });
-  app2.post("/api/ratings", requireAuth3, async (req, res) => {
+  app2.post("/api/ratings", requireAuth4, async (req, res) => {
     try {
       const userId = req.session.userId;
       const { matchId, playerId, rating } = req.body ?? {};
@@ -6938,7 +7288,7 @@ async function registerRoutes(app2) {
       res.status(500).json({ message: "Erro ao buscar partidas" });
     }
   });
-  app2.post("/api/uploads/image", requireAuth3, requireJournalist, (req, res) => {
+  app2.post("/api/uploads/image", requireAuth4, requireJournalist, (req, res) => {
     uploadImage.single("file")(req, res, (err) => {
       if (err) {
         const isTooLarge = err?.code === "LIMIT_FILE_SIZE";
@@ -6952,7 +7302,7 @@ async function registerRoutes(app2) {
       return res.json({ imageUrl: `/uploads/${file.filename}` });
     });
   });
-  app2.post("/api/uploads/post-image", requireAuth3, (req, res) => {
+  app2.post("/api/uploads/post-image", requireAuth4, (req, res) => {
     uploadImage.single("file")(req, res, (err) => {
       if (err) {
         const isTooLarge = err?.code === "LIMIT_FILE_SIZE";
@@ -7024,7 +7374,7 @@ async function registerRoutes(app2) {
       res.status(500).json({ message: "Erro ao buscar not\xEDcias" });
     }
   });
-  app2.get("/api/news/my-news", requireAuth3, requireJournalist, async (req, res) => {
+  app2.get("/api/news/my-news", requireAuth4, requireJournalist, async (req, res) => {
     try {
       const journalist = await storage.getJournalist(req.session.userId);
       if (!journalist) {
@@ -7043,7 +7393,7 @@ async function registerRoutes(app2) {
       res.status(500).json({ message: "Erro ao buscar suas not\xEDcias" });
     }
   });
-  app2.post("/api/news", requireAuth3, requireJournalist, async (req, res) => {
+  app2.post("/api/news", requireAuth4, requireJournalist, async (req, res) => {
     try {
       const journalist = await storage.getJournalist(req.session.userId);
       if (!journalist) {
@@ -7093,7 +7443,7 @@ async function registerRoutes(app2) {
       res.status(400).json({ message: error.message || "Erro ao criar not\xEDcia" });
     }
   });
-  app2.patch("/api/news/:id", requireAuth3, requireJournalist, async (req, res) => {
+  app2.patch("/api/news/:id", requireAuth4, requireJournalist, async (req, res) => {
     try {
       const journalist = await storage.getJournalist(req.session.userId);
       if (!journalist) {
@@ -7134,7 +7484,7 @@ async function registerRoutes(app2) {
       res.status(400).json({ message: error.message || "Erro ao atualizar not\xEDcia" });
     }
   });
-  app2.delete("/api/news/:id", requireAuth3, requireJournalist, async (req, res) => {
+  app2.delete("/api/news/:id", requireAuth4, requireJournalist, async (req, res) => {
     try {
       const journalist = await storage.getJournalist(req.session.userId);
       if (!journalist) {
@@ -7154,7 +7504,7 @@ async function registerRoutes(app2) {
       res.status(500).json({ message: "Erro ao excluir not\xEDcia" });
     }
   });
-  app2.post("/api/news/:id/interaction", requireAuth3, async (req, res) => {
+  app2.post("/api/news/:id/interaction", requireAuth4, async (req, res) => {
     try {
       const { type } = req.body;
       if (type !== "LIKE" && type !== "DISLIKE") {
@@ -7197,7 +7547,7 @@ async function registerRoutes(app2) {
       return res.status(500).json({ message: "Erro ao buscar coment\xE1rios" });
     }
   });
-  app2.post("/api/news/:newsId/comments", requireAuth3, async (req, res) => {
+  app2.post("/api/news/:newsId/comments", requireAuth4, async (req, res) => {
     const newsId = req.params.newsId;
     const userId = req.session?.userId;
     if (process.env.NODE_ENV === "development") {
@@ -7256,7 +7606,7 @@ async function registerRoutes(app2) {
       return res.status(500).json({ message: "Erro ao criar coment\xE1rio" });
     }
   });
-  app2.post("/api/comments/:commentId/likes", requireAuth3, async (req, res) => {
+  app2.post("/api/comments/:commentId/likes", requireAuth4, async (req, res) => {
     try {
       const commentId = req.params.commentId;
       const userId = req.session.userId;
@@ -7286,7 +7636,7 @@ async function registerRoutes(app2) {
       return res.status(500).json({ message: "Erro ao curtir coment\xE1rio" });
     }
   });
-  app2.delete("/api/comments/:commentId/likes", requireAuth3, async (req, res) => {
+  app2.delete("/api/comments/:commentId/likes", requireAuth4, async (req, res) => {
     try {
       const commentId = req.params.commentId;
       const userId = req.session.userId;
@@ -7316,7 +7666,7 @@ async function registerRoutes(app2) {
       return res.status(500).json({ message: "Erro ao remover curtida" });
     }
   });
-  app2.post("/api/players/:id/ratings", requireAuth3, async (req, res) => {
+  app2.post("/api/players/:id/ratings", requireAuth4, async (req, res) => {
     try {
       const playerId = req.params.id;
       const userId = req.session.userId;
@@ -7354,7 +7704,7 @@ async function registerRoutes(app2) {
       res.status(500).json({ message: "Erro ao buscar avalia\xE7\xF5es" });
     }
   });
-  app2.post("/api/profile/avatar", requireAuth3, (req, res) => {
+  app2.post("/api/profile/avatar", requireAuth4, (req, res) => {
     uploadAvatar.single("file")(req, res, async (err) => {
       if (err) {
         const isTooLarge = err?.code === "LIMIT_FILE_SIZE";
@@ -7388,7 +7738,7 @@ async function registerRoutes(app2) {
       }
     });
   });
-  app2.delete("/api/profile/avatar", requireAuth3, async (req, res) => {
+  app2.delete("/api/profile/avatar", requireAuth4, async (req, res) => {
     try {
       const userId = req.session.userId;
       const user = await storage.getUser(userId);
@@ -7404,7 +7754,7 @@ async function registerRoutes(app2) {
       return res.status(500).json({ message: "Erro ao remover avatar" });
     }
   });
-  app2.put("/api/profile", requireAuth3, async (req, res) => {
+  app2.put("/api/profile", requireAuth4, async (req, res) => {
     try {
       const userId = req.session.userId;
       const { handle, bio, location, website, coverPhotoUrl, name, email } = req.body;
@@ -7437,7 +7787,7 @@ async function registerRoutes(app2) {
       res.status(500).json({ message: "Erro ao atualizar perfil" });
     }
   });
-  app2.put("/api/profile/password", requireAuth3, async (req, res) => {
+  app2.put("/api/profile/password", requireAuth4, async (req, res) => {
     try {
       const { currentPassword, newPassword } = req.body;
       const userId = req.session.userId;
@@ -7457,7 +7807,7 @@ async function registerRoutes(app2) {
       res.status(500).json({ message: "Erro ao alterar senha" });
     }
   });
-  app2.get("/api/badges", requireAuth3, async (req, res) => {
+  app2.get("/api/badges", requireAuth4, async (req, res) => {
     try {
       const userId = req.session.userId;
       const userBadges2 = await storage.getUserBadges(userId);
@@ -7476,7 +7826,7 @@ async function registerRoutes(app2) {
       res.status(500).json({ message: "Erro ao buscar badges" });
     }
   });
-  app2.post("/api/badges/check", requireAuth3, async (req, res) => {
+  app2.post("/api/badges/check", requireAuth4, async (req, res) => {
     try {
       const userId = req.session.userId;
       const newBadges = await storage.checkAndAwardBadges(userId);
@@ -7486,7 +7836,7 @@ async function registerRoutes(app2) {
       res.status(500).json({ message: "Erro ao verificar badges" });
     }
   });
-  app2.get("/api/notifications", requireAuth3, async (req, res) => {
+  app2.get("/api/notifications", requireAuth4, async (req, res) => {
     try {
       const userId = req.session.userId;
       const notifications2 = await storage.getUserNotifications(userId);
@@ -7496,7 +7846,7 @@ async function registerRoutes(app2) {
       res.status(500).json({ message: "Erro ao buscar notifica\xE7\xF5es" });
     }
   });
-  app2.get("/api/notifications/unread-count", requireAuth3, async (req, res) => {
+  app2.get("/api/notifications/unread-count", requireAuth4, async (req, res) => {
     try {
       const userId = req.session.userId;
       const count = await storage.getUnreadNotificationCount(userId);
@@ -7506,7 +7856,7 @@ async function registerRoutes(app2) {
       res.status(500).json({ message: "Erro ao buscar contador" });
     }
   });
-  app2.post("/api/notifications/:id/read", requireAuth3, async (req, res) => {
+  app2.post("/api/notifications/:id/read", requireAuth4, async (req, res) => {
     try {
       const userId = req.session.userId;
       const updated = await storage.markNotificationAsRead(userId, req.params.id);
@@ -7519,7 +7869,7 @@ async function registerRoutes(app2) {
       res.status(500).json({ message: "Erro ao marcar como lida" });
     }
   });
-  app2.post("/api/notifications/mark-all-read", requireAuth3, async (req, res) => {
+  app2.post("/api/notifications/mark-all-read", requireAuth4, async (req, res) => {
     try {
       const userId = req.session.userId;
       await storage.markAllNotificationsAsRead(userId);
@@ -7529,7 +7879,7 @@ async function registerRoutes(app2) {
       res.status(500).json({ message: "Erro ao marcar todas como lidas" });
     }
   });
-  app2.get("/api/journalist-application/status", requireAuth3, async (req, res) => {
+  app2.get("/api/journalist-application/status", requireAuth4, async (req, res) => {
     try {
       const userId = req.session.userId;
       const journalist = await storage.getJournalist(userId);
@@ -7553,7 +7903,7 @@ async function registerRoutes(app2) {
     professionalId: z2.string().min(2).max(100),
     portfolioUrl: z2.string().url().optional().or(z2.literal(""))
   });
-  app2.post("/api/journalist-application/apply", requireAuth3, async (req, res) => {
+  app2.post("/api/journalist-application/apply", requireAuth4, async (req, res) => {
     try {
       const userId = req.session.userId;
       const parsed = applySchema.safeParse(req.body);
@@ -7589,7 +7939,7 @@ async function registerRoutes(app2) {
       res.status(500).json({ message: "Erro ao enviar solicita\xE7\xE3o" });
     }
   });
-  app2.get("/api/admin/journalist-applications", requireAuth3, requireAdmin, async (req, res) => {
+  app2.get("/api/admin/journalist-applications", requireAuth4, requireAdmin, async (req, res) => {
     try {
       const rows = await db.select({
         journalistId: journalists.id,
@@ -7602,7 +7952,7 @@ async function registerRoutes(app2) {
         professionalId: journalists.professionalId,
         portfolioUrl: journalists.portfolioUrl,
         createdAt: journalists.createdAt
-      }).from(journalists).innerJoin(users, eq12(journalists.userId, users.id)).where(eq12(journalists.status, "PENDING")).orderBy(asc2(journalists.createdAt));
+      }).from(journalists).innerJoin(users, eq13(journalists.userId, users.id)).where(eq13(journalists.status, "PENDING")).orderBy(asc2(journalists.createdAt));
       const result = rows.map((r) => ({
         journalistId: r.journalistId,
         userId: r.userId,
@@ -7621,7 +7971,7 @@ async function registerRoutes(app2) {
       res.status(500).json({ message: "Erro ao buscar solicita\xE7\xF5es" });
     }
   });
-  app2.get("/api/admin/users/search", requireAuth3, requireAdmin, async (req, res) => {
+  app2.get("/api/admin/users/search", requireAuth4, requireAdmin, async (req, res) => {
     try {
       const q = req.query.q?.trim() ?? "";
       const results = await storage.searchUsersForAdmin(q, 10);
@@ -7632,7 +7982,7 @@ async function registerRoutes(app2) {
     }
   });
   const adminJournalistActionSchema = { action: ["approve", "reject", "revoke", "promote"] };
-  app2.patch("/api/admin/journalists/:userId", requireAuth3, requireAdmin, async (req, res) => {
+  app2.patch("/api/admin/journalists/:userId", requireAuth4, requireAdmin, async (req, res) => {
     try {
       const { userId } = req.params;
       const { action } = req.body;
@@ -7704,7 +8054,7 @@ async function registerRoutes(app2) {
       res.status(500).json({ message: error.message || "Erro ao executar a\xE7\xE3o" });
     }
   });
-  app2.post("/api/admin/standings/recalculate", requireAuth3, requireAdmin, async (req, res) => {
+  app2.post("/api/admin/standings/recalculate", requireAuth4, requireAdmin, async (req, res) => {
     try {
       await storage.updateTeamStandings();
       res.json({ message: "Classifica\xE7\xE3o recalculada com sucesso" });
@@ -7713,7 +8063,7 @@ async function registerRoutes(app2) {
       res.status(500).json({ message: "Erro ao recalcular classifica\xE7\xE3o" });
     }
   });
-  app2.get("/api/teams/:teamId/forum/stats", requireAuth3, async (req, res) => {
+  app2.get("/api/teams/:teamId/forum/stats", requireAuth4, async (req, res) => {
     try {
       const teamId = String(req.params.teamId || "").trim();
       const userTeamId = (await storage.getUser(req.session.userId))?.teamId;
@@ -7728,7 +8078,7 @@ async function registerRoutes(app2) {
       return res.status(500).json({ message: "Erro ao buscar estat\xEDsticas do f\xF3rum" });
     }
   });
-  app2.get("/api/teams/:teamId/forum/topics", requireAuth3, async (req, res) => {
+  app2.get("/api/teams/:teamId/forum/topics", requireAuth4, async (req, res) => {
     try {
       const teamId = String(req.params.teamId || "").trim();
       const userTeamId = (await storage.getUser(req.session.userId))?.teamId;
@@ -7755,7 +8105,7 @@ async function registerRoutes(app2) {
       return res.status(500).json({ message: "Erro ao buscar t\xF3picos" });
     }
   });
-  app2.get("/api/teams/:teamId/forum/topics/:topicId", requireAuth3, async (req, res) => {
+  app2.get("/api/teams/:teamId/forum/topics/:topicId", requireAuth4, async (req, res) => {
     try {
       const { teamId, topicId } = req.params;
       const userTeamId = (await storage.getUser(req.session.userId))?.teamId;
@@ -7774,7 +8124,7 @@ async function registerRoutes(app2) {
       return res.status(500).json({ message: "Erro ao buscar t\xF3pico" });
     }
   });
-  app2.post("/api/teams/:teamId/forum/topics", requireAuth3, async (req, res) => {
+  app2.post("/api/teams/:teamId/forum/topics", requireAuth4, async (req, res) => {
     try {
       const teamId = String(req.params.teamId || "").trim();
       const userId = req.session.userId;
@@ -7804,7 +8154,7 @@ async function registerRoutes(app2) {
       return res.status(500).json({ message: error?.message || "Erro ao criar t\xF3pico" });
     }
   });
-  app2.get("/api/teams/:teamId/forum/topics/:topicId/replies", requireAuth3, async (req, res) => {
+  app2.get("/api/teams/:teamId/forum/topics/:topicId/replies", requireAuth4, async (req, res) => {
     try {
       const { teamId, topicId } = req.params;
       const userTeamId = (await storage.getUser(req.session.userId))?.teamId;
@@ -7827,7 +8177,7 @@ async function registerRoutes(app2) {
       return res.status(500).json({ message: "Erro ao buscar respostas" });
     }
   });
-  app2.post("/api/teams/:teamId/forum/topics/:topicId/replies", requireAuth3, async (req, res) => {
+  app2.post("/api/teams/:teamId/forum/topics/:topicId/replies", requireAuth4, async (req, res) => {
     try {
       const { teamId, topicId } = req.params;
       const userId = req.session.userId;
@@ -7848,7 +8198,7 @@ async function registerRoutes(app2) {
       return res.status(500).json({ message: error?.message || "Erro ao criar resposta" });
     }
   });
-  app2.post("/api/teams/:teamId/forum/topics/:topicId/like", requireAuth3, async (req, res) => {
+  app2.post("/api/teams/:teamId/forum/topics/:topicId/like", requireAuth4, async (req, res) => {
     try {
       const { teamId, topicId } = req.params;
       const userId = req.session.userId;
@@ -7866,7 +8216,7 @@ async function registerRoutes(app2) {
       return res.status(500).json({ message: "Erro ao curtir t\xF3pico" });
     }
   });
-  app2.post("/api/teams/:teamId/forum/replies/:replyId/like", requireAuth3, async (req, res) => {
+  app2.post("/api/teams/:teamId/forum/replies/:replyId/like", requireAuth4, async (req, res) => {
     try {
       const { teamId, replyId } = req.params;
       const userId = req.session.userId;
@@ -7934,7 +8284,7 @@ async function registerRoutes(app2) {
       res.status(500).json({ message: "Erro ao buscar rumor" });
     }
   });
-  app2.post("/api/transfer-rumors", requireAuth3, async (req, res) => {
+  app2.post("/api/transfer-rumors", requireAuth4, async (req, res) => {
     try {
       const userId = req.session.userId;
       const user = await storage.getUser(userId);
@@ -7969,7 +8319,7 @@ async function registerRoutes(app2) {
       res.status(500).json({ message: "Erro ao criar negocia\xE7\xE3o" });
     }
   });
-  app2.patch("/api/transfer-rumors/:id", requireAuth3, async (req, res) => {
+  app2.patch("/api/transfer-rumors/:id", requireAuth4, async (req, res) => {
     try {
       const userId = req.session.userId;
       const user = await storage.getUser(userId);
@@ -8003,7 +8353,7 @@ async function registerRoutes(app2) {
       res.status(500).json({ message: "Erro ao atualizar negocia\xE7\xE3o" });
     }
   });
-  app2.delete("/api/transfer-rumors/:id", requireAuth3, async (req, res) => {
+  app2.delete("/api/transfer-rumors/:id", requireAuth4, async (req, res) => {
     try {
       const userId = req.session.userId;
       const user = await storage.getUser(userId);
@@ -8024,7 +8374,7 @@ async function registerRoutes(app2) {
       res.status(500).json({ message: "Erro ao excluir negocia\xE7\xE3o" });
     }
   });
-  app2.post("/api/transfer-rumors/:id/vote", requireAuth3, async (req, res) => {
+  app2.post("/api/transfer-rumors/:id/vote", requireAuth4, async (req, res) => {
     try {
       const rumorId = req.params.id;
       const { side, vote } = req.body ?? {};
@@ -8064,7 +8414,7 @@ async function registerRoutes(app2) {
       res.status(500).json({ message: "Erro ao listar coment\xE1rios" });
     }
   });
-  app2.post("/api/transfer-rumors/:id/comments", requireAuth3, async (req, res) => {
+  app2.post("/api/transfer-rumors/:id/comments", requireAuth4, async (req, res) => {
     try {
       const { content } = req.body ?? {};
       if (!content || typeof content !== "string" || !content.trim()) {
@@ -8077,7 +8427,7 @@ async function registerRoutes(app2) {
       res.status(500).json({ message: "Erro ao criar coment\xE1rio" });
     }
   });
-  app2.post("/api/transfers/:id/vote", requireAuth3, async (req, res) => {
+  app2.post("/api/transfers/:id/vote", requireAuth4, async (req, res) => {
     try {
       const transferId = req.params.id;
       const { side, vote } = req.body ?? {};
@@ -8145,7 +8495,7 @@ async function registerRoutes(app2) {
       return res.status(500).json({ message: "Erro ao buscar set" });
     }
   });
-  app2.post("/api/games/attempts/start", requireAuth3, async (req, res) => {
+  app2.post("/api/games/attempts/start", requireAuth4, async (req, res) => {
     const { setSlug } = req.body ?? {};
     const slug = String(setSlug || "").trim();
     if (!slug) return res.status(400).json({ message: "setSlug \xE9 obrigat\xF3rio" });
@@ -8159,7 +8509,7 @@ async function registerRoutes(app2) {
       return res.status(500).json({ message: error?.message ?? "Erro ao iniciar tentativa" });
     }
   });
-  app2.get("/api/games/attempts/:id", requireAuth3, async (req, res) => {
+  app2.get("/api/games/attempts/:id", requireAuth4, async (req, res) => {
     const attemptId = String(req.params.id || "").trim();
     if (!attemptId) return res.status(400).json({ message: "id inv\xE1lido" });
     try {
@@ -8173,7 +8523,7 @@ async function registerRoutes(app2) {
       return res.status(500).json({ message: "Erro ao buscar tentativa" });
     }
   });
-  app2.post("/api/games/attempts/:id/guess", requireAuth3, async (req, res) => {
+  app2.post("/api/games/attempts/:id/guess", requireAuth4, async (req, res) => {
     const attemptId = String(req.params.id || "").trim();
     const { text: text2 } = req.body ?? {};
     const guessText = typeof text2 === "string" ? text2.trim() : "";
@@ -8189,7 +8539,7 @@ async function registerRoutes(app2) {
       return res.status(500).json({ message: error?.message ?? "Erro ao processar palpite" });
     }
   });
-  app2.post("/api/games/attempts/:id/reset", requireAuth3, async (req, res) => {
+  app2.post("/api/games/attempts/:id/reset", requireAuth4, async (req, res) => {
     const attemptId = String(req.params.id || "").trim();
     if (!attemptId) return res.status(400).json({ message: "id inv\xE1lido" });
     try {
@@ -8203,7 +8553,7 @@ async function registerRoutes(app2) {
       return res.status(500).json({ message: "Erro ao reiniciar" });
     }
   });
-  app2.post("/api/games/attempts/:id/abandon", requireAuth3, async (req, res) => {
+  app2.post("/api/games/attempts/:id/abandon", requireAuth4, async (req, res) => {
     const attemptId = String(req.params.id || "").trim();
     if (!attemptId) return res.status(400).json({ message: "id inv\xE1lido" });
     try {
@@ -8217,7 +8567,7 @@ async function registerRoutes(app2) {
       return res.status(500).json({ message: "Erro ao desistir" });
     }
   });
-  app2.get("/api/games/player-of-the-day", requireAuth3, async (req, res) => {
+  app2.get("/api/games/player-of-the-day", requireAuth4, async (req, res) => {
     try {
       const userId = req.session.userId;
       const user = await storage.getUser(userId);
@@ -8231,7 +8581,7 @@ async function registerRoutes(app2) {
       return res.status(500).json({ message: "Erro ao buscar jogador do dia" });
     }
   });
-  app2.get("/api/games/players/search", requireAuth3, async (req, res) => {
+  app2.get("/api/games/players/search", requireAuth4, async (req, res) => {
     try {
       const userId = req.session.userId;
       const user = await storage.getUser(userId);
@@ -8245,7 +8595,7 @@ async function registerRoutes(app2) {
       return res.status(500).json({ message: "Erro ao buscar jogadores" });
     }
   });
-  app2.post("/api/games/player-of-the-day/guess", requireAuth3, async (req, res) => {
+  app2.post("/api/games/player-of-the-day/guess", requireAuth4, async (req, res) => {
     try {
       const userId = req.session.userId;
       const user = await storage.getUser(userId);
