@@ -31,6 +31,7 @@ interface ProjectedRow {
   teamId: string;
   teamName: string;
   teamShortName: string;
+  logoUrl: string | null;
   position: number;
   originalPosition: number;
   positionChange: number;
@@ -153,6 +154,7 @@ export function SimulacaoTab({ userTeamId }: SimulacaoTabProps) {
         teamId: string;
         teamName: string;
         teamShortName: string;
+        logoUrl: string | null;
         points: number;
         played: number;
         wins: number;
@@ -169,6 +171,7 @@ export function SimulacaoTab({ userTeamId }: SimulacaoTabProps) {
         teamId: row.teamId,
         teamName: row.team.name,
         teamShortName: row.team.shortName,
+        logoUrl: row.team.logoUrl ?? null,
         points: row.points,
         played: row.played,
         wins: row.wins,
@@ -240,6 +243,15 @@ export function SimulacaoTab({ userTeamId }: SimulacaoTabProps) {
   };
 
   const handleReset = () => setSimScores({});
+
+  // Build a teamId → logoUrl lookup from standings (covers UUID-ID teams)
+  const teamLogoMap = useMemo(() => {
+    const m: Record<string, string | null> = {};
+    for (const row of currentStandings) {
+      m[row.teamId] = row.team.logoUrl ?? null;
+    }
+    return m;
+  }, [currentStandings]);
 
   const isLoading = loadingStandings || loadingFixtures;
 
@@ -331,7 +343,7 @@ export function SimulacaoTab({ userTeamId }: SimulacaoTabProps) {
                           {fixture.homeTeamName}
                         </span>
                         <img
-                          src={getTeamCrest(fixture.homeTeamId)}
+                          src={teamLogoMap[fixture.homeTeamId] || getTeamCrest(fixture.homeTeamId)}
                           alt=""
                           className="h-7 w-7 sm:h-8 sm:w-8 object-contain shrink-0"
                           onError={(e) => {
@@ -358,7 +370,7 @@ export function SimulacaoTab({ userTeamId }: SimulacaoTabProps) {
                       {/* Away team */}
                       <div className="flex items-center gap-1.5 sm:gap-2 flex-1 min-w-0">
                         <img
-                          src={getTeamCrest(fixture.awayTeamId)}
+                          src={teamLogoMap[fixture.awayTeamId] || getTeamCrest(fixture.awayTeamId)}
                           alt=""
                           className="h-7 w-7 sm:h-8 sm:w-8 object-contain shrink-0"
                           onError={(e) => {
@@ -459,7 +471,7 @@ export function SimulacaoTab({ userTeamId }: SimulacaoTabProps) {
                       <td className="py-3 px-2">
                         <div className="flex items-center gap-2 min-w-0">
                           <img
-                            src={getTeamCrest(row.teamId)}
+                            src={row.logoUrl || getTeamCrest(row.teamId)}
                             alt=""
                             className="h-6 w-6 sm:h-7 sm:w-7 object-contain shrink-0"
                             onError={(e) => {

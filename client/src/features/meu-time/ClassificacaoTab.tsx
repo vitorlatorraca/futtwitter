@@ -180,7 +180,7 @@ export function ClassificacaoTab({ userTeamId }: ClassificacaoTabProps) {
                   <td className="py-3.5 px-3 sm:px-4">
                     <div className="flex items-center gap-3 min-w-0">
                       <img
-                        src={getTeamCrest(row.team.id)}
+                        src={row.team.logoUrl || getTeamCrest(row.team.id)}
                         alt=""
                         className="h-8 w-8 object-contain shrink-0"
                         onError={(e) => {
