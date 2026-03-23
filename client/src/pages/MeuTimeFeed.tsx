@@ -6,7 +6,7 @@ import { AppShell } from "@/components/ui/app-shell";
 import { Skeleton } from "@/components/ui/skeleton";
 import { EmptyState } from "@/components/ui/empty-state";
 import { LineupSection, resolvePlayerPhoto } from "@/features/my-team-v2";
-import { ElencoTab, ClassificacaoTab, SimulacaoTab, MatchRatingPanel, RatingsDashboard, ResumoTab } from "@/features/meu-time";
+import { ElencoTab, ClassificacaoTab, SimulacaoTab, MatchRatingPanel, RatingsDashboard, ResumoTab, TorcidaTab } from "@/features/meu-time";
 import { getTeamCrest } from "@/lib/teamCrests";
 import type { Player, Match } from "@shared/schema";
 
@@ -23,6 +23,7 @@ interface ExtendedTeamData {
 
 const TABS = [
   { value: "resumo",       label: "Resumo" },
+  { value: "torcida",      label: "Torcida" },
   { value: "escalacao",    label: "Escalação" },
   { value: "ultima",       label: "Última Partida" },
   { value: "notas",        label: "Notas" },
@@ -194,6 +195,12 @@ export default function MeuTimeFeed() {
           {activeTab === "resumo" && (
             <div className="p-4">
               <ResumoTab teamId={teamId} teamName={teamName} />
+            </div>
+          )}
+
+          {activeTab === "torcida" && (
+            <div className="p-4">
+              <TorcidaTab teamId={teamId} teamName={teamName} />
             </div>
           )}
 

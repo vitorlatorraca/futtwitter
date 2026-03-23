@@ -125,10 +125,9 @@ export function PitchBoard({
       if (target.releasePointerCapture) target.releasePointerCapture(e.pointerId);
 
       if (draggingId) {
-        setLocalSlots((prev) => {
-          onPositionsChange?.(prev.map((s) => ({ slotIndex: s.slotIndex, x: s.x, y: s.y })));
-          return prev;
-        });
+        // Call onPositionsChange outside of setState — calling setState inside
+        // a setState updater causes "Maximum update depth exceeded"
+        onPositionsChange?.(localSlots.map((s) => ({ slotIndex: s.slotIndex, x: s.x, y: s.y })));
         setDraggingId(null);
       } else if (pointerStartRef.current && onSlotPlayerChange) {
         const { slotId } = pointerStartRef.current;

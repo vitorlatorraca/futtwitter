@@ -2,6 +2,7 @@ export { TeamBadge } from '@/components/team/TeamBadge';
 export { TeamHeaderCard } from './components/TeamHeaderCard';
 export { TeamTabs } from './components/TeamTabs';
 export { ResumoTab } from './ResumoTab';
+export { TorcidaTab } from './TorcidaTab';
 export { ClassificacaoTab } from './ClassificacaoTab';
 export { SimulacaoTab } from './SimulacaoTab';
 export { ElencoTab } from './ElencoTab';
