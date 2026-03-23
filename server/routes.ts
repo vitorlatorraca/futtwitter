@@ -1559,113 +1559,115 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const { teamId } = req.params;
       const userId = (req as any).session?.userId as string | undefined;
 
-      // 1. Last completed match
-      const [lastMatch] = await db
-        .select()
-        .from(matchesTable)
-        .where(and(eq(matchesTable.teamId, teamId), eq(matchesTable.status, 'COMPLETED')))
-        .orderBy(desc(matchesTable.matchDate))
-        .limit(1);
-
+      // 1. Last completed match — raw SQL to avoid ORM schema drift
+      const matchRows = await db.execute(sql`
+        SELECT id, opponent, opponent_logo_url, match_date, team_score, opponent_score,
+               is_home_match, competition, championship_round
+        FROM matches
+        WHERE team_id = ${teamId} AND status = 'COMPLETED'
+        ORDER BY match_date DESC
+        LIMIT 1
+      `);
+      const lastMatch = (matchRows as any).rows?.[0] ?? matchRows[0] ?? null;
       if (!lastMatch) return res.json({ match: null, players: [] });
 
-      const matchId = lastMatch.id;
+      const matchId = lastMatch.id as string;
 
-      // 2. Players for this match (matchPlayers) joined with player info
-      const mpRows = await db
-        .select({
-          playerId: matchPlayers.playerId,
-          wasStarter: matchPlayers.wasStarter,
-          minutesPlayed: matchPlayers.minutesPlayed,
-          positionCode: sql<string | null>`null`,
-          name: players.name,
-          knownName: players.knownName,
-          shirtNumber: players.shirtNumber,
-          position: players.position,
-          primaryPosition: players.primaryPosition,
-          sector: players.sector,
-          photoUrl: players.photoUrl,
-        })
-        .from(matchPlayers)
-        .innerJoin(players, eq(matchPlayers.playerId, players.id))
-        .where(eq(matchPlayers.matchId, matchId));
+      // 2. Players from this match — raw SQL
+      const mpResult = await db.execute(sql`
+        SELECT
+          mp.player_id   AS "playerId",
+          mp.was_starter AS "wasStarter",
+          mp.minutes_played AS "minutesPlayed",
+          p.name,
+          p.known_name   AS "knownName",
+          p.shirt_number AS "shirtNumber",
+          p.position,
+          p.primary_position AS "primaryPosition",
+          p.sector,
+          p.photo_url    AS "photoUrl"
+        FROM match_players mp
+        INNER JOIN players p ON p.id = mp.player_id
+        WHERE mp.match_id = ${matchId}
+      `);
+      let playerList: any[] = (mpResult as any).rows ?? (mpResult as any) ?? [];
 
-      // 3. If no matchPlayers data, fall back to all team players
-      let playerList = mpRows;
-      if (playerList.length === 0) {
-        const allPlayers = await db
-          .select({
-            playerId: players.id,
-            wasStarter: sql<boolean>`true`,
-            minutesPlayed: sql<number | null>`null`,
-            positionCode: sql<string | null>`null`,
-            name: players.name,
-            knownName: players.knownName,
-            shirtNumber: players.shirtNumber,
-            position: players.position,
-            primaryPosition: players.primaryPosition,
-            sector: players.sector,
-            photoUrl: players.photoUrl,
-          })
-          .from(players)
-          .where(eq(players.teamId, teamId));
-        playerList = allPlayers as typeof playerList;
+      // 3. Fallback to full squad if no match_players
+      if (!Array.isArray(playerList) || playerList.length === 0) {
+        const sqResult = await db.execute(sql`
+          SELECT
+            id            AS "playerId",
+            true          AS "wasStarter",
+            NULL::int     AS "minutesPlayed",
+            name,
+            known_name    AS "knownName",
+            shirt_number  AS "shirtNumber",
+            position,
+            primary_position AS "primaryPosition",
+            sector,
+            photo_url     AS "photoUrl"
+          FROM players
+          WHERE team_id = ${teamId}
+        `);
+        playerList = (sqResult as any).rows ?? (sqResult as any) ?? [];
       }
 
-      // 4. Sector sort order
+      // 4. Sort GK → DEF → MID → FWD
       const SECTOR_ORDER: Record<string, number> = { GK: 0, DEF: 1, MID: 2, FWD: 3 };
-      const getSectorOrder = (p: typeof playerList[0]) => {
-        const s = p.sector?.toUpperCase() ?? '';
+      const getSectorOrder = (p: any) => {
+        const s = (p.sector ?? '').toUpperCase();
         if (SECTOR_ORDER[s] !== undefined) return SECTOR_ORDER[s];
         const pos = (p.primaryPosition ?? p.position ?? '').toUpperCase();
-        if (pos.includes('GK') || pos === 'GOALKEEPER') return 0;
-        if (pos.includes('CB') || pos.includes('LB') || pos.includes('RB') || pos.includes('DEF')) return 1;
-        if (pos.includes('CM') || pos.includes('DM') || pos.includes('AM') || pos.includes('MID')) return 2;
+        if (pos === 'GK' || pos.includes('GOAL')) return 0;
+        if (pos.includes('DEF') || pos.includes('CB') || pos.includes('LB') || pos.includes('RB') || pos.includes('WB')) return 1;
+        if (pos.includes('MID') || pos.includes('CM') || pos.includes('DM') || pos.includes('AM')) return 2;
         return 3;
       };
-
       const sorted = [...playerList].sort((a, b) => {
-        const so = getSectorOrder(a) - getSectorOrder(b);
-        if (so !== 0) return so;
-        return (a.shirtNumber ?? 99) - (b.shirtNumber ?? 99);
+        const diff = getSectorOrder(a) - getSectorOrder(b);
+        return diff !== 0 ? diff : ((a.shirtNumber ?? 99) - (b.shirtNumber ?? 99));
       });
 
-      // 5. Community aggregate ratings for this match
-      const aggRows = await db
-        .select({
-          playerId: playerRatings.playerId,
-          avgRating: avg(playerRatings.rating),
-          voteCount: count(playerRatings.id),
-        })
-        .from(playerRatings)
-        .where(eq(playerRatings.matchId, matchId))
-        .groupBy(playerRatings.playerId);
-
+      // 5. Community avg ratings
+      const aggResult = await db.execute(sql`
+        SELECT player_id AS "playerId",
+               ROUND(AVG(rating)::numeric, 2) AS "avgRating",
+               COUNT(id) AS "voteCount"
+        FROM player_ratings
+        WHERE match_id = ${matchId}
+        GROUP BY player_id
+      `);
+      const aggRows: any[] = (aggResult as any).rows ?? (aggResult as any) ?? [];
       const aggMap: Record<string, { avgRating: number; voteCount: number }> = {};
       for (const r of aggRows) {
         aggMap[r.playerId] = { avgRating: Number(r.avgRating ?? 0), voteCount: Number(r.voteCount ?? 0) };
       }
 
-      // 6. User's own ratings for this match
-      const myRatings = userId
-        ? await storage.getUserRatingsForMatch(userId, matchId)
-        : [];
+      // 6. User's own ratings
       const myMap: Record<string, number> = {};
-      for (const r of myRatings) myMap[r.playerId] = r.rating;
+      if (userId) {
+        const myResult = await db.execute(sql`
+          SELECT player_id AS "playerId", rating
+          FROM player_ratings
+          WHERE user_id = ${userId} AND match_id = ${matchId}
+        `);
+        const myRows: any[] = (myResult as any).rows ?? (myResult as any) ?? [];
+        for (const r of myRows) myMap[r.playerId] = r.rating;
+      }
 
       res.json({
         match: {
           id: matchId,
           opponent: lastMatch.opponent,
-          opponentLogoUrl: lastMatch.opponentLogoUrl ?? null,
-          matchDate: lastMatch.matchDate,
-          teamScore: lastMatch.teamScore,
-          opponentScore: lastMatch.opponentScore,
-          isHomeMatch: lastMatch.isHomeMatch,
+          opponentLogoUrl: lastMatch.opponent_logo_url ?? null,
+          matchDate: lastMatch.match_date,
+          teamScore: lastMatch.team_score,
+          opponentScore: lastMatch.opponent_score,
+          isHomeMatch: lastMatch.is_home_match,
           competition: lastMatch.competition ?? null,
-          championshipRound: lastMatch.championshipRound ?? null,
+          championshipRound: lastMatch.championship_round ?? null,
         },
-        players: sorted.map((p) => ({
+        players: sorted.map((p: any) => ({
           playerId: p.playerId,
           name: p.name,
           knownName: p.knownName ?? null,
@@ -1682,7 +1684,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       });
     } catch (error) {
       console.error('last-match-for-rating error:', error);
-      res.status(500).json({ message: 'Erro ao buscar partida para avaliação' });
+      res.status(500).json({ message: 'Erro ao buscar partida para avaliação', detail: String(error) });
     }
   });
 

@@ -4723,7 +4723,7 @@ import path2 from "path";
 import multer from "multer";
 import { randomBytes as randomBytes2 } from "crypto";
 import { fileURLToPath as fileURLToPath2 } from "url";
-import { eq as eq13, asc as asc2, ilike as ilike5, or as or7, and as and12, isNull, desc as desc9, sql as sql10, avg, count, gte, inArray as inArray8 } from "drizzle-orm";
+import { eq as eq13, asc as asc2, ilike as ilike5, or as or7, and as and12, isNull, desc as desc9, sql as sql10, gte, inArray as inArray8 } from "drizzle-orm";
 import rateLimit from "express-rate-limit";
 import { z as z2 } from "zod";
 
@@ -7234,77 +7234,100 @@ async function registerRoutes(app2) {
     try {
       const { teamId } = req.params;
       const userId = req.session?.userId;
-      const [lastMatch] = await db.select().from(matches).where(and12(eq13(matches.teamId, teamId), eq13(matches.status, "COMPLETED"))).orderBy(desc9(matches.matchDate)).limit(1);
+      const matchRows = await db.execute(sql10`
+        SELECT id, opponent, opponent_logo_url, match_date, team_score, opponent_score,
+               is_home_match, competition, championship_round
+        FROM matches
+        WHERE team_id = ${teamId} AND status = 'COMPLETED'
+        ORDER BY match_date DESC
+        LIMIT 1
+      `);
+      const lastMatch = matchRows.rows?.[0] ?? matchRows[0] ?? null;
       if (!lastMatch) return res.json({ match: null, players: [] });
       const matchId = lastMatch.id;
-      const mpRows = await db.select({
-        playerId: matchPlayers.playerId,
-        wasStarter: matchPlayers.wasStarter,
-        minutesPlayed: matchPlayers.minutesPlayed,
-        positionCode: sql10`null`,
-        name: players.name,
-        knownName: players.knownName,
-        shirtNumber: players.shirtNumber,
-        position: players.position,
-        primaryPosition: players.primaryPosition,
-        sector: players.sector,
-        photoUrl: players.photoUrl
-      }).from(matchPlayers).innerJoin(players, eq13(matchPlayers.playerId, players.id)).where(eq13(matchPlayers.matchId, matchId));
-      let playerList = mpRows;
-      if (playerList.length === 0) {
-        const allPlayers = await db.select({
-          playerId: players.id,
-          wasStarter: sql10`true`,
-          minutesPlayed: sql10`null`,
-          positionCode: sql10`null`,
-          name: players.name,
-          knownName: players.knownName,
-          shirtNumber: players.shirtNumber,
-          position: players.position,
-          primaryPosition: players.primaryPosition,
-          sector: players.sector,
-          photoUrl: players.photoUrl
-        }).from(players).where(eq13(players.teamId, teamId));
-        playerList = allPlayers;
+      const mpResult = await db.execute(sql10`
+        SELECT
+          mp.player_id   AS "playerId",
+          mp.was_starter AS "wasStarter",
+          mp.minutes_played AS "minutesPlayed",
+          p.name,
+          p.known_name   AS "knownName",
+          p.shirt_number AS "shirtNumber",
+          p.position,
+          p.primary_position AS "primaryPosition",
+          p.sector,
+          p.photo_url    AS "photoUrl"
+        FROM match_players mp
+        INNER JOIN players p ON p.id = mp.player_id
+        WHERE mp.match_id = ${matchId}
+      `);
+      let playerList = mpResult.rows ?? mpResult ?? [];
+      if (!Array.isArray(playerList) || playerList.length === 0) {
+        const sqResult = await db.execute(sql10`
+          SELECT
+            id            AS "playerId",
+            true          AS "wasStarter",
+            NULL::int     AS "minutesPlayed",
+            name,
+            known_name    AS "knownName",
+            shirt_number  AS "shirtNumber",
+            position,
+            primary_position AS "primaryPosition",
+            sector,
+            photo_url     AS "photoUrl"
+          FROM players
+          WHERE team_id = ${teamId}
+        `);
+        playerList = sqResult.rows ?? sqResult ?? [];
       }
       const SECTOR_ORDER = { GK: 0, DEF: 1, MID: 2, FWD: 3 };
       const getSectorOrder = (p) => {
-        const s = p.sector?.toUpperCase() ?? "";
+        const s = (p.sector ?? "").toUpperCase();
         if (SECTOR_ORDER[s] !== void 0) return SECTOR_ORDER[s];
         const pos = (p.primaryPosition ?? p.position ?? "").toUpperCase();
-        if (pos.includes("GK") || pos === "GOALKEEPER") return 0;
-        if (pos.includes("CB") || pos.includes("LB") || pos.includes("RB") || pos.includes("DEF")) return 1;
-        if (pos.includes("CM") || pos.includes("DM") || pos.includes("AM") || pos.includes("MID")) return 2;
+        if (pos === "GK" || pos.includes("GOAL")) return 0;
+        if (pos.includes("DEF") || pos.includes("CB") || pos.includes("LB") || pos.includes("RB") || pos.includes("WB")) return 1;
+        if (pos.includes("MID") || pos.includes("CM") || pos.includes("DM") || pos.includes("AM")) return 2;
         return 3;
       };
       const sorted = [...playerList].sort((a, b) => {
-        const so = getSectorOrder(a) - getSectorOrder(b);
-        if (so !== 0) return so;
-        return (a.shirtNumber ?? 99) - (b.shirtNumber ?? 99);
+        const diff = getSectorOrder(a) - getSectorOrder(b);
+        return diff !== 0 ? diff : (a.shirtNumber ?? 99) - (b.shirtNumber ?? 99);
       });
-      const aggRows = await db.select({
-        playerId: playerRatings.playerId,
-        avgRating: avg(playerRatings.rating),
-        voteCount: count(playerRatings.id)
-      }).from(playerRatings).where(eq13(playerRatings.matchId, matchId)).groupBy(playerRatings.playerId);
+      const aggResult = await db.execute(sql10`
+        SELECT player_id AS "playerId",
+               ROUND(AVG(rating)::numeric, 2) AS "avgRating",
+               COUNT(id) AS "voteCount"
+        FROM player_ratings
+        WHERE match_id = ${matchId}
+        GROUP BY player_id
+      `);
+      const aggRows = aggResult.rows ?? aggResult ?? [];
       const aggMap = {};
       for (const r of aggRows) {
         aggMap[r.playerId] = { avgRating: Number(r.avgRating ?? 0), voteCount: Number(r.voteCount ?? 0) };
       }
-      const myRatings = userId ? await storage.getUserRatingsForMatch(userId, matchId) : [];
       const myMap = {};
-      for (const r of myRatings) myMap[r.playerId] = r.rating;
+      if (userId) {
+        const myResult = await db.execute(sql10`
+          SELECT player_id AS "playerId", rating
+          FROM player_ratings
+          WHERE user_id = ${userId} AND match_id = ${matchId}
+        `);
+        const myRows = myResult.rows ?? myResult ?? [];
+        for (const r of myRows) myMap[r.playerId] = r.rating;
+      }
       res.json({
         match: {
           id: matchId,
           opponent: lastMatch.opponent,
-          opponentLogoUrl: lastMatch.opponentLogoUrl ?? null,
-          matchDate: lastMatch.matchDate,
-          teamScore: lastMatch.teamScore,
-          opponentScore: lastMatch.opponentScore,
-          isHomeMatch: lastMatch.isHomeMatch,
+          opponentLogoUrl: lastMatch.opponent_logo_url ?? null,
+          matchDate: lastMatch.match_date,
+          teamScore: lastMatch.team_score,
+          opponentScore: lastMatch.opponent_score,
+          isHomeMatch: lastMatch.is_home_match,
           competition: lastMatch.competition ?? null,
-          championshipRound: lastMatch.championshipRound ?? null
+          championshipRound: lastMatch.championship_round ?? null
         },
         players: sorted.map((p) => ({
           playerId: p.playerId,
@@ -7323,7 +7346,7 @@ async function registerRoutes(app2) {
       });
     } catch (error) {
       console.error("last-match-for-rating error:", error);
-      res.status(500).json({ message: "Erro ao buscar partida para avalia\xE7\xE3o" });
+      res.status(500).json({ message: "Erro ao buscar partida para avalia\xE7\xE3o", detail: String(error) });
     }
   });
   app2.get("/api/teams/:teamId/ratings/analytics", requireAuth4, async (req, res) => {
