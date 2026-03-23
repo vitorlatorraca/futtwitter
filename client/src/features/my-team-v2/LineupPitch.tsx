@@ -86,43 +86,79 @@ export function LineupPitch({
       <div
         className={cn(
           'relative w-full min-h-[280px] aspect-[16/10] sm:aspect-[4/3] max-h-full rounded-xl overflow-hidden',
-          'bg-surface-card',
-          'border border-border shadow-card',
+          'border border-white/5 shadow-card',
           className
         )}
+        style={{
+          background: 'linear-gradient(180deg, #0c2416 0%, #0e2b1a 40%, #0e2b1a 60%, #0c2416 100%)',
+        }}
       >
+        {/* Listras de gramado (faixas alternadas) */}
+        <div className="absolute inset-0 pointer-events-none" aria-hidden>
+          {[0,1,2,3,4,5,6,7].map(i => (
+            <div
+              key={i}
+              className="absolute w-full"
+              style={{
+                top: `${i * 12.5}%`,
+                height: '12.5%',
+                background: i % 2 === 0 ? 'rgba(255,255,255,0.015)' : 'transparent',
+              }}
+            />
+          ))}
+        </div>
+
+        {/* Linhas do campo — orientação vertical (portrait) */}
+        <svg className="absolute inset-0 w-full h-full pointer-events-none" aria-hidden>
+          {/* Borda do campo */}
+          <rect x="6%" y="2%" width="88%" height="96%" fill="none" stroke="rgba(255,255,255,0.22)" strokeWidth="1.5" rx="2" />
+          {/* Linha de meio campo */}
+          <line x1="6%" y1="50%" x2="94%" y2="50%" stroke="rgba(255,255,255,0.22)" strokeWidth="1.5" />
+          {/* Círculo central */}
+          <circle cx="50%" cy="50%" r="11%" fill="none" stroke="rgba(255,255,255,0.18)" strokeWidth="1.4" />
+          {/* Ponto central */}
+          <circle cx="50%" cy="50%" r="1%" fill="rgba(255,255,255,0.3)" />
+          {/* Área grande — topo */}
+          <rect x="22%" y="2%" width="56%" height="18%" fill="none" stroke="rgba(255,255,255,0.16)" strokeWidth="1.2" />
+          {/* Área pequena — topo */}
+          <rect x="36%" y="2%" width="28%" height="7%" fill="none" stroke="rgba(255,255,255,0.12)" strokeWidth="1" />
+          {/* Área grande — base */}
+          <rect x="22%" y="80%" width="56%" height="18%" fill="none" stroke="rgba(255,255,255,0.16)" strokeWidth="1.2" />
+          {/* Área pequena — base */}
+          <rect x="36%" y="91%" width="28%" height="7%" fill="none" stroke="rgba(255,255,255,0.12)" strokeWidth="1" />
+          {/* Ponto de pênalti — topo */}
+          <circle cx="50%" cy="15%" r="0.9%" fill="rgba(255,255,255,0.28)" />
+          {/* Ponto de pênalti — base */}
+          <circle cx="50%" cy="85%" r="0.9%" fill="rgba(255,255,255,0.28)" />
+          {/* Cantos — top-left */}
+          <path d="M 6% 7% Q 10% 2% 14% 2%" fill="none" stroke="rgba(255,255,255,0.12)" strokeWidth="1" />
+          {/* Cantos — top-right */}
+          <path d="M 94% 7% Q 90% 2% 86% 2%" fill="none" stroke="rgba(255,255,255,0.12)" strokeWidth="1" />
+          {/* Cantos — bot-left */}
+          <path d="M 6% 93% Q 10% 98% 14% 98%" fill="none" stroke="rgba(255,255,255,0.12)" strokeWidth="1" />
+          {/* Cantos — bot-right */}
+          <path d="M 94% 93% Q 90% 98% 86% 98%" fill="none" stroke="rgba(255,255,255,0.12)" strokeWidth="1" />
+        </svg>
+
         {/* Watermark escudo */}
         <div
-          className="absolute inset-0 flex items-center justify-center pointer-events-none opacity-[0.06]"
+          className="absolute inset-0 flex items-center justify-center pointer-events-none opacity-[0.07]"
           aria-hidden
         >
           {crestUrl && (
             <img
               src={crestUrl}
               alt=""
-              className="w-48 h-48 object-contain"
-              onError={(e) => {
-                (e.target as HTMLImageElement).style.display = 'none';
-              }}
+              className="w-40 h-40 object-contain"
+              onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }}
             />
           )}
         </div>
 
-        {/* Linhas do campo */}
-        <svg className="absolute inset-0 w-full h-full pointer-events-none" aria-hidden>
-          <circle cx="50%" cy="50%" r="12%" fill="none" stroke="rgba(255,255,255,0.12)" strokeWidth="1.5" />
-          <line x1="0%" y1="50%" x2="100%" y2="50%" stroke="rgba(255,255,255,0.12)" strokeWidth="1.5" />
-          <rect x="0%" y="55%" width="18%" height="45%" fill="none" stroke="rgba(255,255,255,0.08)" strokeWidth="1" />
-          <rect x="82%" y="55%" width="18%" height="45%" fill="none" stroke="rgba(255,255,255,0.08)" strokeWidth="1" />
-        </svg>
-
         {/* Vinheta */}
         <div
           className="absolute inset-0 pointer-events-none"
-          style={{
-            background:
-              'radial-gradient(ellipse at center, transparent 40%, rgba(0,0,0,0.15) 100%)',
-          }}
+          style={{ background: 'radial-gradient(ellipse at center, transparent 50%, rgba(0,0,0,0.25) 100%)' }}
           aria-hidden
         />
 

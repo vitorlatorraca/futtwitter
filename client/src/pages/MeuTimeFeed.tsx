@@ -6,7 +6,7 @@ import { AppShell } from "@/components/ui/app-shell";
 import { Skeleton } from "@/components/ui/skeleton";
 import { EmptyState } from "@/components/ui/empty-state";
 import { LineupSection, resolvePlayerPhoto } from "@/features/my-team-v2";
-import { ElencoTab, ClassificacaoTab, SimulacaoTab, MatchRatingPanel, RatingsDashboard } from "@/features/meu-time";
+import { ElencoTab, ClassificacaoTab, SimulacaoTab, MatchRatingPanel, RatingsDashboard, ResumoTab } from "@/features/meu-time";
 import { getTeamCrest } from "@/lib/teamCrests";
 import type { Player, Match } from "@shared/schema";
 
@@ -22,6 +22,7 @@ interface ExtendedTeamData {
 // ─── Tabs ───────────────────────────────────────────────────────────────────
 
 const TABS = [
+  { value: "resumo",       label: "Resumo" },
   { value: "escalacao",    label: "Escalação" },
   { value: "ultima",       label: "Última Partida" },
   { value: "notas",        label: "Notas" },
@@ -71,7 +72,7 @@ function EscalacaoTab({ teamId, players }: { teamId: string; players: Player[] }
 
 export default function MeuTimeFeed() {
   const { user, isLoading: authLoading } = useAuth();
-  const [activeTab, setActiveTab] = useState<TabValue>("escalacao");
+  const [activeTab, setActiveTab] = useState<TabValue>("resumo");
 
   const teamId = user?.teamId ?? null;
 
@@ -190,6 +191,12 @@ export default function MeuTimeFeed() {
         </div>
       ) : (
         <>
+          {activeTab === "resumo" && (
+            <div className="p-4">
+              <ResumoTab teamId={teamId} teamName={teamName} />
+            </div>
+          )}
+
           {activeTab === "escalacao" && (
             <EscalacaoTab teamId={teamId} players={players} />
           )}
