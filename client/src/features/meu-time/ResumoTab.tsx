@@ -17,6 +17,8 @@ import {
   ChevronRight,
   Clock,
   Pin,
+  X,
+  HelpCircle,
 } from 'lucide-react';
 import { formatDistanceToNow } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
@@ -233,6 +235,57 @@ function Section({ title, icon, action, children }: {
   );
 }
 
+// ─── HowToCard ─────────────────────────────────────────────────────────────────
+
+const HOW_TO_ITEMS = [
+  { icon: '📋', tab: 'Resumo', desc: 'Notícias, debate do dia e tópicos da torcida.' },
+  { icon: '⚽', tab: 'Escalação', desc: 'Veja e arraste jogadores para montar a formação.' },
+  { icon: '⭐', tab: 'Última Partida', desc: 'Avalie cada jogador de 1 a 10 após o jogo.' },
+  { icon: '📊', tab: 'Notas', desc: 'Médias da torcida por mês, competição e jogador.' },
+  { icon: '👕', tab: 'Elenco', desc: 'Lista completa de jogadores com foto e posição.' },
+  { icon: '🏆', tab: 'Classificação', desc: 'Tabela atualizada do Brasileirão Série A 2026.' },
+  { icon: '🎮', tab: 'Simulação', desc: 'Simule os jogos restantes e veja como o time pode terminar.' },
+];
+
+function HowToCard() {
+  const [dismissed, setDismissed] = useState(() => {
+    try { return localStorage.getItem('futeapp_howto_dismissed') === '1'; } catch { return false; }
+  });
+
+  if (dismissed) return null;
+
+  return (
+    <div className="rounded-2xl border border-primary/20 bg-primary/5 overflow-hidden">
+      <div className="px-4 py-3 flex items-center gap-2 border-b border-primary/10">
+        <HelpCircle className="h-4 w-4 text-primary" />
+        <span className="text-sm font-bold text-foreground flex-1">Como usar o Meu Time</span>
+        <button
+          type="button"
+          onClick={() => {
+            try { localStorage.setItem('futeapp_howto_dismissed', '1'); } catch {}
+            setDismissed(true);
+          }}
+          className="text-foreground/30 hover:text-foreground/70 transition-colors p-0.5 rounded"
+          aria-label="Fechar"
+        >
+          <X className="h-4 w-4" />
+        </button>
+      </div>
+      <div className="divide-y divide-primary/10">
+        {HOW_TO_ITEMS.map(({ icon, tab, desc }) => (
+          <div key={tab} className="flex items-start gap-3 px-4 py-2.5">
+            <span className="text-base leading-none mt-0.5">{icon}</span>
+            <div className="min-w-0">
+              <span className="text-xs font-bold text-foreground">{tab}</span>
+              <span className="text-xs text-foreground-secondary"> — {desc}</span>
+            </div>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
 // ─── Main ──────────────────────────────────────────────────────────────────────
 
 interface ResumoTabProps {
@@ -291,6 +344,9 @@ export function ResumoTab({ teamId, teamName }: ResumoTabProps) {
 
   return (
     <div className="space-y-4 pb-6">
+
+      {/* ── Como usar ─────────────────────────────────────────────────────── */}
+      <HowToCard />
 
       {/* ── Notícias ──────────────────────────────────────────────────────── */}
       <Section
