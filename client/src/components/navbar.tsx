@@ -90,7 +90,6 @@ export function Navbar() {
                     {user.name.slice(0, 2).toUpperCase()}
                   </AvatarFallback>
                 </Avatar>
-                <span className="text-sm font-bold hidden lg:inline text-foreground">{user.name}</span>
                 <ChevronDown className="h-3.5 w-3.5 text-foreground-secondary" />
               </button>
             </DropdownMenuTrigger>
