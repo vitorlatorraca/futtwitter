@@ -3,11 +3,10 @@ import { useQuery } from '@tanstack/react-query';
 import { useAuth } from '@/lib/auth-context';
 import { useMyTeamOverview, overviewMatchesToTeamMatch } from '@/hooks/useMyTeamOverview';
 import { Skeleton } from '@/components/ui/skeleton';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { AppShell } from '@/components/ui/app-shell';
 import { EmptyState } from '@/components/ui/empty-state';
 import { NewsCard } from '@/components/news-card';
-import { getClubConfig, TeamTabs, ElencoTab, MatchRatingPanel, RatingsDashboard } from '@/features/meu-time';
+import { getClubConfig, ElencoTab, MatchRatingPanel, RatingsDashboard } from '@/features/meu-time';
 import { TransfersBoard } from '@/features/transfers';
 import {
   NextMatchHero,
@@ -33,7 +32,7 @@ import { useToast } from '@/hooks/use-toast';
 import { apiRequest, getApiUrl } from '@/lib/queryClient';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { Link, useLocation } from 'wouter';
-import { CalendarDays, ChevronRight, Loader2, Newspaper } from 'lucide-react';
+import { Loader2, Newspaper } from 'lucide-react';
 import type { Team, Player, Match, News } from '@shared/schema';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
@@ -547,128 +546,171 @@ export default function MeuTimePage() {
     );
   }
 
+  const MAIN_TABS = [
+    { value: 'escalacao', label: 'Escalação' },
+    { value: 'ultima', label: 'Última Partida' },
+    { value: 'notas', label: 'Notas' },
+    { value: 'elenco', label: 'Elenco' },
+    { value: 'classificacao', label: 'Classificação' },
+    { value: 'simulacao', label: 'Simulação' },
+  ];
+
+  const teamLogo = mergedTeam?.logoUrl ?? safeTeamData.team.logoUrl ?? null;
+  const teamName = mergedTeam?.name ?? safeTeamData.team.name ?? 'Meu Time';
+  const teamPosition = mergedTeam?.currentPosition ?? safeTeamData.team.currentPosition ?? null;
+
   return (
-    <AppShell mainClassName="py-4 sm:py-6 px-4 sm:px-6 min-h-screen">
-      <div className="max-w-[1600px] mx-auto">
-        {isTeamError ? (
-          <div className="rounded-xl border border-border bg-surface-card p-4 flex items-center justify-between gap-4 mb-4">
-            <div className="text-sm text-foreground-secondary">
-              Alguns dados do time não puderam ser carregados agora. O básico foi carregado e o resto continua funcionando.
-            </div>
-            <Button variant="outline" size="sm" onClick={() => refetchTeam()}>
+    <AppShell mainClassName="p-0">
+      {/* ── Sticky header ───────────────────────────────────────────────── */}
+      <div className="sticky top-0 z-20 bg-background/80 backdrop-blur-md border-b border-border">
+        {isTeamError && (
+          <div className="px-4 py-2 flex items-center justify-between gap-3 bg-amber-500/10 border-b border-amber-500/20">
+            <p className="text-xs text-amber-400">Alguns dados não carregaram.</p>
+            <button
+              type="button"
+              onClick={() => refetchTeam()}
+              className="text-xs font-semibold text-amber-400 underline underline-offset-2"
+            >
               Recarregar
-            </Button>
+            </button>
           </div>
-        ) : null}
+        )}
 
-        <Tabs value={activeTab} onValueChange={handleTabChange} className="space-y-4">
-          <TeamTabs
-            clubConfig={clubConfig}
-            currentPosition={mergedTeam?.currentPosition ?? safeTeamData?.team.currentPosition}
-          />
-
-          {/* ── Escalação ──────────────────────────────────────────────────── */}
-          <TabsContent value="escalacao" className="mt-4">
-            <LineupSection
-              players={rosterPlayers}
-              teamId={teamId!}
-              initialFormation={lineupInitial.formation}
-              initialSlots={lineupInitial.slots}
-              onSave={teamId ? async (formation, slots) => lineupMutation.mutateAsync({ formation, slots }) : undefined}
-              getPhotoUrl={(p) => p.photoUrl ?? resolvePlayerPhoto(p.name, p.photoUrl, teamId)}
-              heightClass="h-[calc(100vh-220px)] min-h-[520px]"
+        <div className="px-4 py-3 flex items-center gap-3">
+          {teamLogo ? (
+            <img
+              src={teamLogo}
+              alt=""
+              className="h-8 w-8 object-contain shrink-0"
+              onError={(e) => { (e.target as HTMLImageElement).src = '/assets/crests/default.png'; }}
             />
-          </TabsContent>
+          ) : (
+            <div className="h-8 w-8 shrink-0 rounded-full bg-surface-elevated" />
+          )}
+          <h1 className="text-lg font-extrabold text-foreground truncate flex-1">{teamName}</h1>
+          {teamPosition != null && (
+            <span className="text-sm font-bold text-primary tabular-nums shrink-0">{teamPosition}º</span>
+          )}
+        </div>
 
-          <TabsContent value="ultima" className="mt-4">
-            <MatchRatingPanel
-              teamId={teamId!}
-              teamName={mergedTeam?.name ?? safeTeamData.team.name}
-              teamLogoUrl={mergedTeam?.logoUrl ?? safeTeamData.team.logoUrl ?? null}
-            />
-          </TabsContent>
-
-          <TabsContent value="notas" className="mt-4">
-            <RatingsDashboard teamId={teamId!} />
-          </TabsContent>
-
-          {/* ── Elenco ──────────────────────────────────────────────────────── */}
-          <TabsContent value="elenco" className="mt-4">
-            <ElencoTab
-              players={rosterPlayers}
-              isLoading={playersQuery.isLoading && rosterPlayers.length === 0}
-              getPhotoUrl={(p) => p.photoUrl ?? resolvePlayerPhoto(p.name, p.photoUrl, teamId)}
-            />
-          </TabsContent>
-
-          <TabsContent value="classificacao" className="space-y-6">
-            <ClassificacaoTab userTeamId={teamId} />
-          </TabsContent>
-
-          <TabsContent value="simulacao" className="space-y-6">
-            <SimulacaoTab userTeamId={teamId} />
-          </TabsContent>
-
-          <TabsContent value="news" className="space-y-6">
-            {teamNews && teamNews.length > 0 ? (
-              <div className="space-y-6">
-                {teamNews.map((news: any) => (
-                  <NewsCard
-                    key={news.id}
-                    news={news}
-                      canInteract={!!teamId && news.teamId === teamId}
-                    onInteract={handleInteraction}
-                  />
-                ))}
-              </div>
-            ) : (
-              <EmptyState
-                icon={Newspaper}
-                title="Sem notícias do seu time"
-                description="Assim que surgirem publicações oficiais ou análises, elas vão aparecer aqui."
-              />
-            )}
-          </TabsContent>
-
-          <TabsContent value="matches" className="space-y-6">
-            <div className="flex flex-col items-center justify-center py-12 rounded-xl border border-border bg-surface-card">
-              <CalendarDays className="h-12 w-12 text-muted-foreground mb-4" />
-              <h3 className="font-bold text-xl text-foreground mb-2">Jogos do seu time</h3>
-              <p className="text-sm text-foreground-secondary text-center max-w-md mb-6">
-                Veja todos os jogos, próximas partidas e resultados na página completa.
-              </p>
-              <a
-                href="/meu-time/jogos"
-                className="inline-flex items-center gap-2 rounded-lg bg-primary px-6 py-2.5 text-sm font-semibold text-primary-foreground hover:bg-primary/90 transition-colors"
-              >
-                Ver todos os jogos
-                <span aria-hidden>→</span>
-              </a>
-            </div>
-          </TabsContent>
-
-          <TabsContent value="performance" className="space-y-6">
-            <PerformanceChart matches={safeTeamData.matches} teamId={safeTeamData.team.id} />
-            <LeagueTable teams={mergedLeagueTable} currentTeamId={safeTeamData.team.id} />
-          </TabsContent>
-
-          <TabsContent value="vai-e-vem" className="space-y-6">
-            <TransfersBoard
-              scope="team"
-              teamId={teamId ?? undefined}
-              teamName={clubConfig?.displayName ?? mergedTeam?.name ?? 'seu time'}
-              hideHeader
-            />
-          </TabsContent>
-
-          <TabsContent value="comunidade" className="space-y-6">
-            <ForumTab
-              teamId={teamId ?? ''}
-              clubConfig={clubConfig}
-            />
-          </TabsContent>
-        </Tabs>
+        {/* Tab bar */}
+        <div className="flex overflow-x-auto scrollbar-none">
+          {MAIN_TABS.map((tab) => (
+            <button
+              key={tab.value}
+              type="button"
+              onClick={() => handleTabChange(tab.value)}
+              className="flex-shrink-0 px-4 py-3 text-center hover:bg-surface-elevated/50 transition-colors relative text-[14px] font-medium"
+            >
+              <span className={activeTab === tab.value ? 'font-bold text-foreground' : 'text-foreground-secondary'}>
+                {tab.label}
+              </span>
+              {activeTab === tab.value && (
+                <div className="absolute bottom-0 left-1/2 -translate-x-1/2 w-10 h-[2px] bg-primary rounded-full" />
+              )}
+            </button>
+          ))}
+        </div>
       </div>
+
+      {/* ── Tab content ─────────────────────────────────────────────────── */}
+      {activeTab === 'escalacao' && (
+        <div className="p-4">
+          <LineupSection
+            players={rosterPlayers}
+            teamId={teamId!}
+            initialFormation={lineupInitial.formation}
+            initialSlots={lineupInitial.slots}
+            onSave={teamId ? async (formation, slots) => lineupMutation.mutateAsync({ formation, slots }) : undefined}
+            getPhotoUrl={(p) => p.photoUrl ?? resolvePlayerPhoto(p.name, p.photoUrl, teamId)}
+            heightClass="h-[calc(100vh-200px)] min-h-[480px]"
+          />
+        </div>
+      )}
+
+      {activeTab === 'ultima' && (
+        <div className="p-4">
+          <MatchRatingPanel
+            teamId={teamId!}
+            teamName={teamName}
+            teamLogoUrl={teamLogo}
+          />
+        </div>
+      )}
+
+      {activeTab === 'notas' && (
+        <div className="p-4">
+          <RatingsDashboard teamId={teamId!} />
+        </div>
+      )}
+
+      {activeTab === 'elenco' && (
+        <div className="p-4">
+          <ElencoTab
+            players={rosterPlayers}
+            isLoading={playersQuery.isLoading && rosterPlayers.length === 0}
+            getPhotoUrl={(p) => p.photoUrl ?? resolvePlayerPhoto(p.name, p.photoUrl, teamId)}
+          />
+        </div>
+      )}
+
+      {activeTab === 'classificacao' && (
+        <div className="p-4">
+          <ClassificacaoTab userTeamId={teamId} />
+        </div>
+      )}
+
+      {activeTab === 'simulacao' && (
+        <div className="p-4">
+          <SimulacaoTab userTeamId={teamId} />
+        </div>
+      )}
+
+      {/* Legacy tabs kept for URL compatibility */}
+      {activeTab === 'news' && (
+        <div className="p-4 space-y-4">
+          {teamNews && teamNews.length > 0 ? (
+            teamNews.map((news: any) => (
+              <NewsCard
+                key={news.id}
+                news={news}
+                canInteract={!!teamId && news.teamId === teamId}
+                onInteract={handleInteraction}
+              />
+            ))
+          ) : (
+            <EmptyState
+              icon={Newspaper}
+              title="Sem notícias do seu time"
+              description="Assim que surgirem publicações oficiais ou análises, elas vão aparecer aqui."
+            />
+          )}
+        </div>
+      )}
+
+      {activeTab === 'performance' && (
+        <div className="p-4 space-y-4">
+          <PerformanceChart matches={safeTeamData.matches} teamId={safeTeamData.team.id} />
+          <LeagueTable teams={mergedLeagueTable} currentTeamId={safeTeamData.team.id} />
+        </div>
+      )}
+
+      {activeTab === 'vai-e-vem' && (
+        <div className="p-4">
+          <TransfersBoard
+            scope="team"
+            teamId={teamId ?? undefined}
+            teamName={clubConfig?.displayName ?? teamName}
+            hideHeader
+          />
+        </div>
+      )}
+
+      {activeTab === 'comunidade' && (
+        <div className="p-4">
+          <ForumTab teamId={teamId ?? ''} clubConfig={clubConfig} />
+        </div>
+      )}
 
       <Dialog open={!!selectedPlayer} onOpenChange={() => setSelectedPlayer(null)}>
         <DialogContent className="sm:max-w-3xl max-h-[90vh] overflow-y-auto">
