@@ -6,7 +6,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { AppShell } from '@/components/ui/app-shell';
 import { EmptyState } from '@/components/ui/empty-state';
 import { NewsCard } from '@/components/news-card';
-import { getClubConfig, ElencoTab, MatchRatingPanel, RatingsDashboard } from '@/features/meu-time';
+import { getClubConfig, ElencoTab, MatchRatingPanel, RatingsDashboard, ResumoTab } from '@/features/meu-time';
 import { TransfersBoard } from '@/features/transfers';
 import {
   NextMatchHero,
@@ -82,14 +82,14 @@ export default function MeuTimePage() {
   const queryClient = useQueryClient();
   const [selectedPlayer, setSelectedPlayer] = useState<Player | null>(null);
   const [ratings, setRatings] = useState<Record<string, { rating: number; comment: string }>>({});
-  const VALID_TABS = ['escalacao', 'ultima', 'notas', 'elenco', 'classificacao', 'simulacao', 'news', 'matches', 'performance', 'vai-e-vem', 'comunidade'] as const;
+  const VALID_TABS = ['resumo', 'escalacao', 'ultima', 'notas', 'elenco', 'classificacao', 'simulacao', 'news', 'matches', 'performance', 'vai-e-vem', 'comunidade'] as const;
   const [activeTab, setActiveTab] = useState<string>(() => {
     if (typeof window !== 'undefined') {
       const p = new URLSearchParams(window.location.search);
       const t = p.get('tab');
       if (t && (VALID_TABS as readonly string[]).includes(t)) return t;
     }
-    return 'escalacao';
+    return 'resumo';
   });
   const teamId = user?.teamId ?? null;
 
@@ -547,6 +547,7 @@ export default function MeuTimePage() {
   }
 
   const MAIN_TABS = [
+    { value: 'resumo', label: 'Resumo' },
     { value: 'escalacao', label: 'Escalação' },
     { value: 'ultima', label: 'Última Partida' },
     { value: 'notas', label: 'Notas' },
@@ -614,6 +615,12 @@ export default function MeuTimePage() {
       </div>
 
       {/* ── Tab content ─────────────────────────────────────────────────── */}
+      {activeTab === 'resumo' && (
+        <div className="p-4">
+          <ResumoTab teamId={teamId!} teamName={teamName} />
+        </div>
+      )}
+
       {activeTab === 'escalacao' && (
         <div className="p-4">
           <LineupSection
