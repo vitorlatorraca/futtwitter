@@ -3,7 +3,8 @@ import { getTeamCrest } from '@/lib/teamCrests';
 import type { ClubConfig } from '@/features/meu-time/types';
 
 const TAB_ITEMS: { value: string; label: string }[] = [
-  { value: 'overview', label: 'Visão Geral' },
+  { value: 'escalacao', label: 'Escalação' },
+  { value: 'elenco', label: 'Elenco' },
   { value: 'classificacao', label: 'Classificação' },
   { value: 'simulacao', label: 'Simulação' },
   { value: 'news', label: 'Notícias' },
