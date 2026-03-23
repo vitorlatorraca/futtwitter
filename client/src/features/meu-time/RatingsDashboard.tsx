@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { getApiUrl } from '@/lib/queryClient';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -58,9 +58,15 @@ function ratingColor(r: number): string {
 }
 
 function formatMonth(m: string): string {
-  const [year, month] = m.split('-');
+  const [, month] = m.split('-');
   const names = ['Jan', 'Fev', 'Mar', 'Abr', 'Mai', 'Jun', 'Jul', 'Ago', 'Set', 'Out', 'Nov', 'Dez'];
-  return `${names[parseInt(month, 10) - 1]}/${year.slice(2)}`;
+  const y = m.split('-')[0];
+  if (!month || !y) return m;
+  return `${names[parseInt(month, 10) - 1] ?? month}/${y.slice(2)}`;
+}
+
+function monthChartRows(byMonth: ByMonth[]): ByMonth[] {
+  return byMonth.filter((row) => row.month !== 'unknown');
 }
 
 // ─── Section card ─────────────────────────────────────────────────────────────
@@ -74,6 +80,62 @@ function Section({ icon, title, children }: { icon: React.ReactNode; title: stri
       </div>
       <div className="p-4">{children}</div>
     </div>
+  );
+}
+
+function EmptySectionMessage() {
+  return (
+    <p className="text-sm text-foreground-secondary text-center py-6">
+      Sem dados de notas neste período.
+    </p>
+  );
+}
+
+function MonthlyChart({ data }: { data: ByMonth[] }) {
+  const [client, setClient] = useState(false);
+  useEffect(() => {
+    setClient(true);
+  }, []);
+
+  if (!client) {
+    return <Skeleton className="h-[200px] w-full rounded-xl" />;
+  }
+
+  return (
+    <ResponsiveContainer width="100%" height={200}>
+      <BarChart data={data} barSize={28}>
+        <XAxis
+          dataKey="month"
+          tickFormatter={formatMonth}
+          tick={{ fontSize: 11, fill: 'var(--foreground-secondary, #888)' }}
+          axisLine={false}
+          tickLine={false}
+        />
+        <YAxis
+          domain={[0, 10]}
+          ticks={[0, 2, 4, 6, 8, 10]}
+          tick={{ fontSize: 10, fill: 'var(--foreground-secondary, #888)' }}
+          axisLine={false}
+          tickLine={false}
+          width={24}
+        />
+        <Tooltip
+          formatter={(v: number) => [`${v.toFixed(1)}/10`, 'Média']}
+          labelFormatter={formatMonth}
+          contentStyle={{
+            background: 'var(--surface-card, #111)',
+            border: '1px solid var(--border, #333)',
+            borderRadius: 8,
+            fontSize: 12,
+          }}
+        />
+        <Bar dataKey="avgRating" radius={[4, 4, 0, 0]}>
+          {data.map((entry, i) => (
+            <Cell key={i} fill={ratingColor(entry.avgRating)} />
+          ))}
+        </Bar>
+      </BarChart>
+    </ResponsiveContainer>
   );
 }
 
@@ -111,8 +173,10 @@ export function RatingsDashboard({ teamId }: RatingsDashboardProps) {
     );
   }
 
-  const hasData =
-    (data?.byMonth.length ?? 0) > 0 ||
+  const byMonthChart = monthChartRows(data?.byMonth ?? []);
+  const hasGlobal =
+    byMonthChart.length > 0 ||
+    (data?.byCompetition.length ?? 0) > 0 ||
     (data?.topPlayers.length ?? 0) > 0 ||
     (data?.recentMatches.length ?? 0) > 0;
 
@@ -121,12 +185,12 @@ export function RatingsDashboard({ teamId }: RatingsDashboardProps) {
 
   return (
     <div className="space-y-5">
-      {/* Period filter */}
       <div className="flex items-center gap-2 flex-wrap">
         <span className="text-sm text-foreground-secondary font-medium">Período:</span>
         {[3, 6, 12].map((m) => (
           <button
             key={m}
+            type="button"
             onClick={() => setMonths(m)}
             className={`px-3 py-1.5 rounded-lg text-sm font-semibold transition-colors ${
               months === m
@@ -139,54 +203,26 @@ export function RatingsDashboard({ teamId }: RatingsDashboardProps) {
         ))}
       </div>
 
-      {!hasData ? (
+      {!hasGlobal ? (
         <div className="flex flex-col items-center justify-center py-20 rounded-2xl border border-border bg-surface-card text-center px-6">
           <Star className="h-10 w-10 text-foreground/20 mb-3" />
           <p className="font-semibold text-foreground">Sem dados de notas ainda</p>
           <p className="text-sm text-foreground-secondary mt-1">
-            Avalie os jogadores na aba "Última Partida" para ver as estatísticas aqui.
+            Avalie os jogadores na aba &quot;Última Partida&quot; para ver as estatísticas aqui.
           </p>
         </div>
       ) : (
         <>
-          {/* Monthly chart */}
-          {(data?.byMonth.length ?? 0) > 0 && (
-            <Section icon={<TrendingUp className="h-4 w-4" />} title="Média por mês">
-              <ResponsiveContainer width="100%" height={200}>
-                <BarChart data={data!.byMonth} barSize={28}>
-                  <XAxis
-                    dataKey="month"
-                    tickFormatter={formatMonth}
-                    tick={{ fontSize: 11, fill: 'var(--foreground-secondary, #888)' }}
-                    axisLine={false}
-                    tickLine={false}
-                  />
-                  <YAxis
-                    domain={[0, 10]}
-                    ticks={[0, 2, 4, 6, 8, 10]}
-                    tick={{ fontSize: 10, fill: 'var(--foreground-secondary, #888)' }}
-                    axisLine={false}
-                    tickLine={false}
-                    width={24}
-                  />
-                  <Tooltip
-                    formatter={(v: number) => [`${v.toFixed(1)}/10`, 'Média']}
-                    labelFormatter={formatMonth}
-                    contentStyle={{ background: 'var(--surface-card, #111)', border: '1px solid var(--border, #333)', borderRadius: 8, fontSize: 12 }}
-                  />
-                  <Bar dataKey="avgRating" radius={[4, 4, 0, 0]}>
-                    {data!.byMonth.map((entry, i) => (
-                      <Cell key={i} fill={ratingColor(entry.avgRating)} />
-                    ))}
-                  </Bar>
-                </BarChart>
-              </ResponsiveContainer>
-            </Section>
-          )}
+          <Section icon={<TrendingUp className="h-4 w-4" />} title="Média por mês">
+            {byMonthChart.length > 0 ? (
+              <MonthlyChart data={byMonthChart} />
+            ) : (
+              <EmptySectionMessage />
+            )}
+          </Section>
 
-          {/* By competition */}
-          {(data?.byCompetition.length ?? 0) > 0 && (
-            <Section icon={<Layers className="h-4 w-4" />} title="Por competição">
+          <Section icon={<Layers className="h-4 w-4" />} title="Por competição">
+            {(data?.byCompetition.length ?? 0) > 0 ? (
               <div className="space-y-3">
                 {data!.byCompetition.map((c) => (
                   <div key={c.competition} className="flex items-center gap-3">
@@ -211,12 +247,13 @@ export function RatingsDashboard({ teamId }: RatingsDashboardProps) {
                   </div>
                 ))}
               </div>
-            </Section>
-          )}
+            ) : (
+              <EmptySectionMessage />
+            )}
+          </Section>
 
-          {/* Top players */}
-          {(data?.topPlayers.length ?? 0) > 0 && (
-            <Section icon={<Trophy className="h-4 w-4" />} title="Jogadores mais bem avaliados">
+          <Section icon={<Trophy className="h-4 w-4" />} title="Jogadores mais bem avaliados">
+            {(data?.topPlayers.length ?? 0) > 0 ? (
               <div className="space-y-2">
                 {data!.topPlayers.map((p, i) => (
                   <div key={p.playerId} className="flex items-center gap-3">
@@ -244,12 +281,13 @@ export function RatingsDashboard({ teamId }: RatingsDashboardProps) {
                   </div>
                 ))}
               </div>
-            </Section>
-          )}
+            ) : (
+              <EmptySectionMessage />
+            )}
+          </Section>
 
-          {/* Recent matches */}
-          {(data?.recentMatches.length ?? 0) > 0 && (
-            <Section icon={<Calendar className="h-4 w-4" />} title="Notas por partida">
+          <Section icon={<Calendar className="h-4 w-4" />} title="Notas por partida">
+            {(data?.recentMatches.length ?? 0) > 0 ? (
               <div className="space-y-2">
                 {data!.recentMatches.map((m) => (
                   <div key={m.matchId} className="flex items-center gap-3 py-1">
@@ -279,8 +317,10 @@ export function RatingsDashboard({ teamId }: RatingsDashboardProps) {
                   </div>
                 ))}
               </div>
-            </Section>
-          )}
+            ) : (
+              <EmptySectionMessage />
+            )}
+          </Section>
         </>
       )}
     </div>

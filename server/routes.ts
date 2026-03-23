@@ -10,8 +10,20 @@ import path from "path";
 import multer from "multer";
 import { randomBytes } from "crypto";
 import { fileURLToPath } from "url";
-import { insertUserSchema, insertNewsSchema, insertPlayerRatingSchema, insertCommentSchema, users, journalists, posts, matches as matchesTable } from "@shared/schema";
-import { eq, asc, ilike, or, and, isNull, desc } from "drizzle-orm";
+import {
+  insertUserSchema,
+  insertNewsSchema,
+  insertPlayerRatingSchema,
+  insertCommentSchema,
+  users,
+  journalists,
+  posts,
+  matches as matchesTable,
+  players,
+  matchPlayers,
+  playerRatings,
+} from "@shared/schema";
+import { eq, asc, ilike, or, and, isNull, desc, sql, avg, count, gte, inArray } from "drizzle-orm";
 import { db } from "./db";
 import rateLimit from "express-rate-limit";
 import { z } from "zod";
@@ -1546,15 +1558,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const { teamId } = req.params;
       const userId = (req as any).session?.userId as string | undefined;
-      const { matches: matchesSchema, players: playersSchema, matchPlayers: matchPlayersSchema, playerRatings: playerRatingsSchema } = await import('@shared/schema');
-      const { sql: sqlExpr, avg, count } = await import('drizzle-orm');
 
       // 1. Last completed match
       const [lastMatch] = await db
         .select()
-        .from(matchesSchema)
-        .where(and(eq(matchesSchema.teamId, teamId), eq(matchesSchema.status, 'COMPLETED')))
-        .orderBy(desc(matchesSchema.matchDate))
+        .from(matchesTable)
+        .where(and(eq(matchesTable.teamId, teamId), eq(matchesTable.status, 'COMPLETED')))
+        .orderBy(desc(matchesTable.matchDate))
         .limit(1);
 
       if (!lastMatch) return res.json({ match: null, players: [] });
@@ -1564,41 +1574,41 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // 2. Players for this match (matchPlayers) joined with player info
       const mpRows = await db
         .select({
-          playerId: matchPlayersSchema.playerId,
-          wasStarter: matchPlayersSchema.wasStarter,
-          minutesPlayed: matchPlayersSchema.minutesPlayed,
-          positionCode: matchPlayersSchema.positionCode,
-          name: playersSchema.name,
-          knownName: playersSchema.knownName,
-          shirtNumber: playersSchema.shirtNumber,
-          position: playersSchema.position,
-          primaryPosition: playersSchema.primaryPosition,
-          sector: playersSchema.sector,
-          photoUrl: playersSchema.photoUrl,
+          playerId: matchPlayers.playerId,
+          wasStarter: matchPlayers.wasStarter,
+          minutesPlayed: matchPlayers.minutesPlayed,
+          positionCode: matchPlayers.positionCode,
+          name: players.name,
+          knownName: players.knownName,
+          shirtNumber: players.shirtNumber,
+          position: players.position,
+          primaryPosition: players.primaryPosition,
+          sector: players.sector,
+          photoUrl: players.photoUrl,
         })
-        .from(matchPlayersSchema)
-        .innerJoin(playersSchema, eq(matchPlayersSchema.playerId, playersSchema.id))
-        .where(eq(matchPlayersSchema.matchId, matchId));
+        .from(matchPlayers)
+        .innerJoin(players, eq(matchPlayers.playerId, players.id))
+        .where(eq(matchPlayers.matchId, matchId));
 
       // 3. If no matchPlayers data, fall back to all team players
       let playerList = mpRows;
       if (playerList.length === 0) {
         const allPlayers = await db
           .select({
-            playerId: playersSchema.id,
-            wasStarter: sqlExpr<boolean>`true`,
-            minutesPlayed: sqlExpr<number | null>`null`,
-            positionCode: sqlExpr<string | null>`null`,
-            name: playersSchema.name,
-            knownName: playersSchema.knownName,
-            shirtNumber: playersSchema.shirtNumber,
-            position: playersSchema.position,
-            primaryPosition: playersSchema.primaryPosition,
-            sector: playersSchema.sector,
-            photoUrl: playersSchema.photoUrl,
+            playerId: players.id,
+            wasStarter: sql<boolean>`true`,
+            minutesPlayed: sql<number | null>`null`,
+            positionCode: sql<string | null>`null`,
+            name: players.name,
+            knownName: players.knownName,
+            shirtNumber: players.shirtNumber,
+            position: players.position,
+            primaryPosition: players.primaryPosition,
+            sector: players.sector,
+            photoUrl: players.photoUrl,
           })
-          .from(playersSchema)
-          .where(eq(playersSchema.teamId, teamId));
+          .from(players)
+          .where(eq(players.teamId, teamId));
         playerList = allPlayers as typeof playerList;
       }
 
@@ -1623,13 +1633,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // 5. Community aggregate ratings for this match
       const aggRows = await db
         .select({
-          playerId: playerRatingsSchema.playerId,
-          avgRating: avg(playerRatingsSchema.rating),
-          voteCount: count(playerRatingsSchema.id),
+          playerId: playerRatings.playerId,
+          avgRating: avg(playerRatings.rating),
+          voteCount: count(playerRatings.id),
         })
-        .from(playerRatingsSchema)
-        .where(eq(playerRatingsSchema.matchId, matchId))
-        .groupBy(playerRatingsSchema.playerId);
+        .from(playerRatings)
+        .where(eq(playerRatings.matchId, matchId))
+        .groupBy(playerRatings.playerId);
 
       const aggMap: Record<string, { avgRating: number; voteCount: number }> = {};
       for (const r of aggRows) {
@@ -1686,30 +1696,27 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const { teamId } = req.params;
       const months = Math.min(24, Math.max(1, parseInt(String(req.query.months ?? '6'), 10) || 6));
 
-      const { matches: matchesSchema, players: playersSchema, playerRatings: playerRatingsSchema } = await import('@shared/schema');
-      const { sql: sqlExpr, avg, count, gte } = await import('drizzle-orm');
-
       const since = new Date();
       since.setMonth(since.getMonth() - months);
 
-      // All ratings for this team's matches in the window
+      // All ratings for this team's matches in the window (include rows with null createdAt)
       const rows = await db
         .select({
-          matchId: playerRatingsSchema.matchId,
-          playerId: playerRatingsSchema.playerId,
-          rating: playerRatingsSchema.rating,
-          createdAt: playerRatingsSchema.createdAt,
-          competition: matchesSchema.competition,
-          matchDate: matchesSchema.matchDate,
-          opponent: matchesSchema.opponent,
-          teamScore: matchesSchema.teamScore,
-          opponentScore: matchesSchema.opponentScore,
+          matchId: playerRatings.matchId,
+          playerId: playerRatings.playerId,
+          rating: playerRatings.rating,
+          createdAt: playerRatings.createdAt,
+          competition: matchesTable.competition,
+          matchDate: matchesTable.matchDate,
+          opponent: matchesTable.opponent,
+          teamScore: matchesTable.teamScore,
+          opponentScore: matchesTable.opponentScore,
         })
-        .from(playerRatingsSchema)
-        .innerJoin(matchesSchema, eq(playerRatingsSchema.matchId, matchesSchema.id))
+        .from(playerRatings)
+        .innerJoin(matchesTable, eq(playerRatings.matchId, matchesTable.id))
         .where(and(
-          eq(matchesSchema.teamId, teamId),
-          gte(playerRatingsSchema.createdAt, since),
+          eq(matchesTable.teamId, teamId),
+          or(isNull(playerRatings.createdAt), gte(playerRatings.createdAt, since)),
         ));
 
       if (rows.length === 0) {
@@ -1756,9 +1763,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       const playerRows = topPlayerIds.length > 0
         ? await db
-            .select({ id: playersSchema.id, name: playersSchema.name, knownName: playersSchema.knownName, photoUrl: playersSchema.photoUrl, position: playersSchema.position, sector: playersSchema.sector })
-            .from(playersSchema)
-            .where(sqlExpr`${playersSchema.id} = ANY(${topPlayerIds})`)
+            .select({ id: players.id, name: players.name, knownName: players.knownName, photoUrl: players.photoUrl, position: players.position, sector: players.sector })
+            .from(players)
+            .where(inArray(players.id, topPlayerIds))
         : [];
 
       const topPlayers = topPlayerIds
@@ -1921,6 +1928,41 @@ export async function registerRoutes(app: Express): Promise<Server> {
       if (error?.code === '23505') {
         return res.status(409).json({ message: 'Você já avaliou este jogador nesta partida.' });
       }
+      res.status(400).json({ message: error?.message ?? 'Erro ao salvar nota' });
+    }
+  });
+
+  app.put('/api/ratings', requireAuth, async (req, res) => {
+    try {
+      const userId = req.session.userId!;
+      const { matchId, playerId, rating } = req.body ?? {};
+      if (!matchId || !playerId || typeof rating !== 'number') {
+        return res.status(400).json({ message: 'matchId, playerId e rating são obrigatórios' });
+      }
+      if (rating < 0 || rating > 10) {
+        return res.status(400).json({ message: 'A nota deve estar entre 0 e 10.' });
+      }
+      const r = Math.min(10, Math.max(0, rating));
+      const step = Math.round(r * 2) / 2;
+      const match = await storage.getMatch(matchId);
+      if (!match) {
+        return res.status(404).json({ message: 'Partida não encontrada' });
+      }
+      const player = await storage.getPlayer(playerId);
+      if (!player) {
+        return res.status(404).json({ message: 'Jogador não encontrado' });
+      }
+      const updated = await storage.upsertPlayerRating(userId, playerId, matchId, step);
+      const byMatch = await storage.getRatingsByMatch(matchId);
+      const thisPlayer = byMatch.find((x) => x.playerId === playerId);
+      res.json({
+        playerId: updated.playerId,
+        matchId: updated.matchId,
+        rating: updated.rating,
+        voteCount: thisPlayer?.count ?? 0,
+      });
+    } catch (error: any) {
+      console.error('Upsert rating error:', error);
       res.status(400).json({ message: error?.message ?? 'Erro ao salvar nota' });
     }
   });

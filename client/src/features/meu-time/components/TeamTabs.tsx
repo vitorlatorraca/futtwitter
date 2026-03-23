@@ -4,6 +4,8 @@ import type { ClubConfig } from '@/features/meu-time/types';
 
 const TAB_ITEMS: { value: string; label: string }[] = [
   { value: 'escalacao', label: 'Escalação' },
+  { value: 'ultima', label: 'Última Partida' },
+  { value: 'notas', label: 'Notas' },
   { value: 'elenco', label: 'Elenco' },
   { value: 'classificacao', label: 'Classificação' },
   { value: 'simulacao', label: 'Simulação' },

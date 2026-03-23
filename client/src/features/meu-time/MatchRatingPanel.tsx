@@ -1,11 +1,11 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { getApiUrl } from '@/lib/queryClient';
 import { Skeleton } from '@/components/ui/skeleton';
 import { getTeamCrest } from '@/lib/teamCrests';
-import { Star, Check, Users } from 'lucide-react';
+import { Star, Check, Users, Loader2 } from 'lucide-react';
 
 // ─── Types ──────────────────────────────────────────────────────────────────
 
@@ -62,10 +62,11 @@ function StarRating({
           key={n}
           type="button"
           disabled={disabled}
+          aria-label={`Nota ${n} de 10`}
           onClick={() => onChange?.(n)}
           onMouseEnter={() => !disabled && setHovered(n)}
           onMouseLeave={() => setHovered(0)}
-          className={`transition-transform ${disabled ? 'cursor-default' : 'hover:scale-110'}`}
+          className={`transition-transform ${disabled ? 'cursor-default opacity-70' : 'hover:scale-110'}`}
         >
           <Star
             className={`h-4 w-4 transition-colors ${
@@ -100,6 +101,10 @@ function getSector(p: MatchPlayer): string {
 
 const SECTOR_ORDER = ['GK', 'DEF', 'MID', 'FWD'];
 
+function isReserve(p: MatchPlayer): boolean {
+  return p.wasStarter === false;
+}
+
 // ─── Player row ──────────────────────────────────────────────────────────────
 
 function PlayerRatingRow({
@@ -112,33 +117,41 @@ function PlayerRatingRow({
   matchId: string;
 }) {
   const queryClient = useQueryClient();
+  const reserve = isReserve(player);
   const [localRating, setLocalRating] = useState<number>(player.myRating ?? 0);
-  const [saved, setSaved] = useState(!!player.myRating);
+
+  useEffect(() => {
+    setLocalRating(player.myRating ?? 0);
+  }, [player.playerId, player.myRating]);
+
+  const serverRating = player.myRating;
+  const needsSave =
+    localRating >= 1 && (serverRating == null || localRating !== serverRating);
 
   const mutation = useMutation({
     mutationFn: async (rating: number) => {
       const res = await fetch(getApiUrl('/api/ratings'), {
-        method: 'POST',
+        method: 'PUT',
         credentials: 'include',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ matchId, playerId: player.playerId, rating }),
       });
       if (!res.ok) {
         const err = await res.json().catch(() => ({}));
-        // 409 = already rated — treat as soft success
-        if (res.status === 409) return null;
         throw new Error(err.message ?? 'Erro ao salvar');
       }
       return res.json();
     },
     onSuccess: () => {
-      setSaved(true);
-      queryClient.invalidateQueries({ queryKey: ['/api/teams', teamId, 'last-match-for-rating'] });
+      queryClient.invalidateQueries({
+        queryKey: ['/api/teams', teamId, 'last-match-for-rating'],
+        refetchType: 'active',
+      });
     },
   });
 
   const handleSave = () => {
-    if (localRating < 1 || saved) return;
+    if (!needsSave || mutation.isPending) return;
     mutation.mutate(localRating);
   };
 
@@ -148,28 +161,43 @@ function PlayerRatingRow({
       ? `${player.communityAvg.toFixed(1)} (${player.voteCount} voto${player.voteCount !== 1 ? 's' : ''})`
       : null;
 
+  const starsLocked = mutation.isPending;
+
   return (
-    <div className="flex items-center gap-3 px-4 py-3">
-      {/* Photo + number */}
+    <div
+      className={`flex items-center gap-3 px-4 py-3 ${reserve ? 'bg-surface-elevated/20' : ''}`}
+    >
       <div className="relative shrink-0">
         <img
           src={player.photoUrl ?? '/assets/players/placeholder.png'}
           alt={displayName}
-          className="h-11 w-11 rounded-full object-cover border border-border bg-surface-elevated"
+          className={`rounded-full object-cover border border-border bg-surface-elevated ${
+            reserve ? 'h-9 w-9 opacity-75' : 'h-11 w-11'
+          }`}
           onError={(e) => {
             (e.target as HTMLImageElement).src = '/assets/players/placeholder.png';
           }}
         />
         {player.shirtNumber != null && (
-          <span className="absolute -bottom-1 -right-1 bg-primary text-primary-foreground text-[10px] font-bold rounded-full h-4.5 w-4.5 min-w-[18px] px-0.5 flex items-center justify-center border border-background tabular-nums text-center">
+          <span className="absolute -bottom-1 -right-1 bg-primary text-primary-foreground text-[10px] font-bold rounded-full h-5 w-5 min-w-[18px] px-0.5 flex items-center justify-center border border-background tabular-nums text-center">
             {player.shirtNumber}
           </span>
         )}
       </div>
 
-      {/* Name + position */}
       <div className="min-w-0 flex-1">
-        <p className="text-sm font-semibold text-foreground truncate leading-tight">{displayName}</p>
+        <p
+          className={`text-sm font-semibold text-foreground truncate leading-tight ${
+            reserve ? 'text-foreground/80' : ''
+          }`}
+        >
+          {displayName}
+          {reserve && (
+            <span className="ml-1.5 text-[10px] font-medium text-foreground-secondary normal-case">
+              (reserva)
+            </span>
+          )}
+        </p>
         <div className="flex items-center gap-2 mt-0.5 flex-wrap">
           <span className="text-[11px] text-foreground-secondary">{player.position ?? '—'}</span>
           {communityLabel && (
@@ -181,34 +209,60 @@ function PlayerRatingRow({
         </div>
       </div>
 
-      {/* Rating stars + save */}
       <div className="shrink-0 flex items-center gap-2">
-        {saved ? (
-          <div className="flex items-center gap-1">
-            <StarRating value={localRating} disabled />
-            <span className="text-[11px] text-success font-semibold ml-1">
-              {localRating}/10
-            </span>
-          </div>
-        ) : (
-          <>
-            <StarRating
-              value={localRating}
-              onChange={setLocalRating}
-            />
-            {localRating > 0 && (
-              <button
-                onClick={handleSave}
-                disabled={mutation.isPending}
-                className="ml-1 h-6 w-6 rounded-full bg-primary flex items-center justify-center hover:bg-primary/90 transition-colors shrink-0 disabled:opacity-50"
-              >
-                <Check className="h-3.5 w-3.5 text-primary-foreground" />
-              </button>
+        <StarRating
+          value={localRating}
+          onChange={starsLocked ? undefined : setLocalRating}
+          disabled={starsLocked}
+        />
+        {serverRating != null && !needsSave && (
+          <span className="text-[11px] text-success font-semibold ml-1 tabular-nums">
+            {localRating}/10
+          </span>
+        )}
+        {needsSave && (
+          <button
+            type="button"
+            onClick={handleSave}
+            disabled={mutation.isPending}
+            className="ml-1 h-6 w-6 rounded-full bg-primary flex items-center justify-center hover:bg-primary/90 transition-colors shrink-0 disabled:opacity-50"
+            aria-label="Salvar nota"
+          >
+            {mutation.isPending ? (
+              <Loader2 className="h-3.5 w-3.5 text-primary-foreground animate-spin" />
+            ) : (
+              <Check className="h-3.5 w-3.5 text-primary-foreground" />
             )}
-          </>
+          </button>
         )}
       </div>
     </div>
+  );
+}
+
+function SectorPlayerBlock({
+  teamId,
+  matchId,
+  label,
+  players,
+}: {
+  teamId: string;
+  matchId: string;
+  label: string;
+  players: MatchPlayer[];
+}) {
+  if (players.length === 0) return null;
+  return (
+    <>
+      <div className="px-4 py-1.5 bg-surface-elevated/20 border-t border-border/60">
+        <span className="text-[10px] font-bold text-foreground-secondary uppercase tracking-wider">
+          {label}
+        </span>
+      </div>
+      {players.map((p) => (
+        <PlayerRatingRow key={p.playerId} player={p} teamId={teamId} matchId={matchId} />
+      ))}
+    </>
   );
 }
 
@@ -230,7 +284,7 @@ export function MatchRatingPanel({ teamId, teamName, teamLogoUrl }: MatchRatingP
       if (!res.ok) throw new Error('Falha ao carregar partida');
       return res.json();
     },
-    staleTime: 2 * 60 * 1000,
+    staleTime: 30 * 1000,
     enabled: !!teamId,
   });
 
@@ -257,7 +311,6 @@ export function MatchRatingPanel({ teamId, teamName, teamLogoUrl }: MatchRatingP
 
   const { match, players } = data;
 
-  // Group players by sector
   const grouped = SECTOR_ORDER.map((sector) => ({
     sector,
     label: SECTOR_LABELS[sector] ?? sector,
@@ -277,11 +330,9 @@ export function MatchRatingPanel({ teamId, teamName, teamLogoUrl }: MatchRatingP
 
   return (
     <div className="space-y-4">
-      {/* Match header */}
       <div className="rounded-2xl border border-border bg-surface-card overflow-hidden">
         <div className="p-4 bg-surface-elevated/50 border-b border-border">
           <div className="flex items-center justify-between gap-3">
-            {/* Home */}
             <div className="flex items-center gap-2 min-w-0 flex-1">
               <img
                 src={match.isHomeMatch ? (teamLogoUrl ?? getTeamCrest(teamId)) : (match.opponentLogoUrl ?? getTeamCrest(''))}
@@ -291,13 +342,11 @@ export function MatchRatingPanel({ teamId, teamName, teamLogoUrl }: MatchRatingP
               />
               <span className="font-bold text-sm text-foreground truncate">{home}</span>
             </div>
-            {/* Score */}
             <div className="shrink-0 text-center px-3">
               <span className="font-extrabold text-xl tabular-nums text-foreground">
                 {homeScore ?? '?'} – {awayScore ?? '?'}
               </span>
             </div>
-            {/* Away */}
             <div className="flex items-center gap-2 min-w-0 flex-1 justify-end">
               <span className="font-bold text-sm text-foreground truncate text-right">{away}</span>
               <img
@@ -315,7 +364,6 @@ export function MatchRatingPanel({ teamId, teamName, teamLogoUrl }: MatchRatingP
           </p>
         </div>
 
-        {/* Rating progress bar */}
         <div className="px-4 py-2 flex items-center justify-between text-xs text-foreground-secondary border-b border-border">
           <span>
             {ratedCount > 0
@@ -330,29 +378,34 @@ export function MatchRatingPanel({ teamId, teamName, teamLogoUrl }: MatchRatingP
           )}
         </div>
 
-        {/* Players grouped by sector */}
         <div className="divide-y divide-border">
-          {grouped.map((group) => (
-            <div key={group.sector}>
-              {/* Sector header */}
-              <div className="px-4 py-2 bg-surface-elevated/30 flex items-center gap-2">
-                <span className="text-xs font-bold text-foreground-secondary uppercase tracking-wider">
-                  {group.label}
-                </span>
-                <span className="text-[10px] text-foreground-secondary bg-surface-elevated px-1.5 py-0.5 rounded-full">
-                  {group.players.length}
-                </span>
+          {grouped.map((group) => {
+            const starters = group.players.filter((p) => !isReserve(p));
+            const reserves = group.players.filter((p) => isReserve(p));
+            const splitReserveSection = reserves.length > 0;
+            return (
+              <div key={group.sector}>
+                <div className="px-4 py-2 bg-surface-elevated/30 flex items-center gap-2">
+                  <span className="text-xs font-bold text-foreground-secondary uppercase tracking-wider">
+                    {group.label}
+                  </span>
+                  <span className="text-[10px] text-foreground-secondary bg-surface-elevated px-1.5 py-0.5 rounded-full">
+                    {group.players.length}
+                  </span>
+                </div>
+                {splitReserveSection ? (
+                  <>
+                    <SectorPlayerBlock teamId={teamId} matchId={match.id} label="Titulares" players={starters} />
+                    <SectorPlayerBlock teamId={teamId} matchId={match.id} label="Reservas" players={reserves} />
+                  </>
+                ) : (
+                  group.players.map((p) => (
+                    <PlayerRatingRow key={p.playerId} player={p} teamId={teamId} matchId={match.id} />
+                  ))
+                )}
               </div>
-              {group.players.map((p) => (
-                <PlayerRatingRow
-                  key={p.playerId}
-                  player={p}
-                  teamId={teamId}
-                  matchId={match.id}
-                />
-              ))}
-            </div>
-          ))}
+            );
+          })}
         </div>
       </div>
     </div>

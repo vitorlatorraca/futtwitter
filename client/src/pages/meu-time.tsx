@@ -7,7 +7,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { AppShell } from '@/components/ui/app-shell';
 import { EmptyState } from '@/components/ui/empty-state';
 import { NewsCard } from '@/components/news-card';
-import { getClubConfig, TeamTabs, ElencoTab } from '@/features/meu-time';
+import { getClubConfig, TeamTabs, ElencoTab, MatchRatingPanel, RatingsDashboard } from '@/features/meu-time';
 import { TransfersBoard } from '@/features/transfers';
 import {
   NextMatchHero,
@@ -83,7 +83,7 @@ export default function MeuTimePage() {
   const queryClient = useQueryClient();
   const [selectedPlayer, setSelectedPlayer] = useState<Player | null>(null);
   const [ratings, setRatings] = useState<Record<string, { rating: number; comment: string }>>({});
-  const VALID_TABS = ['escalacao', 'elenco', 'classificacao', 'simulacao', 'news', 'matches', 'performance', 'vai-e-vem', 'comunidade'] as const;
+  const VALID_TABS = ['escalacao', 'ultima', 'notas', 'elenco', 'classificacao', 'simulacao', 'news', 'matches', 'performance', 'vai-e-vem', 'comunidade'] as const;
   const [activeTab, setActiveTab] = useState<string>(() => {
     if (typeof window !== 'undefined') {
       const p = new URLSearchParams(window.location.search);
@@ -578,6 +578,18 @@ export default function MeuTimePage() {
               getPhotoUrl={(p) => p.photoUrl ?? resolvePlayerPhoto(p.name, p.photoUrl, teamId)}
               heightClass="h-[calc(100vh-220px)] min-h-[520px]"
             />
+          </TabsContent>
+
+          <TabsContent value="ultima" className="mt-4">
+            <MatchRatingPanel
+              teamId={teamId!}
+              teamName={mergedTeam?.name ?? safeTeamData.team.name}
+              teamLogoUrl={mergedTeam?.logoUrl ?? safeTeamData.team.logoUrl ?? null}
+            />
+          </TabsContent>
+
+          <TabsContent value="notas" className="mt-4">
+            <RatingsDashboard teamId={teamId!} />
           </TabsContent>
 
           {/* ── Elenco ──────────────────────────────────────────────────────── */}

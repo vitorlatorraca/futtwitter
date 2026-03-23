@@ -4723,7 +4723,7 @@ import path2 from "path";
 import multer from "multer";
 import { randomBytes as randomBytes2 } from "crypto";
 import { fileURLToPath as fileURLToPath2 } from "url";
-import { eq as eq13, asc as asc2, ilike as ilike5, or as or7, and as and12, isNull, desc as desc9 } from "drizzle-orm";
+import { eq as eq13, asc as asc2, ilike as ilike5, or as or7, and as and12, isNull, desc as desc9, sql as sql10, avg, count, gte, inArray as inArray8 } from "drizzle-orm";
 import rateLimit from "express-rate-limit";
 import { z as z2 } from "zod";
 
@@ -7234,39 +7234,37 @@ async function registerRoutes(app2) {
     try {
       const { teamId } = req.params;
       const userId = req.session?.userId;
-      const { matches: matchesSchema, players: playersSchema, matchPlayers: matchPlayersSchema, playerRatings: playerRatingsSchema } = await Promise.resolve().then(() => (init_schema(), schema_exports));
-      const { sql: sqlExpr, avg, count } = await import("drizzle-orm");
-      const [lastMatch] = await db.select().from(matchesSchema).where(and12(eq13(matchesSchema.teamId, teamId), eq13(matchesSchema.status, "COMPLETED"))).orderBy(desc9(matchesSchema.matchDate)).limit(1);
+      const [lastMatch] = await db.select().from(matches).where(and12(eq13(matches.teamId, teamId), eq13(matches.status, "COMPLETED"))).orderBy(desc9(matches.matchDate)).limit(1);
       if (!lastMatch) return res.json({ match: null, players: [] });
       const matchId = lastMatch.id;
       const mpRows = await db.select({
-        playerId: matchPlayersSchema.playerId,
-        wasStarter: matchPlayersSchema.wasStarter,
-        minutesPlayed: matchPlayersSchema.minutesPlayed,
-        positionCode: matchPlayersSchema.positionCode,
-        name: playersSchema.name,
-        knownName: playersSchema.knownName,
-        shirtNumber: playersSchema.shirtNumber,
-        position: playersSchema.position,
-        primaryPosition: playersSchema.primaryPosition,
-        sector: playersSchema.sector,
-        photoUrl: playersSchema.photoUrl
-      }).from(matchPlayersSchema).innerJoin(playersSchema, eq13(matchPlayersSchema.playerId, playersSchema.id)).where(eq13(matchPlayersSchema.matchId, matchId));
+        playerId: matchPlayers.playerId,
+        wasStarter: matchPlayers.wasStarter,
+        minutesPlayed: matchPlayers.minutesPlayed,
+        positionCode: matchPlayers.positionCode,
+        name: players.name,
+        knownName: players.knownName,
+        shirtNumber: players.shirtNumber,
+        position: players.position,
+        primaryPosition: players.primaryPosition,
+        sector: players.sector,
+        photoUrl: players.photoUrl
+      }).from(matchPlayers).innerJoin(players, eq13(matchPlayers.playerId, players.id)).where(eq13(matchPlayers.matchId, matchId));
       let playerList = mpRows;
       if (playerList.length === 0) {
         const allPlayers = await db.select({
-          playerId: playersSchema.id,
-          wasStarter: sqlExpr`true`,
-          minutesPlayed: sqlExpr`null`,
-          positionCode: sqlExpr`null`,
-          name: playersSchema.name,
-          knownName: playersSchema.knownName,
-          shirtNumber: playersSchema.shirtNumber,
-          position: playersSchema.position,
-          primaryPosition: playersSchema.primaryPosition,
-          sector: playersSchema.sector,
-          photoUrl: playersSchema.photoUrl
-        }).from(playersSchema).where(eq13(playersSchema.teamId, teamId));
+          playerId: players.id,
+          wasStarter: sql10`true`,
+          minutesPlayed: sql10`null`,
+          positionCode: sql10`null`,
+          name: players.name,
+          knownName: players.knownName,
+          shirtNumber: players.shirtNumber,
+          position: players.position,
+          primaryPosition: players.primaryPosition,
+          sector: players.sector,
+          photoUrl: players.photoUrl
+        }).from(players).where(eq13(players.teamId, teamId));
         playerList = allPlayers;
       }
       const SECTOR_ORDER = { GK: 0, DEF: 1, MID: 2, FWD: 3 };
@@ -7285,10 +7283,10 @@ async function registerRoutes(app2) {
         return (a.shirtNumber ?? 99) - (b.shirtNumber ?? 99);
       });
       const aggRows = await db.select({
-        playerId: playerRatingsSchema.playerId,
-        avgRating: avg(playerRatingsSchema.rating),
-        voteCount: count(playerRatingsSchema.id)
-      }).from(playerRatingsSchema).where(eq13(playerRatingsSchema.matchId, matchId)).groupBy(playerRatingsSchema.playerId);
+        playerId: playerRatings.playerId,
+        avgRating: avg(playerRatings.rating),
+        voteCount: count(playerRatings.id)
+      }).from(playerRatings).where(eq13(playerRatings.matchId, matchId)).groupBy(playerRatings.playerId);
       const aggMap = {};
       for (const r of aggRows) {
         aggMap[r.playerId] = { avgRating: Number(r.avgRating ?? 0), voteCount: Number(r.voteCount ?? 0) };
@@ -7332,23 +7330,21 @@ async function registerRoutes(app2) {
     try {
       const { teamId } = req.params;
       const months = Math.min(24, Math.max(1, parseInt(String(req.query.months ?? "6"), 10) || 6));
-      const { matches: matchesSchema, players: playersSchema, playerRatings: playerRatingsSchema } = await Promise.resolve().then(() => (init_schema(), schema_exports));
-      const { sql: sqlExpr, avg, count, gte } = await import("drizzle-orm");
       const since = /* @__PURE__ */ new Date();
       since.setMonth(since.getMonth() - months);
       const rows = await db.select({
-        matchId: playerRatingsSchema.matchId,
-        playerId: playerRatingsSchema.playerId,
-        rating: playerRatingsSchema.rating,
-        createdAt: playerRatingsSchema.createdAt,
-        competition: matchesSchema.competition,
-        matchDate: matchesSchema.matchDate,
-        opponent: matchesSchema.opponent,
-        teamScore: matchesSchema.teamScore,
-        opponentScore: matchesSchema.opponentScore
-      }).from(playerRatingsSchema).innerJoin(matchesSchema, eq13(playerRatingsSchema.matchId, matchesSchema.id)).where(and12(
-        eq13(matchesSchema.teamId, teamId),
-        gte(playerRatingsSchema.createdAt, since)
+        matchId: playerRatings.matchId,
+        playerId: playerRatings.playerId,
+        rating: playerRatings.rating,
+        createdAt: playerRatings.createdAt,
+        competition: matches.competition,
+        matchDate: matches.matchDate,
+        opponent: matches.opponent,
+        teamScore: matches.teamScore,
+        opponentScore: matches.opponentScore
+      }).from(playerRatings).innerJoin(matches, eq13(playerRatings.matchId, matches.id)).where(and12(
+        eq13(matches.teamId, teamId),
+        or7(isNull(playerRatings.createdAt), gte(playerRatings.createdAt, since))
       ));
       if (rows.length === 0) {
         return res.json({ byMonth: [], byCompetition: [], topPlayers: [], recentMatches: [] });
@@ -7376,7 +7372,7 @@ async function registerRoutes(app2) {
         playerMap[r.playerId].count += 1;
       }
       const topPlayerIds = Object.entries(playerMap).sort((a, b) => b[1].total / b[1].count - a[1].total / a[1].count).slice(0, 10).map(([id]) => id);
-      const playerRows = topPlayerIds.length > 0 ? await db.select({ id: playersSchema.id, name: playersSchema.name, knownName: playersSchema.knownName, photoUrl: playersSchema.photoUrl, position: playersSchema.position, sector: playersSchema.sector }).from(playersSchema).where(sqlExpr`${playersSchema.id} = ANY(${topPlayerIds})`) : [];
+      const playerRows = topPlayerIds.length > 0 ? await db.select({ id: players.id, name: players.name, knownName: players.knownName, photoUrl: players.photoUrl, position: players.position, sector: players.sector }).from(players).where(inArray8(players.id, topPlayerIds)) : [];
       const topPlayers = topPlayerIds.map((id) => {
         const p = playerRows.find((x) => x.id === id);
         const d = playerMap[id];
@@ -7520,6 +7516,40 @@ async function registerRoutes(app2) {
       if (error?.code === "23505") {
         return res.status(409).json({ message: "Voc\xEA j\xE1 avaliou este jogador nesta partida." });
       }
+      res.status(400).json({ message: error?.message ?? "Erro ao salvar nota" });
+    }
+  });
+  app2.put("/api/ratings", requireAuth4, async (req, res) => {
+    try {
+      const userId = req.session.userId;
+      const { matchId, playerId, rating } = req.body ?? {};
+      if (!matchId || !playerId || typeof rating !== "number") {
+        return res.status(400).json({ message: "matchId, playerId e rating s\xE3o obrigat\xF3rios" });
+      }
+      if (rating < 0 || rating > 10) {
+        return res.status(400).json({ message: "A nota deve estar entre 0 e 10." });
+      }
+      const r = Math.min(10, Math.max(0, rating));
+      const step = Math.round(r * 2) / 2;
+      const match = await storage.getMatch(matchId);
+      if (!match) {
+        return res.status(404).json({ message: "Partida n\xE3o encontrada" });
+      }
+      const player = await storage.getPlayer(playerId);
+      if (!player) {
+        return res.status(404).json({ message: "Jogador n\xE3o encontrado" });
+      }
+      const updated = await storage.upsertPlayerRating(userId, playerId, matchId, step);
+      const byMatch = await storage.getRatingsByMatch(matchId);
+      const thisPlayer = byMatch.find((x) => x.playerId === playerId);
+      res.json({
+        playerId: updated.playerId,
+        matchId: updated.matchId,
+        rating: updated.rating,
+        voteCount: thisPlayer?.count ?? 0
+      });
+    } catch (error) {
+      console.error("Upsert rating error:", error);
       res.status(400).json({ message: error?.message ?? "Erro ao salvar nota" });
     }
   });
@@ -8095,8 +8125,8 @@ async function registerRoutes(app2) {
   app2.get("/api/notifications/unread-count", requireAuth4, async (req, res) => {
     try {
       const userId = req.session.userId;
-      const count = await storage.getUnreadNotificationCount(userId);
-      res.json({ count });
+      const count2 = await storage.getUnreadNotificationCount(userId);
+      res.json({ count: count2 });
     } catch (error) {
       console.error("Get unread count error:", error);
       res.status(500).json({ message: "Erro ao buscar contador" });
