@@ -7241,7 +7241,7 @@ async function registerRoutes(app2) {
         playerId: matchPlayers.playerId,
         wasStarter: matchPlayers.wasStarter,
         minutesPlayed: matchPlayers.minutesPlayed,
-        positionCode: matchPlayers.positionCode,
+        positionCode: sql10`null`,
         name: players.name,
         knownName: players.knownName,
         shirtNumber: players.shirtNumber,

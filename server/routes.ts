@@ -1577,7 +1577,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
           playerId: matchPlayers.playerId,
           wasStarter: matchPlayers.wasStarter,
           minutesPlayed: matchPlayers.minutesPlayed,
-          positionCode: matchPlayers.positionCode,
+          positionCode: sql<string | null>`null`,
           name: players.name,
           knownName: players.knownName,
           shirtNumber: players.shirtNumber,
