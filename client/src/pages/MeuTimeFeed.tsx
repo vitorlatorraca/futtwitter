@@ -6,7 +6,7 @@ import { AppShell } from "@/components/ui/app-shell";
 import { Skeleton } from "@/components/ui/skeleton";
 import { EmptyState } from "@/components/ui/empty-state";
 import { LineupSection, resolvePlayerPhoto } from "@/features/my-team-v2";
-import { ElencoTab, ClassificacaoTab, SimulacaoTab } from "@/features/meu-time";
+import { ElencoTab, ClassificacaoTab, SimulacaoTab, MatchRatingPanel, RatingsDashboard } from "@/features/meu-time";
 import { getTeamCrest } from "@/lib/teamCrests";
 import { useToast } from "@/hooks/use-toast";
 import { Shield, Star, ChevronLeft, ChevronRight, Check } from "lucide-react";
@@ -24,11 +24,12 @@ interface ExtendedTeamData {
 // ─── Tabs ───────────────────────────────────────────────────────────────────
 
 const TABS = [
-  { value: "escalacao", label: "Escalação" },
-  { value: "resumo",    label: "Resumo" },
-  { value: "elenco",    label: "Elenco" },
-  { value: "classificacao", label: "Classificação" },
-  { value: "simulacao", label: "Simulação" },
+  { value: "escalacao",    label: "Escalação" },
+  { value: "ultima",       label: "Última Partida" },
+  { value: "notas",        label: "Notas" },
+  { value: "elenco",       label: "Elenco" },
+  { value: "classificacao",label: "Classificação" },
+  { value: "simulacao",    label: "Simulação" },
 ] as const;
 type TabValue = typeof TABS[number]["value"];
 
@@ -436,8 +437,20 @@ export default function MeuTimeFeed() {
             <EscalacaoTab teamId={teamId} players={players} />
           )}
 
-          {activeTab === "resumo" && teamData && (
-            <ResumoTab teamData={teamData} teamId={teamId} />
+          {activeTab === "ultima" && (
+            <div className="p-4">
+              <MatchRatingPanel
+                teamId={teamId}
+                teamName={team?.name ?? "Meu Time"}
+                teamLogoUrl={team?.logoUrl ?? null}
+              />
+            </div>
+          )}
+
+          {activeTab === "notas" && (
+            <div className="p-4">
+              <RatingsDashboard teamId={teamId} />
+            </div>
           )}
 
           {activeTab === "elenco" && (

@@ -1532,6 +1532,280 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // ============================================
+  // PLAYER RATING – last match + analytics
+  // ============================================
+
+  /**
+   * GET /api/teams/:teamId/last-match-for-rating
+   * Returns the last completed match + all players (with position, photo)
+   * sorted by sector (GK → DEF → MID → FWD), plus:
+   *   - existing user ratings for this match
+   *   - community aggregate ratings
+   */
+  app.get('/api/teams/:teamId/last-match-for-rating', requireAuth, async (req, res) => {
+    try {
+      const { teamId } = req.params;
+      const userId = (req as any).session?.userId as string | undefined;
+      const { matches: matchesSchema, players: playersSchema, matchPlayers: matchPlayersSchema, playerRatings: playerRatingsSchema } = await import('@shared/schema');
+      const { sql: sqlExpr, avg, count } = await import('drizzle-orm');
+
+      // 1. Last completed match
+      const [lastMatch] = await db
+        .select()
+        .from(matchesSchema)
+        .where(and(eq(matchesSchema.teamId, teamId), eq(matchesSchema.status, 'COMPLETED')))
+        .orderBy(desc(matchesSchema.matchDate))
+        .limit(1);
+
+      if (!lastMatch) return res.json({ match: null, players: [] });
+
+      const matchId = lastMatch.id;
+
+      // 2. Players for this match (matchPlayers) joined with player info
+      const mpRows = await db
+        .select({
+          playerId: matchPlayersSchema.playerId,
+          wasStarter: matchPlayersSchema.wasStarter,
+          minutesPlayed: matchPlayersSchema.minutesPlayed,
+          positionCode: matchPlayersSchema.positionCode,
+          name: playersSchema.name,
+          knownName: playersSchema.knownName,
+          shirtNumber: playersSchema.shirtNumber,
+          position: playersSchema.position,
+          primaryPosition: playersSchema.primaryPosition,
+          sector: playersSchema.sector,
+          photoUrl: playersSchema.photoUrl,
+        })
+        .from(matchPlayersSchema)
+        .innerJoin(playersSchema, eq(matchPlayersSchema.playerId, playersSchema.id))
+        .where(eq(matchPlayersSchema.matchId, matchId));
+
+      // 3. If no matchPlayers data, fall back to all team players
+      let playerList = mpRows;
+      if (playerList.length === 0) {
+        const allPlayers = await db
+          .select({
+            playerId: playersSchema.id,
+            wasStarter: sqlExpr<boolean>`true`,
+            minutesPlayed: sqlExpr<number | null>`null`,
+            positionCode: sqlExpr<string | null>`null`,
+            name: playersSchema.name,
+            knownName: playersSchema.knownName,
+            shirtNumber: playersSchema.shirtNumber,
+            position: playersSchema.position,
+            primaryPosition: playersSchema.primaryPosition,
+            sector: playersSchema.sector,
+            photoUrl: playersSchema.photoUrl,
+          })
+          .from(playersSchema)
+          .where(eq(playersSchema.teamId, teamId));
+        playerList = allPlayers as typeof playerList;
+      }
+
+      // 4. Sector sort order
+      const SECTOR_ORDER: Record<string, number> = { GK: 0, DEF: 1, MID: 2, FWD: 3 };
+      const getSectorOrder = (p: typeof playerList[0]) => {
+        const s = p.sector?.toUpperCase() ?? '';
+        if (SECTOR_ORDER[s] !== undefined) return SECTOR_ORDER[s];
+        const pos = (p.primaryPosition ?? p.position ?? '').toUpperCase();
+        if (pos.includes('GK') || pos === 'GOALKEEPER') return 0;
+        if (pos.includes('CB') || pos.includes('LB') || pos.includes('RB') || pos.includes('DEF')) return 1;
+        if (pos.includes('CM') || pos.includes('DM') || pos.includes('AM') || pos.includes('MID')) return 2;
+        return 3;
+      };
+
+      const sorted = [...playerList].sort((a, b) => {
+        const so = getSectorOrder(a) - getSectorOrder(b);
+        if (so !== 0) return so;
+        return (a.shirtNumber ?? 99) - (b.shirtNumber ?? 99);
+      });
+
+      // 5. Community aggregate ratings for this match
+      const aggRows = await db
+        .select({
+          playerId: playerRatingsSchema.playerId,
+          avgRating: avg(playerRatingsSchema.rating),
+          voteCount: count(playerRatingsSchema.id),
+        })
+        .from(playerRatingsSchema)
+        .where(eq(playerRatingsSchema.matchId, matchId))
+        .groupBy(playerRatingsSchema.playerId);
+
+      const aggMap: Record<string, { avgRating: number; voteCount: number }> = {};
+      for (const r of aggRows) {
+        aggMap[r.playerId] = { avgRating: Number(r.avgRating ?? 0), voteCount: Number(r.voteCount ?? 0) };
+      }
+
+      // 6. User's own ratings for this match
+      const myRatings = userId
+        ? await storage.getUserRatingsForMatch(userId, matchId)
+        : [];
+      const myMap: Record<string, number> = {};
+      for (const r of myRatings) myMap[r.playerId] = r.rating;
+
+      res.json({
+        match: {
+          id: matchId,
+          opponent: lastMatch.opponent,
+          opponentLogoUrl: lastMatch.opponentLogoUrl ?? null,
+          matchDate: lastMatch.matchDate,
+          teamScore: lastMatch.teamScore,
+          opponentScore: lastMatch.opponentScore,
+          isHomeMatch: lastMatch.isHomeMatch,
+          competition: lastMatch.competition ?? null,
+          championshipRound: lastMatch.championshipRound ?? null,
+        },
+        players: sorted.map((p) => ({
+          playerId: p.playerId,
+          name: p.name,
+          knownName: p.knownName ?? null,
+          shirtNumber: p.shirtNumber ?? null,
+          position: p.primaryPosition ?? p.position ?? null,
+          sector: p.sector ?? null,
+          photoUrl: p.photoUrl ?? null,
+          wasStarter: p.wasStarter ?? true,
+          minutesPlayed: p.minutesPlayed ?? null,
+          myRating: myMap[p.playerId] ?? null,
+          communityAvg: aggMap[p.playerId]?.avgRating ?? null,
+          voteCount: aggMap[p.playerId]?.voteCount ?? 0,
+        })),
+      });
+    } catch (error) {
+      console.error('last-match-for-rating error:', error);
+      res.status(500).json({ message: 'Erro ao buscar partida para avaliação' });
+    }
+  });
+
+  /**
+   * GET /api/teams/:teamId/ratings/analytics
+   * Aggregate fan ratings by month, competition and top players.
+   * Query params: ?months=6 (default 6)
+   */
+  app.get('/api/teams/:teamId/ratings/analytics', requireAuth, async (req, res) => {
+    try {
+      const { teamId } = req.params;
+      const months = Math.min(24, Math.max(1, parseInt(String(req.query.months ?? '6'), 10) || 6));
+
+      const { matches: matchesSchema, players: playersSchema, playerRatings: playerRatingsSchema } = await import('@shared/schema');
+      const { sql: sqlExpr, avg, count, gte } = await import('drizzle-orm');
+
+      const since = new Date();
+      since.setMonth(since.getMonth() - months);
+
+      // All ratings for this team's matches in the window
+      const rows = await db
+        .select({
+          matchId: playerRatingsSchema.matchId,
+          playerId: playerRatingsSchema.playerId,
+          rating: playerRatingsSchema.rating,
+          createdAt: playerRatingsSchema.createdAt,
+          competition: matchesSchema.competition,
+          matchDate: matchesSchema.matchDate,
+          opponent: matchesSchema.opponent,
+          teamScore: matchesSchema.teamScore,
+          opponentScore: matchesSchema.opponentScore,
+        })
+        .from(playerRatingsSchema)
+        .innerJoin(matchesSchema, eq(playerRatingsSchema.matchId, matchesSchema.id))
+        .where(and(
+          eq(matchesSchema.teamId, teamId),
+          gte(playerRatingsSchema.createdAt, since),
+        ));
+
+      if (rows.length === 0) {
+        return res.json({ byMonth: [], byCompetition: [], topPlayers: [], recentMatches: [] });
+      }
+
+      // --- By month ---
+      const monthMap: Record<string, { total: number; count: number }> = {};
+      for (const r of rows) {
+        const key = r.createdAt
+          ? `${r.createdAt.getFullYear()}-${String(r.createdAt.getMonth() + 1).padStart(2, '0')}`
+          : 'unknown';
+        if (!monthMap[key]) monthMap[key] = { total: 0, count: 0 };
+        monthMap[key].total += r.rating;
+        monthMap[key].count += 1;
+      }
+      const byMonth = Object.entries(monthMap)
+        .map(([month, d]) => ({ month, avgRating: +(d.total / d.count).toFixed(2), votes: d.count }))
+        .sort((a, b) => a.month.localeCompare(b.month));
+
+      // --- By competition ---
+      const compMap: Record<string, { total: number; count: number }> = {};
+      for (const r of rows) {
+        const key = r.competition ?? 'Sem competição';
+        if (!compMap[key]) compMap[key] = { total: 0, count: 0 };
+        compMap[key].total += r.rating;
+        compMap[key].count += 1;
+      }
+      const byCompetition = Object.entries(compMap)
+        .map(([competition, d]) => ({ competition, avgRating: +(d.total / d.count).toFixed(2), votes: d.count }))
+        .sort((a, b) => b.avgRating - a.avgRating);
+
+      // --- Top players ---
+      const playerMap: Record<string, { total: number; count: number }> = {};
+      for (const r of rows) {
+        if (!playerMap[r.playerId]) playerMap[r.playerId] = { total: 0, count: 0 };
+        playerMap[r.playerId].total += r.rating;
+        playerMap[r.playerId].count += 1;
+      }
+      const topPlayerIds = Object.entries(playerMap)
+        .sort((a, b) => b[1].total / b[1].count - a[1].total / a[1].count)
+        .slice(0, 10)
+        .map(([id]) => id);
+
+      const playerRows = topPlayerIds.length > 0
+        ? await db
+            .select({ id: playersSchema.id, name: playersSchema.name, knownName: playersSchema.knownName, photoUrl: playersSchema.photoUrl, position: playersSchema.position, sector: playersSchema.sector })
+            .from(playersSchema)
+            .where(sqlExpr`${playersSchema.id} = ANY(${topPlayerIds})`)
+        : [];
+
+      const topPlayers = topPlayerIds
+        .map((id) => {
+          const p = playerRows.find((x) => x.id === id);
+          const d = playerMap[id];
+          return {
+            playerId: id,
+            name: p?.knownName ?? p?.name ?? id,
+            photoUrl: p?.photoUrl ?? null,
+            position: p?.position ?? null,
+            sector: p?.sector ?? null,
+            avgRating: +(d.total / d.count).toFixed(2),
+            votes: d.count,
+          };
+        })
+        .filter((p) => p.votes >= 1);
+
+      // --- Recent matches with team avg rating ---
+      const matchMap: Record<string, { total: number; count: number; opponent: string; matchDate: Date | null; competition: string | null; teamScore: number | null; opponentScore: number | null }> = {};
+      for (const r of rows) {
+        if (!matchMap[r.matchId]) matchMap[r.matchId] = { total: 0, count: 0, opponent: r.opponent, matchDate: r.matchDate, competition: r.competition ?? null, teamScore: r.teamScore ?? null, opponentScore: r.opponentScore ?? null };
+        matchMap[r.matchId].total += r.rating;
+        matchMap[r.matchId].count += 1;
+      }
+      const recentMatches = Object.entries(matchMap)
+        .map(([matchId, d]) => ({
+          matchId,
+          opponent: d.opponent,
+          matchDate: d.matchDate,
+          competition: d.competition,
+          teamScore: d.teamScore,
+          opponentScore: d.opponentScore,
+          avgRating: +(d.total / d.count).toFixed(2),
+          votes: d.count,
+        }))
+        .sort((a, b) => (b.matchDate?.getTime() ?? 0) - (a.matchDate?.getTime() ?? 0))
+        .slice(0, 10);
+
+      res.json({ byMonth, byCompetition, topPlayers, recentMatches });
+    } catch (error) {
+      console.error('ratings analytics error:', error);
+      res.status(500).json({ message: 'Erro ao buscar analytics de notas' });
+    }
+  });
+
+  // ============================================
   // MATCHES ROUTES
   // ============================================
 

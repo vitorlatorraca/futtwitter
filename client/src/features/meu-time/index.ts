@@ -4,6 +4,8 @@ export { TeamTabs } from './components/TeamTabs';
 export { ClassificacaoTab } from './ClassificacaoTab';
 export { SimulacaoTab } from './SimulacaoTab';
 export { ElencoTab } from './ElencoTab';
+export { MatchRatingPanel } from './MatchRatingPanel';
+export { RatingsDashboard } from './RatingsDashboard';
 export { TeamTrophies } from './components/TeamTrophies';
 export { TeamHero } from './components/TeamHero';
 export { getClubConfig, defaultClubConfig } from './clubs';
