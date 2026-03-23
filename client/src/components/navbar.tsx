@@ -57,7 +57,7 @@ export function Navbar() {
                 href={link.href}
                 data-testid={link.testId}
                 className={cn(
-                  "relative flex items-center justify-center px-4 h-14 text-sm font-bold transition-colors",
+                  "relative flex items-center justify-center px-4 h-14 text-sm font-bold transition-colors whitespace-nowrap",
                   "hover:bg-white/5",
                   active ? "text-foreground" : "text-foreground-secondary"
                 )}
