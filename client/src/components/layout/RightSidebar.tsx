@@ -158,7 +158,7 @@ export default function RightSidebar() {
                 </div>
                 <button
                   onClick={() => toggleFollowLocal(u.id)}
-                  className="rounded-full font-bold text-[14px] px-4 py-1.5 transition-colors flex-shrink-0 bg-[#1a56db] text-white hover:bg-[#1544b8]"
+                  className="rounded-full font-bold text-[14px] px-4 py-1.5 transition-colors flex-shrink-0 bg-x-accent text-white hover:bg-x-accent-hover"
                 >
                   {isFollowing ? "Seguindo" : "Seguir"}
                 </button>
@@ -211,7 +211,7 @@ export default function RightSidebar() {
                     <div className="flex items-center gap-1">
                       <p className="text-[15px] font-bold truncate">{targetUser.name}</p>
                       {targetUser.userType === "JOURNALIST" && (
-                        <span className="text-[#1d9bf0] text-xs">✓</span>
+                        <span className="text-x-accent text-xs">✓</span>
                       )}
                     </div>
                     <p className="text-[13px] text-x-text-secondary truncate">@{targetUser.handle}</p>
@@ -231,7 +231,7 @@ export default function RightSidebar() {
               ))}
               <button
                 onClick={() => navigate("/explore")}
-                className="w-full px-4 py-3 text-[15px] text-[#1d9bf0] hover:bg-[rgba(29,155,240,0.1)] transition-colors text-left"
+                className="w-full px-4 py-3 text-[15px] text-x-accent hover:bg-[rgba(0,230,118,0.08)] transition-colors text-left"
               >
                 Ver mais
               </button>

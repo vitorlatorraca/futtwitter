@@ -156,7 +156,7 @@ export default function Feed() {
 
   return (
     <div>
-      <div className="sticky top-0 z-20 bg-black/80 backdrop-blur-md border-b border-x-border">
+      <div className="sticky top-14 z-20 bg-black/80 backdrop-blur-md border-b border-x-border">
         <div className="flex">
           {(["posts", "torcida", "influencers"] as const).map((tab) => (
             <button
@@ -168,7 +168,7 @@ export default function Feed() {
                 {tab === "posts" ? "Posts" : tab === "torcida" ? "Torcida" : "Influencers"}
               </span>
               {activeTab === tab && (
-                <div className="absolute bottom-0 left-1/2 -translate-x-1/2 w-[56px] h-1 bg-[#1a56db] rounded-full" />
+                <div className="absolute bottom-0 left-1/2 -translate-x-1/2 w-[56px] h-1 rounded-full bg-x-accent" />
               )}
             </button>
           ))}
@@ -182,7 +182,7 @@ export default function Feed() {
             onClick={() => setInfluencerFilter("all")}
             className={`px-4 py-1.5 rounded-full text-xs font-semibold transition-colors border ${
               influencerFilter === "all"
-                ? "bg-[#1a56db] text-white border-[#1a56db]"
+                ? "bg-x-accent text-black border-x-accent"
                 : "bg-transparent text-x-text-secondary border-x-border hover:border-x-text-secondary"
             }`}
           >
@@ -192,7 +192,7 @@ export default function Feed() {
             onClick={() => setInfluencerFilter("mine")}
             className={`px-4 py-1.5 rounded-full text-xs font-semibold transition-colors border ${
               influencerFilter === "mine"
-                ? "bg-[#1a56db] text-white border-[#1a56db]"
+                ? "bg-x-accent text-black border-x-accent"
                 : "bg-transparent text-x-text-secondary border-x-border hover:border-x-text-secondary"
             }`}
           >

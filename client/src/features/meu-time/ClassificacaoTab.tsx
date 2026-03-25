@@ -246,7 +246,7 @@ export function ClassificacaoTab({ userTeamId }: ClassificacaoTabProps) {
           Libertadores
         </span>
         <span className="flex items-center gap-2">
-          <span className="w-2 h-2 rounded-full bg-blue-500" />
+          <span className="w-2 h-2 rounded-full bg-x-accent" />
           Pré-Libertadores
         </span>
         <span className="flex items-center gap-2">

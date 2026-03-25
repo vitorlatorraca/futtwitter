@@ -242,7 +242,7 @@ export default function ComposeBox({
               type="button"
               onClick={() => authUser && imageInputRef.current?.click()}
               disabled={uploadingImage || !authUser}
-              className="p-2 rounded-full hover:bg-[rgba(29,155,240,0.1)] transition-colors disabled:opacity-40"
+              className="p-2 rounded-full hover:bg-[rgba(0,230,118,0.08)] transition-colors disabled:opacity-40"
               aria-label={uploadingImage ? "Enviando imagem..." : "Adicionar imagem"}
               title="Adicionar imagem"
             >
@@ -259,7 +259,7 @@ export default function ComposeBox({
                     <circle cx="12" cy="12" r="10" fill="none" stroke="#2f3336" strokeWidth="2" />
                     <circle
                       cx="12" cy="12" r="10" fill="none"
-                      stroke={overLimit ? "#f4212e" : remaining <= 20 ? "#ffd400" : "#1a56db"}
+                      stroke={overLimit ? "#f4212e" : remaining <= 20 ? "#ffd400" : "var(--x-accent)"}
                       strokeWidth="2"
                       strokeDasharray={circumference}
                       strokeDashoffset={strokeDashoffset}

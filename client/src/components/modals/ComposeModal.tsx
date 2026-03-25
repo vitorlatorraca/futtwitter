@@ -55,7 +55,7 @@ export default function ComposeModal() {
             />
 
             <div className="px-4 pb-3 ml-[52px]">
-              <button className="flex items-center gap-1.5 text-x-accent text-[14px] font-bold p-1.5 -m-1.5 rounded-full hover:bg-[rgba(29,155,240,0.1)] transition-colors">
+              <button className="flex items-center gap-1.5 text-x-accent text-[14px] font-bold p-1.5 -m-1.5 rounded-full hover:bg-[rgba(0,230,118,0.08)] transition-colors">
                 <Globe className="w-4 h-4" />
                 Todos podem responder
               </button>

@@ -10,17 +10,17 @@ const config: Config = {
     extend: {
       colors: {
         // ── FuteApp design system (x-*) ──────────────────────────
-        "x-bg": "#000000",
-        "x-surface": "#16181c",
-        "x-border": "#2f3336",
-        "x-text-primary": "#e7e9ea",
-        "x-text-secondary": "#71767b",
-        "x-accent": "#1a56db",
-        "x-accent-hover": "#1648b8",
-        "x-hover": "rgba(255,255,255,0.03)",
+        "x-bg": "#080C14",
+        "x-surface": "#0F1520",
+        "x-border": "#1C2333",
+        "x-text-primary": "#E8ECF0",
+        "x-text-secondary": "#6B7A8D",
+        "x-accent": "#00E676",
+        "x-accent-hover": "#00C853",
+        "x-hover": "rgba(0,230,118,0.04)",
         "x-like": "#f91880",
         "x-repost": "#00ba7c",
-        "x-search-bg": "#202327",
+        "x-search-bg": "#111827",
 
         // ── Shadcn/UI tokens (CSS-variable backed) ────────────────
         background:              "hsl(var(--background))",

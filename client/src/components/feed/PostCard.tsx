@@ -21,7 +21,7 @@ function getInitials(name: string): string {
 function hashToColor(str: string): string {
   let h = 0;
   for (let i = 0; i < str.length; i++) h = (h << 5) - h + str.charCodeAt(i);
-  const colors = ["#1a56db", "#16a34a", "#ca8a04", "#dc2626", "#7c3aed", "#0d9488"];
+  const colors = ["#00E676", "#00897B", "#16a34a", "#7c3aed", "#0d9488", "#ca8a04"];
   return colors[Math.abs(h) % colors.length];
 }
 
@@ -204,7 +204,7 @@ const PostCard = React.memo(function PostCard({ post, isQuoted = false, navigate
             <div className="relative flex-shrink-0 ml-2">
               <button
                 onClick={(e) => { e.stopPropagation(); setMenuOpen(!menuOpen); }}
-                className="p-1.5 -m-1.5 rounded-full hover:bg-[rgba(29,155,240,0.1)] transition-colors"
+                className="p-1.5 -m-1.5 rounded-full hover:bg-[rgba(0,230,118,0.08)] transition-colors"
                 aria-label="More options"
               >
                 <MoreHorizontal className="w-[18px] h-[18px] text-x-text-secondary" />

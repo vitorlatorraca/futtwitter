@@ -116,7 +116,7 @@ export default function FollowingList() {
         </button>
         <button
           onClick={() => handle && navigate(`/profile/${handle}/following`)}
-          className="flex-1 py-4 text-[15px] font-semibold border-b-2 border-[#1d9bf0] text-white"
+          className="flex-1 py-4 text-[15px] font-semibold border-b-2 border-x-accent text-white"
         >
           Seguindo
         </button>
@@ -144,7 +144,7 @@ export default function FollowingList() {
             <button
               onClick={() => fetchNextPage()}
               disabled={isFetchingNextPage}
-              className="w-full py-4 text-[#1d9bf0] text-[15px] hover:bg-[rgba(29,155,240,0.1)] transition-colors"
+              className="w-full py-4 text-x-accent text-[15px] hover:bg-[rgba(0,230,118,0.08)] transition-colors"
             >
               {isFetchingNextPage ? "Carregando..." : "Carregar mais"}
             </button>

@@ -178,10 +178,10 @@ function ChatView({ conversation, onBack }: { conversation: Conversation | null;
       {/* Input */}
       <div className="px-4 py-3 border-t border-x-border">
         <div className="flex items-center gap-2 bg-x-surface rounded-2xl px-3 py-2">
-          <button className="p-1.5 rounded-full hover:bg-[rgba(29,155,240,0.1)]" aria-label="Add image">
+          <button className="p-1.5 rounded-full hover:bg-[rgba(0,230,118,0.08)]" aria-label="Add image">
             <Image className="w-5 h-5 text-x-accent" />
           </button>
-          <button className="p-1.5 rounded-full hover:bg-[rgba(29,155,240,0.1)]" aria-label="Add emoji">
+          <button className="p-1.5 rounded-full hover:bg-[rgba(0,230,118,0.08)]" aria-label="Add emoji">
             <Smile className="w-5 h-5 text-x-accent" />
           </button>
           <input
@@ -195,7 +195,7 @@ function ChatView({ conversation, onBack }: { conversation: Conversation | null;
           <button
             onClick={handleSend}
             disabled={!text.trim()}
-            className="p-1.5 rounded-full hover:bg-[rgba(29,155,240,0.1)] disabled:opacity-40"
+            className="p-1.5 rounded-full hover:bg-[rgba(0,230,118,0.08)] disabled:opacity-40"
             aria-label="Send"
           >
             <Send className="w-5 h-5 text-x-accent" />

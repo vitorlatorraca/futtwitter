@@ -10,6 +10,7 @@ import Toast from "./components/modals/Toast";
 import { ProtectedRoute } from "./components/auth/ProtectedRoute";
 import { GuestRoute } from "./components/auth/GuestRoute";
 import { ProfileRedirect } from "./components/auth/ProfileRedirect";
+import { TooltipProvider } from "./components/ui/tooltip";
 
 const LoginPage = lazy(() => import("./pages/login"));
 const SignupPage = lazy(() => import("./pages/signup"));
@@ -27,10 +28,16 @@ const Settings = lazy(() => import("./pages/Settings"));
 const SettingsConta = lazy(() => import("./pages/settings/SettingsConta"));
 const SettingsPrivacidade = lazy(() => import("./pages/settings/SettingsPrivacidade"));
 const SettingsAdmin = lazy(() => import("./pages/settings/SettingsAdmin"));
-const MeuTimeFeed = lazy(() => import("./pages/MeuTimeFeed"));
-const VaiEVemFeed = lazy(() => import("./pages/VaiEVemFeed"));
-const JogosFeed = lazy(() => import("./pages/JogosFeed"));
 const NewsDetail = lazy(() => import("./pages/NewsDetail"));
+
+// ── New design pages (AppShell + top navbar) ──────────────────────────────────
+const DashboardPage = lazy(() => import("./pages/dashboard"));
+const MeuTimePage = lazy(() => import("./pages/meu-time"));
+const VaiEVemPage = lazy(() => import("./pages/vai-e-vem"));
+const JogosPage = lazy(() => import("./pages/jogos"));
+const PerfilPage = lazy(() => import("./pages/perfil"));
+const MeuTimeComunidade = lazy(() => import("./pages/meu-time-comunidade"));
+const MeuTimeElenco = lazy(() => import("./pages/meu-time-elenco"));
 
 // ============================================
 // REACT ERROR BOUNDARY
@@ -73,7 +80,7 @@ class ErrorBoundary extends React.Component<
             </p>
             <button
               onClick={() => window.location.reload()}
-              className="mt-4 px-6 py-2 rounded-full bg-blue-600 text-white font-semibold text-sm hover:opacity-90 transition-opacity"
+              className="mt-4 px-6 py-2 rounded-full bg-x-accent text-black font-semibold text-sm hover:opacity-90 transition-opacity"
             >
               Recarregar página
             </button>
@@ -122,47 +129,56 @@ export default function App() {
   return (
     <ErrorBoundary>
       <QueryClientProvider client={queryClient}>
-        <AuthProvider>
-          <BrowserRouter>
+        <TooltipProvider>
+          <AuthProvider>
+            <BrowserRouter>
             <Suspense fallback={<LoadingFallback />}>
               <Routes>
-                {/* Public auth routes - redirect to /profile if already logged in */}
+                {/* Public auth routes */}
                 <Route path="/login" element={<GuestRoute><LoginPage /></GuestRoute>} />
                 <Route path="/cadastro" element={<GuestRoute><SignupPage /></GuestRoute>} />
                 <Route path="/selecionar-time" element={<GuestRoute><TeamSelectionPage /></GuestRoute>} />
 
-                {/* Protected app - requires authentication */}
+                {/* ── New design pages (AppShell top navbar, no sidebar) ──────── */}
+                <Route path="/dashboard" element={<ProtectedRoute><DashboardPage /></ProtectedRoute>} />
+                <Route path="/meu-time" element={<ProtectedRoute><MeuTimePage /></ProtectedRoute>} />
+                <Route path="/meu-time/comunidade/:id" element={<ProtectedRoute><MeuTimeComunidade /></ProtectedRoute>} />
+                <Route path="/meu-time/elenco" element={<ProtectedRoute><MeuTimeElenco /></ProtectedRoute>} />
+                <Route path="/vai-e-vem" element={<ProtectedRoute><VaiEVemPage /></ProtectedRoute>} />
+                <Route path="/jogos" element={<ProtectedRoute><JogosPage /></ProtectedRoute>} />
+                <Route path="/meu-time/jogos" element={<ProtectedRoute><JogosPage /></ProtectedRoute>} />
+                <Route path="/perfil" element={<ProtectedRoute><PerfilPage /></ProtectedRoute>} />
+
+                {/* ── Legacy Twitter-style pages (left sidebar layout) ─────────── */}
                 <Route element={<ProtectedRoute><Layout /></ProtectedRoute>}>
-                  <Route path="/" element={<ProfileRedirect />} />
+                  <Route path="/" element={<Navigate to="/dashboard" replace />} />
+                  <Route path="/feed" element={<Navigate to="/dashboard" replace />} />
                   <Route path="/profile" element={<ProfileRedirect />} />
                   <Route path="/profile/:handle" element={<Profile />} />
                   <Route path="/profile/:handle/followers" element={<FollowersList />} />
                   <Route path="/profile/:handle/following" element={<FollowingList />} />
-                  <Route path="/feed" element={<Home />} />
                   <Route path="/explore" element={<Explore />} />
                   <Route path="/notifications" element={<Notifications />} />
                   <Route path="/messages" element={<Messages />} />
                   <Route path="/messages/:id" element={<Messages />} />
                   <Route path="/post/:id" element={<PostDetail />} />
-                  <Route path="/posts" element={<Navigate to="/feed" replace />} />
+                  <Route path="/posts" element={<Navigate to="/dashboard" replace />} />
                   <Route path="/bookmarks" element={<Bookmarks />} />
                   <Route path="/settings" element={<Settings />} />
                   <Route path="/settings/conta" element={<SettingsConta />} />
                   <Route path="/settings/privacidade" element={<SettingsPrivacidade />} />
                   <Route path="/settings/admin" element={<SettingsAdmin />} />
-                  <Route path="/meu-time" element={<MeuTimeFeed />} />
-                  <Route path="/vai-e-vem" element={<VaiEVemFeed />} />
-                  <Route path="/jogos" element={<JogosFeed />} />
                   <Route path="/news/:id" element={<NewsDetail />} />
                   <Route path="*" element={<PlaceholderPage title="Página não encontrada" />} />
                 </Route>
               </Routes>
             </Suspense>
-            <ComposeModal />
-            <ImageLightbox />
-            <Toast />
-          </BrowserRouter>
-        </AuthProvider>
+              <ComposeModal />
+              <ImageLightbox />
+              <Toast />
+            </BrowserRouter>
+          </AuthProvider>
+        </TooltipProvider>
       </QueryClientProvider>
     </ErrorBoundary>
   );

@@ -111,7 +111,7 @@ export default function NewsDetail() {
           ) : (
             <div
               className="w-12 h-12 rounded-full flex items-center justify-center text-white font-bold"
-              style={{ backgroundColor: "#1a56db" }}
+              style={{ backgroundColor: "var(--x-accent)" }}
             >
               {(news.journalist.name || "A")
                 .split(" ")
@@ -208,7 +208,7 @@ export default function NewsDetail() {
                     className="w-10 h-10 rounded-full object-cover flex-shrink-0"
                   />
                 ) : (
-                  <div className="w-10 h-10 rounded-full bg-[#1a56db] flex items-center justify-center text-white text-sm font-bold flex-shrink-0">
+                  <div className="w-10 h-10 rounded-full bg-x-accent flex items-center justify-center text-white text-sm font-bold flex-shrink-0">
                     {(c.author.name || "?").slice(0, 2).toUpperCase()}
                   </div>
                 )}

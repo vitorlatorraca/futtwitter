@@ -542,7 +542,7 @@ export function SimulacaoTab({ userTeamId }: SimulacaoTabProps) {
               Libertadores
             </span>
             <span className="flex items-center gap-1.5">
-              <span className="w-2 h-2 rounded-full bg-blue-500" />
+              <span className="w-2 h-2 rounded-full bg-x-accent" />
               Pré-Libertadores
             </span>
             <span className="flex items-center gap-1.5">

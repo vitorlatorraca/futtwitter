@@ -67,7 +67,7 @@ const TweetActions = React.memo(function TweetActions({ post, onLike, onBookmark
         className="group flex items-center gap-1"
         aria-label={`Reply, ${post.replies} replies`}
       >
-        <div className="p-2 rounded-full group-hover:bg-[rgba(29,155,240,0.1)] transition-colors">
+        <div className="p-2 rounded-full group-hover:bg-[rgba(0,230,118,0.08)] transition-colors">
           <MessageCircle className="w-[18px] h-[18px] text-x-text-secondary group-hover:text-x-accent transition-colors" />
         </div>
         {post.replies > 0 && (
@@ -155,7 +155,7 @@ const TweetActions = React.memo(function TweetActions({ post, onLike, onBookmark
 
       {/* Views */}
       <button className="group flex items-center gap-1" aria-label={`${formatNumber(post.views)} views`}>
-        <div className="p-2 rounded-full group-hover:bg-[rgba(29,155,240,0.1)] transition-colors">
+        <div className="p-2 rounded-full group-hover:bg-[rgba(0,230,118,0.08)] transition-colors">
           <BarChart2 className="w-[18px] h-[18px] text-x-text-secondary group-hover:text-x-accent transition-colors" />
         </div>
         {post.views > 0 && (
@@ -169,7 +169,7 @@ const TweetActions = React.memo(function TweetActions({ post, onLike, onBookmark
       <div className="flex items-center">
         <button
           onClick={handleBookmark}
-          className="group p-2 rounded-full hover:bg-[rgba(29,155,240,0.1)] transition-colors"
+          className="group p-2 rounded-full hover:bg-[rgba(0,230,118,0.08)] transition-colors"
           aria-label="Bookmark"
         >
           <Bookmark
@@ -181,7 +181,7 @@ const TweetActions = React.memo(function TweetActions({ post, onLike, onBookmark
         <div className="relative">
           <button
             onClick={handleShare}
-            className="group p-2 rounded-full hover:bg-[rgba(29,155,240,0.1)] transition-colors"
+            className="group p-2 rounded-full hover:bg-[rgba(0,230,118,0.08)] transition-colors"
             aria-label="Share"
           >
             <Share className="w-[18px] h-[18px] text-x-text-secondary group-hover:text-x-accent transition-colors" />

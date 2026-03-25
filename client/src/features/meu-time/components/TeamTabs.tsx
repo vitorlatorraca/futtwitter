@@ -3,16 +3,13 @@ import { getTeamCrest } from '@/lib/teamCrests';
 import type { ClubConfig } from '@/features/meu-time/types';
 
 const TAB_ITEMS: { value: string; label: string }[] = [
-  { value: 'escalacao', label: 'Escalação' },
-  { value: 'ultima', label: 'Última Partida' },
-  { value: 'notas', label: 'Notas' },
-  { value: 'elenco', label: 'Elenco' },
+  { value: 'overview', label: 'Visão Geral' },
   { value: 'classificacao', label: 'Classificação' },
-  { value: 'simulacao', label: 'Simulação' },
   { value: 'news', label: 'Notícias' },
   { value: 'matches', label: 'Jogos' },
   { value: 'performance', label: 'Estatísticas' },
   { value: 'vai-e-vem', label: 'Vai e Vem' },
+  { value: 'torcida', label: 'Torcida' },
   { value: 'comunidade', label: 'Comunidade' },
 ];
 

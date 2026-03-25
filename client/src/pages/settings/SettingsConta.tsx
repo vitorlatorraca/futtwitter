@@ -38,7 +38,7 @@ function ApplicationForm({
         name="org"
         type="text"
         placeholder="Veículo/Organização* (Ex: TV Globo, UOL Esporte)"
-        className="w-full px-3 py-2 rounded-lg bg-transparent border border-x-border text-[15px] outline-none focus:border-[#1d9bf0]"
+        className="w-full px-3 py-2 rounded-lg bg-transparent border border-x-border text-[15px] outline-none focus:border-x-accent"
         required
         minLength={2}
       />
@@ -46,7 +46,7 @@ function ApplicationForm({
         name="profId"
         type="text"
         placeholder="ID Profissional (DRT ou similar)*"
-        className="w-full px-3 py-2 rounded-lg bg-transparent border border-x-border text-[15px] outline-none focus:border-[#1d9bf0]"
+        className="w-full px-3 py-2 rounded-lg bg-transparent border border-x-border text-[15px] outline-none focus:border-x-accent"
         required
         minLength={2}
       />
@@ -54,13 +54,13 @@ function ApplicationForm({
         name="portfolioUrl"
         type="url"
         placeholder="URL do portfólio (opcional)"
-        className="w-full px-3 py-2 rounded-lg bg-transparent border border-x-border text-[15px] outline-none focus:border-[#1d9bf0]"
+        className="w-full px-3 py-2 rounded-lg bg-transparent border border-x-border text-[15px] outline-none focus:border-x-accent"
       />
       <div className="flex gap-2">
         <button
           type="submit"
           disabled={isPending}
-          className="px-4 py-2 rounded-full bg-[#1d9bf0] text-white text-[15px] font-semibold hover:bg-[#1a8cd8] disabled:opacity-60 disabled:cursor-not-allowed flex items-center gap-2"
+          className="px-4 py-2 rounded-full bg-x-accent text-black text-[15px] font-semibold hover:bg-x-accent-hover disabled:opacity-60 disabled:cursor-not-allowed flex items-center gap-2"
         >
           {isPending ? (
             <>
@@ -181,7 +181,7 @@ export default function SettingsConta() {
                           animate={{ opacity: 1 }}
                           exit={{ opacity: 0 }}
                           onClick={() => setShowForm(true)}
-                          className="px-4 py-2 rounded-full bg-[#1d9bf0] text-white text-[15px] font-semibold hover:bg-[#1a8cd8] transition-colors"
+                          className="px-4 py-2 rounded-full bg-x-accent text-black text-[15px] font-semibold hover:bg-x-accent-hover transition-colors"
                         >
                           Solicitar verificação
                         </motion.button>
@@ -251,7 +251,7 @@ export default function SettingsConta() {
                           animate={{ opacity: 1 }}
                           exit={{ opacity: 0 }}
                           onClick={() => setShowForm(true)}
-                          className="px-4 py-2 rounded-full bg-[#1d9bf0] text-white text-[15px] font-semibold hover:bg-[#1a8cd8] transition-colors"
+                          className="px-4 py-2 rounded-full bg-x-accent text-black text-[15px] font-semibold hover:bg-x-accent-hover transition-colors"
                         >
                           Enviar nova solicitação
                         </motion.button>

@@ -1,4 +1,4 @@
-import { Link, useLocation } from 'wouter';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '@/lib/auth-context';
 import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
@@ -10,7 +10,8 @@ import { useState } from 'react';
 
 export function Navbar() {
   const { user, logout } = useAuth();
-  const [location] = useLocation();
+  const location = useLocation();
+  const navigate = useNavigate();
   const [isOpen, setIsOpen] = useState(false);
 
   if (!user) return null;
@@ -27,13 +28,13 @@ export function Navbar() {
     navLinks.push({ label: 'Painel Jornalista', href: '/jornalista', testId: 'link-jornalista' });
   }
 
-  const isActive = (path: string) => location === path;
+  const isActive = (path: string) => location.pathname === path || location.pathname.startsWith(path + '/');
 
   return (
-    <nav className="sticky top-0 z-50 w-full border-b border-border bg-black/90 backdrop-blur-md">
+    <nav className="sticky top-0 z-50 w-full border-b border-x-border backdrop-blur-md" style={{ background: 'rgba(8,12,20,0.95)' }}>
       <div className="container flex h-14 items-center justify-between gap-4">
         {/* Logo */}
-        <Link href="/dashboard" data-testid="link-logo">
+        <Link to="/dashboard" data-testid="link-logo">
           <div className="flex items-center gap-2 cursor-pointer px-2 py-1.5 rounded-full hover:bg-white/5 transition-colors">
             <span className="text-xl">⚽</span>
             <div className="hidden sm:flex flex-col leading-none">
@@ -54,19 +55,19 @@ export function Navbar() {
             return (
               <Link
                 key={link.href}
-                href={link.href}
+                to={link.href}
                 data-testid={link.testId}
                 className={cn(
                   "relative flex items-center justify-center px-4 h-14 text-sm font-bold transition-colors whitespace-nowrap",
                   "hover:bg-white/5",
-                  active ? "text-foreground" : "text-foreground-secondary"
+                  active ? "text-foreground" : "text-x-text-secondary"
                 )}
               >
                 {link.label}
                 {active && (
                   <span
                     aria-hidden="true"
-                    className="absolute bottom-0 inset-x-4 h-1 rounded-full bg-primary"
+                    className="absolute bottom-0 inset-x-4 h-1 rounded-full bg-x-accent"
                   />
                 )}
               </Link>
@@ -86,20 +87,20 @@ export function Navbar() {
                 aria-label="Abrir menu do usuário"
               >
                 <Avatar className="h-8 w-8">
-                  <AvatarFallback className="bg-primary/20 text-primary text-sm font-bold border border-primary/30">
+                  <AvatarFallback className="bg-x-accent/20 text-x-accent text-sm font-bold border border-x-accent/30">
                     {user.name.slice(0, 2).toUpperCase()}
                   </AvatarFallback>
                 </Avatar>
-                <ChevronDown className="h-3.5 w-3.5 text-foreground-secondary" />
+                <ChevronDown className="h-3.5 w-3.5 text-x-text-secondary" />
               </button>
             </DropdownMenuTrigger>
-            <DropdownMenuContent align="end" className="w-64 bg-[#16181C] border-border shadow-xl rounded-2xl">
+            <DropdownMenuContent align="end" className="w-64 bg-x-surface border-x-border shadow-xl rounded-2xl">
               <DropdownMenuLabel className="space-y-1">
                 <div className="text-sm font-semibold text-foreground">{user.name}</div>
-                <div className="text-xs text-foreground-secondary truncate">{user.email}</div>
+                <div className="text-xs text-x-text-secondary truncate">{user.email}</div>
               </DropdownMenuLabel>
               <DropdownMenuSeparator />
-              <Link href="/perfil">
+              <Link to="/perfil">
                 <DropdownMenuItem className="cursor-pointer" data-testid="menu-profile">
                   <UserIcon className="mr-2 h-4 w-4" />
                   Perfil
@@ -107,7 +108,7 @@ export function Navbar() {
               </Link>
               <DropdownMenuSeparator />
               <DropdownMenuItem
-                className="cursor-pointer text-danger focus:text-danger"
+                className="cursor-pointer text-red-400 focus:text-red-400"
                 onSelect={(e: Event) => {
                   e.preventDefault();
                   logout();
@@ -127,25 +128,25 @@ export function Navbar() {
                 <Menu className="h-6 w-6" />
               </Button>
             </SheetTrigger>
-            <SheetContent side="right" className="w-72 bg-surface-card border-border">
+            <SheetContent side="right" className="w-72 bg-x-surface border-x-border">
               <div className="flex flex-col gap-4 mt-8">
-                <div className="flex items-center gap-3 pb-4 border-b border-border">
-                  <Avatar className="h-10 w-10 ring-2 ring-primary/20">
-                    <AvatarFallback className="bg-primary text-primary-foreground font-bold">
+                <div className="flex items-center gap-3 pb-4 border-b border-x-border">
+                  <Avatar className="h-10 w-10 ring-2 ring-x-accent/20">
+                    <AvatarFallback className="bg-x-accent text-white font-bold">
                       {user.name.slice(0, 2).toUpperCase()}
                     </AvatarFallback>
                   </Avatar>
                   <div>
                     <p className="font-semibold text-sm text-foreground">{user.name}</p>
-                    <p className="text-xs text-foreground-secondary">{user.email}</p>
+                    <p className="text-xs text-x-text-secondary">{user.email}</p>
                   </div>
                 </div>
                 <div className="flex flex-col gap-2">
                   {navLinks.map((link) => (
-                    <Link key={link.href} href={link.href} data-testid={link.testId}>
+                    <Link key={link.href} to={link.href} data-testid={link.testId}>
                       <Button
                         variant={isActive(link.href) ? 'default' : 'ghost'}
-                        className={`w-full justify-start font-semibold ${isActive(link.href) ? '' : 'hover:bg-surface-elevated'}`}
+                        className={`w-full justify-start font-semibold ${isActive(link.href) ? 'bg-x-accent hover:bg-x-accent-hover' : 'hover:bg-white/5'}`}
                         onClick={() => setIsOpen(false)}
                       >
                         {link.label}
@@ -154,7 +155,7 @@ export function Navbar() {
                   ))}
                   <Button
                     variant="ghost"
-                    className="w-full justify-start text-danger hover:text-danger hover:bg-danger/10"
+                    className="w-full justify-start text-red-400 hover:text-red-400 hover:bg-red-400/10"
                     onClick={() => {
                       setIsOpen(false);
                       logout();

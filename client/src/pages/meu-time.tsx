@@ -3,10 +3,11 @@ import { useQuery } from '@tanstack/react-query';
 import { useAuth } from '@/lib/auth-context';
 import { useMyTeamOverview, overviewMatchesToTeamMatch } from '@/hooks/useMyTeamOverview';
 import { Skeleton } from '@/components/ui/skeleton';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { AppShell } from '@/components/ui/app-shell';
 import { EmptyState } from '@/components/ui/empty-state';
 import { NewsCard } from '@/components/news-card';
-import { getClubConfig, ElencoTab, MatchRatingPanel, RatingsDashboard, ResumoTab } from '@/features/meu-time';
+import { getClubConfig, TeamTabs, TorcidaTab } from '@/features/meu-time';
 import { TransfersBoard } from '@/features/transfers';
 import {
   NextMatchHero,
@@ -22,7 +23,7 @@ import { LineupSection, resolvePlayerPhoto } from '@/features/my-team-v2';
 import { PerformanceChart } from '@/components/team/performance-chart';
 import { LeagueTable } from '@/components/team/league-table';
 import { ForumTab } from '@/features/forum';
-import { ClassificacaoTab, SimulacaoTab } from '@/features/meu-time';
+import { ClassificacaoTab } from '@/features/meu-time';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
 import { Slider } from '@/components/ui/slider';
 import { Textarea } from '@/components/ui/textarea';
@@ -32,7 +33,7 @@ import { useToast } from '@/hooks/use-toast';
 import { apiRequest, getApiUrl } from '@/lib/queryClient';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { Link, useLocation } from 'wouter';
-import { Loader2, Newspaper } from 'lucide-react';
+import { CalendarDays, ChevronRight, Loader2, Newspaper } from 'lucide-react';
 import type { Team, Player, Match, News } from '@shared/schema';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
@@ -82,14 +83,13 @@ export default function MeuTimePage() {
   const queryClient = useQueryClient();
   const [selectedPlayer, setSelectedPlayer] = useState<Player | null>(null);
   const [ratings, setRatings] = useState<Record<string, { rating: number; comment: string }>>({});
-  const VALID_TABS = ['resumo', 'escalacao', 'ultima', 'notas', 'elenco', 'classificacao', 'simulacao', 'news', 'matches', 'performance', 'vai-e-vem', 'comunidade'] as const;
   const [activeTab, setActiveTab] = useState<string>(() => {
     if (typeof window !== 'undefined') {
       const p = new URLSearchParams(window.location.search);
       const t = p.get('tab');
-      if (t && (VALID_TABS as readonly string[]).includes(t)) return t;
+      if (t && ['overview', 'classificacao', 'news', 'matches', 'performance', 'vai-e-vem', 'torcida', 'comunidade'].includes(t)) return t;
     }
-    return 'resumo';
+    return 'overview';
   });
   const teamId = user?.teamId ?? null;
 
@@ -97,7 +97,7 @@ export default function MeuTimePage() {
   useEffect(() => {
     const p = new URLSearchParams(window.location.search);
     const t = p.get('tab');
-    if (t && (VALID_TABS as readonly string[]).includes(t)) {
+    if (t && ['overview', 'classificacao', 'news', 'matches', 'performance', 'vai-e-vem', 'torcida', 'comunidade'].includes(t)) {
       setActiveTab(t);
     }
   }, [location]);
@@ -546,178 +546,197 @@ export default function MeuTimePage() {
     );
   }
 
-  const MAIN_TABS = [
-    { value: 'resumo', label: 'Resumo' },
-    { value: 'escalacao', label: 'Escalação' },
-    { value: 'ultima', label: 'Última Partida' },
-    { value: 'notas', label: 'Notas' },
-    { value: 'elenco', label: 'Elenco' },
-    { value: 'classificacao', label: 'Classificação' },
-    { value: 'simulacao', label: 'Simulação' },
-  ];
-
-  const teamLogo = mergedTeam?.logoUrl ?? safeTeamData.team.logoUrl ?? null;
-  const teamName = mergedTeam?.name ?? safeTeamData.team.name ?? 'Meu Time';
-  const teamPosition = mergedTeam?.currentPosition ?? safeTeamData.team.currentPosition ?? null;
-
   return (
-    <AppShell mainClassName="p-0">
-      {/* ── Sticky header ───────────────────────────────────────────────── */}
-      <div className="sticky top-0 z-20 bg-background/80 backdrop-blur-md border-b border-border">
-        {isTeamError && (
-          <div className="px-4 py-2 flex items-center justify-between gap-3 bg-amber-500/10 border-b border-amber-500/20">
-            <p className="text-xs text-amber-400">Alguns dados não carregaram.</p>
-            <button
-              type="button"
-              onClick={() => refetchTeam()}
-              className="text-xs font-semibold text-amber-400 underline underline-offset-2"
-            >
+    <AppShell mainClassName="py-4 sm:py-6 px-4 sm:px-6 min-h-screen">
+      <div className="max-w-[1600px] mx-auto">
+        {isTeamError ? (
+          <div className="rounded-xl border border-border bg-surface-card p-4 flex items-center justify-between gap-4 mb-4">
+            <div className="text-sm text-foreground-secondary">
+              Alguns dados do time não puderam ser carregados agora. O básico foi carregado e o resto continua funcionando.
+            </div>
+            <Button variant="outline" size="sm" onClick={() => refetchTeam()}>
               Recarregar
-            </button>
+            </Button>
           </div>
-        )}
+        ) : null}
 
-        <div className="px-4 py-3 flex items-center gap-3">
-          {teamLogo ? (
-            <img
-              src={teamLogo}
-              alt=""
-              className="h-8 w-8 object-contain shrink-0"
-              onError={(e) => { (e.target as HTMLImageElement).src = '/assets/crests/default.png'; }}
-            />
-          ) : (
-            <div className="h-8 w-8 shrink-0 rounded-full bg-surface-elevated" />
-          )}
-          <h1 className="text-lg font-extrabold text-foreground truncate flex-1">{teamName}</h1>
-          {teamPosition != null && (
-            <span className="text-sm font-bold text-primary tabular-nums shrink-0">{teamPosition}º</span>
-          )}
-        </div>
-
-        {/* Tab bar */}
-        <div className="flex overflow-x-auto scrollbar-none">
-          {MAIN_TABS.map((tab) => (
-            <button
-              key={tab.value}
-              type="button"
-              onClick={() => handleTabChange(tab.value)}
-              className="flex-shrink-0 px-4 py-3 text-center hover:bg-surface-elevated/50 transition-colors relative text-[14px] font-medium"
-            >
-              <span className={activeTab === tab.value ? 'font-bold text-foreground' : 'text-foreground-secondary'}>
-                {tab.label}
-              </span>
-              {activeTab === tab.value && (
-                <div className="absolute bottom-0 left-1/2 -translate-x-1/2 w-10 h-[2px] bg-primary rounded-full" />
-              )}
-            </button>
-          ))}
-        </div>
-      </div>
-
-      {/* ── Tab content ─────────────────────────────────────────────────── */}
-      {activeTab === 'resumo' && (
-        <div className="p-4">
-          <ResumoTab teamId={teamId!} teamName={teamName} />
-        </div>
-      )}
-
-      {activeTab === 'escalacao' && (
-        <div className="p-4">
-          <LineupSection
-            players={rosterPlayers}
-            teamId={teamId!}
-            initialFormation={lineupInitial.formation}
-            initialSlots={lineupInitial.slots}
-            onSave={teamId ? async (formation, slots) => lineupMutation.mutateAsync({ formation, slots }) : undefined}
-            getPhotoUrl={(p) => p.photoUrl ?? resolvePlayerPhoto(p.name, p.photoUrl, teamId)}
-            heightClass="h-[calc(100vh-200px)] min-h-[480px]"
+        <Tabs value={activeTab} onValueChange={handleTabChange} className="space-y-4">
+          <TeamTabs
+            clubConfig={clubConfig}
+            currentPosition={mergedTeam?.currentPosition ?? safeTeamData?.team.currentPosition}
           />
-        </div>
-      )}
 
-      {activeTab === 'ultima' && (
-        <div className="p-4">
-          <MatchRatingPanel
-            teamId={teamId!}
-            teamName={teamName}
-            teamLogoUrl={teamLogo}
-          />
-        </div>
-      )}
-
-      {activeTab === 'notas' && (
-        <div className="p-4">
-          <RatingsDashboard teamId={teamId!} />
-        </div>
-      )}
-
-      {activeTab === 'elenco' && (
-        <div className="p-4">
-          <ElencoTab
-            players={rosterPlayers}
-            isLoading={playersQuery.isLoading && rosterPlayers.length === 0}
-            getPhotoUrl={(p) => p.photoUrl ?? resolvePlayerPhoto(p.name, p.photoUrl, teamId)}
-          />
-        </div>
-      )}
-
-      {activeTab === 'classificacao' && (
-        <div className="p-4">
-          <ClassificacaoTab userTeamId={teamId} />
-        </div>
-      )}
-
-      {activeTab === 'simulacao' && (
-        <div className="p-4">
-          <SimulacaoTab userTeamId={teamId} />
-        </div>
-      )}
-
-      {/* Legacy tabs kept for URL compatibility */}
-      {activeTab === 'news' && (
-        <div className="p-4 space-y-4">
-          {teamNews && teamNews.length > 0 ? (
-            teamNews.map((news: any) => (
-              <NewsCard
-                key={news.id}
-                news={news}
-                canInteract={!!teamId && news.teamId === teamId}
-                onInteract={handleInteraction}
+          <TabsContent value="overview" className="mt-4">
+            {/* Linha 0: Próximo jogo + Performance */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-5 max-w-[1280px] mb-5">
+              <NextMatchHero
+                data={upcomingMatchQuery.data}
+                isLoading={upcomingMatchQuery.isLoading}
+                teamId={teamId ?? ''}
+                teamName={mergedTeam?.name ?? clubConfig.displayName}
               />
-            ))
-          ) : (
-            <EmptyState
-              icon={Newspaper}
-              title="Sem notícias do seu time"
-              description="Assim que surgirem publicações oficiais ou análises, elas vão aparecer aqui."
+              <PerformanceCard
+                teams={mergedLeagueTable}
+                currentTeamId={safeTeamData?.team.id ?? ''}
+                formMatches={recentFormMatches}
+                overview={overviewQuery.data}
+                isLoading={overviewQuery.isLoading && !overviewQuery.data}
+                formLimit={5}
+              />
+            </div>
+
+            {/* LINHA A: Jogos | Tática | Top avaliados — grid 12 cols, altura fixa */}
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-12 gap-5 max-w-[1280px] mb-5">
+              {/* Jogos — 4/12 desktop, 1/2 tablet, full mobile */}
+              <div className="lg:col-span-4 order-1 md:order-1">
+                <MyTeamCard
+                  title="Jogos"
+                  rightSlot={
+                    <Link href="/meu-time/jogos" className="text-xs font-medium text-primary hover:text-primary/80 flex items-center gap-1 transition-colors">
+                      Ver todos
+                      <ChevronRight className="h-3.5 w-3.5" />
+                    </Link>
+                  }
+                  heightClass="h-[520px] md:h-[480px] xl:h-[560px]"
+                >
+                  <MatchesCard
+                    teamId={teamId ?? ''}
+                    teamName={mergedTeam?.name ?? clubConfig.displayName}
+                    embed
+                    overviewMode={!!teamId}
+                    matches={overviewQuery.data ? overviewMatchesToTeamMatch(overviewQuery.data.lastMatches) : undefined}
+                    isLoading={overviewQuery.isLoading}
+                  />
+                </MyTeamCard>
+              </div>
+
+              {/* Tática / Escalação — 5/12 desktop, full tablet/mobile */}
+              <div className="lg:col-span-5 order-3 md:order-3 lg:order-2 md:col-span-2">
+                <LineupSection
+                  players={rosterPlayers}
+                  teamId={teamId!}
+                  initialFormation={lineupInitial.formation}
+                  initialSlots={lineupInitial.slots}
+                  onSave={teamId ? async (formation, slots) => lineupMutation.mutateAsync({ formation, slots }) : undefined}
+                  getPhotoUrl={(p) => p.photoUrl ?? resolvePlayerPhoto(p.name, p.photoUrl, teamId)}
+                  heightClass="h-[520px] md:h-[480px] xl:h-[560px]"
+                />
+              </div>
+
+              {/* Top avaliados — 3/12 desktop, 1/2 tablet, full mobile */}
+              <div className="lg:col-span-3 order-2 md:order-2 lg:order-3">
+                <MyTeamCard
+                  title={`Top avaliados (últimos ${topRatedQuery.data?.lastNMatches ?? 5} jogos)`}
+                  heightClass="h-[520px] md:h-[480px] xl:h-[560px]"
+                >
+                  <TopRatedMini
+                    players={(topRatedQuery.data?.players ?? []).map((p) => ({
+                      playerId: p.playerId,
+                      name: p.name,
+                      position: p.position,
+                      photoUrl: p.photoUrl,
+                      averageRating: p.avgRating,
+                      matchesPlayed: p.matchesPlayed,
+                    }))}
+                    lastNMatches={topRatedQuery.data?.lastNMatches ?? 5}
+                    getPhotoUrl={(id) => playersById.get(id)?.photoUrl ?? '/assets/players/placeholder.png'}
+                    embed
+                  />
+                </MyTeamCard>
+              </div>
+            </div>
+
+            {/* Linha B: Última partida — notas */}
+            <div className="mb-5 max-w-[1280px]">
+              <LastMatchRatingsCard teamId={teamId} />
+            </div>
+
+            {/* SEGUNDA FAIXA: Vai e Vem + Elenco preview */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-5 max-w-[1280px]">
+              <TransfersPreviewMini
+                teamId={teamId}
+                teamName={clubConfig?.displayName ?? mergedTeam?.name ?? 'seu time'}
+                onViewAll={() => handleTabChange('vai-e-vem')}
+              />
+              <ElencoPreviewMini
+                players={rosterPlayers}
+                getPhotoUrl={(p) => p.photoUrl ?? '/assets/players/placeholder.png'}
+                isLoading={playersQuery.isLoading && rosterPlayers.length === 0}
+              />
+            </div>
+          </TabsContent>
+
+          <TabsContent value="classificacao" className="space-y-6">
+            <ClassificacaoTab userTeamId={teamId} />
+          </TabsContent>
+
+          <TabsContent value="news" className="space-y-6">
+            {teamNews && teamNews.length > 0 ? (
+              <div className="space-y-6">
+                {teamNews.map((news: any) => (
+                  <NewsCard
+                    key={news.id}
+                    news={news}
+                      canInteract={!!teamId && news.teamId === teamId}
+                    onInteract={handleInteraction}
+                  />
+                ))}
+              </div>
+            ) : (
+              <EmptyState
+                icon={Newspaper}
+                title="Sem notícias do seu time"
+                description="Assim que surgirem publicações oficiais ou análises, elas vão aparecer aqui."
+              />
+            )}
+          </TabsContent>
+
+          <TabsContent value="matches" className="space-y-6">
+            <div className="flex flex-col items-center justify-center py-12 rounded-xl border border-border bg-surface-card">
+              <CalendarDays className="h-12 w-12 text-muted-foreground mb-4" />
+              <h3 className="font-bold text-xl text-foreground mb-2">Jogos do seu time</h3>
+              <p className="text-sm text-foreground-secondary text-center max-w-md mb-6">
+                Veja todos os jogos, próximas partidas e resultados na página completa.
+              </p>
+              <a
+                href="/meu-time/jogos"
+                className="inline-flex items-center gap-2 rounded-lg bg-primary px-6 py-2.5 text-sm font-semibold text-primary-foreground hover:bg-primary/90 transition-colors"
+              >
+                Ver todos os jogos
+                <span aria-hidden>→</span>
+              </a>
+            </div>
+          </TabsContent>
+
+          <TabsContent value="performance" className="space-y-6">
+            <PerformanceChart matches={safeTeamData.matches} teamId={safeTeamData.team.id} />
+            <LeagueTable teams={mergedLeagueTable} currentTeamId={safeTeamData.team.id} />
+          </TabsContent>
+
+          <TabsContent value="vai-e-vem" className="space-y-6">
+            <TransfersBoard
+              scope="team"
+              teamId={teamId ?? undefined}
+              teamName={clubConfig?.displayName ?? mergedTeam?.name ?? 'seu time'}
+              hideHeader
             />
-          )}
-        </div>
-      )}
+          </TabsContent>
 
-      {activeTab === 'performance' && (
-        <div className="p-4 space-y-4">
-          <PerformanceChart matches={safeTeamData.matches} teamId={safeTeamData.team.id} />
-          <LeagueTable teams={mergedLeagueTable} currentTeamId={safeTeamData.team.id} />
-        </div>
-      )}
+          <TabsContent value="torcida" className="space-y-4">
+            <TorcidaTab
+              teamId={teamId ?? ''}
+              teamName={mergedTeam?.name ?? clubConfig?.displayName ?? 'seu time'}
+            />
+          </TabsContent>
 
-      {activeTab === 'vai-e-vem' && (
-        <div className="p-4">
-          <TransfersBoard
-            scope="team"
-            teamId={teamId ?? undefined}
-            teamName={clubConfig?.displayName ?? teamName}
-            hideHeader
-          />
-        </div>
-      )}
-
-      {activeTab === 'comunidade' && (
-        <div className="p-4">
-          <ForumTab teamId={teamId ?? ''} clubConfig={clubConfig} />
-        </div>
-      )}
+          <TabsContent value="comunidade" className="space-y-6">
+            <ForumTab
+              teamId={teamId ?? ''}
+              clubConfig={clubConfig}
+            />
+          </TabsContent>
+        </Tabs>
+      </div>
 
       <Dialog open={!!selectedPlayer} onOpenChange={() => setSelectedPlayer(null)}>
         <DialogContent className="sm:max-w-3xl max-h-[90vh] overflow-y-auto">
