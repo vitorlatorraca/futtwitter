@@ -60,6 +60,13 @@ export function PitchBoard({
 
   const pointerStartRef = useRef<{ x: number; y: number; slotId: string } | null>(null);
 
+  // Keep a ref to localSlots so event handlers always read the latest positions
+  // without needing localSlots in their useCallback deps (avoids recreation cascade)
+  const localSlotsRef = useRef(localSlots);
+  localSlotsRef.current = localSlots; // always in sync — safe to assign during render
+
+  // Sync external prop into local state (only when NOT dragging — avoids
+  // clobbering in-progress drag positions)
   useEffect(() => {
     if (!draggingId && slots.length > 0) {
       setLocalSlots(slots);
@@ -125,13 +132,13 @@ export function PitchBoard({
       if (target.releasePointerCapture) target.releasePointerCapture(e.pointerId);
 
       if (draggingId) {
-        // Call onPositionsChange outside of setState — calling setState inside
-        // a setState updater causes "Maximum update depth exceeded"
-        onPositionsChange?.(localSlots.map((s) => ({ slotIndex: s.slotIndex, x: s.x, y: s.y })));
+        // Read positions from ref (not from closure) to get latest values without
+        // adding localSlots to deps — avoids "Maximum update depth exceeded"
+        onPositionsChange?.(localSlotsRef.current.map((s) => ({ slotIndex: s.slotIndex, x: s.x, y: s.y })));
         setDraggingId(null);
       } else if (pointerStartRef.current && onSlotPlayerChange) {
         const { slotId } = pointerStartRef.current;
-        const slot = localSlots.find((s) => s.id === slotId);
+        const slot = localSlotsRef.current.find((s) => s.id === slotId);
         if (slot) {
           setActiveSlotId(slotId);
           setPickerOpen(true);
@@ -139,8 +146,18 @@ export function PitchBoard({
       }
       pointerStartRef.current = null;
     },
-    [draggingId, onPositionsChange, onSlotPlayerChange, localSlots]
+    [draggingId, onPositionsChange, onSlotPlayerChange]
   );
+
+  // Cancel drag (pointer left container) — reset positions without saving,
+  // do NOT call onPositionsChange to avoid triggering a setState cascade
+  const handlePointerLeave = useCallback(() => {
+    if (draggingId) {
+      pointerStartRef.current = null;
+      setDraggingId(null);
+      // localSlots will be reset to prop values by the sync useEffect above
+    }
+  }, [draggingId]);
 
   const crestUrl = getTeamCrest(teamId);
 
@@ -164,7 +181,7 @@ export function PitchBoard({
       )}
       onPointerMove={handlePointerMove}
       onPointerUp={handlePointerUp}
-      onPointerLeave={handlePointerUp}
+      onPointerLeave={handlePointerLeave}
     >
       {/* Watermark escudo */}
       <div

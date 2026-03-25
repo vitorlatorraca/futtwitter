@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useAuth } from "@/lib/auth-context";
 import { getApiUrl, apiRequest } from "@/lib/queryClient";
@@ -52,15 +52,22 @@ function EscalacaoTab({ teamId, players }: { teamId: string; players: Player[] }
     },
   });
 
-  const initial = lineupQuery.data ?? { formation: "4-3-3", slots: [] };
+  // Stable references: a new `[]` every render causes useLineupState's effect
+  // to fire in a loop (new reference = effect re-runs → setState → re-render → new ref…)
+  const initialFormation = lineupQuery.data?.formation ?? "4-3-3";
+  const initialSlots = useMemo(
+    () => lineupQuery.data?.slots ?? [],
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [lineupQuery.data]
+  );
 
   return (
     <div className="p-4">
       <LineupSection
         players={players}
         teamId={teamId}
-        initialFormation={initial.formation}
-        initialSlots={initial.slots}
+        initialFormation={initialFormation}
+        initialSlots={initialSlots}
         onSave={async (formation, slots) => { await saveLineup({ formation, slots }); }}
         getPhotoUrl={(p) => p.photoUrl ?? resolvePlayerPhoto(p.name, p.photoUrl, teamId)}
         heightClass="h-[calc(100vh-200px)] min-h-[480px]"
