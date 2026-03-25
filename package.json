@@ -4,8 +4,8 @@
   "type": "module",
   "license": "MIT",
   "scripts": {
-    "dev": "npm run kill:5000 && npm run db:push && npx cross-env NODE_ENV=development PORT=5000 npx tsx server/index.ts",
-    "dev:server": "npm run db:push && npx cross-env NODE_ENV=development PORT=5000 npx tsx server/index.ts",
+    "dev": "npm run kill:5000 && npm run db:push && npx cross-env NODE_ENV=development PORT=5000 npx tsx watch server/index.ts",
+    "dev:server": "npm run db:push && npx cross-env NODE_ENV=development PORT=5000 npx tsx watch server/index.ts",
     "dev:client": "vite --config vite.config.ts",
     "dev:all": "npm run dev:server",
     "kill:5000": "powershell -NoProfile -Command \"$lines = netstat -ano | findstr ':5000' | findstr 'LISTENING'; if ($lines) { $lines | ForEach-Object { $p = $_.Trim().Split()[-1]; if ($p -match '^\\d+$') { taskkill /PID $p /F 2>$null } } }; exit 0\"",
