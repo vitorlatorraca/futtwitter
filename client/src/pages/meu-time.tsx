@@ -744,40 +744,60 @@ export default function MeuTimePage() {
             <LastMatchRatingsCard teamId={teamId} />
 
             {/* Fan interactive ratings */}
-            {lastMatchRatingsQuery.data ? (() => {
+            {(() => {
               const d = lastMatchRatingsQuery.data;
-              const fanPlayers: FanRatingPlayer[] = d.playerRatings.map((p) => ({
-                playerId: p.playerId,
-                name: p.playerName,
-                shirtNumber: p.shirtNumber,
-                isStarter: p.minutes >= 45,
-                position: p.primaryPosition ?? p.positionCode,
-                averageRating: p.rating,
-                voteCount: 1,
-                userRating: null,
-              }));
+              if (lastMatchRatingsQuery.isLoading) {
+                return (
+                  <div className="rounded-xl border border-border bg-surface-card p-5">
+                    <div className="space-y-3">
+                      {[1,2,3,4].map(i => (
+                        <div key={i} className="h-9 w-full bg-surface-elevated animate-pulse rounded-lg" />
+                      ))}
+                    </div>
+                  </div>
+                );
+              }
+              if (!d?.match) return null;
+
+              // Build fan players from official stats; fall back to roster when stats are empty
+              const fanPlayers: FanRatingPlayer[] = d.playerRatings.length > 0
+                ? d.playerRatings.map((p) => ({
+                    playerId: p.playerId,
+                    name: p.playerName,
+                    shirtNumber: p.shirtNumber,
+                    isStarter: p.minutes >= 45,
+                    position: p.primaryPosition ?? p.positionCode,
+                    averageRating: null,
+                    voteCount: 0,
+                    userRating: null,
+                  }))
+                : rosterPlayers.slice(0, 25).map((p) => ({
+                    playerId: p.id,
+                    name: p.name,
+                    shirtNumber: p.shirtNumber ?? null,
+                    isStarter: true,
+                    position: p.primaryPosition ?? p.position ?? null,
+                    averageRating: null,
+                    voteCount: 0,
+                    userRating: null,
+                  }));
+
+              if (fanPlayers.length === 0) return null;
+
               return (
                 <div className="rounded-xl border border-border bg-surface-card p-5">
                   <FanRatings
                     players={fanPlayers}
                     formation={d.formation}
                     matchId={d.match.matchId}
-                    isLoading={lastMatchRatingsQuery.isLoading}
+                    isLoading={false}
                     onVote={handleFanVote}
                     isVoting={ratingMutation.isPending}
                     isLoggedIn={!!user}
                   />
                 </div>
               );
-            })() : lastMatchRatingsQuery.isLoading ? (
-              <div className="rounded-xl border border-border bg-surface-card p-5">
-                <div className="space-y-3">
-                  {[1,2,3,4].map(i => (
-                    <div key={i} className="h-9 w-full bg-surface-elevated animate-pulse rounded-lg" />
-                  ))}
-                </div>
-              </div>
-            ) : null}
+            })()}
           </TabsContent>
 
           <TabsContent value="comunidade" className="space-y-6">
