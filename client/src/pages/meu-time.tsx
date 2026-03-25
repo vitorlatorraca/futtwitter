@@ -17,7 +17,9 @@ import {
   TransfersPreviewMini,
   ElencoPreviewMini,
   MyTeamCard,
+  useLastMatchRatings,
 } from '@/features/my-team-v2';
+import { FanRatings, type FanRatingPlayer } from '@/components/team/fan-ratings';
 import { MatchesCard } from '@/features/team/matches';
 import { LineupSection, resolvePlayerPhoto } from '@/features/my-team-v2';
 import { PerformanceChart } from '@/components/team/performance-chart';
@@ -87,7 +89,7 @@ export default function MeuTimePage() {
     if (typeof window !== 'undefined') {
       const p = new URLSearchParams(window.location.search);
       const t = p.get('tab');
-      if (t && ['overview', 'classificacao', 'news', 'matches', 'performance', 'vai-e-vem', 'torcida', 'comunidade'].includes(t)) return t;
+      if (t && ['overview', 'classificacao', 'news', 'matches', 'performance', 'vai-e-vem', 'torcida', 'avaliacao', 'comunidade'].includes(t)) return t;
     }
     return 'overview';
   });
@@ -97,7 +99,7 @@ export default function MeuTimePage() {
   useEffect(() => {
     const p = new URLSearchParams(window.location.search);
     const t = p.get('tab');
-    if (t && ['overview', 'classificacao', 'news', 'matches', 'performance', 'vai-e-vem', 'torcida', 'comunidade'].includes(t)) {
+    if (t && ['overview', 'classificacao', 'news', 'matches', 'performance', 'vai-e-vem', 'torcida', 'avaliacao', 'comunidade'].includes(t)) {
       setActiveTab(t);
     }
   }, [location]);
@@ -253,6 +255,7 @@ export default function MeuTimePage() {
   });
 
   const overviewQuery = useMyTeamOverview();
+  const lastMatchRatingsQuery = useLastMatchRatings(teamId);
 
   const lineupMutation = useMutation({
     mutationFn: async ({ formation, slots }: { formation: string; slots: Array<{ slotIndex: number; playerId: string }> }) => {
@@ -432,6 +435,13 @@ export default function MeuTimePage() {
     } catch (error) {
       // Error toast already shown by mutation
     }
+  };
+
+  const handleFanVote = async (playerId: string, rating: number) => {
+    const matchId = lastMatchRatingsQuery.data?.match?.matchId;
+    if (!matchId) throw new Error('Partida não disponível');
+    await ratingMutation.mutateAsync({ playerId, matchId, rating });
+    queryClient.invalidateQueries({ queryKey: ['/api/teams', teamId, 'last-match', 'ratings'] });
   };
 
   // IMPORTANT: hooks must never be declared after any conditional return.
@@ -727,6 +737,47 @@ export default function MeuTimePage() {
               teamId={teamId ?? ''}
               teamName={mergedTeam?.name ?? clubConfig?.displayName ?? 'seu time'}
             />
+          </TabsContent>
+
+          <TabsContent value="avaliacao" className="space-y-6">
+            {/* Official match ratings card (pitch + per-player scores) */}
+            <LastMatchRatingsCard teamId={teamId} />
+
+            {/* Fan interactive ratings */}
+            {lastMatchRatingsQuery.data ? (() => {
+              const d = lastMatchRatingsQuery.data;
+              const fanPlayers: FanRatingPlayer[] = d.playerRatings.map((p) => ({
+                playerId: p.playerId,
+                name: p.playerName,
+                shirtNumber: p.shirtNumber,
+                isStarter: p.minutes >= 45,
+                position: p.primaryPosition ?? p.positionCode,
+                averageRating: p.rating,
+                voteCount: 1,
+                userRating: null,
+              }));
+              return (
+                <div className="rounded-xl border border-border bg-surface-card p-5">
+                  <FanRatings
+                    players={fanPlayers}
+                    formation={d.formation}
+                    matchId={d.match.matchId}
+                    isLoading={lastMatchRatingsQuery.isLoading}
+                    onVote={handleFanVote}
+                    isVoting={ratingMutation.isPending}
+                    isLoggedIn={!!user}
+                  />
+                </div>
+              );
+            })() : lastMatchRatingsQuery.isLoading ? (
+              <div className="rounded-xl border border-border bg-surface-card p-5">
+                <div className="space-y-3">
+                  {[1,2,3,4].map(i => (
+                    <div key={i} className="h-9 w-full bg-surface-elevated animate-pulse rounded-lg" />
+                  ))}
+                </div>
+              </div>
+            ) : null}
           </TabsContent>
 
           <TabsContent value="comunidade" className="space-y-6">

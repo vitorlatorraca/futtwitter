@@ -10,6 +10,7 @@ const TAB_ITEMS: { value: string; label: string }[] = [
   { value: 'performance', label: 'Estatísticas' },
   { value: 'vai-e-vem', label: 'Vai e Vem' },
   { value: 'torcida', label: 'Torcida' },
+  { value: 'avaliacao', label: 'Avaliação' },
   { value: 'comunidade', label: 'Comunidade' },
 ];
 
