@@ -14,6 +14,7 @@ export { ElencoPreviewMini } from './ElencoPreviewMini';
 export { LineupSection } from './LineupSection';
 export { resolvePlayerPhoto } from './resolvePlayerPhoto';
 export { useLastMatchRatings } from './useLastMatchRatings';
+export type { LastMatchLineupPlayer } from './useLastMatchRatings';
 export type { FanRatingPlayerCompact } from './FanRatingsCompact';
 export type { NextMatchHeroData } from './NextMatchHero';
 export type { RecentFormMatch } from './RecentFormMini';

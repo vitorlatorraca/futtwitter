@@ -15,6 +15,17 @@ export interface LastMatchRating {
   photoUrl: string | null;
 }
 
+export interface LastMatchLineupPlayer {
+  playerId: string;
+  playerName: string;
+  shirtNumber: number | null;
+  isStarter: boolean;
+  positionCode: string | null;
+  primaryPosition: string | null;
+  minutesPlayed: number | null;
+  photoUrl: string | null;
+}
+
 export interface LastMatchRatingsData {
   match: {
     matchId: string;
@@ -27,6 +38,7 @@ export interface LastMatchRatingsData {
   };
   formation: string;
   playerRatings: LastMatchRating[];
+  lineupPlayers: LastMatchLineupPlayer[];
 }
 
 export function useLastMatchRatings(teamId: string | null) {

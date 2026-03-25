@@ -759,28 +759,40 @@ export default function MeuTimePage() {
               }
               if (!d?.match) return null;
 
-              // Build fan players from official stats; fall back to roster when stats are empty
-              const fanPlayers: FanRatingPlayer[] = d.playerRatings.length > 0
-                ? d.playerRatings.map((p) => ({
-                    playerId: p.playerId,
-                    name: p.playerName,
-                    shirtNumber: p.shirtNumber,
-                    isStarter: p.minutes >= 45,
-                    position: p.primaryPosition ?? p.positionCode,
-                    averageRating: null,
-                    voteCount: 0,
-                    userRating: null,
-                  }))
-                : rosterPlayers.slice(0, 25).map((p) => ({
-                    playerId: p.id,
-                    name: p.name,
-                    shirtNumber: p.shirtNumber ?? null,
-                    isStarter: true,
-                    position: p.primaryPosition ?? p.position ?? null,
-                    averageRating: null,
-                    voteCount: 0,
-                    userRating: null,
-                  }));
+              // Priority: actual lineup players → official stats players → team roster
+              const fanPlayers: FanRatingPlayer[] =
+                d.lineupPlayers.length > 0
+                  ? d.lineupPlayers.map((p) => ({
+                      playerId: p.playerId,
+                      name: p.playerName,
+                      shirtNumber: p.shirtNumber,
+                      isStarter: p.isStarter,
+                      position: p.primaryPosition ?? p.positionCode,
+                      averageRating: null,
+                      voteCount: 0,
+                      userRating: null,
+                    }))
+                  : d.playerRatings.length > 0
+                  ? d.playerRatings.map((p) => ({
+                      playerId: p.playerId,
+                      name: p.playerName,
+                      shirtNumber: p.shirtNumber,
+                      isStarter: p.minutes >= 45,
+                      position: p.primaryPosition ?? p.positionCode,
+                      averageRating: null,
+                      voteCount: 0,
+                      userRating: null,
+                    }))
+                  : rosterPlayers.slice(0, 25).map((p) => ({
+                      playerId: p.id,
+                      name: p.name,
+                      shirtNumber: p.shirtNumber ?? null,
+                      isStarter: true,
+                      position: p.primaryPosition ?? p.position ?? null,
+                      averageRating: null,
+                      voteCount: 0,
+                      userRating: null,
+                    }));
 
               if (fanPlayers.length === 0) return null;
 

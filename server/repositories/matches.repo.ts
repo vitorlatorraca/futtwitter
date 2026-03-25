@@ -508,6 +508,16 @@ export async function getLastMatchRatings(teamId: string): Promise<{
     group: PositionGroup;
     photoUrl: string | null;
   }>;
+  lineupPlayers: Array<{
+    playerId: string;
+    playerName: string;
+    shirtNumber: number | null;
+    isStarter: boolean;
+    positionCode: string | null;
+    primaryPosition: string | null;
+    minutesPlayed: number | null;
+    photoUrl: string | null;
+  }>;
 } | null> {
   const [lastMatch] = await db
     .select({
@@ -549,17 +559,48 @@ export async function getLastMatchRatings(teamId: string): Promise<{
     .limit(1);
 
   const lineupPositionByPlayer = new Map<string, string | null>();
+  let lineupPlayersResult: Array<{
+    playerId: string;
+    playerName: string;
+    shirtNumber: number | null;
+    isStarter: boolean;
+    positionCode: string | null;
+    primaryPosition: string | null;
+    minutesPlayed: number | null;
+    photoUrl: string | null;
+  }> = [];
+
   if (ourLineup) {
-    const lineupPlayers = await db
+    const rawLineupPlayers = await db
       .select({
         playerId: matchLineupPlayers.playerId,
         positionCode: matchLineupPlayers.positionCode,
+        isStarter: matchLineupPlayers.isStarter,
+        shirtNumber: matchLineupPlayers.shirtNumber,
+        minutesPlayed: matchLineupPlayers.minutesPlayed,
+        playerName: players.name,
+        primaryPosition: players.primaryPosition,
+        photoUrl: players.photoUrl,
+        playerShirtNumber: players.shirtNumber,
       })
       .from(matchLineupPlayers)
+      .innerJoin(players, eq(matchLineupPlayers.playerId, players.id))
       .where(eq(matchLineupPlayers.matchLineupId, ourLineup.id));
-    for (const lp of lineupPlayers) {
+
+    for (const lp of rawLineupPlayers) {
       lineupPositionByPlayer.set(lp.playerId, lp.positionCode);
     }
+
+    lineupPlayersResult = rawLineupPlayers.map((lp) => ({
+      playerId: lp.playerId,
+      playerName: lp.playerName ?? "—",
+      shirtNumber: lp.shirtNumber ?? lp.playerShirtNumber ?? null,
+      isStarter: lp.isStarter,
+      positionCode: lp.positionCode ?? null,
+      primaryPosition: lp.primaryPosition ?? null,
+      minutesPlayed: lp.minutesPlayed ?? null,
+      photoUrl: lp.photoUrl ?? null,
+    }));
   }
 
   // Se temos lineup, filtra só os titulares; senão retorna todos com rating
@@ -623,5 +664,6 @@ export async function getLastMatchRatings(teamId: string): Promise<{
     },
     formation: ourLineup?.formation ?? "4-3-3",
     playerRatings,
+    lineupPlayers: lineupPlayersResult,
   };
 }

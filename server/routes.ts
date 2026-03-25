@@ -1522,7 +1522,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const { getLastMatchRatings } = await import("./repositories/matches.repo");
       const data = await getLastMatchRatings(teamId);
       if (!data) {
-        return res.json({ match: null, playerRatings: [] });
+        return res.json({ match: null, playerRatings: [], lineupPlayers: [] });
       }
       res.json({
         match: {
@@ -1536,6 +1536,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         },
         formation: data.formation,
         playerRatings: data.playerRatings,
+        lineupPlayers: data.lineupPlayers,
       });
     } catch (error) {
       console.error('Last match ratings error:', error);
