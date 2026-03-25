@@ -760,9 +760,10 @@ export default function MeuTimePage() {
               if (!d?.match) return null;
 
               // Priority: actual lineup players → official stats players → team roster
+              const safeLineupPlayers = d.lineupPlayers ?? [];
               const fanPlayers: FanRatingPlayer[] =
-                d.lineupPlayers.length > 0
-                  ? d.lineupPlayers.map((p) => ({
+                safeLineupPlayers.length > 0
+                  ? safeLineupPlayers.map((p) => ({
                       playerId: p.playerId,
                       name: p.playerName,
                       shirtNumber: p.shirtNumber,
@@ -772,7 +773,7 @@ export default function MeuTimePage() {
                       voteCount: 0,
                       userRating: null,
                     }))
-                  : d.playerRatings.length > 0
+                  : (d.playerRatings ?? []).length > 0
                   ? d.playerRatings.map((p) => ({
                       playerId: p.playerId,
                       name: p.playerName,
