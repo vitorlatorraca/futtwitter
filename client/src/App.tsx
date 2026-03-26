@@ -14,6 +14,8 @@ import { TooltipProvider } from "./components/ui/tooltip";
 
 const LoginPage = lazy(() => import("./pages/login"));
 const SignupPage = lazy(() => import("./pages/signup"));
+const ForgotPasswordPage = lazy(() => import("./pages/forgot-password"));
+const ResetPasswordPage = lazy(() => import("./pages/reset-password"));
 const TeamSelectionPage = lazy(() => import("./pages/team-selection"));
 const Home = lazy(() => import("./pages/Home"));
 const Explore = lazy(() => import("./pages/Explore"));
@@ -138,6 +140,8 @@ export default function App() {
                 <Route path="/login" element={<GuestRoute><LoginPage /></GuestRoute>} />
                 <Route path="/cadastro" element={<GuestRoute><SignupPage /></GuestRoute>} />
                 <Route path="/selecionar-time" element={<GuestRoute><TeamSelectionPage /></GuestRoute>} />
+                <Route path="/esqueci-senha" element={<ForgotPasswordPage />} />
+                <Route path="/redefinir-senha" element={<ResetPasswordPage />} />
 
                 {/* ── New design pages (AppShell top navbar, no sidebar) ──────── */}
                 <Route path="/dashboard" element={<ProtectedRoute><DashboardPage /></ProtectedRoute>} />

@@ -1,4 +1,4 @@
-import { Link } from 'wouter';
+import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -58,10 +58,10 @@ export default function LandingPage() {
 
               <div className="flex flex-col sm:flex-row gap-4">
                 <Button size="lg" className="rounded-full font-bold w-full sm:w-auto" asChild>
-                  <Link href="/cadastro" data-testid="link-signup">Criar Conta Grátis</Link>
+                  <Link to="/cadastro" data-testid="link-signup">Criar Conta Grátis</Link>
                 </Button>
                 <Button size="lg" variant="outline" className="rounded-full font-bold border-border w-full sm:w-auto" asChild>
-                  <Link href="/login" data-testid="link-login">Já tenho conta</Link>
+                  <Link to="/login" data-testid="link-login">Já tenho conta</Link>
                 </Button>
               </div>
 
@@ -162,10 +162,10 @@ export default function LandingPage() {
                   {/* Action Buttons */}
                   <div className="flex gap-3 pt-2">
                     <Button variant="outline" size="sm" className="flex-1 w-full" asChild>
-                      <Link href="/dashboard">Ver dashboard</Link>
+                      <Link to="/dashboard">Ver dashboard</Link>
                     </Button>
                     <Button size="sm" className="flex-1 w-full" asChild>
-                      <Link href="/cadastro">Começar agora</Link>
+                      <Link to="/cadastro">Começar agora</Link>
                     </Button>
                   </div>
 
@@ -197,10 +197,10 @@ export default function LandingPage() {
 
                 <div className="flex flex-col sm:flex-row gap-4">
                   <Button size="lg" asChild>
-                    <Link href="/cadastro">Começar agora</Link>
+                    <Link to="/cadastro">Começar agora</Link>
                   </Button>
                   <Button size="lg" variant="outline" asChild>
-                    <Link href="/dashboard">Ver dashboard</Link>
+                    <Link to="/dashboard">Ver dashboard</Link>
                   </Button>
                 </div>
               </div>

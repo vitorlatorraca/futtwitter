@@ -1,6 +1,6 @@
 'use client';
 
-import { Link } from 'wouter';
+import { Link } from 'react-router-dom';
 import { formatDistanceToNow } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { MessageCircle, Heart, Eye } from 'lucide-react';
@@ -27,7 +27,7 @@ export function ForumTopicCard({ topic, teamId }: ForumTopicCardProps) {
   const excerpt = topic.content.slice(0, 120) + (topic.content.length > 120 ? '...' : '');
 
   return (
-    <Link href={`/meu-time/comunidade/${topic.id}`} className="block group">
+    <Link to={`/meu-time/comunidade/${topic.id}`} className="block group">
       <article
           className="rounded-xl border border-border bg-surface-card overflow-hidden transition-colors hover:border-border-strong hover:shadow-lg hover:shadow-black/20"
         >

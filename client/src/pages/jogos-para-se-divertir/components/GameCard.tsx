@@ -1,6 +1,6 @@
 'use client';
 
-import { useLocation } from 'wouter';
+import { useNavigate } from 'react-router-dom';
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import { StatBadge } from '@/components/ui-premium';
 import { Button } from '@/components/ui/button';
@@ -17,12 +17,12 @@ interface GameCardProps {
 }
 
 export function GameCard({ game }: GameCardProps) {
-  const [, setLocation] = useLocation();
+  const navigate = useNavigate();
   const href = game.available
     ? game.selectionRoute ?? (game.slug ? `/jogos/adivinhe-elenco/${game.slug}` : null)
     : null;
   const button = href ? (
-    <Button variant="secondary" size="sm" onClick={() => setLocation(href)}>
+    <Button variant="secondary" size="sm" onClick={() => navigate(href)}>
       Abrir
     </Button>
   ) : (

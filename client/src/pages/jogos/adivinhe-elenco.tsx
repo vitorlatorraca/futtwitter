@@ -1,7 +1,8 @@
 "use client";
 
 import { useRef, useEffect, useState } from "react";
-import { useRoute, Link } from "wouter";
+import { useParams } from "react-router-dom";
+import { Link } from "react-router-dom";
 import { AppShell } from "@/components/ui/app-shell";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -19,8 +20,7 @@ import {
 } from "@/features/games/api";
 
 function AdivinheElencoPage() {
-  const [, params] = useRoute("/jogos/adivinhe-elenco/:slug");
-  const slug = params?.slug ?? "";
+  const { slug = '' } = useParams<{ slug: string }>();
   const inputRef = useRef<HTMLInputElement>(null);
   const { toast } = useToast();
 
@@ -106,7 +106,7 @@ function AdivinheElencoPage() {
         <div className="py-8 text-center">
           <p className="text-muted-foreground">Set não encontrado.</p>
           <Button variant="outline" className="mt-4" asChild>
-            <Link href="/jogos">Voltar aos Jogos</Link>
+            <Link to="/jogos">Voltar aos Jogos</Link>
           </Button>
         </div>
       </AppShell>
@@ -118,7 +118,7 @@ function AdivinheElencoPage() {
       <div className="space-y-6">
         <div className="flex items-center gap-3">
           <Button variant="ghost" size="icon" asChild>
-            <Link href="/jogos">
+            <Link to="/jogos">
               <ArrowLeft className="h-4 w-4" />
             </Link>
           </Button>

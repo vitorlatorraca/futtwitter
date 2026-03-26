@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useRef, useEffect, useCallback } from "react";
-import { Link } from "wouter";
+import { Link } from "react-router-dom";
 import { AppShell } from "@/components/ui/app-shell";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -151,7 +151,7 @@ export default function AdivinheOJogadorPage() {
           <XCircle className="h-12 w-12 text-destructive mx-auto" />
           <p className="text-muted-foreground">Não foi possível carregar o jogo.</p>
           <Button variant="outline" asChild>
-            <Link href="/jogos">Voltar aos Jogos</Link>
+            <Link to="/jogos">Voltar aos Jogos</Link>
           </Button>
         </div>
       </AppShell>
@@ -164,7 +164,7 @@ export default function AdivinheOJogadorPage() {
         {/* Header */}
         <div className="flex items-center gap-3">
           <Button variant="ghost" size="icon" asChild>
-            <Link href="/jogos">
+            <Link to="/jogos">
               <ArrowLeft className="h-4 w-4" />
             </Link>
           </Button>
@@ -374,7 +374,7 @@ export default function AdivinheOJogadorPage() {
               {isFinished && (
                 <div className="flex justify-center pt-2">
                   <Button variant="secondary" asChild>
-                    <Link href="/jogos">Voltar aos Jogos</Link>
+                    <Link to="/jogos">Voltar aos Jogos</Link>
                   </Button>
                 </div>
               )}

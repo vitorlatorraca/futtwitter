@@ -23,7 +23,7 @@ function nameToHandle(name: string): string {
 function getPasswordStrength(password: string): 0 | 1 | 2 | 3 | 4 {
   if (!password) return 0;
   let score = 0;
-  if (password.length > 8) score++;
+  if (password.length >= 8) score++;
   if (/[0-9]/.test(password)) score++;
   if (/[^a-zA-Z0-9]/.test(password)) score++;
   if (/[A-Z]/.test(password)) score++;
@@ -108,8 +108,8 @@ export default function SignupPage() {
       toast({ variant: 'destructive', title: 'Erro', description: 'Email inválido' });
       return;
     }
-    if (formData.password.length < 6) {
-      toast({ variant: 'destructive', title: 'Erro', description: 'A senha deve ter pelo menos 6 caracteres' });
+    if (passwordStrength < 3) {
+      toast({ variant: 'destructive', title: 'Senha fraca', description: 'Use pelo menos 8 caracteres, uma maiúscula, um número e um caractere especial.' });
       return;
     }
     setStep(2);
@@ -220,7 +220,7 @@ export default function SignupPage() {
                     <Input
                       id="password"
                       type={showPassword ? 'text' : 'password'}
-                      placeholder="Mínimo 6 caracteres"
+                      placeholder="Mínimo 8 caracteres"
                       value={formData.password}
                       onChange={(e) => setFormData((prev) => ({ ...prev, password: e.target.value }))}
                       data-testid="input-password"

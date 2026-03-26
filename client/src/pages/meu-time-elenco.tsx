@@ -1,4 +1,4 @@
-import { Link } from 'wouter';
+import { Link } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { useAuth } from '@/lib/auth-context';
 import { getApiUrl } from '@/lib/queryClient';
@@ -82,7 +82,7 @@ export default function MeuTimeElencoPage() {
         {/* Header */}
         <div className="mb-6 space-y-4">
           <Button variant="ghost" size="sm" className="gap-2 -ml-2 text-muted-foreground hover:text-foreground" asChild>
-            <Link href="/meu-time">
+            <Link to="/meu-time">
               <ArrowLeft className="h-4 w-4" />
               Voltar para Meu Time
             </Link>

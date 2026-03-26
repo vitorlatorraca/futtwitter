@@ -1,6 +1,6 @@
 "use client";
 
-import { useLocation, Link } from "wouter";
+import { useNavigate, Link } from "react-router-dom";
 import { AppShell } from "@/components/ui/app-shell";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -9,7 +9,7 @@ import { ArrowLeft, Gamepad2 } from "lucide-react";
 import { useGamesSets } from "@/features/games/api";
 
 export default function LembraDesseElencoPage() {
-  const [, setLocation] = useLocation();
+  const navigate = useNavigate();
   const { data: sets, isLoading, error } = useGamesSets();
 
   return (
@@ -17,7 +17,7 @@ export default function LembraDesseElencoPage() {
       <div className="space-y-8">
         <div className="flex items-center gap-3">
           <Button variant="ghost" size="icon" asChild>
-            <Link href="/jogos">
+            <Link to="/jogos">
               <ArrowLeft className="h-4 w-4" />
             </Link>
           </Button>
@@ -42,14 +42,14 @@ export default function LembraDesseElencoPage() {
           <div className="text-center py-12">
             <p className="text-muted-foreground">Não foi possível carregar os elencos.</p>
             <Button variant="outline" className="mt-4" asChild>
-              <Link href="/jogos">Voltar aos Jogos</Link>
+              <Link to="/jogos">Voltar aos Jogos</Link>
             </Button>
           </div>
         ) : !sets || sets.length === 0 ? (
           <div className="text-center py-12">
             <p className="text-muted-foreground">Nenhum elenco disponível ainda.</p>
             <Button variant="outline" className="mt-4" asChild>
-              <Link href="/jogos">Voltar aos Jogos</Link>
+              <Link to="/jogos">Voltar aos Jogos</Link>
             </Button>
           </div>
         ) : (
@@ -58,7 +58,7 @@ export default function LembraDesseElencoPage() {
               <Card
                 key={set.id}
                 className="rounded-2xl border border-border bg-card overflow-hidden transition-all duration-fast hover:border-primary/20 cursor-pointer"
-                onClick={() => setLocation(`/jogos/adivinhe-elenco/${set.slug}`)}
+                onClick={() => navigate(`/jogos/adivinhe-elenco/${set.slug}`)}
               >
                 <CardHeader className="pb-2">
                   <div className="flex items-start justify-between gap-3">
@@ -80,7 +80,7 @@ export default function LembraDesseElencoPage() {
                     size="sm"
                     onClick={(e) => {
                       e.stopPropagation();
-                      setLocation(`/jogos/adivinhe-elenco/${set.slug}`);
+                      navigate(`/jogos/adivinhe-elenco/${set.slug}`);
                     }}
                   >
                     Jogar

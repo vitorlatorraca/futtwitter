@@ -28,6 +28,8 @@ import { db } from "./db";
 import rateLimit from "express-rate-limit";
 import { z } from "zod";
 import { deleteAvatarByUrl, saveAvatar } from "./services/avatarStorage";
+import { sendPasswordResetEmail } from "./services/email";
+import { passwordResetTokens } from "@shared/schema";
 import { generateUniqueHandle } from "./utils/handleUtils";
 import { feedRouter } from "./route-handlers/feed";
 import { socialRouter } from "./route-handlers/social";
@@ -272,6 +274,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
     standardHeaders: true,
     legacyHeaders: false,
     message: { message: "Muitas contas criadas. Tente novamente em 1 hora." },
+  });
+
+  /** Forgot-password: 5 pedidos por IP por hora */
+  const forgotPasswordLimiter = rateLimit({
+    windowMs: 60 * 60 * 1000,
+    max: 5,
+    standardHeaders: true,
+    legacyHeaders: false,
+    message: { message: "Muitas tentativas. Tente novamente em 1 hora." },
   });
 
   /** Check-handle: 30 verificações por IP por minuto */
@@ -635,6 +646,129 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
       res.json({ message: 'Logout realizado com sucesso' });
     });
+  });
+
+  // ──────────────────────────────────────────────────────────────────────────
+  // FORGOT / RESET PASSWORD
+  // ──────────────────────────────────────────────────────────────────────────
+
+  /** POST /api/auth/forgot-password — gera token e envia email */
+  app.post('/api/auth/forgot-password', forgotPasswordLimiter, async (req: any, res: any) => {
+    try {
+      const parsed = z.object({ email: z.string().email() }).safeParse(req.body);
+      if (!parsed.success) {
+        return res.status(400).json({ message: 'Email inválido.' });
+      }
+      const { email } = parsed.data;
+
+      // Resposta genérica para não revelar se o email existe (anti-enumeração)
+      const genericOk = { message: 'Se este email estiver cadastrado, você receberá as instruções em breve.' };
+
+      const user = await storage.getUserByEmail(email);
+      if (!user) return res.json(genericOk);
+
+      // Invalidar tokens anteriores deste usuário
+      await db
+        .update(passwordResetTokens)
+        .set({ usedAt: new Date() })
+        .where(
+          and(
+            eq(passwordResetTokens.userId, user.id),
+            isNull(passwordResetTokens.usedAt)
+          )
+        );
+
+      // Gerar token seguro (32 bytes = 64 hex chars)
+      const token = randomBytes(32).toString('hex');
+      const expiresAt = new Date(Date.now() + 60 * 60 * 1000); // 1 hora
+
+      await db.insert(passwordResetTokens).values({
+        userId: user.id,
+        token,
+        expiresAt,
+      });
+
+      await sendPasswordResetEmail(email, token);
+
+      return res.json(genericOk);
+    } catch (err) {
+      console.error('[forgot-password] error:', err);
+      res.status(500).json({ message: 'Erro interno. Tente novamente.' });
+    }
+  });
+
+  /** GET /api/auth/reset-password/validate/:token — valida se token ainda é válido */
+  app.get('/api/auth/reset-password/validate/:token', async (req: any, res: any) => {
+    try {
+      const { token } = req.params;
+      if (!token || typeof token !== 'string') {
+        return res.status(400).json({ valid: false, message: 'Token inválido.' });
+      }
+
+      const [row] = await db
+        .select()
+        .from(passwordResetTokens)
+        .where(eq(passwordResetTokens.token, token))
+        .limit(1);
+
+      if (!row) return res.status(404).json({ valid: false, message: 'Token não encontrado.' });
+      if (row.usedAt) return res.status(400).json({ valid: false, message: 'Token já utilizado.' });
+      if (row.expiresAt < new Date()) return res.status(400).json({ valid: false, message: 'Token expirado.' });
+
+      return res.json({ valid: true });
+    } catch (err) {
+      console.error('[reset-validate] error:', err);
+      res.status(500).json({ valid: false, message: 'Erro interno.' });
+    }
+  });
+
+  /** POST /api/auth/reset-password — executa a troca de senha */
+  app.post('/api/auth/reset-password', async (req: any, res: any) => {
+    try {
+      const parsed = z.object({
+        token: z.string().min(1),
+        password: z.string()
+          .min(8, 'A senha deve ter pelo menos 8 caracteres.')
+          .regex(/[A-Z]/, 'A senha deve conter pelo menos uma letra maiúscula.')
+          .regex(/[0-9]/, 'A senha deve conter pelo menos um número.')
+          .regex(/[^A-Za-z0-9]/, 'A senha deve conter pelo menos um caractere especial.'),
+      }).safeParse(req.body);
+
+      if (!parsed.success) {
+        const msg = parsed.error.errors[0]?.message ?? 'Dados inválidos.';
+        return res.status(400).json({ message: msg });
+      }
+
+      const { token, password } = parsed.data;
+
+      const [row] = await db
+        .select()
+        .from(passwordResetTokens)
+        .where(eq(passwordResetTokens.token, token))
+        .limit(1);
+
+      if (!row) return res.status(404).json({ message: 'Token não encontrado.' });
+      if (row.usedAt) return res.status(400).json({ message: 'Token já utilizado.' });
+      if (row.expiresAt < new Date()) return res.status(400).json({ message: 'Token expirado. Solicite um novo link.' });
+
+      const hashedPassword = await bcrypt.hash(password, 10);
+
+      await db
+        .update(users)
+        .set({ password: hashedPassword, updatedAt: new Date() })
+        .where(eq(users.id, row.userId));
+
+      // Marcar token como usado
+      await db
+        .update(passwordResetTokens)
+        .set({ usedAt: new Date() })
+        .where(eq(passwordResetTokens.id, row.id));
+
+      return res.json({ message: 'Senha redefinida com sucesso!' });
+    } catch (err) {
+      console.error('[reset-password] error:', err);
+      res.status(500).json({ message: 'Erro interno. Tente novamente.' });
+    }
   });
 
   app.get('/api/auth/me', async (req, res) => {

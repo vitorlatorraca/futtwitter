@@ -20,7 +20,7 @@ import {
 } from 'lucide-react';
 import { formatDistanceToNow } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
-import { Link } from 'wouter';
+import { Link } from 'react-router-dom';
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
@@ -113,7 +113,7 @@ function MaisBombadoCard({ topic, teamId }: { topic: ForumTopicWithAuthor; teamI
       )}
 
       {/* Body */}
-      <Link href={`/meu-time/comunidade/${topic.id}`}>
+      <Link to={`/meu-time/comunidade/${topic.id}`}>
         <div className="px-4 py-3 cursor-pointer hover:bg-white/5 transition-colors">
           <div className="flex items-center gap-2 mb-2.5">
             {topic.author.avatarUrl ? (
@@ -154,7 +154,7 @@ function MaisBombadoCard({ topic, teamId }: { topic: ForumTopicWithAuthor; teamI
           <ThumbsUp className={`h-4 w-4 ${liked ? 'fill-orange-400' : ''}`} />
           {count}
         </button>
-        <Link href={`/meu-time/comunidade/${topic.id}`}>
+        <Link to={`/meu-time/comunidade/${topic.id}`}>
           <span className="flex items-center gap-1.5 text-sm text-foreground/50 hover:text-foreground cursor-pointer transition-colors">
             <MessageSquare className="h-4 w-4" />
             {topic.repliesCount}
@@ -164,7 +164,7 @@ function MaisBombadoCard({ topic, teamId }: { topic: ForumTopicWithAuthor; teamI
           <Eye className="h-3.5 w-3.5" />
           {topic.viewsCount}
         </span>
-        <Link href={`/meu-time/comunidade/${topic.id}`}>
+        <Link to={`/meu-time/comunidade/${topic.id}`}>
           <span className="flex items-center gap-1 text-xs font-semibold text-primary hover:underline cursor-pointer">
             Participar <ChevronRight className="h-3.5 w-3.5" />
           </span>
@@ -180,7 +180,7 @@ function TopicItem({ topic, rank }: { topic: ForumTopicWithAuthor; rank: number 
   const categoryIcon = CATEGORY_ICONS[topic.category] ?? '📋';
 
   return (
-    <Link href={`/meu-time/comunidade/${topic.id}`}>
+    <Link to={`/meu-time/comunidade/${topic.id}`}>
       <div className="flex items-center gap-3 px-4 py-3 hover:bg-surface-elevated/40 transition-colors cursor-pointer">
         {/* Rank */}
         <span className={`text-xs font-extrabold w-5 text-center shrink-0 ${

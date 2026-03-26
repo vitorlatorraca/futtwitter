@@ -1,6 +1,6 @@
 'use client';
 
-import { Link } from 'wouter';
+import { Link } from 'react-router-dom';
 import { Skeleton } from '@/components/ui/skeleton';
 import {
   Tooltip,
@@ -73,7 +73,7 @@ export function ElencoPreviewMini({
         <div className="flex items-center justify-between mb-3">
           <h3 className="text-sm font-semibold text-foreground">Elenco</h3>
           <Link
-            href="/meu-time/elenco"
+            to="/meu-time/elenco"
             className="inline-flex items-center gap-1 text-xs font-medium text-primary hover:text-primary/90 transition-colors"
           >
             Ver elenco completo
@@ -90,7 +90,7 @@ export function ElencoPreviewMini({
                 <Tooltip key={stableKey}>
                   <TooltipTrigger asChild>
                     <Link
-                      href="/meu-time/elenco"
+                      to="/meu-time/elenco"
                       className="flex items-center gap-2 py-2 px-2.5 rounded-lg hover:bg-surface-elevated/70 transition-all duration-200 group"
                     >
                       <div className="shrink-0">

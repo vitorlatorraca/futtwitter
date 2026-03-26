@@ -3,7 +3,7 @@
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { CalendarDays, MapPin, ChevronRight, Home } from 'lucide-react';
-import { Link } from 'wouter';
+import { Link } from 'react-router-dom';
 import { getTeamCrestFromTeam } from '@/lib/teamCrests';
 import { Skeleton } from '@/components/ui/skeleton';
 
@@ -142,7 +142,7 @@ export function NextMatchHero({
               </div>
             )}
             <Link
-              href="/meu-time/jogos"
+              to="/meu-time/jogos"
               className="inline-flex items-center gap-1 text-xs font-medium text-primary hover:text-primary/75 transition-colors shrink-0"
             >
               Detalhes

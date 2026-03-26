@@ -34,7 +34,7 @@ import { Button } from '@/components/ui/button';
 import { useToast } from '@/hooks/use-toast';
 import { apiRequest, getApiUrl } from '@/lib/queryClient';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
-import { Link, useLocation } from 'wouter';
+import { Link, useLocation } from 'react-router-dom';
 import { CalendarDays, ChevronRight, Loader2, Newspaper } from 'lucide-react';
 import type { Team, Player, Match, News } from '@shared/schema';
 import { format } from 'date-fns';
@@ -95,7 +95,7 @@ export default function MeuTimePage() {
   });
   const teamId = user?.teamId ?? null;
 
-  const [location] = useLocation();
+  const location = useLocation();
   useEffect(() => {
     const p = new URLSearchParams(window.location.search);
     const t = p.get('tab');
@@ -602,7 +602,7 @@ export default function MeuTimePage() {
                 <MyTeamCard
                   title="Jogos"
                   rightSlot={
-                    <Link href="/meu-time/jogos" className="text-xs font-medium text-primary hover:text-primary/80 flex items-center gap-1 transition-colors">
+                    <Link to="/meu-time/jogos" className="text-xs font-medium text-primary hover:text-primary/80 flex items-center gap-1 transition-colors">
                       Ver todos
                       <ChevronRight className="h-3.5 w-3.5" />
                     </Link>
@@ -709,7 +709,7 @@ export default function MeuTimePage() {
                 Veja todos os jogos, próximas partidas e resultados na página completa.
               </p>
               <a
-                href="/meu-time/jogos"
+                to="/meu-time/jogos"
                 className="inline-flex items-center gap-2 rounded-lg bg-primary px-6 py-2.5 text-sm font-semibold text-primary-foreground hover:bg-primary/90 transition-colors"
               >
                 Ver todos os jogos

@@ -113,6 +113,15 @@ export const journalists = pgTable("journalists", {
   updatedAt: timestamp("updated_at").notNull().defaultNow(),
 });
 
+export const passwordResetTokens = pgTable("password_reset_tokens", {
+  id: varchar("id", { length: 36 }).primaryKey().default(sql`gen_random_uuid()`),
+  userId: varchar("user_id", { length: 36 }).notNull(),
+  token: varchar("token", { length: 64 }).notNull().unique(),
+  expiresAt: timestamp("expires_at").notNull(),
+  usedAt: timestamp("used_at"),
+  createdAt: timestamp("created_at").notNull().defaultNow(),
+});
+
 export const teams = pgTable("teams", {
   id: varchar("id", { length: 36 }).primaryKey().default(sql`gen_random_uuid()`),
   name: varchar("name", { length: 255 }).notNull().unique(),
@@ -1632,7 +1641,11 @@ export const userBadgesRelations = relations(userBadges, ({ one }) => ({
 export const insertUserSchema = createInsertSchema(users, {
   email: z.string().email("Email inválido"),
   name: z.string().min(2, "Nome deve ter pelo menos 2 caracteres"),
-  password: z.string().min(6, "Senha deve ter pelo menos 6 caracteres"),
+  password: z.string()
+    .min(8, "A senha deve ter pelo menos 8 caracteres.")
+    .regex(/[A-Z]/, "A senha deve conter pelo menos uma letra maiúscula.")
+    .regex(/[0-9]/, "A senha deve conter pelo menos um número.")
+    .regex(/[^A-Za-z0-9]/, "A senha deve conter pelo menos um caractere especial."),
 }).omit({ id: true, createdAt: true, updatedAt: true });
 
 export const selectUserSchema = createSelectSchema(users);

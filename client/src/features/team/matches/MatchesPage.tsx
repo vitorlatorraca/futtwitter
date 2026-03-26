@@ -12,7 +12,7 @@ import { MatchRow } from "./MatchRow";
 import { CompetitionDivider } from "./CompetitionDivider";
 import { MatchesFilters } from "./MatchesFilters";
 import { ChevronLeft } from "lucide-react";
-import { Link } from "wouter";
+import { Link } from "react-router-dom";
 import type { TeamMatch, MatchFilter } from "./types";
 
 function groupByCompetition(matches: TeamMatch[]): Array<{ competition: string; matches: TeamMatch[] }> {
@@ -78,7 +78,7 @@ export function MatchesPage() {
     <AppShell mainClassName="py-4 sm:py-6 px-4 sm:px-6 min-h-screen">
       <div className="max-w-2xl mx-auto">
         <div className="flex items-center gap-4 mb-6">
-          <Link href="/meu-time" className="p-2 rounded-lg hover:bg-muted/60 transition-colors inline-flex">
+          <Link to="/meu-time" className="p-2 rounded-lg hover:bg-muted/60 transition-colors inline-flex">
             <ChevronLeft className="h-5 w-5 text-foreground" />
           </Link>
           <div>

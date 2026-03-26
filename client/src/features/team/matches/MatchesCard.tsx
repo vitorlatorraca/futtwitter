@@ -1,7 +1,7 @@
 "use client";
 
 import { useQuery } from "@tanstack/react-query";
-import { Link } from "wouter";
+import { Link } from "react-router-dom";
 import { cn } from "@/lib/utils";
 import { getApiUrl } from "@/lib/queryClient";
 import { Panel, SectionHeader, LoadingSkeleton } from "@/components/ui-premium";
@@ -56,7 +56,7 @@ export function MatchesCard({ teamId, teamName, embed, overviewMode, matches: ma
               ? `${m.homeScore}–${m.awayScore}`
               : '–';
             return (
-              <Link key={m.id} href="/meu-time/jogos" className="flex items-center gap-3 py-2.5 px-2.5 rounded-lg hover:bg-muted/40 transition-all duration-200 group">
+              <Link key={m.id} to="/meu-time/jogos" className="flex items-center gap-3 py-2.5 px-2.5 rounded-lg hover:bg-muted/40 transition-all duration-200 group">
                 <div className="flex-1 min-w-0">
                   <div className="text-xs font-medium text-foreground truncate">
                     {m.homeTeamName} <span className="font-bold font-mono text-foreground/90 mx-0.5">{scoreStr}</span> {m.awayTeamName}
@@ -102,7 +102,7 @@ export function MatchesCard({ teamId, teamName, embed, overviewMode, matches: ma
           <p className="text-[10px] text-muted-foreground/80 text-center mt-0.5">
             Os resultados aparecerão aqui
           </p>
-          <Link href="/meu-time/jogos" className="mt-3 text-xs font-medium text-primary hover:text-primary/80">
+          <Link to="/meu-time/jogos" className="mt-3 text-xs font-medium text-primary hover:text-primary/80">
             Ver calendário
           </Link>
         </div>
@@ -127,7 +127,7 @@ export function MatchesCard({ teamId, teamName, embed, overviewMode, matches: ma
       <Panel padding="sm" className="rounded-xl border-border transition-colors hover:border-border-strong">
         <div className="flex items-center justify-between">
           <SectionHeader title="Jogos" />
-          <Link href="/meu-time/jogos" className="text-xs font-medium text-primary hover:text-primary/80 flex items-center gap-1 transition-colors">
+          <Link to="/meu-time/jogos" className="text-xs font-medium text-primary hover:text-primary/80 flex items-center gap-1 transition-colors">
             Ver todos
             <ChevronRight className="h-3.5 w-3.5" />
           </Link>
@@ -141,7 +141,7 @@ export function MatchesCard({ teamId, teamName, embed, overviewMode, matches: ma
     <Panel padding="sm" className="rounded-xl border-border transition-colors hover:border-border-strong">
       <div className="flex items-center justify-between">
         <SectionHeader title="Jogos" />
-        <Link href="/meu-time/jogos" className="text-xs font-medium text-primary hover:text-primary/80 flex items-center gap-1 transition-colors">
+        <Link to="/meu-time/jogos" className="text-xs font-medium text-primary hover:text-primary/80 flex items-center gap-1 transition-colors">
           Ver todos
           <ChevronRight className="h-3.5 w-3.5" />
         </Link>

@@ -131,9 +131,18 @@ export default function LoginPage() {
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="password" className="text-foreground-secondary">
-                Senha
-              </Label>
+              <div className="flex items-center justify-between">
+                <Label htmlFor="password" className="text-foreground-secondary">
+                  Senha
+                </Label>
+                <Link
+                  to="/esqueci-senha"
+                  className="text-xs text-primary hover:underline"
+                  tabIndex={-1}
+                >
+                  Esqueci minha senha
+                </Link>
+              </div>
               <div className="relative">
                 <Lock className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-foreground-muted" />
                 <Input

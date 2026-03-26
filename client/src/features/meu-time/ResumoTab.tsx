@@ -22,7 +22,7 @@ import {
 } from 'lucide-react';
 import { formatDistanceToNow } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
-import { Link } from 'wouter';
+import { Link } from 'react-router-dom';
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
@@ -53,7 +53,7 @@ function NewsCompactCard({ news }: { news: News }) {
     : '';
 
   return (
-    <Link href={`/news/${news.id}`}>
+    <Link to={`/news/${news.id}`}>
       <div className="flex items-center gap-3 py-3 px-4 hover:bg-surface-elevated/40 transition-colors cursor-pointer">
         {news.imageUrl ? (
           <img
@@ -130,7 +130,7 @@ function HotTopicCard({ topic, teamId }: { topic: ForumTopicWithAuthor; teamId: 
       </div>
 
       {/* Content */}
-      <Link href={`/meu-time/comunidade/${topic.id}`}>
+      <Link to={`/meu-time/comunidade/${topic.id}`}>
         <div className="px-4 py-3 cursor-pointer hover:bg-surface-elevated/20 transition-colors">
           <div className="flex items-center gap-2 mb-2">
             {topic.author.avatarUrl ? (
@@ -168,7 +168,7 @@ function HotTopicCard({ topic, teamId }: { topic: ForumTopicWithAuthor; teamId: 
           <ThumbsUp className={`h-4 w-4 ${liked ? 'fill-primary' : ''}`} />
           {count}
         </button>
-        <Link href={`/meu-time/comunidade/${topic.id}`}>
+        <Link to={`/meu-time/comunidade/${topic.id}`}>
           <span className="flex items-center gap-1.5 text-sm text-foreground-secondary hover:text-foreground cursor-pointer transition-colors">
             <MessageSquare className="h-4 w-4" />
             {topic.repliesCount}
@@ -188,7 +188,7 @@ function HotTopicCard({ topic, teamId }: { topic: ForumTopicWithAuthor; teamId: 
 function TopicRow({ topic }: { topic: ForumTopicWithAuthor }) {
   const categoryLabel = CATEGORY_LABELS[topic.category] ?? topic.category;
   return (
-    <Link href={`/meu-time/comunidade/${topic.id}`}>
+    <Link to={`/meu-time/comunidade/${topic.id}`}>
       <div className="flex items-center gap-3 px-4 py-3 hover:bg-surface-elevated/40 transition-colors cursor-pointer">
         <div className="min-w-0 flex-1">
           <p className="text-sm font-semibold text-foreground leading-snug line-clamp-1">
@@ -353,7 +353,7 @@ export function ResumoTab({ teamId, teamName }: ResumoTabProps) {
         title="Notícias"
         icon={<Newspaper className="h-4 w-4" />}
         action={
-          <Link href={`/meu-time?tab=news`}>
+          <Link to="/meu-time?tab=news">
             <span className="text-xs font-semibold text-primary flex items-center gap-0.5 cursor-pointer hover:underline">
               Ver todas <ChevronRight className="h-3 w-3" />
             </span>
@@ -426,7 +426,7 @@ export function ResumoTab({ teamId, teamName }: ResumoTabProps) {
               {recentTopics.map((t) => <TopicRow key={t.id} topic={t} />)}
             </div>
             <div className="px-4 py-3 border-t border-border">
-              <Link href="/meu-time?tab=comunidade">
+              <Link to="/meu-time?tab=comunidade">
                 <span className="text-sm font-semibold text-primary flex items-center gap-1 cursor-pointer hover:underline">
                   Ver todos os tópicos <ChevronRight className="h-4 w-4" />
                 </span>

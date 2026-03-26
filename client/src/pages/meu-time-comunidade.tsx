@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { useRoute, useLocation } from 'wouter';
+import { useParams, useNavigate } from 'react-router-dom';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useAuth } from '@/lib/auth-context';
 import { AppShell } from '@/components/ui/app-shell';
@@ -12,7 +12,7 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 import { EmptyState } from '@/components/ui/empty-state';
 import { ArrowLeft, MessageCircle, Heart, Eye, Loader2 } from 'lucide-react';
-import { Link } from 'wouter';
+import { Link } from 'react-router-dom';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { apiRequest, getApiUrl } from '@/lib/queryClient';
@@ -29,9 +29,8 @@ function getCategoryIcon(category: string) {
 }
 
 export default function MeuTimeComunidadeTopicPage() {
-  const [, params] = useRoute('/meu-time/comunidade/:topicId');
-  const [location, setLocation] = useLocation();
-  const topicId = params?.topicId ?? '';
+  const { topicId = '' } = useParams<{ topicId: string }>();
+  const navigate = useNavigate();
   const { user } = useAuth();
   const teamId = user?.teamId ?? null;
   const { toast } = useToast();
@@ -128,7 +127,7 @@ export default function MeuTimeComunidadeTopicPage() {
   const replies = repliesQuery.data ?? [];
 
   const handleBack = () => {
-    setLocation('/meu-time?tab=comunidade');
+    navigate('/meu-time?tab=comunidade');
   };
 
   if (!user || !teamId) {
