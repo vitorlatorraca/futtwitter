@@ -23,7 +23,7 @@ export default defineConfig({
     alias: {
       "@": path.resolve(import.meta.dirname, "client", "src"),
       "@shared": path.resolve(import.meta.dirname, "shared"),
-      "@assets": path.resolve(import.meta.dirname, "attached_assets"),
+      "@assets": path.resolve(import.meta.dirname, "client", "src", "assets"),
     },
   },
   root: path.resolve(import.meta.dirname, "client"),
@@ -36,5 +36,14 @@ export default defineConfig({
       strict: true,
       deny: ["**/.*"],
     },
+    // When running client separately (e.g. npm run dev:client), proxy /api to backend (PORT 5000)
+    proxy: process.env.VITE_API_URL
+      ? undefined
+      : {
+          "/api": {
+            target: "http://127.0.0.1:5000",
+            changeOrigin: true,
+          },
+        },
   },
 });

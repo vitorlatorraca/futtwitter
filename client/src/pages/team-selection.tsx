@@ -1,20 +1,24 @@
 import { useState } from 'react';
-import { useLocation } from 'wouter';
+import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/lib/auth-context';
+import { useSignupStore } from '../store/useSignupStore';
 import { Button } from '@/components/ui/button';
-import { Card } from '@/components/ui/card';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { useToast } from '@/hooks/use-toast';
 import { TEAMS_DATA } from '@/lib/team-data';
-import { Loader2 } from 'lucide-react';
+import { Crest } from '@/components/ui-premium';
+import { Loader2, Check } from 'lucide-react';
 
 export default function TeamSelectionPage() {
-  const [, setLocation] = useLocation();
+  const navigate = useNavigate();
   const { register } = useAuth();
   const { toast } = useToast();
   const [selectedTeam, setSelectedTeam] = useState<string | null>(null);
   const [showConfirmDialog, setShowConfirmDialog] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+
+  const signupData = useSignupStore((s) => s.data);
+  const clearSignupData = useSignupStore((s) => s.clearSignupData);
 
   const handleTeamClick = (teamId: string) => {
     setSelectedTeam(teamId);
@@ -24,33 +28,31 @@ export default function TeamSelectionPage() {
   const handleConfirm = async () => {
     if (!selectedTeam) return;
 
-    const signupDataStr = sessionStorage.getItem('signupData');
-    if (!signupDataStr) {
+    if (!signupData) {
       toast({
         variant: 'destructive',
         title: 'Erro',
         description: 'Dados de cadastro não encontrados. Por favor, refaça o cadastro.',
       });
-      setLocation('/cadastro');
+      navigate('/cadastro', { replace: true });
       return;
     }
 
-    const signupData = JSON.parse(signupDataStr);
     setIsLoading(true);
 
     try {
-      await register(signupData.name, signupData.email, signupData.password, selectedTeam);
-      sessionStorage.removeItem('signupData');
+      await register(signupData.name, signupData.email, signupData.password, selectedTeam, signupData.handle);
+      clearSignupData();
       toast({
         title: 'Conta criada com sucesso!',
         description: 'Bem-vindo à plataforma Brasileirão',
       });
-      setLocation('/dashboard');
-    } catch (error: any) {
+      navigate('/', { replace: true });
+    } catch (error: unknown) {
       toast({
         variant: 'destructive',
         title: 'Erro ao criar conta',
-        description: error.message || 'Tente novamente mais tarde',
+        description: error instanceof Error ? error.message : 'Tente novamente mais tarde',
       });
     } finally {
       setIsLoading(false);
@@ -58,61 +60,90 @@ export default function TeamSelectionPage() {
     }
   };
 
-  const team = TEAMS_DATA.find(t => t.id === selectedTeam);
+  const team = TEAMS_DATA.find((t) => t.id === selectedTeam);
 
   return (
-    <div className="min-h-screen bg-muted/30 py-12 px-4">
-      <div className="container max-w-5xl mx-auto">
-        <div className="text-center mb-12">
-          <h1 className="font-display font-bold text-3xl md:text-4xl mb-4">
-            Escolha seu time do coração
-          </h1>
-          <p className="text-muted-foreground text-lg">
-            Atenção: Você não poderá mudar depois! Escolha com carinho ⚽
-          </p>
+    <div className="min-h-screen bg-black flex flex-col">
+      <header className="flex items-center justify-between p-4 sm:p-6 border-b border-border">
+        <div className="flex items-center gap-2">
+          <span className="text-xl">⚽</span>
+          <span className="font-extrabold text-lg tracking-tight text-foreground">FUTTWITTER</span>
         </div>
+        <div className="flex items-center gap-2">
+          <span className="text-sm font-medium text-foreground-secondary">Passo final</span>
+          <span className="text-sm font-bold text-primary">3/3</span>
+        </div>
+      </header>
 
-        <div className="grid grid-cols-4 md:grid-cols-5 lg:grid-cols-10 gap-4 md:gap-6">
-          {TEAMS_DATA.map((team) => (
+      <main className="flex-1 p-4 sm:p-6 max-w-6xl mx-auto w-full">
+        <h1 className="text-2xl sm:text-3xl font-bold text-foreground mb-2">
+          Escolha seu time ❤️
+        </h1>
+        <p className="text-foreground-secondary mb-8">
+          Esta escolha é permanente. Escolha com carinho.
+        </p>
+
+        <div className="grid grid-cols-4 sm:grid-cols-6 lg:grid-cols-8 gap-3 sm:gap-4">
+          {TEAMS_DATA.map((t) => (
             <button
-              key={team.id}
-              onClick={() => handleTeamClick(team.id)}
-              className="group flex flex-col items-center gap-2 hover-elevate active-elevate-2 rounded-lg p-3 transition-all"
-              data-testid={`button-team-${team.id}`}
+              key={t.id}
+              onClick={() => handleTeamClick(t.id)}
+              className="rounded-2xl border-2 border-border bg-surface-elevated/50 hover:scale-[1.05] transition-all duration-200 flex flex-col items-center gap-2 p-3 sm:p-4"
+              style={
+                {
+                  '--team-color': t.primaryColor,
+                  ...(selectedTeam === t.id && { borderColor: t.primaryColor }),
+                } as React.CSSProperties
+              }
+              data-testid={`button-team-${t.id}`}
             >
-              <div className="relative w-full aspect-square rounded-full overflow-hidden border-2 border-border group-hover:border-primary transition-colors">
-                <img
-                  src={team.logoUrl}
-                  alt={`Escudo do ${team.name}`}
-                  className="w-full h-full object-cover"
-                />
+              <div
+                className={`relative w-full aspect-square rounded-full overflow-hidden flex items-center justify-center p-2 transition-all duration-200 border-2 ${
+                  selectedTeam === t.id ? 'ring-2 ring-offset-2 ring-offset-black' : 'border-transparent'
+                }`}
+                style={
+                  selectedTeam === t.id
+                    ? ({ borderColor: t.primaryColor, '--tw-ring-color': t.primaryColor } as React.CSSProperties)
+                    : undefined
+                }
+              >
+                <Crest slug={t.id} logoUrl={t.logoUrl} alt={t.name} size="lg" className="w-full h-full" />
+                {selectedTeam === t.id && (
+                  <div
+                    className="absolute bottom-0 right-0 w-6 h-6 rounded-full flex items-center justify-center"
+                    style={{ backgroundColor: t.primaryColor }}
+                  >
+                    <Check className="h-3 w-3 text-white" />
+                  </div>
+                )}
               </div>
-              <span className="text-xs font-medium text-center leading-tight hidden md:block">
-                {team.shortName}
+              <span className="text-xs font-semibold text-center leading-tight text-foreground">
+                {t.shortName}
               </span>
             </button>
           ))}
         </div>
-      </div>
+      </main>
 
       <Dialog open={showConfirmDialog} onOpenChange={setShowConfirmDialog}>
-        <DialogContent className="sm:max-w-md">
+        <DialogContent className="sm:max-w-md bg-surface-elevated border-card-border">
           <DialogHeader>
             <DialogTitle className="text-center">Confirmar escolha</DialogTitle>
             <DialogDescription className="text-center pt-4">
               {team && (
                 <div className="flex flex-col items-center gap-4">
-                  <div className="w-24 h-24 rounded-full overflow-hidden border-2" style={{ borderColor: team.primaryColor }}>
-                    <img
-                      src={team.logoUrl}
-                      alt={`Escudo do ${team.name}`}
-                      className="w-full h-full object-cover"
-                    />
+                  <div
+                    className="w-24 h-24 rounded-full overflow-hidden border-2 flex items-center justify-center p-2"
+                    style={{ borderColor: team.primaryColor }}
+                  >
+                    <Crest slug={team.id} logoUrl={team.logoUrl} alt={team.name} size="lg" className="w-full h-full" />
                   </div>
                   <div>
-                    <p className="font-display font-bold text-xl mb-2">{team.name}</p>
-                    <p className="text-sm text-muted-foreground">
-                      Tem certeza? Esta escolha é <span className="font-semibold text-foreground">permanente</span> e não poderá ser alterada depois!
+                    <p className="font-bold text-xl mb-2">{team.name}</p>
+                    <p className="text-sm text-foreground-muted">
+                      Tem certeza? Esta escolha é{' '}
+                      <span className="font-semibold text-foreground">permanente</span> e não poderá
+                      ser alterada depois!
                     </p>
                   </div>
                 </div>
@@ -139,7 +170,7 @@ export default function TeamSelectionPage() {
                   Criando conta...
                 </>
               ) : (
-                'Confirmar'
+                'Confirmar e entrar'
               )}
             </Button>
           </DialogFooter>

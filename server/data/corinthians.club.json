@@ -1,0 +1,57 @@
+{
+  "id": "corinthians",
+  "name": "Sport Club Corinthians Paulista",
+  "shortName": "Corinthians",
+  "fullName": "Sport Club Corinthians Paulista",
+  "founded": "1910-09-01",
+  "foundedLabel": "1 de setembro de 1910",
+  "city": "São Paulo",
+  "country": "Brasil",
+  "stadium": {
+    "name": "Neo Química Arena",
+    "formerNames": ["Arena Corinthians"],
+    "capacity": 49205,
+    "address": "Avenida Miguel Inácio Curi, 111 - Itaquera, São Paulo",
+    "inaugurated": 2014,
+    "worldCup2014": true
+  },
+  "nicknames": [
+    "Timão",
+    "Coringão",
+    "Campeão dos Campeões",
+    "Time do Povo",
+    "Todo Poderoso",
+    "Alvinegro do Parque São Jorge"
+  ],
+  "colors": {
+    "primary": "#000000",
+    "secondary": "#FFFFFF",
+    "names": ["Preto", "Branco"]
+  },
+  "titles": {
+    "international": [
+      { "name": "Copa Intercontinental (Mundial pré-FIFA)", "count": 1, "years": [2000] },
+      { "name": "Mundial de Clubes FIFA", "count": 1, "years": [2012] },
+      { "name": "Copa Libertadores da América", "count": 1, "years": [2012] },
+      { "name": "Recopa Sul-Americana", "count": 1, "years": [2013] }
+    ],
+    "national": [
+      { "name": "Campeonato Brasileiro (Série A)", "count": 7, "years": [1990, 1998, 1999, 2005, 2011, 2015, 2017] },
+      { "name": "Copa do Brasil", "count": 4, "years": [1995, 2002, 2009, 2025] },
+      { "name": "Supercopa do Brasil", "count": 1, "years": [1991] },
+      { "name": "Campeonato Brasileiro Série B", "count": 1, "years": [2008] }
+    ],
+    "state": [
+      { "name": "Campeonato Paulista", "count": 31, "years": [1914, 1916, 1922, 1923, 1924, 1928, 1929, 1930, 1937, 1938, 1939, 1941, 1951, 1952, 1954, 1977, 1979, 1982, 1983, 1988, 1995, 1997, 1999, 2001, 2003, 2009, 2013, 2017, 2018, 2019, 2025], "note": "Recorde de títulos" }
+    ]
+  },
+  "honours": [
+    { "name": "Campeonato Brasileiro (Série A)", "count": 7, "years": [1990, 1998, 1999, 2005, 2011, 2015, 2017] },
+    { "name": "Copa do Brasil", "count": 4, "years": [1995, 2002, 2009, 2025] },
+    { "name": "Copa Libertadores da América", "count": 1, "years": [2012] },
+    { "name": "Mundial de Clubes (FIFA + Intercontinental)", "count": 2, "years": [2000, 2012] },
+    { "name": "Recopa Sul-Americana", "count": 1, "years": [2013] },
+    { "name": "Campeonato Paulista", "count": 31, "years": [1914, 1916, 1922, 1923, 1924, 1928, 1929, 1930, 1937, 1938, 1939, 1941, 1951, 1952, 1954, 1977, 1979, 1982, 1983, 1988, 1995, 1997, 1999, 2001, 2003, 2009, 2013, 2017, 2018, 2019, 2025] }
+  ],
+  "lastUpdated": "2025-02-04"
+}

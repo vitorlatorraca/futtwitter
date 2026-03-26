@@ -1,22 +1,31 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useMutation, useQueryClient, useQuery } from '@tanstack/react-query';
 import { useAuth } from '@/lib/auth-context';
-import { Navbar } from '@/components/navbar';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Panel } from '@/components/ui-premium';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Badge } from '@/components/ui/badge';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { AppShell } from '@/components/ui/app-shell';
 import { useToast } from '@/hooks/use-toast';
-import { apiRequest } from '@/lib/queryClient';
-import { User, Lock, BarChart3, Award, Loader2 } from 'lucide-react';
+import { apiRequest, getApiUrl } from '@/lib/queryClient';
+import type { MeUser } from '@/lib/auth-context';
+import { User, BarChart3, Award, Loader2, ShieldCheck, Search } from 'lucide-react';
+import { AvatarUploader } from '@/components/AvatarUploader';
 
 export default function PerfilPage() {
   const { user } = useAuth();
   const { toast } = useToast();
   const queryClient = useQueryClient();
   const [isEditing, setIsEditing] = useState(false);
+
+  // Ensure the UI reflects permission changes (e.g., journalist approval) even with aggressive caching.
+  useEffect(() => {
+    queryClient.invalidateQueries({ queryKey: ['/api/auth/me'] });
+  }, [queryClient]);
 
   const [profileData, setProfileData] = useState({
     name: user?.name || '',
@@ -109,31 +118,126 @@ export default function PerfilPage() {
     queryKey: ['/api/badges'],
   });
 
-  return (
-    <div className="min-h-screen bg-background">
-      <Navbar />
+  const [adminSearchQ, setAdminSearchQ] = useState('');
+  const [adminResults, setAdminResults] = useState<Array<{ id: string; email: string; name: string; journalistStatus: string | null; isJournalist: boolean }>>([]);
+  const [lastAdminQuery, setLastAdminQuery] = useState('');
 
-      <div className="container px-4 py-8 max-w-4xl">
-        <h1 className="font-display font-bold text-3xl mb-8">Meu Perfil</h1>
+  const adminSearchMutation = useMutation({
+    mutationFn: async (q: string) => {
+      const res = await apiRequest('GET', `/api/admin/users/search?q=${encodeURIComponent(q)}`);
+      return res.json() as Promise<Array<{ id: string; email: string; name: string; journalistStatus: string | null; isJournalist: boolean }>>;
+    },
+    onSuccess: (data, q) => {
+      setAdminResults(data);
+      setLastAdminQuery(q);
+    },
+    onError: (err: any) => {
+      toast({ variant: 'destructive', title: 'Erro', description: err?.message || 'Falha ao buscar usuários' });
+    },
+  });
+
+  const adminActionMutation = useMutation({
+    mutationFn: async ({ userId, action }: { userId: string; action: string }) => {
+      await apiRequest('PATCH', `/api/admin/journalists/${userId}`, { action });
+    },
+    onSuccess: (_, { action }) => {
+      toast({ title: 'Sucesso', description: `Ação "${action}" concluída.` });
+      if (lastAdminQuery) adminSearchMutation.mutate(lastAdminQuery);
+      queryClient.invalidateQueries({ queryKey: ['/api/auth/me'] });
+    },
+    onError: (err: any) => {
+      toast({ variant: 'destructive', title: 'Erro', description: err?.message || 'Falha na ação' });
+    },
+  });
+
+  const handleAdminSearch = () => {
+    const q = adminSearchQ.trim();
+    if (!q) return;
+    adminSearchMutation.mutate(q);
+  };
+
+  const roleBadges: Array<{ label: string; variant: "default" | "secondary" | "outline"; className?: string }> = [];
+  if (user?.isAdmin) roleBadges.push({ label: "Admin", variant: "outline", className: "border-warning/30 text-warning" });
+  if (user?.isJournalist) roleBadges.push({ label: "Jornalista", variant: "default", className: "badge-journalist" });
+  else if (user?.journalistStatus === "PENDING") roleBadges.push({ label: "Jornalista (Pendente)", variant: "secondary", className: "badge-pending" });
+  else roleBadges.push({ label: "Torcedor", variant: "outline" });
+
+  return (
+    <AppShell>
+      <div className="space-y-6">
+        {/* Profile Hero */}
+        <Panel className="p-6 sm:p-8" padding="none">
+          <div className="flex flex-col sm:flex-row sm:items-center gap-4 sm:gap-6">
+            <Avatar className="h-16 w-16 ring-2 ring-primary/25">
+              {user?.avatarUrl ? <AvatarImage src={getApiUrl(user.avatarUrl)} alt={user?.name ?? "Avatar"} /> : null}
+              <AvatarFallback className="bg-primary text-primary-foreground font-bold text-xl">
+                {user?.name?.slice(0, 2).toUpperCase()}
+              </AvatarFallback>
+            </Avatar>
+
+            <div className="min-w-0 flex-1">
+              <div className="font-bold text-2xl sm:text-3xl text-foreground truncate">
+                {user?.name}
+              </div>
+              <div className="text-sm text-foreground-secondary truncate">{user?.email}</div>
+
+              <div className="mt-4 flex flex-wrap items-center gap-2">
+                {roleBadges.map((b) => (
+                  <Badge
+                    key={b.label}
+                    variant={b.variant}
+                    className={`text-xs font-semibold ${b.className ?? ""}`}
+                  >
+                    {b.label}
+                  </Badge>
+                ))}
+                {user?.journalistStatus === "PENDING" ? (
+                  <span className="text-xs text-foreground-secondary">
+                    Aguardando aprovação do administrador.
+                  </span>
+                ) : null}
+              </div>
+            </div>
+          </div>
+        </Panel>
 
         <Tabs defaultValue="info" className="space-y-6">
-          <TabsList className="grid w-full grid-cols-3">
+          <div className="overflow-x-auto scrollbar-hide">
+            <TabsList className="w-max min-w-full justify-start">
             <TabsTrigger value="info" className="gap-2" data-testid="tab-info">
               <User className="h-4 w-4" />
-              <span className="hidden sm:inline">Informações</span>
+              <span>Informações</span>
             </TabsTrigger>
             <TabsTrigger value="stats" className="gap-2" data-testid="tab-stats">
               <BarChart3 className="h-4 w-4" />
-              <span className="hidden sm:inline">Estatísticas</span>
+              <span>Estatísticas</span>
             </TabsTrigger>
             <TabsTrigger value="badges" className="gap-2" data-testid="tab-badges">
               <Award className="h-4 w-4" />
-              <span className="hidden sm:inline">Badges</span>
+              <span>Badges</span>
             </TabsTrigger>
-          </TabsList>
+            {user?.isAdmin && (
+              <TabsTrigger value="admin" className="gap-2" data-testid="tab-admin">
+                <ShieldCheck className="h-4 w-4" />
+                <span>Admin</span>
+              </TabsTrigger>
+            )}
+            </TabsList>
+          </div>
 
           <TabsContent value="info" className="space-y-6">
-            <Card>
+            <Card className="rounded-2xl border border-border bg-card">
+              <CardHeader>
+                <CardTitle>Foto do Perfil</CardTitle>
+                <CardDescription>Envie ou remova seu avatar</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <AvatarUploader avatarUrl={user?.avatarUrl ?? null} disabled={!user} />
+              </CardContent>
+            </Card>
+
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+              <Card className="rounded-2xl border border-border bg-card">
               <CardHeader>
                 <CardTitle>Dados Pessoais</CardTitle>
                 <CardDescription>Atualize suas informações</CardDescription>
@@ -182,9 +286,9 @@ export default function PerfilPage() {
                   </Button>
                 )}
               </CardContent>
-            </Card>
+              </Card>
 
-            <Card>
+              <Card className="rounded-2xl border border-border bg-card">
               <CardHeader>
                 <CardTitle>Alterar Senha</CardTitle>
                 <CardDescription>Mantenha sua conta segura</CardDescription>
@@ -231,27 +335,34 @@ export default function PerfilPage() {
                   )}
                 </Button>
               </CardContent>
-            </Card>
+              </Card>
+            </div>
           </TabsContent>
 
           <TabsContent value="stats">
             <div className="grid md:grid-cols-3 gap-6">
-              <Card>
+              <Card className="rounded-2xl border border-border bg-card hover:border-border transition-colors group">
                 <CardContent className="p-6 text-center">
-                  <div className="text-4xl font-bold text-primary mb-2">{mockStats.ratingsCount}</div>
-                  <p className="text-sm text-muted-foreground">Avaliações Feitas</p>
+                  <div className="stat-number text-primary mb-2 group-hover:scale-110 transition-transform duration-fast">
+                    {mockStats.ratingsCount}
+                  </div>
+                  <p className="stat-label">Avaliações Feitas</p>
                 </CardContent>
               </Card>
-              <Card>
+              <Card className="rounded-2xl border border-border bg-card hover:border-border transition-colors group">
                 <CardContent className="p-6 text-center">
-                  <div className="text-4xl font-bold text-primary mb-2">{mockStats.newsLiked}</div>
-                  <p className="text-sm text-muted-foreground">Notícias Curtidas</p>
+                  <div className="stat-number text-primary mb-2 group-hover:scale-110 transition-transform duration-fast">
+                    {mockStats.newsLiked}
+                  </div>
+                  <p className="stat-label">Notícias Curtidas</p>
                 </CardContent>
               </Card>
-              <Card>
+              <Card className="rounded-2xl border border-border bg-card hover:border-border transition-colors group">
                 <CardContent className="p-6 text-center">
-                  <div className="text-4xl font-bold text-primary mb-2">{mockStats.daysActive}</div>
-                  <p className="text-sm text-muted-foreground">Dias Ativo</p>
+                  <div className="stat-number text-primary mb-2 group-hover:scale-110 transition-transform duration-fast">
+                    {mockStats.daysActive}
+                  </div>
+                  <p className="stat-label">Dias Ativo</p>
                 </CardContent>
               </Card>
             </div>
@@ -260,13 +371,19 @@ export default function PerfilPage() {
           <TabsContent value="badges">
             <div className="grid md:grid-cols-2 gap-4">
               {badges.map((badge: any) => (
-                <Card key={badge.id} className={!badge.unlocked ? 'opacity-50' : ''}>
+                <Card 
+                  key={badge.id} 
+                  className={`rounded-2xl border border-border bg-card hover:border-border transition-colors ${!badge.unlocked ? 'opacity-60 grayscale' : ''}`}
+                >
                   <CardContent className="p-6 flex items-center gap-4">
                     <div className="text-4xl">{badge.icon}</div>
                     <div className="flex-1">
-                      <h3 className="font-semibold mb-1">{badge.name}</h3>
-                      <p className="text-sm text-muted-foreground mb-2">{badge.description}</p>
-                      <Badge variant={badge.unlocked ? 'default' : 'secondary'}>
+                      <h3 className="font-bold text-lg mb-1 text-foreground">{badge.name}</h3>
+                      <p className="text-sm text-foreground-secondary mb-3">{badge.description}</p>
+                      <Badge 
+                        variant={badge.unlocked ? 'default' : 'outline'}
+                        className={badge.unlocked ? 'badge-journalist' : ''}
+                      >
                         {badge.unlocked ? 'Desbloqueado' : 'Bloqueado'}
                       </Badge>
                     </div>
@@ -275,8 +392,86 @@ export default function PerfilPage() {
               ))}
             </div>
           </TabsContent>
+
+          {user?.isAdmin && (
+            <TabsContent value="admin" className="space-y-6">
+              <Card className="rounded-2xl border border-warning/20 bg-card">
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <ShieldCheck className="h-5 w-5 text-warning" />
+                    Gerenciar Jornalistas
+                  </CardTitle>
+                  <CardDescription>Busque por email ou nome. Promova, aprove, rejeite ou revogue.</CardDescription>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  <div className="flex flex-col sm:flex-row gap-2">
+                    <div className="relative flex-1">
+                      <Search className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-foreground-muted" />
+                      <Input
+                        placeholder="Email ou nome..."
+                        value={adminSearchQ}
+                        onChange={(e) => setAdminSearchQ(e.target.value)}
+                        onKeyDown={(e) => e.key === 'Enter' && handleAdminSearch()}
+                        className="pl-9"
+                      />
+                    </div>
+                    <Button onClick={handleAdminSearch} disabled={adminSearchMutation.isPending} className="sm:w-auto">
+                      {adminSearchMutation.isPending ? <Loader2 className="h-4 w-4 animate-spin" /> : <Search className="h-4 w-4" />}
+                      <span className="ml-2">Buscar</span>
+                    </Button>
+                  </div>
+                  <div className="space-y-2">
+                    {adminResults.map((r) => (
+                      <div key={r.id} className="rounded-xl border border-border bg-card p-4 flex flex-wrap items-center justify-between gap-2 hover:border-border transition-colors">
+                        <div>
+                          <span className="font-semibold text-foreground">{r.name}</span>
+                          <span className="text-foreground-secondary text-sm ml-2">{r.email}</span>
+                          <Badge 
+                            variant={r.isJournalist ? 'default' : r.journalistStatus === 'PENDING' ? 'secondary' : 'outline'}
+                            className={`ml-2 text-xs ${
+                              r.isJournalist ? 'badge-journalist' : 
+                              r.journalistStatus === 'PENDING' ? 'badge-pending' : ''
+                            }`}
+                          >
+                            {r.isJournalist ? 'Jornalista' : r.journalistStatus === 'PENDING' ? 'Pendente' : 'Torcedor'}
+                          </Badge>
+                        </div>
+                        <div className="flex flex-wrap gap-1">
+                          {!r.journalistStatus && !r.isJournalist && (
+                            <Button size="sm" variant="outline" onClick={() => adminActionMutation.mutate({ userId: r.id, action: 'promote' })} disabled={adminActionMutation.isPending}>
+                              Promover
+                            </Button>
+                          )}
+                          {(r.journalistStatus === 'PENDING' || r.journalistStatus === 'REJECTED') && (
+                            <>
+                              <Button size="sm" variant="default" onClick={() => adminActionMutation.mutate({ userId: r.id, action: 'approve' })} disabled={adminActionMutation.isPending}>
+                                Aprovar
+                              </Button>
+                              {r.journalistStatus === 'PENDING' && (
+                                <Button size="sm" variant="destructive" onClick={() => adminActionMutation.mutate({ userId: r.id, action: 'reject' })} disabled={adminActionMutation.isPending}>
+                                  Rejeitar
+                                </Button>
+                              )}
+                            </>
+                          )}
+                          {(r.isJournalist || r.journalistStatus === 'REJECTED' || r.journalistStatus === 'PENDING') && (
+                            <Button size="sm" variant="secondary" onClick={() => adminActionMutation.mutate({ userId: r.id, action: 'revoke' })} disabled={adminActionMutation.isPending}>
+                              Revogar
+                            </Button>
+                          )}
+                        </div>
+                      </div>
+                    ))}
+                    {adminSearchMutation.isSuccess && adminResults.length === 0 && lastAdminQuery && (
+                      <p className="text-sm text-muted-foreground">Nenhum usuário encontrado.</p>
+                    )}
+                  </div>
+                </CardContent>
+              </Card>
+            </TabsContent>
+          )}
         </Tabs>
       </div>
-    </div>
+    </AppShell>
   );
 }

@@ -1,124 +1,226 @@
-import { Link } from 'wouter';
+import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent } from '@/components/ui/card';
-import { Trophy, Star, Users } from 'lucide-react';
-import heroImage from '@assets/generated_images/Brazilian_stadium_hero_image_6c66814c.png';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
+import { Trophy, Star, Users, Shield, TrendingUp, Calendar, Newspaper, MessageSquare, BarChart3 } from 'lucide-react';
 
 export default function LandingPage() {
-  return (
-    <div className="min-h-screen">
-      {/* Hero Section */}
-      <section 
-        className="relative min-h-screen flex items-center justify-center overflow-hidden"
-        style={{
-          backgroundImage: `url(${heroImage})`,
-          backgroundSize: 'cover',
-          backgroundPosition: 'center',
-        }}
-      >
-        {/* Dark overlay for better text readability */}
-        <div className="absolute inset-0 bg-gradient-to-b from-black/70 via-black/60 to-black/80" />
-        
-        <div className="relative z-10 container px-4 text-center">
-          <h1 className="font-display font-bold text-4xl md:text-5xl lg:text-6xl text-white mb-6 leading-tight">
-            Sua paixão pelo Brasileirão<br />em uma só plataforma
-          </h1>
-          <p className="text-lg md:text-xl text-white/90 mb-8 max-w-2xl mx-auto font-medium">
-            Avalie jogadores, leia notícias exclusivas e conecte-se com milhares de torcedores apaixonados
-          </p>
-          
-          <div className="flex flex-col sm:flex-row gap-4 justify-center mb-12">
-            <Link href="/cadastro" data-testid="link-signup">
-              <Button 
-                size="lg" 
-                className="text-base font-semibold px-8 bg-primary/90 hover:bg-primary backdrop-blur-sm"
-              >
-                Criar Conta Grátis
-              </Button>
-            </Link>
-            <Link href="/login" data-testid="link-login">
-              <Button 
-                size="lg" 
-                variant="outline" 
-                className="text-base font-semibold px-8 bg-white/10 hover:bg-white/20 backdrop-blur-sm border-white/30 text-white"
-              >
-                Já tenho conta
-              </Button>
-            </Link>
-          </div>
+  const categories = [
+    { name: "Avaliações", icon: Star, percentage: 78 },
+    { name: "Notícias", icon: Newspaper, percentage: 65 },
+    { name: "Interações", icon: MessageSquare, percentage: 45 },
+    { name: "Estatísticas", icon: BarChart3, percentage: 82 },
+    { name: "Comunidade", icon: Users, percentage: 58 },
+  ];
 
-          <div className="flex flex-wrap gap-6 justify-center text-white/80 text-sm font-medium">
-            <span className="flex items-center gap-2">
-              <Trophy className="h-5 w-5" />
-              20 Times
-            </span>
-            <span className="flex items-center gap-2">
-              <Star className="h-5 w-5" />
-              500+ Jogadores
-            </span>
-            <span className="flex items-center gap-2">
-              <Users className="h-5 w-5" />
-              Milhares de Torcedores
-            </span>
+  const chips = [
+    "20 Times do Brasileirão",
+    "Avaliações em tempo real",
+    "Notícias exclusivas",
+    "Estatísticas detalhadas",
+    "Comunidade ativa",
+    "Plano gratuito disponível",
+  ];
+
+  const features = [
+    { icon: Trophy, label: "20 Times", color: "text-primary" },
+    { icon: Star, label: "500+ Jogadores", color: "text-primary" },
+    { icon: Users, label: "Milhares de Torcedores", color: "text-foreground-secondary" },
+    { icon: Shield, label: "Notícias Exclusivas", color: "text-foreground-secondary" },
+  ];
+
+  return (
+    <div className="min-h-screen bg-background relative">
+      {/* Sem ruído de fundo — o body::before já tem o glow âmbar sutil */}
+
+      {/* Hero Section */}
+      <section className="relative z-10 min-h-screen flex items-center">
+        <div className="container mx-auto px-4 md:px-6 py-20 md:py-32 max-w-[1200px]">
+          <div className="grid lg:grid-cols-2 gap-12 lg:gap-16 items-center">
+            {/* Left Column */}
+            <div className="space-y-8">
+              {/* Pill */}
+              <div className="w-fit bg-primary/5 backdrop-blur-md border border-primary/20 rounded-full px-3 py-1.5">
+                <div className="flex items-center gap-2">
+                  <div className="h-1.5 w-1.5 rounded-full bg-primary animate-pulse"></div>
+                  <span className="text-xs font-medium text-foreground">All-in-one Brasileirão</span>
+                </div>
+              </div>
+
+              {/* H1 — Barlow Condensed bold, editorial */}
+              <h1 className="font-bold text-5xl md:text-6xl lg:text-7xl leading-tight text-foreground tracking-tight">
+                Sua paixão pelo Brasileirão em uma só plataforma
+              </h1>
+
+              <p className="text-lg md:text-xl text-foreground-secondary max-w-xl leading-relaxed">
+                Avalie jogadores, leia notícias exclusivas e conecte-se com milhares de torcedores apaixonados — tudo em um lugar, tudo no seu controle.
+              </p>
+
+              <div className="flex flex-col sm:flex-row gap-4">
+                <Button size="lg" className="rounded-full font-bold w-full sm:w-auto" asChild>
+                  <Link to="/cadastro" data-testid="link-signup">Criar Conta Grátis</Link>
+                </Button>
+                <Button size="lg" variant="outline" className="rounded-full font-bold border-border w-full sm:w-auto" asChild>
+                  <Link to="/login" data-testid="link-login">Já tenho conta</Link>
+                </Button>
+              </div>
+
+              <p className="text-xs text-foreground-muted">
+                Sem cartão de crédito necessário
+              </p>
+
+              {/* Features */}
+              <div className="flex flex-wrap gap-6 pt-4">
+                {features.map((feature, index) => {
+                  const Icon = feature.icon
+                  return (
+                    <div key={index} className="flex items-center gap-2">
+                      <Icon className={`h-4 w-4 ${feature.color}`} />
+                      <span className="text-sm text-foreground-secondary">{feature.label}</span>
+                    </div>
+                  )
+                })}
+              </div>
+            </div>
+
+            {/* Right Column — Overview Card */}
+            <div className="flex justify-center lg:justify-end">
+              <Card className="w-full max-w-md bg-surface-card border border-border rounded-2xl transition-colors">
+                <CardHeader>
+                  <CardTitle className="text-xl font-bold tracking-tight">Visão geral da plataforma</CardTitle>
+                  <CardDescription className="text-foreground-secondary">
+                    Atividade dos torcedores, avaliações e notícias — tudo em uma visão clara.
+                  </CardDescription>
+                </CardHeader>
+
+                <CardContent className="space-y-6">
+                  {/* Mini Cards */}
+                  <div className="grid grid-cols-3 gap-3">
+                    <div className="bg-surface-elevated border border-border-subtle rounded-lg p-3">
+                      <div className="flex items-center gap-2 mb-1">
+                        <Trophy className="h-4 w-4 text-primary" />
+                        <span className="text-xs text-foreground-secondary">Times</span>
+                      </div>
+                      <p className="text-lg font-semibold">20</p>
+                    </div>
+
+                    <div className="bg-surface-elevated border border-border-subtle rounded-lg p-3">
+                      <div className="flex items-center gap-2 mb-1">
+                        <TrendingUp className="h-4 w-4 text-primary" />
+                        <span className="text-xs text-foreground-secondary">Ativos hoje</span>
+                      </div>
+                      <p className="text-lg font-semibold">1.2k</p>
+                    </div>
+
+                    <div className="bg-surface-elevated border border-border-subtle rounded-lg p-3">
+                      <div className="flex items-center gap-2 mb-1">
+                        <Calendar className="h-4 w-4 text-foreground-secondary" />
+                        <span className="text-xs text-foreground-secondary">Jogos hoje</span>
+                      </div>
+                      <p className="text-lg font-semibold">3</p>
+                    </div>
+                  </div>
+
+                  {/* Categories with Progress */}
+                  <div className="space-y-4">
+                    {categories.map((category, index) => {
+                      const Icon = category.icon
+                      return (
+                        <div key={index} className="space-y-2">
+                          <div className="flex items-center justify-between">
+                            <div className="flex items-center gap-2">
+                              <Icon className="h-4 w-4 text-foreground-secondary" />
+                              <span className="text-sm font-medium">{category.name}</span>
+                            </div>
+                            <span className="text-sm text-foreground-secondary">
+                              {category.percentage}%
+                            </span>
+                          </div>
+                          <div className="relative h-2 w-full overflow-hidden rounded-full bg-border-subtle">
+                            <div
+                              className="h-full flex-1 transition-all"
+                              style={{
+                                width: `${category.percentage}%`,
+                                background: 'hsl(var(--primary))'
+                              }}
+                            />
+                          </div>
+                        </div>
+                      )
+                    })}
+                  </div>
+
+                  {/* Chips */}
+                  <div className="flex flex-wrap gap-2">
+                    {chips.map((chip, index) => (
+                      <Badge key={index} variant="outline" className="text-foreground-secondary">
+                        {chip}
+                      </Badge>
+                    ))}
+                  </div>
+
+                  {/* Action Buttons */}
+                  <div className="flex gap-3 pt-2">
+                    <Button variant="outline" size="sm" className="flex-1 w-full" asChild>
+                      <Link to="/dashboard">Ver dashboard</Link>
+                    </Button>
+                    <Button size="sm" className="flex-1 w-full" asChild>
+                      <Link to="/cadastro">Começar agora</Link>
+                    </Button>
+                  </div>
+
+                  {/* Disclaimer */}
+                  <p className="text-xs text-foreground-muted pt-2 leading-relaxed">
+                    Nunca vendemos seus dados. Você controla o que compartilha, avalia ou exclui — a qualquer momento.
+                  </p>
+                </CardContent>
+              </Card>
+            </div>
           </div>
         </div>
       </section>
 
-      {/* Features Section */}
-      <section className="py-20 bg-background">
-        <div className="container px-4">
-          <h2 className="font-display font-bold text-3xl md:text-4xl text-center mb-12">
-            Tudo que você precisa em um só lugar
-          </h2>
-          
-          <div className="grid md:grid-cols-3 gap-8 max-w-5xl mx-auto">
-            <Card className="border-2 hover:border-primary/50 transition-colors">
-              <CardContent className="p-8 text-center">
-                <div className="bg-primary/10 rounded-full w-16 h-16 flex items-center justify-center mx-auto mb-6">
-                  <Star className="h-8 w-8 text-primary" />
+      {/* CTA Banner */}
+      <section className="relative z-10 py-16">
+        <div className="container mx-auto px-4 md:px-6 max-w-[1200px]">
+          <Card className="bg-surface-card border border-border rounded-2xl transition-colors">
+            <CardContent className="p-8 md:p-12">
+              <div className="flex flex-col md:flex-row items-center justify-between gap-6">
+                <div className="text-center md:text-left">
+                  <h2 className="text-2xl md:text-3xl font-bold mb-2 text-foreground tracking-tight">
+                    Pronto para fazer parte da comunidade?
+                  </h2>
+                  <p className="text-foreground-secondary">
+                    Comece a avaliar jogadores e acompanhar seu time hoje. É grátis para começar.
+                  </p>
                 </div>
-                <h3 className="font-display font-semibold text-xl mb-3">Avalie Jogadores</h3>
-                <p className="text-muted-foreground leading-relaxed">
-                  Dê notas e comentários sobre o desempenho dos jogadores do seu time em cada partida
-                </p>
-              </CardContent>
-            </Card>
 
-            <Card className="border-2 hover:border-primary/50 transition-colors">
-              <CardContent className="p-8 text-center">
-                <div className="bg-primary/10 rounded-full w-16 h-16 flex items-center justify-center mx-auto mb-6">
-                  <Trophy className="h-8 w-8 text-primary" />
+                <div className="flex flex-col sm:flex-row gap-4">
+                  <Button size="lg" asChild>
+                    <Link to="/cadastro">Começar agora</Link>
+                  </Button>
+                  <Button size="lg" variant="outline" asChild>
+                    <Link to="/dashboard">Ver dashboard</Link>
+                  </Button>
                 </div>
-                <h3 className="font-display font-semibold text-xl mb-3">Notícias Exclusivas</h3>
-                <p className="text-muted-foreground leading-relaxed">
-                  Fique por dentro das últimas notícias, análises e bastidores do seu time favorito
-                </p>
-              </CardContent>
-            </Card>
-
-            <Card className="border-2 hover:border-primary/50 transition-colors">
-              <CardContent className="p-8 text-center">
-                <div className="bg-primary/10 rounded-full w-16 h-16 flex items-center justify-center mx-auto mb-6">
-                  <Users className="h-8 w-8 text-primary" />
-                </div>
-                <h3 className="font-display font-semibold text-xl mb-3">Conecte-se</h3>
-                <p className="text-muted-foreground leading-relaxed">
-                  Interaja com outros torcedores, curta e comente notícias da sua torcida
-                </p>
-              </CardContent>
-            </Card>
-          </div>
+              </div>
+            </CardContent>
+          </Card>
         </div>
       </section>
 
       {/* Footer */}
-      <footer className="border-t py-8 bg-muted/30">
-        <div className="container px-4">
+      <footer className="relative z-10 border-t border-border-subtle bg-background/80 backdrop-blur-md">
+        <div className="container mx-auto px-4 md:px-6 py-12">
           <div className="flex flex-col md:flex-row justify-between items-center gap-4">
-            <p className="text-sm text-muted-foreground">
+            <div className="flex items-center gap-2">
+              <span className="font-bold tracking-tight text-lg text-foreground">FUTTWITTER</span>
+              <span className="text-foreground-muted text-xs">· Premium Futebol Editorial</span>
+            </div>
+            <p className="text-sm text-foreground-muted">
               © 2024 Brasileirão. Todos os direitos reservados.
             </p>
-            <div className="flex gap-6 text-sm text-muted-foreground">
+            <div className="flex gap-6 text-sm text-foreground-secondary">
               <a href="#" className="hover:text-foreground transition-colors">Sobre</a>
               <a href="#" className="hover:text-foreground transition-colors">Termos</a>
               <a href="#" className="hover:text-foreground transition-colors">Privacidade</a>

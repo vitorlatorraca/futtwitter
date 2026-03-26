@@ -16,6 +16,12 @@ export function initNotificationGateway(httpServer: HTTPServer, sessionStore: an
     const { pathname } = parse(request.url || '');
     
     if (pathname !== '/ws/notifications') {
+      // IMPORTANT (dev): do not destroy unknown upgrade requests, because Vite HMR
+      // also attaches a WebSocket upgrade handler to the same HTTP server.
+      // If we destroy here, HMR will fail and the page will full-reload in a loop.
+      if (process.env.NODE_ENV === "development") {
+        return;
+      }
       socket.destroy();
       return;
     }
@@ -31,7 +37,13 @@ export function initNotificationGateway(httpServer: HTTPServer, sessionStore: an
     }
 
     // Verify and extract session ID from signed cookie
-    const secret = process.env.SESSION_SECRET || 'brasileirao-secret-key-change-in-production';
+    const secret = process.env.SESSION_SECRET;
+    if (!secret) {
+      console.error("SESSION_SECRET is not set (WebSocket auth cannot verify sessions)");
+      socket.write("HTTP/1.1 500 Internal Server Error\r\n\r\n");
+      socket.destroy();
+      return;
+    }
     const unsignedValue = signature.unsign(sessionCookie.slice(2), secret); // Remove 's:' prefix
 
     if (unsignedValue === false) {

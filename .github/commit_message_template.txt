@@ -1,0 +1,7 @@
+type(scope): short description
+
+Why:
+- Reason for change
+
+What:
+- Files touched

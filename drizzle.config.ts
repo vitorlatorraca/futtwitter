@@ -1,7 +1,11 @@
 import { defineConfig } from "drizzle-kit";
 
-if (!process.env.DATABASE_URL) {
-  throw new Error("DATABASE_URL, ensure the database is provisioned");
+const databaseUrl = process.env.DATABASE_URL ?? process.env.DATABASE_URL;
+if (!databaseUrl) {
+  const envKeys = Object.keys(process.env).slice(0, 50).join(", ");
+  throw new Error(
+    `DATABASE_URL must be set (Railway usually injects it). Found env keys: ${envKeys}`,
+  );
 }
 
 export default defineConfig({
@@ -9,6 +13,6 @@ export default defineConfig({
   schema: "./shared/schema.ts",
   dialect: "postgresql",
   dbCredentials: {
-    url: process.env.DATABASE_URL,
+    url: databaseUrl,
   },
 });
