@@ -95,8 +95,10 @@ export default function ComposeBox({
     }
   };
 
+  const canPost = (!!text.trim() || !!imageUrl) && !overLimit && !isSubmitting;
+
   const handleSubmit = async () => {
-    if (!text.trim() || overLimit || isSubmitting) return;
+    if (!canPost) return;
 
     if (authUser) {
       try {
@@ -153,8 +155,19 @@ export default function ComposeBox({
   const handleImageSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file || !authUser) return;
-    if (!file.type.startsWith("image/")) {
-      showToast("Selecione uma imagem (JPG, PNG ou GIF)");
+    const allowed = new Set([
+      "image/jpeg",
+      "image/png",
+      "image/webp",
+      "image/gif",
+    ]);
+    const mime = (file.type || "").toLowerCase();
+    if (!allowed.has(mime)) {
+      showToast(
+        mime === "image/heic" || mime === "image/heif"
+          ? "HEIC não é suportado. Converta para JPG ou PNG ou tire a foto em formato compatível."
+          : "Use JPG, PNG, WebP ou GIF (máx. 5MB).",
+      );
       return;
     }
     if (file.size > 5 * 1024 * 1024) {
@@ -233,15 +246,23 @@ export default function ComposeBox({
             <input
               ref={imageInputRef}
               type="file"
-              accept="image/*"
+              accept="image/jpeg,image/png,image/webp,image/gif"
               className="hidden"
+              aria-label="Escolher imagem para o post"
+              title="Escolher imagem para o post"
               onChange={handleImageSelect}
               disabled={uploadingImage}
             />
             <button
               type="button"
-              onClick={() => authUser && imageInputRef.current?.click()}
-              disabled={uploadingImage || !authUser}
+              onClick={() => {
+                if (!authUser) {
+                  showToast("Faça login para anexar imagens ao post.");
+                  return;
+                }
+                imageInputRef.current?.click();
+              }}
+              disabled={uploadingImage}
               className="p-2 rounded-full hover:bg-[rgba(0,230,118,0.08)] transition-colors disabled:opacity-40"
               aria-label={uploadingImage ? "Enviando imagem..." : "Adicionar imagem"}
               title="Adicionar imagem"
@@ -278,7 +299,7 @@ export default function ComposeBox({
 
             <button
               onClick={handleSubmit}
-              disabled={!text.trim() || overLimit || isSubmitting}
+              disabled={(!text.trim() && !imageUrl) || overLimit || isSubmitting}
               title="Postar (Ctrl+Enter)"
               className="brand-gradient hover:opacity-90 disabled:opacity-50 disabled:cursor-not-allowed text-white font-bold text-[15px] rounded-full px-4 py-1.5 transition-opacity"
             >

@@ -27,8 +27,8 @@ import { eq, asc, ilike, or, and, isNull, desc, sql, avg, count, gte, inArray } 
 import { db } from "./db";
 import rateLimit from "express-rate-limit";
 import { z } from "zod";
-import { deleteAvatarByUrl, saveAvatar } from "./services/avatarStorage";
 import { sendPasswordResetEmail } from "./services/email";
+import { uploadToCloudinary, deleteFromCloudinary } from "./services/cloudinary";
 import { passwordResetTokens } from "@shared/schema";
 import { generateUniqueHandle } from "./utils/handleUtils";
 import { feedRouter } from "./route-handlers/feed";
@@ -39,80 +39,30 @@ const PgSession = ConnectPgSimple(session);
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
-// Vercel serverless: filesystem is read-only except /tmp. Use /tmp/uploads there.
-// Note: /tmp files don't persist across cold starts; for durable uploads use cloud storage.
-const UPLOADS_DIR = process.env.VERCEL
-  ? "/tmp/uploads"
-  : path.resolve(__dirname, "uploads");
 const MAX_IMAGE_UPLOAD_BYTES = 5 * 1024 * 1024; // 5MB
-const ALLOWED_IMAGE_EXTENSIONS = new Set([".jpg", ".jpeg", ".png", ".webp", ".gif"]);
 const ALLOWED_IMAGE_MIME_TYPES = new Set(["image/jpeg", "image/png", "image/webp", "image/gif"]);
 const MAX_AVATAR_UPLOAD_BYTES = 2 * 1024 * 1024; // 2MB
-try {
-  fs.mkdirSync(UPLOADS_DIR, { recursive: true });
-} catch (e) {
-  // May fail in read-only environments — uploads will be unavailable but server still starts
-  console.warn("[server] Could not create uploads dir:", (e as Error).message);
-}
 
+// All uploads use memoryStorage — files are sent to Cloudinary, not saved to disk
 const uploadImage = multer({
-  storage: multer.diskStorage({
-    destination: (_req, _file, cb) => {
-      cb(null, UPLOADS_DIR);
-    },
-    filename: (_req, file, cb) => {
-      const ext = path.extname(file.originalname).toLowerCase();
-      const unique = `${Date.now()}-${randomBytes(8).toString("hex")}${ext}`;
-      cb(null, unique);
-    },
-  }),
+  storage: multer.memoryStorage(),
   limits: { fileSize: MAX_IMAGE_UPLOAD_BYTES },
   fileFilter: (_req, file, cb) => {
-    const ext = path.extname(file.originalname).toLowerCase();
-    if (!file.mimetype || !file.mimetype.startsWith("image/")) {
-      return cb(new Error('Tipo inválido. Envie um arquivo de imagem (image/*).'));
-    }
-    if (!ALLOWED_IMAGE_EXTENSIONS.has(ext)) {
-      return cb(
-        new Error("Extensão não permitida. Use .jpg, .jpeg, .png, .webp ou .gif."),
-      );
+    const mime = (file.mimetype || "").toLowerCase();
+    if (!ALLOWED_IMAGE_MIME_TYPES.has(mime)) {
+      return cb(new Error("Tipo inválido. Envie uma imagem (jpeg, png, webp ou gif)."));
     }
     return cb(null, true);
   },
 });
 
-function sanitizeOriginalFilename(originalName: string): string {
-  const base = path.basename(originalName || "image");
-  const sanitized = base
-    .normalize("NFKD")
-    .replace(/[^\w.\-]+/g, "_")
-    .replace(/_+/g, "_")
-    .replace(/^_+|_+$/g, "")
-    .slice(0, 120);
-  return sanitized.length > 0 ? sanitized : "image";
-}
-
 const uploadNewsImage = multer({
-  storage: multer.diskStorage({
-    destination: (_req, _file, cb) => {
-      cb(null, UPLOADS_DIR);
-    },
-    filename: (_req, file, cb) => {
-      const safeOriginalName = sanitizeOriginalFilename(file.originalname);
-      const filename = `${Date.now()}_${safeOriginalName}`;
-      cb(null, filename);
-    },
-  }),
+  storage: multer.memoryStorage(),
   limits: { fileSize: MAX_IMAGE_UPLOAD_BYTES },
   fileFilter: (_req, file, cb) => {
-    const ext = path.extname(file.originalname).toLowerCase();
     const mime = (file.mimetype || "").toLowerCase();
-
     if (!ALLOWED_IMAGE_MIME_TYPES.has(mime)) {
       return cb(new Error("Tipo inválido. Envie uma imagem (jpeg, png, webp ou gif)."));
-    }
-    if (!ALLOWED_IMAGE_EXTENSIONS.has(ext)) {
-      return cb(new Error("Extensão não permitida. Use .jpg, .jpeg, .png, .webp ou .gif."));
     }
     return cb(null, true);
   },
@@ -122,6 +72,17 @@ const uploadAvatar = multer({
   storage: multer.memoryStorage(),
   limits: { fileSize: MAX_AVATAR_UPLOAD_BYTES },
 });
+
+function isCloudinaryConfigured(): boolean {
+  return !!(
+    process.env.CLOUDINARY_CLOUD_NAME?.trim() &&
+    process.env.CLOUDINARY_API_KEY?.trim() &&
+    process.env.CLOUDINARY_API_SECRET?.trim()
+  );
+}
+
+const CLOUDINARY_MISSING_MESSAGE =
+  "Upload indisponível: defina CLOUDINARY_CLOUD_NAME, CLOUDINARY_API_KEY e CLOUDINARY_API_SECRET nas variáveis de ambiente do servidor.";
 
 // Middleware to check if user is authenticated
 function requireAuth(req: any, res: any, next: any) {
@@ -280,6 +241,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
   const forgotPasswordLimiter = rateLimit({
     windowMs: 60 * 60 * 1000,
     max: 5,
+    standardHeaders: true,
+    legacyHeaders: false,
+    message: { message: "Muitas tentativas. Tente novamente em 1 hora." },
+  });
+
+  /** Reset-password: 10 tentativas por IP por hora (POST + GET validate) */
+  const resetPasswordLimiter = rateLimit({
+    windowMs: 60 * 60 * 1000,
+    max: 10,
     standardHeaders: true,
     legacyHeaders: false,
     message: { message: "Muitas tentativas. Tente novamente em 1 hora." },
@@ -698,7 +668,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   /** GET /api/auth/reset-password/validate/:token — valida se token ainda é válido */
-  app.get('/api/auth/reset-password/validate/:token', async (req: any, res: any) => {
+  app.get('/api/auth/reset-password/validate/:token', resetPasswordLimiter, async (req: any, res: any) => {
     try {
       const { token } = req.params;
       if (!token || typeof token !== 'string') {
@@ -723,7 +693,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   /** POST /api/auth/reset-password — executa a troca de senha */
-  app.post('/api/auth/reset-password', async (req: any, res: any) => {
+  app.post('/api/auth/reset-password', resetPasswordLimiter, async (req: any, res: any) => {
     try {
       const parsed = z.object({
         token: z.string().min(1),
@@ -1819,7 +1789,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       });
     } catch (error) {
       console.error('last-match-for-rating error:', error);
-      res.status(500).json({ message: 'Erro ao buscar partida para avaliação', detail: String(error) });
+      res.status(500).json({ message: 'Erro ao buscar partida para avaliação' });
     }
   });
 
@@ -2127,7 +2097,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // ============================================
 
   app.post("/api/uploads/image", requireAuth, requireJournalist, (req, res) => {
-    uploadImage.single("file")(req as any, res as any, (err: any) => {
+    uploadImage.single("file")(req as any, res as any, async (err: any) => {
       if (err) {
         const isTooLarge = err?.code === "LIMIT_FILE_SIZE";
         const message = isTooLarge
@@ -2136,18 +2106,28 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(400).json({ message });
       }
 
-      const file = (req as any).file as { filename?: string } | undefined;
-      if (!file?.filename) {
+      const file = (req as any).file as Express.Multer.File | undefined;
+      if (!file?.buffer) {
         return res.status(400).json({ message: 'Campo "file" é obrigatório.' });
       }
 
-      return res.json({ imageUrl: `/uploads/${file.filename}` });
+      if (!isCloudinaryConfigured()) {
+        return res.status(503).json({ message: CLOUDINARY_MISSING_MESSAGE });
+      }
+
+      try {
+        const imageUrl = await uploadToCloudinary(file.buffer, { folder: "images" });
+        return res.json({ imageUrl });
+      } catch (error: any) {
+        console.error("Cloudinary upload error:", error);
+        return res.status(500).json({ message: "Erro ao enviar imagem." });
+      }
     });
   });
 
   /** Post image upload - any authenticated user (fan or journalist) */
   app.post("/api/uploads/post-image", requireAuth, (req, res) => {
-    uploadImage.single("file")(req as any, res as any, (err: any) => {
+    uploadImage.single("file")(req as any, res as any, async (err: any) => {
       if (err) {
         const isTooLarge = err?.code === "LIMIT_FILE_SIZE";
         const message = isTooLarge
@@ -2155,16 +2135,25 @@ export async function registerRoutes(app: Express): Promise<Server> {
           : err?.message || "Erro ao enviar imagem.";
         return res.status(400).json({ message });
       }
-      const file = (req as any).file as { filename?: string } | undefined;
-      if (!file?.filename) {
+      const file = (req as any).file as Express.Multer.File | undefined;
+      if (!file?.buffer) {
         return res.status(400).json({ message: 'Campo "file" é obrigatório.' });
       }
-      return res.json({ imageUrl: `/uploads/${file.filename}` });
+      if (!isCloudinaryConfigured()) {
+        return res.status(503).json({ message: CLOUDINARY_MISSING_MESSAGE });
+      }
+      try {
+        const imageUrl = await uploadToCloudinary(file.buffer, { folder: "posts" });
+        return res.json({ imageUrl });
+      } catch (error: any) {
+        console.error("Cloudinary upload error:", error);
+        return res.status(500).json({ message: "Erro ao enviar imagem." });
+      }
     });
   });
 
   app.post("/api/uploads/news-image", requireJournalist, (req, res) => {
-    uploadNewsImage.single("image")(req as any, res as any, (err: any) => {
+    uploadNewsImage.single("image")(req as any, res as any, async (err: any) => {
       if (err) {
         const isTooLarge = err?.code === "LIMIT_FILE_SIZE";
         const message = isTooLarge
@@ -2173,12 +2162,22 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(400).json({ message });
       }
 
-      const file = (req as any).file as { filename?: string } | undefined;
-      if (!file?.filename) {
+      const file = (req as any).file as Express.Multer.File | undefined;
+      if (!file?.buffer) {
         return res.status(400).json({ message: 'Campo "image" é obrigatório.' });
       }
 
-      return res.json({ imageUrl: `/uploads/${file.filename}` });
+      if (!isCloudinaryConfigured()) {
+        return res.status(503).json({ message: CLOUDINARY_MISSING_MESSAGE });
+      }
+
+      try {
+        const imageUrl = await uploadToCloudinary(file.buffer, { folder: "news" });
+        return res.json({ imageUrl });
+      } catch (error: any) {
+        console.error("Cloudinary upload error:", error);
+        return res.status(500).json({ message: "Erro ao enviar imagem." });
+      }
     });
   });
 
@@ -2669,6 +2668,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       const userId = req.session.userId!;
 
+      if (!isCloudinaryConfigured()) {
+        return res.status(503).json({ message: CLOUDINARY_MISSING_MESSAGE });
+      }
+
       try {
         const user = await storage.getUser(userId);
         if (!user) {
@@ -2676,17 +2679,20 @@ export async function registerRoutes(app: Express): Promise<Server> {
         }
 
         const oldUrl = user.avatarUrl ?? null;
-        const { avatarUrl } = await saveAvatar(file);
+        const avatarUrl = await uploadToCloudinary(file.buffer, {
+          folder: "avatars",
+          width: 256,
+          height: 256,
+        });
 
         const updated = await storage.updateUser(userId, { avatarUrl });
         if (!updated) {
-          // Best-effort cleanup for orphaned file
-          await deleteAvatarByUrl(avatarUrl).catch(() => undefined);
+          await deleteFromCloudinary(avatarUrl).catch(() => undefined);
           return res.status(404).json({ message: "Usuário não encontrado" });
         }
 
         if (oldUrl && oldUrl !== avatarUrl) {
-          deleteAvatarByUrl(oldUrl).catch(() => undefined);
+          deleteFromCloudinary(oldUrl).catch(() => undefined);
         }
 
         return res.json({ avatarUrl });
@@ -2707,7 +2713,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       const oldUrl = user.avatarUrl ?? null;
       await storage.updateUser(userId, { avatarUrl: null });
-      deleteAvatarByUrl(oldUrl).catch(() => undefined);
+      if (oldUrl) {
+        deleteFromCloudinary(oldUrl).catch(() => undefined);
+      }
 
       return res.json({ avatarUrl: null });
     } catch (error) {
@@ -2716,29 +2724,114 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  app.post("/api/profile/cover", requireAuth, (req, res) => {
+    uploadImage.single("file")(req as any, res as any, async (err: any) => {
+      if (err) {
+        const isTooLarge = err?.code === "LIMIT_FILE_SIZE";
+        const message = isTooLarge
+          ? "Arquivo muito grande. Tamanho máximo: 5MB."
+          : err?.message || "Erro ao enviar imagem.";
+        return res.status(400).json({ message });
+      }
+
+      const file = (req as any).file as Express.Multer.File | undefined;
+      if (!file) {
+        return res.status(400).json({ message: 'Campo "file" é obrigatório.' });
+      }
+
+      const userId = req.session.userId!;
+
+      if (!isCloudinaryConfigured()) {
+        return res.status(503).json({ message: CLOUDINARY_MISSING_MESSAGE });
+      }
+
+      try {
+        const user = await storage.getUser(userId);
+        if (!user) {
+          return res.status(401).json({ message: "Usuário não encontrado" });
+        }
+
+        const oldUrl = user.coverPhotoUrl ?? null;
+        const coverPhotoUrl = await uploadToCloudinary(file.buffer, {
+          folder: "covers",
+          width: 1500,
+          height: 500,
+        });
+
+        const updated = await storage.updateUser(userId, { coverPhotoUrl });
+        if (!updated) {
+          await deleteFromCloudinary(coverPhotoUrl).catch(() => undefined);
+          return res.status(404).json({ message: "Usuário não encontrado" });
+        }
+
+        if (oldUrl && oldUrl !== coverPhotoUrl) {
+          deleteFromCloudinary(oldUrl).catch(() => undefined);
+        }
+
+        return res.json({ coverPhotoUrl });
+      } catch (error: any) {
+        console.error("Upload cover error:", error);
+        return res.status(400).json({ message: error?.message || "Erro ao enviar imagem de capa." });
+      }
+    });
+  });
+
+  app.delete("/api/profile/cover", requireAuth, async (req, res) => {
+    try {
+      const userId = req.session.userId!;
+      const user = await storage.getUser(userId);
+      if (!user) {
+        return res.status(401).json({ message: "Usuário não encontrado" });
+      }
+
+      const oldUrl = user.coverPhotoUrl ?? null;
+      await storage.updateUser(userId, { coverPhotoUrl: null });
+      if (oldUrl) {
+        deleteFromCloudinary(oldUrl).catch(() => undefined);
+      }
+
+      return res.json({ coverPhotoUrl: null });
+    } catch (error) {
+      console.error("Remove cover error:", error);
+      return res.status(500).json({ message: "Erro ao remover imagem de capa" });
+    }
+  });
+
+  // Email change requires a verification flow (not yet implemented).
+  // Until then, this endpoint never accepts `email` — accepting it would let
+  // an attacker with a stolen session change the email and trigger a reset.
+  const profileUpdateSchema = z.object({
+    name: z.string().trim().min(1).max(255).optional(),
+    bio: z.string().max(500).nullable().optional(),
+    location: z.string().max(100).nullable().optional(),
+    website: z.string().max(500).nullable().optional(),
+    coverPhotoUrl: z.string().max(2000).nullable().optional(),
+    handle: z.string().trim().toLowerCase().regex(/^[a-z0-9_]{3,30}$/).optional(),
+  });
+
   app.put('/api/profile', requireAuth, async (req, res) => {
     try {
       const userId = req.session.userId!;
-      const { handle, bio, location, website, coverPhotoUrl, name, email } = req.body;
+      const parsed = profileUpdateSchema.safeParse(req.body);
+      if (!parsed.success) {
+        const msg = parsed.error.errors[0]?.message ?? 'Dados inválidos';
+        return res.status(400).json({ message: msg });
+      }
 
+      const { handle, ...rest } = parsed.data;
       const updates: Record<string, unknown> = {};
-      if (name !== undefined) updates.name = name;
-      if (email !== undefined) updates.email = email;
-      if (bio !== undefined) updates.bio = bio || null;
-      if (location !== undefined) updates.location = location || null;
-      if (website !== undefined) updates.website = website || null;
-      if (coverPhotoUrl !== undefined) updates.coverPhotoUrl = coverPhotoUrl || null;
+      if (rest.name !== undefined) updates.name = rest.name;
+      if (rest.bio !== undefined) updates.bio = rest.bio || null;
+      if (rest.location !== undefined) updates.location = rest.location || null;
+      if (rest.website !== undefined) updates.website = rest.website || null;
+      if (rest.coverPhotoUrl !== undefined) updates.coverPhotoUrl = rest.coverPhotoUrl || null;
 
-      if (handle !== undefined && handle !== null && String(handle).trim()) {
-        const h = String(handle).trim().toLowerCase();
-        if (!/^[a-z0-9_]{3,30}$/.test(h)) {
-          return res.status(400).json({ message: 'Handle inválido. Use 3-30 caracteres: letras minúsculas, números e underscores.' });
-        }
-        const existing = await storage.getUserByHandle(h);
+      if (handle !== undefined) {
+        const existing = await storage.getUserByHandle(handle);
         if (existing && existing.id !== userId) {
           return res.status(409).json({ message: 'Este handle já está em uso' });
         }
-        updates.handle = h;
+        updates.handle = handle;
       }
 
       const updatedUser = await storage.updateUser(userId, updates as any);
@@ -2753,14 +2846,33 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  const changePasswordSchema = z.object({
+    currentPassword: z.string().min(1, 'Senha atual é obrigatória.'),
+    newPassword: z
+      .string()
+      .min(8, 'A senha deve ter pelo menos 8 caracteres.')
+      .regex(/[A-Z]/, 'A senha deve conter pelo menos uma letra maiúscula.')
+      .regex(/[0-9]/, 'A senha deve conter pelo menos um número.')
+      .regex(/[^A-Za-z0-9]/, 'A senha deve conter pelo menos um caractere especial.'),
+  });
+
   app.put('/api/profile/password', requireAuth, async (req, res) => {
     try {
-      const { currentPassword, newPassword } = req.body;
+      const parsed = changePasswordSchema.safeParse(req.body);
+      if (!parsed.success) {
+        const msg = parsed.error.errors[0]?.message ?? 'Dados inválidos';
+        return res.status(400).json({ message: msg });
+      }
+      const { currentPassword, newPassword } = parsed.data;
       const userId = req.session.userId!;
 
       const user = await storage.getUser(userId);
       if (!user) {
         return res.status(404).json({ message: 'Usuário não encontrado' });
+      }
+
+      if (currentPassword === newPassword) {
+        return res.status(400).json({ message: 'A nova senha deve ser diferente da atual.' });
       }
 
       const isValidPassword = await bcrypt.compare(currentPassword, user.password);

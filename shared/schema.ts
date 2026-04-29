@@ -1774,21 +1774,34 @@ export const insertForumReplySchema = createInsertSchema(teamsForumReplies, {
 }).omit({ id: true, topicId: true, authorId: true, likesCount: true, createdAt: true });
 export const selectForumReplySchema = createSelectSchema(teamsForumReplies);
 
-// Post schemas
+// Post schemas — texto e/ou imagem (Twitter-style: pode ser só mídia)
 export const insertPostSchema = createInsertSchema(posts, {
-  content: z.string().min(1).max(280),
+  content: z.string().max(280),
   imageUrl: z.string().url().optional().or(z.literal("")),
-}).omit({
-  id: true,
-  userId: true,
-  likeCount: true,
-  replyCount: true,
-  repostCount: true,
-  bookmarkCount: true,
-  viewCount: true,
-  createdAt: true,
-  updatedAt: true,
-});
+})
+  .omit({
+    id: true,
+    userId: true,
+    likeCount: true,
+    replyCount: true,
+    repostCount: true,
+    bookmarkCount: true,
+    viewCount: true,
+    createdAt: true,
+    updatedAt: true,
+  })
+  .superRefine((data, ctx) => {
+    const hasText = data.content.trim().length >= 1;
+    const img = data.imageUrl;
+    const hasImage = typeof img === "string" && img.trim().length > 0;
+    if (!hasText && !hasImage) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: "Escreva algo ou anexe uma imagem.",
+        path: ["content"],
+      });
+    }
+  });
 
 // Game schemas (for seed/admin only; API uses custom validation)
 export const insertGameSetSchema = createInsertSchema(gameSets);
