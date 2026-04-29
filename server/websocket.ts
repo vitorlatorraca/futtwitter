@@ -16,14 +16,26 @@ export function initNotificationGateway(httpServer: HTTPServer, sessionStore: an
     const { pathname } = parse(request.url || '');
     
     if (pathname !== '/ws/notifications') {
-      // IMPORTANT (dev): do not destroy unknown upgrade requests, because Vite HMR
-      // also attaches a WebSocket upgrade handler to the same HTTP server.
-      // If we destroy here, HMR will fail and the page will full-reload in a loop.
       if (process.env.NODE_ENV === "development") {
         return;
       }
       socket.destroy();
       return;
+    }
+
+    // WebSockets are NOT supported on Vercel serverless; this code only runs in
+    // local dev (server/index.ts). Origin allowlist is the same as the HTTP CORS.
+    const origin = request.headers.origin;
+    if (process.env.NODE_ENV === "production" && origin) {
+      const allowedOrigins = [
+        "https://futtwitter.vercel.app",
+        ...(process.env.CORS_ORIGIN ?? "").split(",").map((o) => o.trim()).filter(Boolean),
+      ];
+      if (!allowedOrigins.includes(origin)) {
+        socket.write("HTTP/1.1 403 Forbidden\r\n\r\n");
+        socket.destroy();
+        return;
+      }
     }
 
     // Parse cookies

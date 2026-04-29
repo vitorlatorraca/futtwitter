@@ -1,6 +1,8 @@
 import React, { Suspense, lazy } from "react";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { QueryClientProvider } from "@tanstack/react-query";
+import { Analytics } from "@vercel/analytics/react";
+import { SpeedInsights } from "@vercel/speed-insights/react";
 import { queryClient } from "./lib/queryClient";
 import { AuthProvider } from "./lib/auth-context";
 import Layout from "./components/layout/Layout";
@@ -183,6 +185,8 @@ export default function App() {
             </BrowserRouter>
           </AuthProvider>
         </TooltipProvider>
+        <Analytics />
+        <SpeedInsights />
       </QueryClientProvider>
     </ErrorBoundary>
   );

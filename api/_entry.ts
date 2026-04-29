@@ -11,6 +11,9 @@
  *   DATABASE_URL   — PostgreSQL connection string (Neon)
  *   SESSION_SECRET — Random string ≥ 32 chars for session signing
  *   NODE_ENV       — "production"
+ *
+ * Image uploads (posts, news, avatars) require Cloudinary:
+ *   CLOUDINARY_CLOUD_NAME, CLOUDINARY_API_KEY, CLOUDINARY_API_SECRET
  */
 
 import "dotenv/config";
@@ -22,10 +25,14 @@ import { registerRoutes } from "../server/routes";
 // ── Express app ─────────────────────────────────────────────────────────────
 const app = express();
 
-// Trust Vercel's reverse proxy so req.ip and secure cookies work correctly
+// Trust Vercel's reverse proxy so req.ip (rate limiting) and secure cookies work
 app.set("trust proxy", 1);
 
 const isProd = process.env.NODE_ENV !== "development";
+
+if (isProd && !process.env.SESSION_SECRET) {
+  throw new Error("SESSION_SECRET must be set in production (Vercel env)");
+}
 
 // Security headers (CSP disabled — SPA assets are served by Vercel CDN, not by this function)
 app.use(
@@ -38,23 +45,22 @@ app.use(
   })
 );
 
-// CORS — allow the Vercel frontend (same project) + any extras from env
-const extraOrigins = (process.env.CORS_ORIGIN ?? "")
+// CORS — frontend and backend share the Vercel origin, so most requests are
+// same-origin (no Origin header). Cross-origin is only allowed via explicit
+// allowlist (CORS_ORIGIN env). We deliberately do NOT trust *.vercel.app —
+// any attacker could deploy there with the same wildcard.
+const allowedOrigins = (process.env.CORS_ORIGIN ?? "")
   .split(",")
   .map((o) => o.trim())
   .filter(Boolean);
 
-const allowedOrigins = ["https://futtwitter.vercel.app", ...extraOrigins];
+const PROD_ORIGIN = "https://futtwitter.vercel.app";
+if (!allowedOrigins.includes(PROD_ORIGIN)) allowedOrigins.push(PROD_ORIGIN);
 
 const corsOptions: cors.CorsOptions = {
   origin: (origin, callback) => {
-    // Same-origin requests (no Origin header)
     if (!origin) return callback(null, true);
-    // Explicitly allowed
     if (allowedOrigins.includes(origin)) return callback(null, true);
-    // Any *.vercel.app preview deployment
-    if (origin.endsWith(".vercel.app")) return callback(null, true);
-    // Dev: localhost
     if (
       !isProd &&
       (origin.startsWith("http://localhost:") || origin.startsWith("http://127.0.0.1:"))

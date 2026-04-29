@@ -5,23 +5,32 @@ import * as schema from "@shared/schema";
 
 const { Pool } = pg;
 
-// Support both possible env variable names
-const databaseUrl =
-  process.env.DATABASE_URL ||
-  process.env.DATABASE_URL;
+const databaseUrl = process.env.DATABASE_URL;
 
 if (!databaseUrl) {
   throw new Error(
-    "DATABASE_URL or DATABASE_URL must be set. Available env keys: " +
+    "DATABASE_URL must be set. Available env keys: " +
       Object.keys(process.env).join(", ")
   );
 }
 
+// External providers (Neon, Supabase) require SSL in production
+const sslConfig =
+  process.env.NODE_ENV !== "production"
+    ? false
+    : { rejectUnauthorized: true };
+
+// Vercel serverless: each function instance opens its own pool.
+// Keep `max: 1` in production so concurrent invocations don't exhaust Postgres.
+// Locally (Railway-style long-lived process), allow more connections.
+const isServerless = process.env.NODE_ENV === "production";
+
 export const pool = new Pool({
   connectionString: databaseUrl,
-  ssl: process.env.NODE_ENV === "production" ? { rejectUnauthorized: false } : false,
-  max: 10,
-  idleTimeoutMillis: 30000,
-  connectionTimeoutMillis: 2000,
+  ssl: sslConfig,
+  max: isServerless ? 1 : 10,
+  idleTimeoutMillis: isServerless ? 10_000 : 30_000,
+  connectionTimeoutMillis: 5_000,
+  keepAlive: !isServerless,
 });
 export const db = drizzle(pool, { schema });

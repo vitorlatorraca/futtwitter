@@ -2,21 +2,13 @@ import "dotenv/config";
 import express, { type Request, Response, NextFunction } from "express";
 import helmet from "helmet";
 import cors from "cors";
-import fs from "fs";
-import path from "path";
-import { fileURLToPath } from "url";
 import { registerRoutes, sessionStore } from "./routes";
 import { setupVite, serveStatic, log } from "./vite";
 import { initNotificationGateway } from "./websocket";
 
 const app = express();
 
-// Serve uploaded files (DEV + PROD)
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
-const uploadsDir = path.resolve(__dirname, "uploads");
-fs.mkdirSync(uploadsDir, { recursive: true });
-app.use("/uploads", express.static(uploadsDir));
+// Uploads are handled by Cloudinary — no local disk storage needed
 
 // Railway/Neon: trust proxy in production for secure cookies
 if (process.env.NODE_ENV === "production") {
@@ -63,31 +55,27 @@ app.use(
 // ============================================
 // CORS
 // ============================================
-const extraOrigins = (process.env.CORS_ORIGIN ?? process.env.CLIENT_URL ?? "")
+// This file is the local-dev entrypoint (long-lived Express + WebSocket).
+// In production, requests are served by api/_entry.ts on Vercel.
+// Frontend and backend share the same Vercel origin, so cross-origin is only
+// allowed via explicit allowlist — never by *.vercel.app wildcard.
+const allowedOrigins = (process.env.CORS_ORIGIN ?? process.env.CLIENT_URL ?? "")
   .split(",")
   .map((o) => o.trim())
   .filter(Boolean);
 
-const allowedOrigins = [
-  "https://futtwitter.vercel.app",
-  ...extraOrigins,
-];
+const PROD_ORIGIN = "https://futtwitter.vercel.app";
+if (!allowedOrigins.includes(PROD_ORIGIN)) allowedOrigins.push(PROD_ORIGIN);
 
 const corsOptions: cors.CorsOptions = {
   origin: (origin, callback) => {
-    if (!origin) {
-      return callback(null, true);
-    }
+    if (!origin) return callback(null, true);
 
     if (isDev && (origin.startsWith("http://localhost:") || origin.startsWith("http://127.0.0.1:"))) {
       return callback(null, true);
     }
 
     if (allowedOrigins.includes(origin)) {
-      return callback(null, true);
-    }
-
-    if (origin.endsWith(".vercel.app")) {
       return callback(null, true);
     }
 
