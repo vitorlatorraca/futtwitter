@@ -277,12 +277,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
   const isProd = process.env.NODE_ENV === "production";
 
   const cookieSameSiteEnv = (process.env.COOKIE_SAMESITE ?? "").trim().toLowerCase();
+  // Default to "lax" in prod: frontend + backend share the Vercel origin,
+  // so cross-site is unnecessary and "lax" gives better CSRF protection.
+  // Override via COOKIE_SAMESITE if you split frontend/backend domains.
   const cookieSameSite: "lax" | "strict" | "none" =
     cookieSameSiteEnv === "lax" || cookieSameSiteEnv === "strict" || cookieSameSiteEnv === "none"
       ? (cookieSameSiteEnv as "lax" | "strict" | "none")
-      : isProd
-        ? "none"
-        : "lax";
+      : "lax";
 
   const cookieSecureEnv = (process.env.COOKIE_SECURE ?? "").trim().toLowerCase();
   let cookieSecure =
