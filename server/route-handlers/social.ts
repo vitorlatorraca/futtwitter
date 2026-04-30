@@ -532,6 +532,102 @@ router.get("/posts", async (req, res) => {
   }
 });
 
+// GET /api/posts/bookmarks - list bookmarked posts for current user
+router.get("/posts/bookmarks", requireAuth, async (req, res) => {
+  try {
+    const userId = (req.session as any).userId!;
+
+    const bookmarkedPostIds = await db
+      .select({ postId: postBookmarks.postId })
+      .from(postBookmarks)
+      .where(eq(postBookmarks.userId, userId))
+      .orderBy(desc(postBookmarks.createdAt));
+
+    if (bookmarkedPostIds.length === 0) return res.json([]);
+
+    const ids = bookmarkedPostIds.map((b) => b.postId);
+
+    const rows = await db
+      .select({
+        id: posts.id,
+        content: posts.content,
+        imageUrl: posts.imageUrl,
+        parentPostId: posts.parentPostId,
+        likeCount: posts.likeCount,
+        replyCount: posts.replyCount,
+        repostCount: posts.repostCount,
+        bookmarkCount: posts.bookmarkCount,
+        viewCount: posts.viewCount,
+        createdAt: posts.createdAt,
+        relatedNewsId: posts.relatedNewsId,
+        userId: users.id,
+        userName: users.name,
+        userHandle: users.handle,
+        userAvatarUrl: users.avatarUrl,
+        userType: users.userType,
+        journalistStatus: journalists.status,
+      })
+      .from(posts)
+      .innerJoin(users, eq(posts.userId, users.id))
+      .leftJoin(journalists, eq(users.id, journalists.userId))
+      .where(inArray(posts.id, ids));
+
+    const likes = await db
+      .select({ postId: postLikes.postId })
+      .from(postLikes)
+      .where(eq(postLikes.userId, userId));
+    const viewerLikedIds = new Set(likes.map((l) => l.postId));
+
+    const relatedNewsIds = [...new Set(rows.map((r) => r.relatedNewsId).filter(Boolean))] as string[];
+    let newsMap = new Map<string, { id: string; title: string }>();
+    if (relatedNewsIds.length > 0) {
+      const newsRows = await db
+        .select({ id: news.id, title: news.title })
+        .from(news)
+        .where(inArray(news.id, relatedNewsIds));
+      newsMap = new Map(newsRows.map((n) => [n.id, { id: n.id, title: n.title }]));
+    }
+
+    // preserve bookmark order
+    const rowMap = new Map(rows.map((r) => [r.id, r]));
+    const items = ids
+      .map((id) => rowMap.get(id))
+      .filter(Boolean)
+      .map((r) => {
+        const isVerifiedJournalist =
+          r!.userType === "JOURNALIST" && r!.journalistStatus === "APPROVED";
+        return {
+          id: r!.id,
+          content: r!.content,
+          imageUrl: r!.imageUrl ?? null,
+          parentPostId: r!.parentPostId ?? null,
+          likeCount: r!.likeCount,
+          replyCount: r!.replyCount,
+          repostCount: r!.repostCount,
+          bookmarkCount: r!.bookmarkCount,
+          viewCount: r!.viewCount,
+          createdAt: r!.createdAt,
+          author: {
+            id: r!.userId,
+            name: r!.userName ?? "Usuário",
+            handle: r!.userHandle ?? "user",
+            avatarUrl: r!.userAvatarUrl ?? null,
+            userRole: deriveUserRole(r!.userType ?? null),
+            isVerifiedJournalist,
+          },
+          viewerHasLiked: viewerLikedIds.has(r!.id),
+          viewerHasBookmarked: true,
+          relatedNews: r!.relatedNewsId ? newsMap.get(r!.relatedNewsId) ?? null : null,
+        };
+      });
+
+    res.json(items);
+  } catch (err) {
+    console.error("[social] GET /posts/bookmarks error:", err);
+    res.status(500).json({ message: "Erro ao carregar salvos" });
+  }
+});
+
 // POST /api/posts
 router.post("/posts", requireAuth, async (req, res) => {
   try {

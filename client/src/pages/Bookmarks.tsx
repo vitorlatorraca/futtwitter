@@ -1,17 +1,26 @@
 import React from "react";
-import { ArrowLeft } from "lucide-react";
+import { ArrowLeft, Loader2 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
-import { useAppStore } from "../store/useAppStore";
 import { useAuth } from "../lib/auth-context";
-import { mockPosts } from "../data/mockPosts";
+import { useQuery } from "@tanstack/react-query";
+import { getApiUrl } from "@/lib/queryClient";
 import PostCard from "../components/feed/PostCard";
+import { postFeedItemToPost, type PostFeedItem } from "../hooks/usePosts";
 
 export default function Bookmarks() {
   const navigate = useNavigate();
-  const { posts: storePosts, currentUser } = useAppStore();
   const { user: authUser } = useAuth();
-  const allPosts = [...storePosts, ...mockPosts];
-  const bookmarked = allPosts.filter((p) => p.bookmarked);
+
+  const { data, isLoading } = useQuery<PostFeedItem[]>({
+    queryKey: ["posts", "bookmarks"],
+    queryFn: async () => {
+      const res = await fetch(getApiUrl("/api/posts/bookmarks"), { credentials: "include" });
+      if (!res.ok) throw new Error("Erro ao carregar salvos");
+      return res.json();
+    },
+  });
+
+  const bookmarked = (data ?? []).map(postFeedItemToPost);
 
   return (
     <div>
@@ -25,17 +34,21 @@ export default function Bookmarks() {
         </button>
         <div>
           <h1 className="text-xl font-bold">Salvos</h1>
-          <p className="text-[13px] text-x-text-secondary">@{authUser?.handle ?? currentUser?.handle ?? "user"}</p>
+          <p className="text-[13px] text-x-text-secondary">@{authUser?.handle ?? "user"}</p>
         </div>
       </div>
 
-      {bookmarked.length > 0 ? (
+      {isLoading ? (
+        <div className="py-16 flex justify-center">
+          <Loader2 className="w-6 h-6 animate-spin text-x-text-secondary" />
+        </div>
+      ) : bookmarked.length > 0 ? (
         bookmarked.map((post) => <PostCard key={post.id} post={post} />)
       ) : (
         <div className="py-16 px-8 text-center">
           <h2 className="text-3xl font-extrabold mb-2">Salve posts para depois</h2>
           <p className="text-x-text-secondary text-[15px] max-w-[360px] mx-auto">
-            Salve posts para encontrá-los facilmente no futuro.
+            Salve posts para encontrar facilmente no futuro.
           </p>
         </div>
       )}

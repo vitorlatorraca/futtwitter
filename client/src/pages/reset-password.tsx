@@ -5,7 +5,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Loader2, Lock, Eye, EyeOff, CheckCircle2, AlertCircle, XCircle } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { apiRequest } from '@/lib/queryClient';
+import { apiRequest, getApiUrl } from '@/lib/queryClient';
 
 function getPasswordStrength(password: string): { score: number; label: string; color: string } {
   let score = 0;
@@ -50,7 +50,7 @@ export default function ResetPasswordPage() {
       setInvalidReason('Link inválido ou incompleto.');
       return;
     }
-    fetch(`/api/auth/reset-password/validate/${token}`)
+    fetch(getApiUrl(`/api/auth/reset-password/validate/${token}`), { credentials: 'include' })
       .then((r) => r.json())
       .then((data) => {
         if (data.valid) {
