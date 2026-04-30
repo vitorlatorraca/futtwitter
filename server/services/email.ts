@@ -1,44 +1,32 @@
-import nodemailer from "nodemailer";
+import { Resend } from "resend";
 
 // ============================================
-// EMAIL SERVICE
+// EMAIL SERVICE (Resend)
 // Configure via .env:
-//   EMAIL_HOST     — SMTP server (ex: smtp.gmail.com)
-//   EMAIL_PORT     — SMTP port (default: 587)
-//   EMAIL_SECURE   — "true" para TLS na porta 465
-//   EMAIL_USER     — usuário SMTP (seu email)
-//   EMAIL_PASS     — senha SMTP (ou App Password para Gmail)
-//   EMAIL_FROM     — endereço remetente (ex: noreply@futtwitter.com)
+//   RESEND_API_KEY — chave da API Resend (https://resend.com/api-keys)
+//   EMAIL_FROM     — endereço remetente (precisa de domínio verificado em prod)
 //   APP_URL        — URL base do app (ex: https://futtwitter.com)
 //
-// Se EMAIL_HOST não estiver configurado, o link é impresso no console
-// (útil para desenvolvimento sem SMTP).
+// Sem RESEND_API_KEY o link de reset é impresso no console
+// (útil para desenvolvimento local).
 // ============================================
 
-function createTransport() {
-  const host = process.env.EMAIL_HOST;
-  if (!host) return null;
-
-  return nodemailer.createTransport({
-    host,
-    port: parseInt(process.env.EMAIL_PORT ?? "587", 10),
-    secure: process.env.EMAIL_SECURE === "true",
-    auth: {
-      user: process.env.EMAIL_USER,
-      pass: process.env.EMAIL_PASS,
-    },
-  });
-}
+const resendClient: Resend | null = process.env.RESEND_API_KEY
+  ? new Resend(process.env.RESEND_API_KEY)
+  : null;
 
 const FROM_ADDRESS =
-  process.env.EMAIL_FROM ?? `FUTTWITTER <noreply@futtwitter.com>`;
+  process.env.EMAIL_FROM ?? "FUTTWITTER <noreply@futtwitter.com>";
 
-const APP_URL =
-  (process.env.APP_URL ?? process.env.CLIENT_URL ?? "http://localhost:5000").replace(/\/$/, "");
+const APP_URL = (
+  process.env.APP_URL ??
+  process.env.CLIENT_URL ??
+  "http://localhost:5000"
+).replace(/\/$/, "");
 
 export async function sendPasswordResetEmail(
   toEmail: string,
-  resetToken: string
+  resetToken: string,
 ): Promise<void> {
   const resetUrl = `${APP_URL}/redefinir-senha?token=${resetToken}`;
   const expiresInMinutes = 60;
@@ -51,7 +39,6 @@ export async function sendPasswordResetEmail(
   <table width="100%" cellpadding="0" cellspacing="0" style="background:#0a0a0a;padding:40px 16px;">
     <tr><td align="center">
       <table width="100%" cellpadding="0" cellspacing="0" style="max-width:480px;background:#111;border-radius:16px;border:1px solid #222;overflow:hidden;">
-        <!-- Header -->
         <tr>
           <td style="padding:32px 32px 24px;border-bottom:1px solid #222;">
             <p style="margin:0;font-size:22px;font-weight:800;color:#fff;letter-spacing:-0.5px;">
@@ -59,7 +46,6 @@ export async function sendPasswordResetEmail(
             </p>
           </td>
         </tr>
-        <!-- Body -->
         <tr>
           <td style="padding:32px;">
             <h1 style="margin:0 0 8px;font-size:20px;font-weight:700;color:#fff;">
@@ -83,7 +69,6 @@ export async function sendPasswordResetEmail(
             </p>
           </td>
         </tr>
-        <!-- Footer -->
         <tr>
           <td style="padding:20px 32px;border-top:1px solid #222;">
             <p style="margin:0;font-size:12px;color:#555;">
@@ -99,10 +84,7 @@ export async function sendPasswordResetEmail(
 
   const text = `Redefinir senha - FUTTWITTER\n\nAcesse o link abaixo para criar uma nova senha:\n${resetUrl}\n\nEste link expira em ${expiresInMinutes} minutos.\n\nSe você não solicitou, ignore este email.`;
 
-  const transport = createTransport();
-
-  if (!transport) {
-    // Modo desenvolvimento: sem SMTP configurado — imprime link no console
+  if (!resendClient) {
     console.log("\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━");
     console.log("[EMAIL - DEV] Resetar senha para:", toEmail);
     console.log("[EMAIL - DEV] Link:", resetUrl);
@@ -110,11 +92,16 @@ export async function sendPasswordResetEmail(
     return;
   }
 
-  await transport.sendMail({
+  const { error } = await resendClient.emails.send({
     from: FROM_ADDRESS,
     to: toEmail,
     subject: "Redefinir senha — FUTTWITTER",
-    text,
     html,
+    text,
   });
+
+  if (error) {
+    console.error("[email] Resend send failed:", error);
+    throw new Error(`Falha ao enviar email: ${error.message ?? "unknown"}`);
+  }
 }
