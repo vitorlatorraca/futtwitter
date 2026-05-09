@@ -1674,7 +1674,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         ORDER BY match_date DESC
         LIMIT 1
       `);
-      const lastMatch = (matchRows as any).rows?.[0] ?? matchRows[0] ?? null;
+      const lastMatch = (matchRows as any).rows?.[0] ?? null;
       if (!lastMatch) return res.json({ match: null, players: [] });
 
       const matchId = lastMatch.id as string;

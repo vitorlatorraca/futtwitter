@@ -1,6 +1,6 @@
 import { storage } from "./storage";
 
-const targetEmail = "chicomoedas@gmail.com";
+const targetEmail: string = "chicomoedas@gmail.com";
 
 async function main() {
   if (!targetEmail || targetEmail === "EMAIL_DO_CHICO_AQUI") {
