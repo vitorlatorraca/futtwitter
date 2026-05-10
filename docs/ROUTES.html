@@ -1,0 +1,1534 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<title>FUTTWITTER — Documentação de rotas</title>
+<style>
+  :root {
+    --bg: #ffffff;
+    --fg: #1a1a1a;
+    --muted: #666;
+    --border: #e2e2e2;
+    --code-bg: #f6f8fa;
+    --accent: #16a34a;
+  }
+  * { box-sizing: border-box; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+    color: var(--fg);
+    background: var(--bg);
+    line-height: 1.55;
+    max-width: 920px;
+    margin: 40px auto;
+    padding: 0 32px;
+    font-size: 14px;
+  }
+  h1 { font-size: 28px; border-bottom: 2px solid var(--accent); padding-bottom: 8px; margin-top: 0; }
+  h2 { font-size: 22px; margin-top: 32px; border-bottom: 1px solid var(--border); padding-bottom: 4px; }
+  h3 { font-size: 18px; margin-top: 24px; color: #222; }
+  h4 { font-size: 15px; margin-top: 18px; color: #333; }
+  p { margin: 10px 0; }
+  a { color: #0057ff; text-decoration: none; }
+  a:hover { text-decoration: underline; }
+  code {
+    background: var(--code-bg);
+    padding: 2px 5px;
+    border-radius: 3px;
+    font-family: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+    font-size: 0.9em;
+  }
+  pre {
+    background: var(--code-bg);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 12px 14px;
+    overflow-x: auto;
+    line-height: 1.4;
+    font-size: 12.5px;
+  }
+  pre code { background: none; padding: 0; }
+  blockquote {
+    border-left: 3px solid var(--accent);
+    margin: 14px 0;
+    padding: 4px 14px;
+    color: var(--muted);
+    background: #fafafa;
+  }
+  table {
+    border-collapse: collapse;
+    width: 100%;
+    margin: 14px 0;
+    font-size: 12.5px;
+  }
+  th, td {
+    border: 1px solid var(--border);
+    padding: 6px 10px;
+    text-align: left;
+    vertical-align: top;
+  }
+  th {
+    background: #f3f4f6;
+    font-weight: 600;
+  }
+  tr:nth-child(even) td { background: #fafafa; }
+  ul, ol { padding-left: 24px; margin: 10px 0; }
+  li { margin: 4px 0; }
+  hr { border: 0; border-top: 1px solid var(--border); margin: 28px 0; }
+
+  @media print {
+    @page { margin: 1.5cm; size: A4; }
+    body { max-width: none; margin: 0; padding: 0; font-size: 11px; }
+    h1, h2, h3 { page-break-after: avoid; }
+    pre, blockquote, table { page-break-inside: avoid; }
+    a { color: var(--fg); text-decoration: none; }
+    a[href]::after { content: " (" attr(href) ")"; font-size: 0.8em; color: var(--muted); }
+  }
+</style>
+</head>
+<body>
+<h1>FUTTWITTER — Documentação completa de rotas</h1>
+<blockquote>Gerado em 2026-05-10. Cobre o backend Express servido como função serverless no Vercel.</blockquote>
+<hr/>
+<h2>1. Visão geral da arquitetura</h2>
+<h3>1.1 Topologia</h3>
+<pre><code>                       ┌──────────────────────────────────┐
+                       │  Browser (cliente React/Vite)    │
+                       │  https://futtwitter-...vercel.app│
+                       └──────────────┬───────────────────┘
+                                      │ fetch
+                       ┌──────────────▼───────────────────┐
+                       │  Vercel Edge / CDN                │
+                       │  - serve dist/public/* (estático) │
+                       │  - rewrite /api/* → /api          │
+                       │  - rewrite /(.*)  → /index.html   │
+                       └──────────────┬───────────────────┘
+                                      │
+                       ┌──────────────▼───────────────────┐
+                       │  Vercel Function (api/index.js)   │
+                       │  Express app, lazy-init           │
+                       │  maxDuration: 30s                 │
+                       └──────────────┬───────────────────┘
+                                      │
+                       ┌──────────────▼───────────────────┐
+                       │  Neon PostgreSQL (us-east-1)      │
+                       └──────────────────────────────────┘
+                                Cloudinary (uploads)
+                                Resend (emails)</code></pre>
+<p><strong>Pontos importantes:</strong></p>
+<ul>
+<li>O frontend (SPA React) e o backend (Express) compartilham a mesma origem Vercel.</li>
+<li>A função serverless é <strong>uma única função</strong> — todo o <code>/api/*</code> é roteado pra <code>api/index.js</code>.</li>
+<li>Estado é <strong>efêmero</strong>: nada de cache em RAM entre requests (sessões vão pro Postgres).</li>
+<li><strong>WebSocket não existe em prod</strong> — Vercel Functions não suportam conexões longas. Cliente cai pra polling.</li>
+</ul>
+<h3>1.2 Pipeline de build</h3>
+<pre><code>npm run build:vercel
+  ├─ vite build              # frontend → dist/public/
+  └─ esbuild api/_entry.ts → api/index.js  # bundle ESM, format=esm</code></pre>
+<p><code>api/index.js</code> empacota tudo: Express, helmet, cors, drizzle, bcrypt, multer, etc. Saída ~400 KB.</p>
+<h3>1.3 Configuração Vercel (<code>vercel.json</code>)</h3>
+<pre><code>{
+  &quot;version&quot;: 2,
+  &quot;framework&quot;: null,
+  &quot;buildCommand&quot;: &quot;npm run build:vercel&quot;,
+  &quot;installCommand&quot;: &quot;npm install --include=dev&quot;,
+  &quot;outputDirectory&quot;: &quot;dist/public&quot;,
+  &quot;functions&quot;: {
+    &quot;api/index.js&quot;: { &quot;maxDuration&quot;: 30 }
+  },
+  &quot;rewrites&quot;: [
+    { &quot;source&quot;: &quot;/api/(.*)&quot;, &quot;destination&quot;: &quot;/api&quot; },
+    { &quot;source&quot;: &quot;/(.*)&quot;,     &quot;destination&quot;: &quot;/index.html&quot; }
+  ]
+}</code></pre>
+<hr/>
+<h2>2. Ciclo de vida de uma request</h2>
+<h3>2.1 Caminho da request</h3>
+<ol>
+<li><strong>Vercel Edge</strong> recebe a request.</li>
+<li>Se for <code>/assets/*</code>, <code>/icons/*</code>, <code>/index.html</code> etc. — <strong>serve estático do CDN</strong> sem invocar função.</li>
+<li>Se for <code>/api/*</code> — rewrite manda pra <code>api/index.js</code>. URL original preservada.</li>
+<li><strong>Função inicia</strong> (cold start) ou reaproveita instância warm (Fluid Compute).</li>
+<li><code>api/_entry.ts → handler(req, res)</code>:</li>
+</ol>
+<p>   - <code>await ensureInit()</code> — singleton: roda <code>registerRoutes(app)</code> na primeira request, reaproveita depois.</p>
+<p>   - <code>app(req, res, next)</code> — entrega ao Express.</p>
+<ol>
+<li>Express middleware chain:</li>
+</ol>
+<p>   - <code>helmet</code> (headers de segurança)</p>
+<p>   - <code>cors</code> (delegate dinâmico — same-origin sempre passa)</p>
+<p>   - <code>express.json({ limit: &quot;1mb&quot; })</code></p>
+<p>   - <code>express.urlencoded({ limit: &quot;1mb&quot; })</code></p>
+<p>   - <strong>session</strong> (PgSession — lê/grava em <code>user_sessions</code>)</p>
+<p>   - rota específica + middlewares específicos (<code>requireAuth</code>, <code>requireJournalist</code>, <code>requireAdmin</code>, rate limiters)</p>
+<p>   - handler da rota</p>
+<ol>
+<li>Se <strong>erro não capturado</strong>: handler global em <code>_entry.ts:88-99</code> loga stack + retorna 500.</li>
+</ol>
+<h3>2.2 Sessões</h3>
+<ul>
+<li><strong>Store:</strong> <code>connect-pg-simple</code> (tabela <code>user_sessions</code> no Postgres).</li>
+<li><strong>Cookie:</strong> <code>httpOnly</code>, <code>secure</code> automático em prod, <code>sameSite: lax</code>, expira em 30 dias, <strong>rolling</strong> (renova a cada request).</li>
+<li><strong>Conteúdo da sessão:</strong> <code>userId</code>, <code>userType</code> (<code>FAN</code> | <code>JOURNALIST</code> | <code>ADMIN</code>).</li>
+<li>O <code>userType</code> é <strong>re-sincronizado com o DB</strong> em cada <code>/api/auth/me</code> e em middlewares de role — protege contra promoção/demotion stale.</li>
+</ul>
+<h3>2.3 CORS</h3>
+<p><code>api/_entry.ts</code> usa um <code>CorsOptionsDelegate</code> dinâmico:</p>
+<ol>
+<li><strong>Sem header <code>Origin</code></strong> → permite (same-origin GET, server-to-server).</li>
+<li><strong><code>Origin.host === req.host</code></strong> → permite (same-origin POST/PUT/DELETE — funciona em qualquer URL de preview).</li>
+<li><strong>Origin em <code>CORS_ORIGIN</code> env</strong> → permite (allowlist explícito).</li>
+<li><strong>Em dev: <code>http://localhost:*</code> / <code>127.0.0.1:*</code></strong> → permite.</li>
+<li>Senão → <strong>bloqueia</strong> (retorna <code>Error(&quot;CORS blocked for origin: …&quot;)</code> que vira 500).</li>
+</ol>
+<blockquote>❗ Antes do fix de 2026-05-10, era allowlist hardcoded <code>https://futtwitter.vercel.app</code> apenas — bloqueava preview deploys.</blockquote>
+<hr/>
+<h2>3. Modelo de autenticação e RBAC</h2>
+<h3>3.1 Roles</h3>
+<table><thead><tr>
+<th>Role</th>
+<th>Origem</th>
+<th>Pode</th>
+</tr></thead><tbody>
+<tr>
+<td><code>FAN</code></td>
+<td>default em signup</td>
+<td>ler tudo público, criar posts/comments, dar ratings, votar em rumors, jogar games</td>
+</tr>
+<tr>
+<td><code>JOURNALIST</code></td>
+<td>aprovado por admin</td>
+<td>tudo de FAN + criar/editar/deletar próprias notícias, criar/editar transfer rumors, upload de imagens de notícia</td>
+</tr>
+<tr>
+<td><code>ADMIN</code></td>
+<td>manual no DB ou via <code>ADMIN_EMAILS</code></td>
+<td>tudo + aprovar journalists, recalcular standings, seed</td>
+</tr>
+</tbody></table>
+<h3>3.2 Middlewares</h3>
+<p><strong><code>requireAuth(req, res, next)</code></strong> — <code>routes.ts:88-94</code></p>
+<ul>
+<li>401 &quot;Não autenticado&quot; se não tem <code>req.session.userId</code>.</li>
+</ul>
+<p><strong><code>requireJournalist(req, res, next)</code></strong> — <code>routes.ts:96-130</code></p>
+<ul>
+<li>401 se sem sessão.</li>
+<li>Re-busca o user no DB e re-sincroniza <code>req.session.userType</code>.</li>
+<li>403 se <code>userType !== &#39;JOURNALIST&#39;</code>.</li>
+<li>403 se não tem registro em <code>journalists</code> ou <code>status !== &#39;APPROVED&#39;</code>.</li>
+</ul>
+<p><strong><code>requireAdmin(req, res, next)</code></strong> — <code>routes.ts:163-187</code></p>
+<ul>
+<li>401 se sem sessão.</li>
+<li>Re-busca user no DB.</li>
+<li>403 se <code>userType !== &#39;ADMIN&#39;</code> E email não está em <code>ADMIN_EMAILS</code> env (fallback).</li>
+</ul>
+<p><strong><code>requireJournalistOrAdmin(req, res, next)</code></strong></p>
+<ul>
+<li>Combina os dois.</li>
+</ul>
+<h3>3.3 Rate limiters (<code>express-rate-limit</code>)</h3>
+<table><thead><tr>
+<th>Limiter</th>
+<th>Janela</th>
+<th>Limite</th>
+<th>Uso</th>
+</tr></thead><tbody>
+<tr>
+<td><code>loginLimiter</code></td>
+<td>15 min</td>
+<td>10/IP</td>
+<td>POST /api/auth/login</td>
+</tr>
+<tr>
+<td><code>signupLimiter</code></td>
+<td>60 min</td>
+<td>5/IP</td>
+<td>POST /api/auth/signup, /register</td>
+</tr>
+<tr>
+<td><code>forgotPasswordLimiter</code></td>
+<td>60 min</td>
+<td>5/IP</td>
+<td>POST /api/auth/forgot-password</td>
+</tr>
+<tr>
+<td><code>resetPasswordLimiter</code></td>
+<td>60 min</td>
+<td>10/IP</td>
+<td>GET/POST /api/auth/reset-password/*</td>
+</tr>
+<tr>
+<td><code>handleCheckLimiter</code></td>
+<td>1 min</td>
+<td>30/IP</td>
+<td>GET /api/auth/check-handle</td>
+</tr>
+</tbody></table>
+<p><code>trust proxy = 1</code> em <code>_entry.ts</code> faz <code>req.ip</code> ser o IP real do cliente (não do edge).</p>
+<hr/>
+<h2>4. Catálogo completo de rotas</h2>
+<blockquote>Convenção: <code>auth</code> = middleware de autenticação. <code>validação</code> = &quot;zod&quot; (schema), &quot;manual&quot; (validação ad-hoc) ou &quot;n/a&quot;. <code>rate-limit</code> listado quando há.</blockquote>
+<h3>4.1 Auth (<code>server/routes.ts</code>)</h3>
+<table><thead><tr>
+<th>Método</th>
+<th>Path</th>
+<th>Auth</th>
+<th>Validação</th>
+<th>Rate-limit</th>
+</tr></thead><tbody>
+<tr>
+<td>GET</td>
+<td><code>/api/auth/check-handle</code></td>
+<td>público</td>
+<td>manual</td>
+<td>handleCheckLimiter</td>
+</tr>
+<tr>
+<td>POST</td>
+<td><code>/api/auth/signup</code></td>
+<td>público</td>
+<td>zod (<code>insertUserSchema</code>)</td>
+<td>signupLimiter</td>
+</tr>
+<tr>
+<td>POST</td>
+<td><code>/api/auth/register</code></td>
+<td>público</td>
+<td>zod (<code>insertUserSchema</code>)</td>
+<td>signupLimiter</td>
+</tr>
+<tr>
+<td>POST</td>
+<td><code>/api/auth/login</code></td>
+<td>público</td>
+<td>zod</td>
+<td>loginLimiter</td>
+</tr>
+<tr>
+<td>POST</td>
+<td><code>/api/auth/logout</code></td>
+<td>requireAuth</td>
+<td>n/a</td>
+<td>—</td>
+</tr>
+<tr>
+<td>POST</td>
+<td><code>/api/auth/forgot-password</code></td>
+<td>público</td>
+<td>zod</td>
+<td>forgotPasswordLimiter</td>
+</tr>
+<tr>
+<td>GET</td>
+<td><code>/api/auth/reset-password/validate/:token</code></td>
+<td>público</td>
+<td>manual</td>
+<td>resetPasswordLimiter</td>
+</tr>
+<tr>
+<td>POST</td>
+<td><code>/api/auth/reset-password</code></td>
+<td>público</td>
+<td>zod</td>
+<td>resetPasswordLimiter</td>
+</tr>
+<tr>
+<td>GET</td>
+<td><code>/api/auth/me</code></td>
+<td>implícita (lê sessão)</td>
+<td>n/a</td>
+<td>—</td>
+</tr>
+</tbody></table>
+<h3>4.2 Saúde</h3>
+<table><thead><tr>
+<th>Método</th>
+<th>Path</th>
+<th>Auth</th>
+<th>Validação</th>
+</tr></thead><tbody>
+<tr>
+<td>GET</td>
+<td><code>/api/health</code></td>
+<td>público</td>
+<td>n/a — checa <code>SELECT 1</code> no DB</td>
+</tr>
+</tbody></table>
+<h3>4.3 Times, partidas, jogadores (públicos)</h3>
+<table><thead><tr>
+<th>Método</th>
+<th>Path</th>
+<th>Auth</th>
+<th>Validação</th>
+</tr></thead><tbody>
+<tr>
+<td>GET</td>
+<td><code>/api/teams</code></td>
+<td>público</td>
+<td>n/a</td>
+</tr>
+<tr>
+<td>GET</td>
+<td><code>/api/teams/:id</code></td>
+<td>público</td>
+<td>manual</td>
+</tr>
+<tr>
+<td>GET</td>
+<td><code>/api/teams/:slug/squad</code></td>
+<td>público</td>
+<td>manual</td>
+</tr>
+<tr>
+<td>GET</td>
+<td><code>/api/competitions/:id/standings</code></td>
+<td>público</td>
+<td>manual</td>
+</tr>
+<tr>
+<td>GET</td>
+<td><code>/api/competitions/:id/upcoming-fixtures</code></td>
+<td>público</td>
+<td>manual</td>
+</tr>
+<tr>
+<td>GET</td>
+<td><code>/api/matches/:id</code></td>
+<td>público</td>
+<td>manual</td>
+</tr>
+<tr>
+<td>GET</td>
+<td><code>/api/matches/:id/lineup</code></td>
+<td>público</td>
+<td>manual</td>
+</tr>
+<tr>
+<td>GET</td>
+<td><code>/api/matches/:id/ratings</code></td>
+<td>público</td>
+<td>manual</td>
+</tr>
+<tr>
+<td>GET</td>
+<td><code>/api/matches/:teamId/recent</code></td>
+<td>público</td>
+<td>manual</td>
+</tr>
+<tr>
+<td>GET</td>
+<td><code>/api/players/search</code></td>
+<td>público</td>
+<td>manual</td>
+</tr>
+<tr>
+<td>GET</td>
+<td><code>/api/players/:id/ratings</code></td>
+<td>público</td>
+<td>n/a</td>
+</tr>
+</tbody></table>
+<h3>4.4 Meu Time (autenticado)</h3>
+<table><thead><tr>
+<th>Método</th>
+<th>Path</th>
+<th>Auth</th>
+<th>Validação</th>
+</tr></thead><tbody>
+<tr>
+<td>GET</td>
+<td><code>/api/my-team/overview</code></td>
+<td>requireAuth</td>
+<td>n/a</td>
+</tr>
+<tr>
+<td>GET</td>
+<td><code>/api/teams/:teamId/summary</code></td>
+<td>requireAuth</td>
+<td>manual</td>
+</tr>
+<tr>
+<td>GET</td>
+<td><code>/api/teams/:teamId/fixtures</code></td>
+<td>requireAuth</td>
+<td>manual</td>
+</tr>
+<tr>
+<td>GET</td>
+<td><code>/api/teams/:teamId/matches</code></td>
+<td>requireAuth</td>
+<td>manual</td>
+</tr>
+<tr>
+<td>POST</td>
+<td><code>/api/teams/:teamId/matches</code></td>
+<td>requireAuth, requireAdmin</td>
+<td>zod</td>
+</tr>
+<tr>
+<td>PUT</td>
+<td><code>/api/matches/:matchId</code></td>
+<td>requireAuth, requireAdmin</td>
+<td>manual</td>
+</tr>
+<tr>
+<td>GET</td>
+<td><code>/api/teams/:teamId/stats</code></td>
+<td>requireAuth</td>
+<td>manual</td>
+</tr>
+<tr>
+<td>GET</td>
+<td><code>/api/leagues/:leagueId/standings</code></td>
+<td>requireAuth</td>
+<td>manual</td>
+</tr>
+<tr>
+<td>GET</td>
+<td><code>/api/teams/:teamId/players</code></td>
+<td>requireAuth</td>
+<td>manual</td>
+</tr>
+<tr>
+<td>GET</td>
+<td><code>/api/teams/:teamId/roster</code></td>
+<td>requireAuth</td>
+<td>manual</td>
+</tr>
+<tr>
+<td>GET</td>
+<td><code>/api/teams/:teamId/top-rated</code></td>
+<td>requireAuth</td>
+<td>manual</td>
+</tr>
+<tr>
+<td>GET</td>
+<td><code>/api/lineups/me</code></td>
+<td>requireAuth</td>
+<td>manual</td>
+</tr>
+<tr>
+<td>POST</td>
+<td><code>/api/lineups/me</code></td>
+<td>requireAuth</td>
+<td>manual</td>
+</tr>
+<tr>
+<td>GET</td>
+<td><code>/api/teams/:id/extended</code></td>
+<td>requireAuth</td>
+<td>n/a</td>
+</tr>
+<tr>
+<td>GET</td>
+<td><code>/api/teams/:teamId/upcoming-match</code></td>
+<td>requireAuth</td>
+<td>n/a</td>
+</tr>
+<tr>
+<td>GET</td>
+<td><code>/api/teams/:teamId/last-match</code></td>
+<td>requireAuth</td>
+<td>n/a</td>
+</tr>
+<tr>
+<td>GET</td>
+<td><code>/api/teams/:teamId/last-match/ratings</code></td>
+<td>requireAuth</td>
+<td>n/a</td>
+</tr>
+<tr>
+<td>GET</td>
+<td><code>/api/teams/:teamId/last-match-for-rating</code></td>
+<td>requireAuth</td>
+<td>n/a</td>
+</tr>
+<tr>
+<td>GET</td>
+<td><code>/api/teams/:teamId/ratings/analytics</code></td>
+<td>requireAuth</td>
+<td>manual</td>
+</tr>
+</tbody></table>
+<h3>4.5 Avaliação de jogadores</h3>
+<table><thead><tr>
+<th>Método</th>
+<th>Path</th>
+<th>Auth</th>
+<th>Validação</th>
+</tr></thead><tbody>
+<tr>
+<td>GET</td>
+<td><code>/api/matches/:id/my-ratings</code></td>
+<td>requireAuth</td>
+<td>n/a</td>
+</tr>
+<tr>
+<td>POST</td>
+<td><code>/api/ratings</code></td>
+<td>requireAuth</td>
+<td>manual</td>
+</tr>
+<tr>
+<td>PUT</td>
+<td><code>/api/ratings</code></td>
+<td>requireAuth</td>
+<td>manual</td>
+</tr>
+<tr>
+<td>POST</td>
+<td><code>/api/players/:id/ratings</code></td>
+<td>requireAuth</td>
+<td>zod</td>
+</tr>
+</tbody></table>
+<h3>4.6 Uploads (Cloudinary)</h3>
+<table><thead><tr>
+<th>Método</th>
+<th>Path</th>
+<th>Auth</th>
+<th>Validação</th>
+<th>Limite</th>
+</tr></thead><tbody>
+<tr>
+<td>POST</td>
+<td><code>/api/uploads/image</code></td>
+<td>requireAuth, requireJournalist</td>
+<td>mime+ext</td>
+<td>5 MB</td>
+</tr>
+<tr>
+<td>POST</td>
+<td><code>/api/uploads/post-image</code></td>
+<td>requireAuth</td>
+<td>mime+ext</td>
+<td>5 MB</td>
+</tr>
+<tr>
+<td>POST</td>
+<td><code>/api/uploads/news-image</code></td>
+<td>requireJournalist</td>
+<td>mime+ext</td>
+<td>5 MB</td>
+</tr>
+<tr>
+<td>POST</td>
+<td><code>/api/profile/avatar</code></td>
+<td>requireAuth</td>
+<td>mime+ext</td>
+<td>2 MB</td>
+</tr>
+<tr>
+<td>DELETE</td>
+<td><code>/api/profile/avatar</code></td>
+<td>requireAuth</td>
+<td>n/a</td>
+<td>—</td>
+</tr>
+<tr>
+<td>POST</td>
+<td><code>/api/profile/cover</code></td>
+<td>requireAuth</td>
+<td>mime+ext</td>
+<td>5 MB</td>
+</tr>
+<tr>
+<td>DELETE</td>
+<td><code>/api/profile/cover</code></td>
+<td>requireAuth</td>
+<td>n/a</td>
+<td>—</td>
+</tr>
+</tbody></table>
+<blockquote>Multer usa <code>memoryStorage</code> (sem disco — compatível com Vercel). Buffer vai direto pro Cloudinary.</blockquote>
+<h3>4.7 Notícias (jornalistas)</h3>
+<table><thead><tr>
+<th>Método</th>
+<th>Path</th>
+<th>Auth</th>
+<th>Validação</th>
+</tr></thead><tbody>
+<tr>
+<td>GET</td>
+<td><code>/api/news</code></td>
+<td>público</td>
+<td>manual</td>
+</tr>
+<tr>
+<td>GET</td>
+<td><code>/api/news/my-news</code></td>
+<td>requireAuth, requireJournalist</td>
+<td>n/a</td>
+</tr>
+<tr>
+<td>POST</td>
+<td><code>/api/news</code></td>
+<td>requireAuth, requireJournalist</td>
+<td>zod (<code>insertNewsSchema</code>)</td>
+</tr>
+<tr>
+<td>PATCH</td>
+<td><code>/api/news/:id</code></td>
+<td>requireAuth, requireJournalist</td>
+<td>zod (<code>partial</code>) + ownership</td>
+</tr>
+<tr>
+<td>DELETE</td>
+<td><code>/api/news/:id</code></td>
+<td>requireAuth, requireJournalist</td>
+<td>ownership</td>
+</tr>
+<tr>
+<td>POST</td>
+<td><code>/api/news/:id/interaction</code></td>
+<td>requireAuth</td>
+<td>manual</td>
+</tr>
+<tr>
+<td>GET</td>
+<td><code>/api/news/:newsId/comments</code></td>
+<td>público</td>
+<td>n/a</td>
+</tr>
+<tr>
+<td>POST</td>
+<td><code>/api/news/:newsId/comments</code></td>
+<td>requireAuth</td>
+<td>zod (<code>insertCommentSchema</code>)</td>
+</tr>
+</tbody></table>
+<h3>4.8 Comentários</h3>
+<table><thead><tr>
+<th>Método</th>
+<th>Path</th>
+<th>Auth</th>
+<th>Validação</th>
+</tr></thead><tbody>
+<tr>
+<td>POST</td>
+<td><code>/api/comments/:commentId/likes</code></td>
+<td>requireAuth</td>
+<td>n/a</td>
+</tr>
+<tr>
+<td>DELETE</td>
+<td><code>/api/comments/:commentId/likes</code></td>
+<td>requireAuth</td>
+<td>n/a</td>
+</tr>
+</tbody></table>
+<h3>4.9 Perfil</h3>
+<table><thead><tr>
+<th>Método</th>
+<th>Path</th>
+<th>Auth</th>
+<th>Validação</th>
+</tr></thead><tbody>
+<tr>
+<td>PUT</td>
+<td><code>/api/profile</code></td>
+<td>requireAuth</td>
+<td>zod (<code>profileUpdateSchema</code>)</td>
+</tr>
+<tr>
+<td>PUT</td>
+<td><code>/api/profile/password</code></td>
+<td>requireAuth</td>
+<td>zod (<code>changePasswordSchema</code>)</td>
+</tr>
+</tbody></table>
+<h3>4.10 Badges &amp; notificações</h3>
+<table><thead><tr>
+<th>Método</th>
+<th>Path</th>
+<th>Auth</th>
+<th>Validação</th>
+</tr></thead><tbody>
+<tr>
+<td>GET</td>
+<td><code>/api/badges</code></td>
+<td>requireAuth</td>
+<td>n/a</td>
+</tr>
+<tr>
+<td>POST</td>
+<td><code>/api/badges/check</code></td>
+<td>requireAuth</td>
+<td>n/a</td>
+</tr>
+<tr>
+<td>GET</td>
+<td><code>/api/notifications</code></td>
+<td>requireAuth</td>
+<td>n/a</td>
+</tr>
+<tr>
+<td>GET</td>
+<td><code>/api/notifications/unread-count</code></td>
+<td>requireAuth</td>
+<td>n/a</td>
+</tr>
+<tr>
+<td>POST</td>
+<td><code>/api/notifications/:id/read</code></td>
+<td>requireAuth</td>
+<td>n/a</td>
+</tr>
+<tr>
+<td>POST</td>
+<td><code>/api/notifications/mark-all-read</code></td>
+<td>requireAuth</td>
+<td>n/a</td>
+</tr>
+</tbody></table>
+<h3>4.11 Aplicação de jornalista</h3>
+<table><thead><tr>
+<th>Método</th>
+<th>Path</th>
+<th>Auth</th>
+<th>Validação</th>
+</tr></thead><tbody>
+<tr>
+<td>GET</td>
+<td><code>/api/journalist-application/status</code></td>
+<td>requireAuth</td>
+<td>n/a</td>
+</tr>
+<tr>
+<td>POST</td>
+<td><code>/api/journalist-application/apply</code></td>
+<td>requireAuth</td>
+<td>zod (<code>insertJournalistSchema</code>)</td>
+</tr>
+</tbody></table>
+<h3>4.12 Admin</h3>
+<table><thead><tr>
+<th>Método</th>
+<th>Path</th>
+<th>Auth</th>
+<th>Validação</th>
+</tr></thead><tbody>
+<tr>
+<td>GET</td>
+<td><code>/api/admin/journalist-applications</code></td>
+<td>requireAuth, requireAdmin</td>
+<td>n/a</td>
+</tr>
+<tr>
+<td>GET</td>
+<td><code>/api/admin/users/search</code></td>
+<td>requireAuth, requireAdmin</td>
+<td>manual</td>
+</tr>
+<tr>
+<td>PATCH</td>
+<td><code>/api/admin/journalists/:userId</code></td>
+<td>requireAuth, requireAdmin</td>
+<td>manual (action enum)</td>
+</tr>
+<tr>
+<td>POST</td>
+<td><code>/api/admin/standings/recalculate</code></td>
+<td>requireAuth, requireAdmin</td>
+<td>n/a</td>
+</tr>
+<tr>
+<td>POST</td>
+<td><code>/api/admin/brasileirao-2026/seed</code></td>
+<td>requireAuth, requireAdmin</td>
+<td>n/a</td>
+</tr>
+</tbody></table>
+<h3>4.13 Fórum (por time)</h3>
+<table><thead><tr>
+<th>Método</th>
+<th>Path</th>
+<th>Auth</th>
+<th>Validação</th>
+</tr></thead><tbody>
+<tr>
+<td>GET</td>
+<td><code>/api/teams/:teamId/forum/stats</code></td>
+<td>requireAuth</td>
+<td>n/a</td>
+</tr>
+<tr>
+<td>GET</td>
+<td><code>/api/teams/:teamId/forum/topics</code></td>
+<td>requireAuth</td>
+<td>manual</td>
+</tr>
+<tr>
+<td>GET</td>
+<td><code>/api/teams/:teamId/forum/topics/:topicId</code></td>
+<td>requireAuth</td>
+<td>n/a</td>
+</tr>
+<tr>
+<td>POST</td>
+<td><code>/api/teams/:teamId/forum/topics</code></td>
+<td>requireAuth</td>
+<td>manual</td>
+</tr>
+<tr>
+<td>GET</td>
+<td><code>/api/teams/:teamId/forum/topics/:topicId/replies</code></td>
+<td>requireAuth</td>
+<td>manual</td>
+</tr>
+<tr>
+<td>POST</td>
+<td><code>/api/teams/:teamId/forum/topics/:topicId/replies</code></td>
+<td>requireAuth</td>
+<td>manual</td>
+</tr>
+<tr>
+<td>POST</td>
+<td><code>/api/teams/:teamId/forum/topics/:topicId/like</code></td>
+<td>requireAuth</td>
+<td>n/a</td>
+</tr>
+<tr>
+<td>POST</td>
+<td><code>/api/teams/:teamId/forum/replies/:replyId/like</code></td>
+<td>requireAuth</td>
+<td>n/a</td>
+</tr>
+</tbody></table>
+<h3>4.14 Vai e Vem (transfers)</h3>
+<table><thead><tr>
+<th>Método</th>
+<th>Path</th>
+<th>Auth</th>
+<th>Validação</th>
+</tr></thead><tbody>
+<tr>
+<td>GET</td>
+<td><code>/api/transfers</code></td>
+<td>público</td>
+<td>manual</td>
+</tr>
+<tr>
+<td>GET</td>
+<td><code>/api/transfer-rumors</code></td>
+<td>público</td>
+<td>manual</td>
+</tr>
+<tr>
+<td>GET</td>
+<td><code>/api/transfer-rumors/mine</code></td>
+<td>requireJournalistOrAdmin</td>
+<td>n/a</td>
+</tr>
+<tr>
+<td>GET</td>
+<td><code>/api/transfer-rumors/:id</code></td>
+<td>público</td>
+<td>manual</td>
+</tr>
+<tr>
+<td>POST</td>
+<td><code>/api/transfer-rumors</code></td>
+<td>requireAuth (role-checked)</td>
+<td>manual</td>
+</tr>
+<tr>
+<td>PATCH</td>
+<td><code>/api/transfer-rumors/:id</code></td>
+<td>requireAuth (role + ownership)</td>
+<td>manual</td>
+</tr>
+<tr>
+<td>DELETE</td>
+<td><code>/api/transfer-rumors/:id</code></td>
+<td>requireAuth (role + ownership)</td>
+<td>n/a</td>
+</tr>
+<tr>
+<td>POST</td>
+<td><code>/api/transfer-rumors/:id/vote</code></td>
+<td>requireAuth</td>
+<td>manual</td>
+</tr>
+<tr>
+<td>GET</td>
+<td><code>/api/transfer-rumors/:id/comments</code></td>
+<td>público</td>
+<td>n/a</td>
+</tr>
+<tr>
+<td>POST</td>
+<td><code>/api/transfer-rumors/:id/comments</code></td>
+<td>requireAuth</td>
+<td>manual</td>
+</tr>
+<tr>
+<td>POST</td>
+<td><code>/api/transfers/:id/vote</code></td>
+<td>requireAuth</td>
+<td>manual</td>
+</tr>
+</tbody></table>
+<h3>4.15 Games (Adivinhe o Elenco)</h3>
+<table><thead><tr>
+<th>Método</th>
+<th>Path</th>
+<th>Auth</th>
+<th>Validação</th>
+</tr></thead><tbody>
+<tr>
+<td>GET</td>
+<td><code>/api/games/sets</code></td>
+<td>público</td>
+<td>n/a</td>
+</tr>
+<tr>
+<td>GET</td>
+<td><code>/api/games/sets/:slug</code></td>
+<td>público</td>
+<td>manual</td>
+</tr>
+<tr>
+<td>POST</td>
+<td><code>/api/games/attempts/start</code></td>
+<td>requireAuth</td>
+<td>manual</td>
+</tr>
+<tr>
+<td>GET</td>
+<td><code>/api/games/attempts/:id</code></td>
+<td>requireAuth</td>
+<td>manual</td>
+</tr>
+<tr>
+<td>POST</td>
+<td><code>/api/games/attempts/:id/guess</code></td>
+<td>requireAuth</td>
+<td>manual</td>
+</tr>
+<tr>
+<td>POST</td>
+<td><code>/api/games/attempts/:id/reset</code></td>
+<td>requireAuth</td>
+<td>manual</td>
+</tr>
+<tr>
+<td>POST</td>
+<td><code>/api/games/attempts/:id/abandon</code></td>
+<td>requireAuth</td>
+<td>manual</td>
+</tr>
+<tr>
+<td>GET</td>
+<td><code>/api/games/player-of-the-day</code></td>
+<td>requireAuth</td>
+<td>n/a</td>
+</tr>
+<tr>
+<td>GET</td>
+<td><code>/api/games/players/search</code></td>
+<td>requireAuth</td>
+<td>manual</td>
+</tr>
+<tr>
+<td>POST</td>
+<td><code>/api/games/player-of-the-day/guess</code></td>
+<td>requireAuth</td>
+<td>manual</td>
+</tr>
+</tbody></table>
+<h3>4.16 Feed (<code>server/route-handlers/feed.ts</code>)</h3>
+<table><thead><tr>
+<th>Método</th>
+<th>Path</th>
+<th>Auth</th>
+<th>Validação</th>
+</tr></thead><tbody>
+<tr>
+<td>GET</td>
+<td><code>/api/feed/influencers</code></td>
+<td>público (lê sessão se houver)</td>
+<td>manual</td>
+</tr>
+<tr>
+<td>GET</td>
+<td><code>/api/feed/fan-posts</code></td>
+<td>público</td>
+<td>manual</td>
+</tr>
+<tr>
+<td>GET</td>
+<td><code>/api/feed/torcida</code></td>
+<td>público</td>
+<td>manual</td>
+</tr>
+<tr>
+<td>GET</td>
+<td><code>/api/feed/news/:id</code></td>
+<td>público</td>
+<td>manual</td>
+</tr>
+<tr>
+<td>POST</td>
+<td><code>/api/feed/news/:id/like</code></td>
+<td>requireAuth</td>
+<td>n/a</td>
+</tr>
+<tr>
+<td>POST</td>
+<td><code>/api/feed/news/:id/bookmark</code></td>
+<td>requireAuth</td>
+<td>n/a</td>
+</tr>
+<tr>
+<td>GET</td>
+<td><code>/api/feed/trending</code></td>
+<td>público</td>
+<td>n/a</td>
+</tr>
+<tr>
+<td>GET</td>
+<td><code>/api/feed/upcoming-matches</code></td>
+<td>público</td>
+<td>manual</td>
+</tr>
+</tbody></table>
+<h3>4.17 Social (<code>server/route-handlers/social.ts</code>)</h3>
+<table><thead><tr>
+<th>Método</th>
+<th>Path</th>
+<th>Auth</th>
+<th>Validação</th>
+</tr></thead><tbody>
+<tr>
+<td>GET</td>
+<td><code>/api/users/suggested</code></td>
+<td>público</td>
+<td>manual</td>
+</tr>
+<tr>
+<td>GET</td>
+<td><code>/api/users/:handle</code></td>
+<td>público</td>
+<td>manual</td>
+</tr>
+<tr>
+<td>GET</td>
+<td><code>/api/users/:handle/followers</code></td>
+<td>público</td>
+<td>manual</td>
+</tr>
+<tr>
+<td>GET</td>
+<td><code>/api/users/:handle/following</code></td>
+<td>público</td>
+<td>manual</td>
+</tr>
+<tr>
+<td>POST</td>
+<td><code>/api/users/:handle/follow</code></td>
+<td>requireAuth</td>
+<td>n/a</td>
+</tr>
+<tr>
+<td>DELETE</td>
+<td><code>/api/users/:handle/follow</code></td>
+<td>requireAuth</td>
+<td>n/a</td>
+</tr>
+<tr>
+<td>GET</td>
+<td><code>/api/posts</code></td>
+<td>público</td>
+<td>manual</td>
+</tr>
+<tr>
+<td>GET</td>
+<td><code>/api/posts/bookmarks</code></td>
+<td>requireAuth</td>
+<td>n/a</td>
+</tr>
+<tr>
+<td>POST</td>
+<td><code>/api/posts</code></td>
+<td>requireAuth</td>
+<td>zod (<code>insertPostSchema</code>)</td>
+</tr>
+<tr>
+<td>GET</td>
+<td><code>/api/posts/:id</code></td>
+<td>público</td>
+<td>manual</td>
+</tr>
+<tr>
+<td>DELETE</td>
+<td><code>/api/posts/:id</code></td>
+<td>requireAuth (ownership)</td>
+<td>n/a</td>
+</tr>
+<tr>
+<td>POST</td>
+<td><code>/api/posts/:id/like</code></td>
+<td>requireAuth</td>
+<td>n/a</td>
+</tr>
+<tr>
+<td>POST</td>
+<td><code>/api/posts/:id/bookmark</code></td>
+<td>requireAuth</td>
+<td>n/a</td>
+</tr>
+</tbody></table>
+<h3>4.18 Explore (<code>server/route-handlers/explore.ts</code>)</h3>
+<table><thead><tr>
+<th>Método</th>
+<th>Path</th>
+<th>Auth</th>
+<th>Validação</th>
+</tr></thead><tbody>
+<tr>
+<td>GET</td>
+<td><code>/api/explore/trending</code></td>
+<td>público</td>
+<td>manual</td>
+</tr>
+<tr>
+<td>GET</td>
+<td><code>/api/explore/hashtags</code></td>
+<td>público</td>
+<td>manual</td>
+</tr>
+<tr>
+<td>GET</td>
+<td><code>/api/explore/search</code></td>
+<td>público</td>
+<td>manual</td>
+</tr>
+<tr>
+<td>GET</td>
+<td><code>/api/explore/posts-by-hashtag/:name</code></td>
+<td>público</td>
+<td>manual</td>
+</tr>
+<tr>
+<td>GET</td>
+<td><code>/api/explore/suggested-users</code></td>
+<td>requireAuth</td>
+<td>n/a</td>
+</tr>
+</tbody></table>
+<hr/>
+<h2>5. Erros e respostas</h2>
+<h3>5.1 Códigos esperados</h3>
+<table><thead><tr>
+<th>Código</th>
+<th>Quando</th>
+</tr></thead><tbody>
+<tr>
+<td>200</td>
+<td>OK</td>
+</tr>
+<tr>
+<td>201</td>
+<td>Recurso criado (post, comment)</td>
+</tr>
+<tr>
+<td>400</td>
+<td>Validação falhou (Zod, manual) ou regra de negócio (ex: email duplicado)</td>
+</tr>
+<tr>
+<td>401</td>
+<td>Sessão ausente/inválida</td>
+</tr>
+<tr>
+<td>403</td>
+<td>Sem permissão (RBAC ou ownership)</td>
+</tr>
+<tr>
+<td>404</td>
+<td>Recurso não existe</td>
+</tr>
+<tr>
+<td>409</td>
+<td>Conflito (handle/email duplicado)</td>
+</tr>
+<tr>
+<td>429</td>
+<td>Rate limit excedido</td>
+</tr>
+<tr>
+<td>500</td>
+<td>Erro do servidor (com stack no log)</td>
+</tr>
+<tr>
+<td>503</td>
+<td>Serviço externo indisponível (Cloudinary não configurado)</td>
+</tr>
+</tbody></table>
+<h3>5.2 Formato de resposta de erro</h3>
+<p>Todos os erros retornam JSON:</p>
+<pre><code>{ &quot;message&quot;: &quot;Mensagem em português&quot; }</code></pre>
+<p>Em validação Zod, o <code>message</code> carrega o <strong>JSON serializado dos erros do Zod</strong>. O frontend deveria parsear e mostrar o primeiro <code>.message</code> legível, e não o array bruto.</p>
+<h3>5.3 Logging</h3>
+<p><code>api/_entry.ts:86-99</code> (handler global) loga em <code>console.error</code>:</p>
+<pre><code>[express] METHOD /url → 500: &lt;message&gt;
+&lt;stack trace&gt;</code></pre>
+<p>Isso vai pra <strong>Vercel Logs</strong> (acessível via <code>vercel logs &lt;deployment-url&gt;</code>).</p>
+<hr/>
+<h2>6. Decisões de design e armadilhas conhecidas</h2>
+<h3>6.1 Por que uma única função em vez de múltiplas?</h3>
+<p>Cada arquivo <code>api/*.ts</code> no Vercel vira uma função própria. Como o Express tem ~100 rotas, criar 100 funções:</p>
+<ul>
+<li>multiplica cold starts,</li>
+<li>complica compartilhamento de middleware (auth, session),</li>
+<li>explode o limite de funções do plano Hobby.</li>
+</ul>
+<p><strong>Decisão:</strong> uma função <code>api/index.js</code>, com Express roteando internamente. <code>vercel.json</code> faz <code>/api/(.*)</code> → <code>/api</code>.</p>
+<h3>6.2 Por que <code>req.url</code> é preservado mesmo após o rewrite?</h3>
+<p>O rewrite do Vercel só decide qual função invocar. A URL original chega no handler intacta — Express enxerga <code>/api/auth/register</code> mesmo quando o rewrite mandou pra <code>/api</code>.</p>
+<h3>6.3 Por que Pool de Postgres com <code>max: 1</code> em prod?</h3>
+<p>Vercel cria uma instância de função por request concorrente. Cada instância abre seu próprio pool. Se cada pool tivesse 10 conexões e tivessem 50 instâncias, seriam 500 conexões — Neon explode.</p>
+<p><code>max: 1</code> em prod (<code>server/db.ts:31</code>) limita cada instância a 1 conexão. Para tráfego maior, considerar pgBouncer ou <code>@neondatabase/serverless</code> com HTTP fetch.</p>
+<h3>6.4 Por que o cookie é <code>sameSite: lax</code> e não <code>strict</code>?</h3>
+<p>Frontend e backend compartilham origem na Vercel — <code>lax</code> é suficiente pra CSRF protection sem quebrar navegação cross-tab.</p>
+<p>Se um dia separar frontend (<code>futtwitter.com</code>) e backend (<code>api.futtwitter.com</code>), precisará mudar pra <code>none</code> + <code>secure: true</code> + ajustar <code>COOKIE_DOMAIN</code>.</p>
+<h3>6.5 WebSocket dev-only</h3>
+<p><code>server/index.ts</code> inicializa WebSocket pra notificações em tempo real. <strong>Em prod (Vercel)</strong>, <code>api/_entry.ts</code> não chama isso — Vercel Functions não suportam conexões longas. O frontend deve ter fallback pra polling.</p>
+<h3>6.6 Seeds idempotentes</h3>
+<p><code>server/storage.ts:seedTeamsIfEmpty()</code> roda em todo cold start (no primeiro request). É <strong>idempotente</strong> — só insere se a tabela <code>teams</code> está vazia.</p>
+<blockquote>❗ Antes do fix de 2026-05-10, <code>seedGames()</code> rodava em todo cold start e <strong>não era idempotente</strong> — apagava + reinseria 37 rows toda vez. Corrigido removendo a chamada do hot path. Rodar manualmente via <code>npm run seed:games</code>.</blockquote>
+<h3>6.7 Drift de schema entre Drizzle e SQL raw</h3>
+<p>A maioria das queries usa Drizzle ORM. Algumas usam SQL raw via <code>db.execute(sql\</code>…\<code>)</code> — usado quando o ORM não dá conta (ex: <code>last-match-for-rating</code> em <code>routes.ts:1662-1752</code>).</p>
+<p><strong>Risco:</strong> rename de coluna no <code>shared/schema.ts</code> não quebra a query raw em compile time. <strong>Mitigação:</strong> auditoria periódica dos blocos <code>sql\</code>…\`` contra o schema (último check: 2026-05-10, sem drift).</p>
+<hr/>
+<h2>7. Variáveis de ambiente</h2>
+<h3>7.1 Obrigatórias</h3>
+<table><thead><tr>
+<th>Var</th>
+<th>Uso</th>
+<th>Quem provê</th>
+</tr></thead><tbody>
+<tr>
+<td><code>DATABASE_URL</code></td>
+<td>Conexão Postgres</td>
+<td>Neon (Vercel marketplace)</td>
+</tr>
+<tr>
+<td><code>SESSION_SECRET</code></td>
+<td>Assinatura de cookie</td>
+<td>Você (string ≥ 32 chars)</td>
+</tr>
+<tr>
+<td><code>NODE_ENV</code></td>
+<td><code>production</code> em prod</td>
+<td>Vercel injeta</td>
+</tr>
+</tbody></table>
+<h3>7.2 Por feature</h3>
+<table><thead><tr>
+<th>Feature</th>
+<th>Vars</th>
+</tr></thead><tbody>
+<tr>
+<td>Uploads</td>
+<td><code>CLOUDINARY_CLOUD_NAME</code>, <code>CLOUDINARY_API_KEY</code>, <code>CLOUDINARY_API_SECRET</code></td>
+</tr>
+<tr>
+<td>Email (reset senha)</td>
+<td><code>RESEND_API_KEY</code>, <code>EMAIL_FROM</code>, <code>APP_URL</code></td>
+</tr>
+<tr>
+<td>Admin</td>
+<td><code>ADMIN_EMAILS</code> (csv)</td>
+</tr>
+</tbody></table>
+<h3>7.3 Opcionais</h3>
+<table><thead><tr>
+<th>Var</th>
+<th>Default</th>
+<th>Uso</th>
+</tr></thead><tbody>
+<tr>
+<td><code>CORS_ORIGIN</code></td>
+<td><code>&quot;&quot;</code></td>
+<td>csv de origens cross-origin permitidas</td>
+</tr>
+<tr>
+<td><code>COOKIE_DOMAIN</code></td>
+<td>undefined</td>
+<td>só se usar domínio próprio</td>
+</tr>
+<tr>
+<td><code>COOKIE_SAMESITE</code></td>
+<td><code>lax</code></td>
+<td>override</td>
+</tr>
+<tr>
+<td><code>COOKIE_SECURE</code></td>
+<td>auto</td>
+<td>force <code>true</code>/<code>false</code></td>
+</tr>
+<tr>
+<td><code>APIFOOTBALL_*</code></td>
+<td>—</td>
+<td>reservadas; código atual não consome</td>
+</tr>
+</tbody></table>
+<hr/>
+<h2>8. Resumo de smoke test (2026-05-10)</h2>
+<p>Rodado contra prod (<code>https://futtwitter-vitor-latorracas-projects.vercel.app</code>):</p>
+<table><thead><tr>
+<th>#</th>
+<th>Endpoint</th>
+<th>Resultado</th>
+</tr></thead><tbody>
+<tr>
+<td>1</td>
+<td>GET /api/health</td>
+<td>✅ 200 <code>{ok:true, db:ok}</code></td>
+</tr>
+<tr>
+<td>2</td>
+<td>GET /api/auth/check-handle</td>
+<td>✅ 200 <code>{available:true}</code></td>
+</tr>
+<tr>
+<td>3</td>
+<td>POST /api/auth/register</td>
+<td>✅ 200 + sessão criada</td>
+</tr>
+<tr>
+<td>4</td>
+<td>GET /api/auth/me (authed)</td>
+<td>✅ 200 + dados do user (sem password)</td>
+</tr>
+<tr>
+<td>5</td>
+<td>POST /api/auth/logout</td>
+<td>✅ 200 + sessão limpa</td>
+</tr>
+<tr>
+<td>6</td>
+<td>GET /api/auth/me (logged out)</td>
+<td>✅ 200 <code>null</code></td>
+</tr>
+<tr>
+<td>7</td>
+<td>POST /api/auth/login</td>
+<td>✅ 200 + sessão renovada</td>
+</tr>
+<tr>
+<td>8</td>
+<td>POST /api/posts (authed)</td>
+<td>✅ 201 + post criado</td>
+</tr>
+<tr>
+<td>9</td>
+<td>DELETE /api/posts/:id alheio (IDOR)</td>
+<td>✅ 403 &quot;Você só pode deletar seus próprios posts&quot;</td>
+</tr>
+<tr>
+<td>10</td>
+<td>GET /api/news/my-news (FAN→JOURNALIST)</td>
+<td>✅ 403 &quot;Acesso negado. Apenas jornalistas.&quot;</td>
+</tr>
+<tr>
+<td>11</td>
+<td>GET /api/admin/journalist-applications (FAN→ADMIN)</td>
+<td>✅ 403 &quot;Acesso negado. Apenas administradores.&quot;</td>
+</tr>
+<tr>
+<td>12</td>
+<td>PUT /api/profile (bio update)</td>
+<td>✅ 200 + sem leak de password</td>
+</tr>
+<tr>
+<td>13</td>
+<td>DELETE /api/posts/:id próprio</td>
+<td>✅ 200 &quot;Post deletado&quot;</td>
+</tr>
+<tr>
+<td>14</td>
+<td>POST /api/auth/register sem cookie</td>
+<td>✅ 401 &quot;Não autenticado&quot; (em /posts)</td>
+</tr>
+<tr>
+<td>15</td>
+<td>POST /api/auth/register senha fraca</td>
+<td>✅ 400 + Zod errors</td>
+</tr>
+<tr>
+<td>16</td>
+<td>POST /api/auth/register email inválido</td>
+<td>✅ 400 + &quot;Email inválido&quot;</td>
+</tr>
+<tr>
+<td>17</td>
+<td>POST /api/auth/register email duplicado</td>
+<td>✅ 400 &quot;Email já cadastrado&quot;</td>
+</tr>
+<tr>
+<td>18</td>
+<td>GET /api/teams, /news, /posts, /feed/*</td>
+<td>✅ 200</td>
+</tr>
+</tbody></table>
+<p><strong>0 falhas em 18 cenários.</strong></p>
+<hr/>
+<h2>9. Achados e recomendações</h2>
+<h3>🔴 Bloqueadores (corrigidos nesta sessão)</h3>
+<table><thead><tr>
+<th>#</th>
+<th>Problema</th>
+<th>Commit</th>
+</tr></thead><tbody>
+<tr>
+<td>1</td>
+<td>TypeCheck quebrava deploy (QueryResult index, literal type)</td>
+<td><code>5b6d839</code></td>
+</tr>
+<tr>
+<td>2</td>
+<td><code>seedGames()</code> rodava em todo cold start (deletava + reinseria 37 rows)</td>
+<td><code>781c6a8</code></td>
+</tr>
+<tr>
+<td>3</td>
+<td>Handler global de erro não logava stack trace</td>
+<td><code>781c6a8</code></td>
+</tr>
+<tr>
+<td>4</td>
+<td>CORS bloqueava preview URLs (allowlist hardcoded)</td>
+<td><code>9d8da83</code></td>
+</tr>
+</tbody></table>
+<h3>🟡 Should-fix (não bloqueiam, mas pendentes)</h3>
+<ol>
+<li><strong>N+1 em loops com queries DB:</strong> <code>feed.ts:131</code>, <code>routes.ts:2222</code>, <code>social.ts:188-206</code>. Usar <code>inArray(col, ids)</code> + Set lookup.</li>
+<li><strong>Erros silenciosos:</strong> <code>feed.ts:139, 478</code> retornam <code>[]</code> com 200 em catch.</li>
+<li><strong>Rate limits faltando</strong> em escritas: uploads, ratings, posts, comments, news, transfers, forum.</li>
+<li><strong>Frontend não exibe Zod errors</strong> legíveis — toast genérico &quot;Erro ao criar conta&quot; enquanto o backend devolve a mensagem certa.</li>
+<li><strong><code>server/services/avatarStorage.ts</code></strong> é código morto que escreve em disco — deletar.</li>
+</ol>
+<h3>🟢 Nice-to-have</h3>
+<ol>
+<li>Bundle JS do client tem chunks &gt; 500 KB (<code>meu-time</code> 529 KB). Usar <code>dynamic import()</code> em rotas pesadas.</li>
+<li>Refatorar lógica duplicada de &quot;is following?&quot; em <code>social.ts:156-213</code>.</li>
+</ol>
+<hr/>
+<h2>10. Próximos passos sugeridos</h2>
+<ol>
+<li><strong>Mensagens de erro Zod no frontend</strong> — parsear o JSON do <code>message</code> e exibir o primeiro <code>.message</code>. ROI alto, esforço baixo.</li>
+<li><strong>Aplicar rate limits</strong> nos POSTs de escrita (~30 min).</li>
+<li><strong>Eliminar N+1</strong> com batch queries (~30 min).</li>
+<li><strong>Dropar <code>avatarStorage.ts</code></strong> (5 min).</li>
+<li><strong>Resend:</strong> verificar domínio em <code>resend.com</code> ou usar <code>onboarding@resend.dev</code> pra testar reset de senha.</li>
+</ol>
+<hr/>
+<p><em>Documento gerado a partir da auditoria automatizada + verificação manual. Para reproduzir o smoke test, ver script em <code>docs/smoke-test.sh</code> (a criar).</em></p>
+</body>
+</html>
