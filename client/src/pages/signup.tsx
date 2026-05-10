@@ -20,14 +20,32 @@ function nameToHandle(name: string): string {
     .slice(0, 30);
 }
 
+// Mirrors the backend zod rules in shared/schema.ts (insertUserSchema.password):
+// 8+ chars, ≥1 uppercase, ≥1 digit, ≥1 special. Frontend MUST require all 4
+// or the backend will 400.
+function getPasswordChecks(password: string) {
+  return {
+    length: password.length >= 8,
+    upper: /[A-Z]/.test(password),
+    digit: /[0-9]/.test(password),
+    special: /[^A-Za-z0-9]/.test(password),
+  };
+}
+
 function getPasswordStrength(password: string): 0 | 1 | 2 | 3 | 4 {
   if (!password) return 0;
-  let score = 0;
-  if (password.length >= 8) score++;
-  if (/[0-9]/.test(password)) score++;
-  if (/[^a-zA-Z0-9]/.test(password)) score++;
-  if (/[A-Z]/.test(password)) score++;
+  const c = getPasswordChecks(password);
+  const score = (c.length ? 1 : 0) + (c.upper ? 1 : 0) + (c.digit ? 1 : 0) + (c.special ? 1 : 0);
   return Math.min(4, score) as 0 | 1 | 2 | 3 | 4;
+}
+
+function firstMissingPasswordRule(password: string): string | null {
+  const c = getPasswordChecks(password);
+  if (!c.length) return "A senha deve ter pelo menos 8 caracteres.";
+  if (!c.upper) return "A senha deve conter pelo menos uma letra maiúscula.";
+  if (!c.digit) return "A senha deve conter pelo menos um número.";
+  if (!c.special) return "A senha deve conter pelo menos um caractere especial (ex: @, !, #).";
+  return null;
 }
 
 type HandleStatus = 'idle' | 'checking' | 'available' | 'taken' | 'invalid';
@@ -108,8 +126,11 @@ export default function SignupPage() {
       toast({ variant: 'destructive', title: 'Erro', description: 'Email inválido' });
       return;
     }
-    if (passwordStrength < 3) {
-      toast({ variant: 'destructive', title: 'Senha fraca', description: 'Use pelo menos 8 caracteres, uma maiúscula, um número e um caractere especial.' });
+    // Backend requires ALL 4 criteria — block here so user sees the specific
+    // missing rule instead of a generic "Erro ao criar conta" later.
+    const missing = firstMissingPasswordRule(formData.password);
+    if (missing) {
+      toast({ variant: 'destructive', title: 'Senha fraca', description: missing });
       return;
     }
     setStep(2);
@@ -255,6 +276,24 @@ export default function SignupPage() {
                       />
                     ))}
                   </div>
+                  {/* Live requirements checklist (matches backend rules exactly) */}
+                  {formData.password.length > 0 && (() => {
+                    const c = getPasswordChecks(formData.password);
+                    const Item = ({ ok, label }: { ok: boolean; label: string }) => (
+                      <li className={`flex items-center gap-1.5 text-xs ${ok ? 'text-green-500' : 'text-foreground-muted'}`}>
+                        {ok ? <CheckCircle2 className="h-3 w-3" /> : <XCircle className="h-3 w-3" />}
+                        <span>{label}</span>
+                      </li>
+                    );
+                    return (
+                      <ul className="space-y-0.5 mt-2">
+                        <Item ok={c.length} label="Pelo menos 8 caracteres" />
+                        <Item ok={c.upper} label="Uma letra maiúscula" />
+                        <Item ok={c.digit} label="Um número" />
+                        <Item ok={c.special} label="Um caractere especial (ex: @, !, #)" />
+                      </ul>
+                    );
+                  })()}
                 </div>
 
                 <Button
