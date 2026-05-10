@@ -45,10 +45,11 @@ app.use(
   })
 );
 
-// CORS — frontend and backend share the Vercel origin, so most requests are
-// same-origin (no Origin header). Cross-origin is only allowed via explicit
-// allowlist (CORS_ORIGIN env). We deliberately do NOT trust *.vercel.app —
-// any attacker could deploy there with the same wildcard.
+// CORS — frontend and backend share the Vercel origin. Same-origin requests
+// (Origin matches the request Host) are trusted automatically, so per-deploy
+// preview URLs (futtwitter-{hash}-...vercel.app) work without env config.
+// Cross-origin still requires the explicit allowlist (CORS_ORIGIN env).
+// We deliberately do NOT trust *.vercel.app — any attacker could deploy there.
 const allowedOrigins = (process.env.CORS_ORIGIN ?? "")
   .split(",")
   .map((o) => o.trim())
@@ -57,25 +58,41 @@ const allowedOrigins = (process.env.CORS_ORIGIN ?? "")
 const PROD_ORIGIN = "https://futtwitter.vercel.app";
 if (!allowedOrigins.includes(PROD_ORIGIN)) allowedOrigins.push(PROD_ORIGIN);
 
-const corsOptions: cors.CorsOptions = {
-  origin: (origin, callback) => {
-    if (!origin) return callback(null, true);
-    if (allowedOrigins.includes(origin)) return callback(null, true);
-    if (
-      !isProd &&
-      (origin.startsWith("http://localhost:") || origin.startsWith("http://127.0.0.1:"))
-    )
-      return callback(null, true);
-    return callback(new Error(`CORS blocked for origin: ${origin}`));
-  },
-  credentials: true,
-  methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
-  allowedHeaders: ["Content-Type", "Authorization"],
-  optionsSuccessStatus: 200,
+const corsDelegate: cors.CorsOptionsDelegate = (req, callback) => {
+  const origin = (req.headers.origin as string | undefined) ?? "";
+  const host = req.headers.host as string | undefined;
+
+  let allow = false;
+  if (!origin) {
+    allow = true; // no Origin header (same-origin GET, server-to-server)
+  } else if (host) {
+    try {
+      const originHost = new URL(origin).host;
+      if (originHost === host) allow = true; // same-origin POST/PUT/DELETE
+    } catch {
+      /* malformed Origin — fall through to allowlist */
+    }
+  }
+  if (!allow && allowedOrigins.includes(origin)) allow = true;
+  if (
+    !allow &&
+    !isProd &&
+    (origin.startsWith("http://localhost:") || origin.startsWith("http://127.0.0.1:"))
+  ) {
+    allow = true;
+  }
+
+  callback(allow ? null : new Error(`CORS blocked for origin: ${origin}`), {
+    origin: allow,
+    credentials: true,
+    methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
+    allowedHeaders: ["Content-Type", "Authorization"],
+    optionsSuccessStatus: 200,
+  });
 };
 
-app.use(cors(corsOptions));
-app.options("*", cors(corsOptions));
+app.use(cors(corsDelegate));
+app.options("*", cors(corsDelegate));
 
 // Body parsers
 app.use(express.json({ limit: "1mb" }));
