@@ -49,11 +49,30 @@ export default function TeamSelectionPage() {
       });
       navigate('/', { replace: true });
     } catch (error: unknown) {
+      const rawMsg = error instanceof Error ? error.message : 'Tente novamente mais tarde';
+      // queryClient already extracts the human message from Zod payloads.
+      // For duplicate email/handle the user must edit step 1, so bounce back
+      // there with the message persisted in a toast (5s) — user does not get
+      // stuck on team-selection trying to "fix" a problem rooted in step 1.
+      const lower = rawMsg.toLowerCase();
+      const isEmailIssue = lower.includes('email');
+      const isHandleIssue = lower.includes('handle') || lower.includes('@');
+      const isDataIssue = isEmailIssue || isHandleIssue;
+
       toast({
         variant: 'destructive',
         title: 'Erro ao criar conta',
-        description: error instanceof Error ? error.message : 'Tente novamente mais tarde',
+        description: isDataIssue
+          ? `${rawMsg} Voltando ao cadastro para você corrigir.`
+          : rawMsg,
+        duration: 7000,
       });
+
+      if (isDataIssue) {
+        // Don't clear signupData — keep what user typed so they only fix the
+        // problematic field. The signup page already reads from useSignupStore.
+        navigate('/cadastro', { replace: true });
+      }
     } finally {
       setIsLoading(false);
       setShowConfirmDialog(false);

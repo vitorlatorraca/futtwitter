@@ -55,15 +55,23 @@ export default function SignupPage() {
   const { toast } = useToast();
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const setSignupData = useSignupStore((s) => s.setSignupData);
+  const existingSignupData = useSignupStore((s) => s.data);
 
   const [step, setStep] = useState<1 | 2>(1);
   const [showPassword, setShowPassword] = useState(false);
+  // Pre-populate from store so that when team-selection bounces the user back
+  // (e.g. duplicate email), they don't have to retype everything.
   const [formData, setFormData] = useState({
-    name: '',
-    email: '',
-    handle: '',
-    password: '',
+    name: existingSignupData?.name ?? '',
+    email: existingSignupData?.email ?? '',
+    handle: existingSignupData?.handle ?? '',
+    password: existingSignupData?.password ?? '',
   });
+
+  // Per-field errors that persist until the user fixes them
+  const [errors, setErrors] = useState<{ name?: string; email?: string; password?: string; handle?: string }>({});
+  const clearError = (field: keyof typeof errors) =>
+    setErrors((prev) => (prev[field] ? { ...prev, [field]: undefined } : prev));
 
   const [handleStatus, setHandleStatus] = useState<HandleStatus>('idle');
   const [handleTouched, setHandleTouched] = useState(false);
@@ -117,31 +125,54 @@ export default function SignupPage() {
   }, []);
 
   const handleStep1Continue = useCallback(() => {
+    // Validate ALL fields at once so the user sees every problem in one pass
+    // instead of fixing one error and then discovering the next.
+    const next: typeof errors = {};
     if (!formData.name.trim()) {
-      toast({ variant: 'destructive', title: 'Erro', description: 'Preencha o nome' });
-      return;
+      next.name = 'Preencha seu nome.';
+    } else if (formData.name.trim().length < 2) {
+      next.name = 'Nome deve ter pelo menos 2 caracteres.';
     }
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (!emailRegex.test(formData.email)) {
-      toast({ variant: 'destructive', title: 'Erro', description: 'Email inválido' });
-      return;
+    if (!formData.email.trim()) {
+      next.email = 'Preencha seu email.';
+    } else if (!emailRegex.test(formData.email)) {
+      next.email = 'Email inválido. Use o formato nome@dominio.com.';
     }
-    // Backend requires ALL 4 criteria — block here so user sees the specific
-    // missing rule instead of a generic "Erro ao criar conta" later.
     const missing = firstMissingPasswordRule(formData.password);
-    if (missing) {
-      toast({ variant: 'destructive', title: 'Senha fraca', description: missing });
-      return;
+    if (!formData.password) {
+      next.password = 'Crie uma senha.';
+    } else if (missing) {
+      next.password = missing;
     }
+    setErrors(next);
+    if (Object.values(next).some(Boolean)) return;
     setStep(2);
-  }, [formData.name, formData.email, formData.password, toast]);
+  }, [formData.name, formData.email, formData.password]);
 
   const handleCreateAccount = useCallback(() => {
+    if (!formData.handle) {
+      setErrors((p) => ({ ...p, handle: 'Escolha um @.' }));
+      return;
+    }
+    if (handleStatus === 'invalid') {
+      setErrors((p) => ({ ...p, handle: 'Use letras minúsculas, números e _ (3-30 caracteres).' }));
+      return;
+    }
+    if (handleStatus === 'taken') {
+      setErrors((p) => ({ ...p, handle: `@${formData.handle} já está em uso. Escolha outro.` }));
+      return;
+    }
+    if (handleStatus === 'checking') {
+      setErrors((p) => ({ ...p, handle: 'Aguarde a verificação...' }));
+      return;
+    }
     if (handleStatus !== 'available') {
-      toast({ variant: 'destructive', title: 'Erro', description: '@' + formData.handle + ' não está disponível' });
+      setErrors((p) => ({ ...p, handle: 'Não foi possível verificar o @. Tente novamente.' }));
       return;
     }
 
+    setErrors({});
     setSignupData({
       name: formData.name,
       email: formData.email,
@@ -150,7 +181,7 @@ export default function SignupPage() {
     });
 
     navigate('/selecionar-time', { replace: true });
-  }, [formData, handleStatus, setSignupData, navigate, toast]);
+  }, [formData, handleStatus, setSignupData, navigate]);
 
   const handleFeedback = () => {
     switch (handleStatus) {
@@ -209,12 +240,19 @@ export default function SignupPage() {
                       type="text"
                       placeholder="Seu nome"
                       value={formData.name}
-                      onChange={(e) => setFormData((prev) => ({ ...prev, name: e.target.value }))}
+                      onChange={(e) => { setFormData((prev) => ({ ...prev, name: e.target.value })); clearError('name'); }}
                       data-testid="input-name"
-                      className="pl-9 focus-visible:ring-primary"
+                      aria-invalid={errors.name ? true : undefined}
+                      className={`pl-9 focus-visible:ring-primary ${errors.name ? 'border-red-500 focus-visible:ring-red-500' : ''}`}
                       autoComplete="name"
                     />
                   </div>
+                  {errors.name && (
+                    <p role="alert" className="text-xs text-red-400 flex items-start gap-1 mt-1">
+                      <XCircle className="h-3 w-3 mt-0.5 shrink-0" />
+                      <span>{errors.name}</span>
+                    </p>
+                  )}
                 </div>
 
                 <div className="space-y-2">
@@ -226,12 +264,19 @@ export default function SignupPage() {
                       type="email"
                       placeholder="seu@email.com"
                       value={formData.email}
-                      onChange={(e) => setFormData((prev) => ({ ...prev, email: e.target.value }))}
+                      onChange={(e) => { setFormData((prev) => ({ ...prev, email: e.target.value })); clearError('email'); }}
                       data-testid="input-email"
-                      className="pl-9 focus-visible:ring-primary"
+                      aria-invalid={errors.email ? true : undefined}
+                      className={`pl-9 focus-visible:ring-primary ${errors.email ? 'border-red-500 focus-visible:ring-red-500' : ''}`}
                       autoComplete="email"
                     />
                   </div>
+                  {errors.email && (
+                    <p role="alert" className="text-xs text-red-400 flex items-start gap-1 mt-1">
+                      <XCircle className="h-3 w-3 mt-0.5 shrink-0" />
+                      <span>{errors.email}</span>
+                    </p>
+                  )}
                 </div>
 
                 <div className="space-y-2">
@@ -243,9 +288,10 @@ export default function SignupPage() {
                       type={showPassword ? 'text' : 'password'}
                       placeholder="Mínimo 8 caracteres"
                       value={formData.password}
-                      onChange={(e) => setFormData((prev) => ({ ...prev, password: e.target.value }))}
+                      onChange={(e) => { setFormData((prev) => ({ ...prev, password: e.target.value })); clearError('password'); }}
                       data-testid="input-password"
-                      className="pl-9 pr-9 focus-visible:ring-primary"
+                      aria-invalid={errors.password ? true : undefined}
+                      className={`pl-9 pr-9 focus-visible:ring-primary ${errors.password ? 'border-red-500 focus-visible:ring-red-500' : ''}`}
                       autoComplete="new-password"
                     />
                     <button
@@ -294,6 +340,12 @@ export default function SignupPage() {
                       </ul>
                     );
                   })()}
+                  {errors.password && (
+                    <p role="alert" className="text-xs text-red-400 flex items-start gap-1 mt-1">
+                      <XCircle className="h-3 w-3 mt-0.5 shrink-0" />
+                      <span>{errors.password}</span>
+                    </p>
+                  )}
                 </div>
 
                 <Button
@@ -323,15 +375,20 @@ export default function SignupPage() {
 
                 <div className="space-y-2">
                   <Label htmlFor="handle">Seu @</Label>
-                  <div className="flex items-center rounded-md border border-card-border bg-surface-elevated focus-within:border-primary focus-within:ring-2 focus-within:ring-primary/20 transition-all">
+                  <div className={`flex items-center rounded-md border bg-surface-elevated focus-within:ring-2 transition-all ${
+                    errors.handle || handleStatus === 'taken' || handleStatus === 'invalid'
+                      ? 'border-red-500 focus-within:border-red-500 focus-within:ring-red-500/20'
+                      : 'border-card-border focus-within:border-primary focus-within:ring-primary/20'
+                  }`}>
                     <span className="pl-3 text-foreground-muted text-sm">@</span>
                     <input
                       id="handle"
                       type="text"
                       value={formData.handle}
-                      onChange={(e) => handleHandleChange(e.target.value)}
+                      onChange={(e) => { handleHandleChange(e.target.value); clearError('handle'); }}
                       placeholder="seuhandle"
                       data-testid="input-handle"
+                      aria-invalid={errors.handle ? true : undefined}
                       className="flex-1 bg-transparent px-2 py-2.5 text-sm font-medium text-foreground placeholder:text-foreground-muted focus:outline-none border-0 rounded-r-md"
                       maxLength={30}
                       autoComplete="username"
@@ -341,6 +398,25 @@ export default function SignupPage() {
                   <p className="text-xs text-foreground-muted">
                     Letras minúsculas, números e _ · 3-30 caracteres
                   </p>
+                  {/* Surface live status from check-handle so users see "taken" without clicking */}
+                  {!errors.handle && handleStatus === 'taken' && (
+                    <p role="alert" className="text-xs text-red-400 flex items-start gap-1 mt-1">
+                      <XCircle className="h-3 w-3 mt-0.5 shrink-0" />
+                      <span>@{formData.handle} já está em uso. Escolha outro.</span>
+                    </p>
+                  )}
+                  {!errors.handle && handleStatus === 'invalid' && formData.handle.length > 0 && (
+                    <p role="alert" className="text-xs text-red-400 flex items-start gap-1 mt-1">
+                      <XCircle className="h-3 w-3 mt-0.5 shrink-0" />
+                      <span>Use letras minúsculas, números e _ (3-30 caracteres).</span>
+                    </p>
+                  )}
+                  {errors.handle && (
+                    <p role="alert" className="text-xs text-red-400 flex items-start gap-1 mt-1">
+                      <XCircle className="h-3 w-3 mt-0.5 shrink-0" />
+                      <span>{errors.handle}</span>
+                    </p>
+                  )}
                 </div>
 
                 <div className="flex gap-3">
@@ -355,8 +431,7 @@ export default function SignupPage() {
                   <Button
                     type="button"
                     onClick={handleCreateAccount}
-                    disabled={handleStatus !== 'available'}
-                    className="flex-1 font-semibold rounded-full brand-gradient hover:opacity-90 transition-opacity disabled:opacity-50"
+                    className="flex-1 font-semibold rounded-full brand-gradient hover:opacity-90 transition-opacity"
                     data-testid="button-signup"
                   >
                     Criar conta
