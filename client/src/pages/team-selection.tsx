@@ -98,9 +98,16 @@ export default function TeamSelectionPage() {
         <h1 className="text-2xl sm:text-3xl font-bold text-foreground mb-2">
           Escolha seu time ❤️
         </h1>
-        <p className="text-foreground-secondary mb-8">
-          Esta escolha é permanente. Escolha com carinho.
-        </p>
+        <div className="mb-8 space-y-2 max-w-2xl">
+          <p className="text-foreground-secondary">
+            Esse é o time que vai aparecer no seu perfil, no seu feed personalizado
+            de "Meu Time", nas suas escalações e nas suas avaliações de jogadores.
+          </p>
+          <p className="text-sm text-foreground-muted">
+            ⚠️ <strong className="text-foreground-secondary">Esta escolha é permanente</strong> —
+            escolha com calma. Toque no escudo do seu time abaixo e confirme na próxima tela.
+          </p>
+        </div>
 
         <div className="grid grid-cols-4 sm:grid-cols-6 lg:grid-cols-8 gap-3 sm:gap-4">
           {TEAMS_DATA.map((t) => (

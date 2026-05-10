@@ -228,17 +228,23 @@ export default function SignupPage() {
               >
                 <div>
                   <h1 className="text-2xl font-bold text-foreground">Criar conta</h1>
-                  <p className="text-sm text-foreground-secondary mt-1">Dados pessoais</p>
+                  <p className="text-sm text-foreground-secondary mt-1">
+                    Etapa 1 de 2 — preencha seus dados pessoais. Na próxima etapa
+                    você escolhe seu @ (identificador único) e depois seu time do coração.
+                  </p>
                 </div>
 
                 <div className="space-y-2">
                   <Label htmlFor="name">Nome completo</Label>
+                  <p className="text-xs text-foreground-muted -mt-1">
+                    Como vai aparecer pra outros torcedores no perfil e nos posts.
+                  </p>
                   <div className="relative">
                     <User className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-foreground-muted" />
                     <Input
                       id="name"
                       type="text"
-                      placeholder="Seu nome"
+                      placeholder="Ex: Vitor Silva"
                       value={formData.name}
                       onChange={(e) => { setFormData((prev) => ({ ...prev, name: e.target.value })); clearError('name'); }}
                       data-testid="input-name"
@@ -257,6 +263,9 @@ export default function SignupPage() {
 
                 <div className="space-y-2">
                   <Label htmlFor="email">Email</Label>
+                  <p className="text-xs text-foreground-muted -mt-1">
+                    Usado pra fazer login e recuperar senha. Não é exibido publicamente.
+                  </p>
                   <div className="relative">
                     <Mail className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-foreground-muted" />
                     <Input
@@ -281,6 +290,10 @@ export default function SignupPage() {
 
                 <div className="space-y-2">
                   <Label htmlFor="password">Senha</Label>
+                  <p className="text-xs text-foreground-muted -mt-1">
+                    Precisa ter <strong>8+ caracteres</strong>, com pelo menos uma letra
+                    maiúscula, um número e um caractere especial (ex: <code className="bg-surface-elevated px-1 rounded">@</code>, <code className="bg-surface-elevated px-1 rounded">!</code>, <code className="bg-surface-elevated px-1 rounded">#</code>).
+                  </p>
                   <div className="relative">
                     <Lock className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-foreground-muted" />
                     <Input
@@ -369,12 +382,20 @@ export default function SignupPage() {
                 <div>
                   <h1 className="text-2xl font-bold text-foreground">Escolha seu @</h1>
                   <p className="text-sm text-foreground-secondary mt-1">
-                    Identificador único — escolha com cuidado
+                    Etapa 2 de 2 — esse é seu identificador único na plataforma. É como
+                    outros torcedores vão te marcar, te seguir e ver seu perfil
+                    (ex: <span className="text-primary font-mono">@joao_corinthiano</span>).
+                    <strong className="text-foreground"> Escolha com calma — pode mudar depois nas configurações,
+                    mas é seu carimbo público.</strong>
                   </p>
                 </div>
 
                 <div className="space-y-2">
                   <Label htmlFor="handle">Seu @</Label>
+                  <p className="text-xs text-foreground-muted -mt-1">
+                    Sugerimos um baseado no seu nome — você pode editar livremente.
+                    Use só letras minúsculas, números e <code className="bg-surface-elevated px-1 rounded">_</code>.
+                  </p>
                   <div className={`flex items-center rounded-md border bg-surface-elevated focus-within:ring-2 transition-all ${
                     errors.handle || handleStatus === 'taken' || handleStatus === 'invalid'
                       ? 'border-red-500 focus-within:border-red-500 focus-within:ring-red-500/20'
