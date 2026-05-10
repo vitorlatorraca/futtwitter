@@ -472,16 +472,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
     console.error("❌ Falha ao seedar times automaticamente:", error);
   }
 
-  // Ensure game sets exist (Adivinhe o Elenco).
-  try {
-    const { seedGames } = await import("./db/seed/games.seed");
-    const result = await seedGames();
-    if (result.seeded) {
-      console.log("✅ Game set corinthians-2005-brasileirao criado (auto)");
-    }
-  } catch (error) {
-    console.error("❌ Falha ao seedar game sets:", error);
-  }
+  // Game sets seed (Adivinhe o Elenco) is one-shot — run via `npm run seed:games`
+  // after deploy. Removed from boot path: it was deleting + reinserting 37 rows
+  // on every serverless cold start.
 
   // ============================================
   // AUTHENTICATION ROUTES
@@ -562,7 +555,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         res.json({ id: user.id, name: user.name, email: user.email, teamId: user.teamId, userType: user.userType });
       });
     } catch (error: any) {
-      console.error('Registration error:', error);
+      console.error('Registration error:', error?.stack || error);
       res.status(400).json({ message: error.message || 'Erro ao criar conta' });
     }
   };

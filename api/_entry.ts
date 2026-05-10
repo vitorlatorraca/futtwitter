@@ -89,9 +89,14 @@ function ensureInit(): Promise<void> {
     initPromise = registerRoutes(app)
       .then(() => {
         // Global error handler — must be registered AFTER all routes
-        app.use((err: any, _req: Request, res: Response, _next: NextFunction) => {
+        app.use((err: any, req: Request, res: Response, _next: NextFunction) => {
           const status = err.status || err.statusCode || 500;
           const message = err.message || "Internal Server Error";
+          // Always log the error so 500s show up in Vercel logs with stack traces
+          console.error(
+            `[express] ${req.method} ${req.url} → ${status}: ${message}`,
+            err.stack || err,
+          );
           res.status(status).json({ message });
         });
       })
