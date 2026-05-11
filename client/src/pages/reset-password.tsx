@@ -93,7 +93,7 @@ export default function ResetPasswordPage() {
   };
 
   return (
-    <div className="min-h-screen bg-black flex items-center justify-center p-6">
+    <div className="min-h-screen bg-background flex items-center justify-center p-6">
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
@@ -126,7 +126,7 @@ export default function ResetPasswordPage() {
             <p className="text-foreground-secondary text-[15px]">{invalidReason}</p>
             <Link
               to="/esqueci-senha"
-              className="inline-block mt-2 px-6 py-2.5 rounded-full bg-primary text-white font-semibold text-sm hover:opacity-90 transition-opacity"
+              className="inline-block mt-2 px-6 py-2.5 rounded-full bg-primary text-foreground font-semibold text-sm hover:opacity-90 transition-opacity"
             >
               Solicitar novo link
             </Link>

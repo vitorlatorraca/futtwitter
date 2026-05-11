@@ -210,7 +210,7 @@ export default function AdivinheOJogadorPage() {
                     </div>
                   )}
                   {!isFinished && (
-                    <div className="absolute bottom-2 right-2 bg-black/60 text-white text-xs px-2 py-1 rounded-lg backdrop-blur-sm">
+                    <div className="absolute bottom-2 right-2 bg-black/60 text-foreground text-xs px-2 py-1 rounded-lg backdrop-blur-sm">
                       {data.progress.blurPercent}% borrado
                     </div>
                   )}

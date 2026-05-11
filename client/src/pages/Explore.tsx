@@ -88,7 +88,7 @@ function HashtagChip({ item, onClick }: { item: HashtagItem; onClick: () => void
     <button
       type="button"
       onClick={onClick}
-      className="px-3 py-1.5 rounded-full bg-x-search-bg hover:bg-gray-800 text-x-text-primary text-[14px] font-medium transition-colors"
+      className="px-3 py-1.5 rounded-full bg-x-search-bg hover:bg-surface-elevated text-x-text-primary text-[14px] font-medium transition-colors"
     >
       #{item.name} <span className="text-x-text-secondary font-normal">{formatPostCount(item.post_count)}</span>
     </button>
@@ -111,13 +111,13 @@ function UserSuggestionCard({
   const avatarColor = avatarColors[user.name.charCodeAt(0) % avatarColors.length];
 
   return (
-    <div className="flex items-center gap-3 px-4 py-3 hover:bg-white/[0.02] transition-colors">
+    <div className="flex items-center gap-3 px-4 py-3 hover:bg-foreground/[0.02] transition-colors">
       <Link to={`/profile/${handle}`} className="flex-shrink-0">
         {avatarUrl ? (
           <img src={avatarUrl.startsWith("http") ? avatarUrl : getApiUrl(avatarUrl)} alt={user.name} className="w-12 h-12 rounded-full object-cover" />
         ) : (
           <div className={`w-12 h-12 rounded-full flex items-center justify-center ${avatarColor}`}>
-            <span className="text-white text-lg font-bold">{initial}</span>
+            <span className="text-foreground text-lg font-bold">{initial}</span>
           </div>
         )}
       </Link>
@@ -144,9 +144,9 @@ function SkeletonTrending() {
     <div className="animate-pulse">
       {[...Array(4)].map((_, i) => (
         <div key={i} className="px-4 py-3 border-b border-x-border">
-          <div className="h-3.5 bg-gray-800 rounded w-24 mb-2" />
-          <div className="h-4 bg-gray-800 rounded w-32 mb-1" />
-          <div className="h-3 bg-gray-800 rounded w-16" />
+          <div className="h-3.5 bg-surface-elevated rounded w-24 mb-2" />
+          <div className="h-4 bg-surface-elevated rounded w-32 mb-1" />
+          <div className="h-3 bg-surface-elevated rounded w-16" />
         </div>
       ))}
     </div>
@@ -157,7 +157,7 @@ function SkeletonHashtags() {
   return (
     <div className="flex gap-2 flex-wrap px-4 animate-pulse">
       {[...Array(8)].map((_, i) => (
-        <div key={i} className="h-8 w-24 bg-gray-800 rounded-full" />
+        <div key={i} className="h-8 w-24 bg-surface-elevated rounded-full" />
       ))}
     </div>
   );
@@ -168,12 +168,12 @@ function SkeletonUsers() {
     <div className="animate-pulse">
       {[...Array(3)].map((_, i) => (
         <div key={i} className="flex items-center gap-3 px-4 py-3">
-          <div className="w-12 h-12 rounded-full bg-gray-800" />
+          <div className="w-12 h-12 rounded-full bg-surface-elevated" />
           <div className="flex-1">
-            <div className="h-4 bg-gray-800 rounded w-24 mb-1" />
-            <div className="h-3 bg-gray-800 rounded w-16" />
+            <div className="h-4 bg-surface-elevated rounded w-24 mb-1" />
+            <div className="h-3 bg-surface-elevated rounded w-16" />
           </div>
-          <div className="w-20 h-8 rounded-full bg-gray-800" />
+          <div className="w-20 h-8 rounded-full bg-surface-elevated" />
         </div>
       ))}
     </div>
@@ -257,7 +257,7 @@ export default function Explore() {
   );
 
   return (
-    <div className="min-h-screen bg-black">
+    <div className="min-h-screen bg-background">
       {/* Search - sticky */}
       <div className="sticky top-0 z-20 bg-black/80 backdrop-blur-md px-4 py-2 border-b border-x-border">
         <div className="flex items-center gap-3">
@@ -276,7 +276,7 @@ export default function Explore() {
       {isSearching ? (
         <>
           {/* Category tabs for search */}
-          <div className="flex border-b border-x-border sticky top-[52px] bg-black z-10 overflow-x-auto hide-scrollbar">
+          <div className="flex border-b border-x-border sticky top-[52px] bg-background z-10 overflow-x-auto hide-scrollbar">
             {(["all", "users", "posts", "hashtags", "teams"] as const).map((key) => {
               const labels: Record<typeof key, string> = {
                 all: "Tudo",
@@ -305,10 +305,10 @@ export default function Explore() {
             <div className="animate-pulse">
               {[...Array(5)].map((_, i) => (
                 <div key={i} className="flex items-center gap-3 px-4 py-4 border-b border-x-border">
-                  <div className="w-12 h-12 rounded-full bg-gray-800 flex-shrink-0" />
+                  <div className="w-12 h-12 rounded-full bg-surface-elevated flex-shrink-0" />
                   <div className="flex-1 space-y-2">
-                    <div className="h-3.5 bg-gray-800 rounded-full w-1/3" />
-                    <div className="h-3 bg-gray-800 rounded-full w-1/5 opacity-60" />
+                    <div className="h-3.5 bg-surface-elevated rounded-full w-1/3" />
+                    <div className="h-3 bg-surface-elevated rounded-full w-1/5 opacity-60" />
                   </div>
                 </div>
               ))}
@@ -372,7 +372,7 @@ export default function Explore() {
                     <Link
                       key={t.id}
                       to={`/meu-time/${t.id}`}
-                      className="flex items-center gap-3 px-4 py-3 hover:bg-white/[0.02] transition-colors border-b border-x-border"
+                      className="flex items-center gap-3 px-4 py-3 hover:bg-foreground/[0.02] transition-colors border-b border-x-border"
                     >
                       {t.logoUrl && (
                         <img src={t.logoUrl.startsWith("http") ? t.logoUrl : getApiUrl(t.logoUrl)} alt="" className="w-10 h-10 rounded-full object-cover" />
@@ -425,10 +425,10 @@ export default function Explore() {
               {[...Array(5)].map((_, i) => (
                 <div key={i} className="px-4 py-4 border-b border-x-border">
                   <div className="flex gap-3">
-                    <div className="w-10 h-10 rounded-full bg-gray-800" />
+                    <div className="w-10 h-10 rounded-full bg-surface-elevated" />
                     <div className="flex-1 space-y-2">
-                      <div className="h-4 bg-gray-800 rounded w-1/3" />
-                      <div className="h-4 bg-gray-800 rounded w-full" />
+                      <div className="h-4 bg-surface-elevated rounded w-1/3" />
+                      <div className="h-4 bg-surface-elevated rounded w-full" />
                     </div>
                   </div>
                 </div>

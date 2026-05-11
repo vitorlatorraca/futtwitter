@@ -110,7 +110,7 @@ export default function NewsDetail() {
             />
           ) : (
             <div
-              className="w-12 h-12 rounded-full flex items-center justify-center text-white font-bold"
+              className="w-12 h-12 rounded-full flex items-center justify-center text-foreground font-bold"
               style={{ backgroundColor: "var(--x-accent)" }}
             >
               {(news.journalist.name || "A")
@@ -178,7 +178,7 @@ export default function NewsDetail() {
           <button
             type="submit"
             disabled={!newCommentText.trim() || createCommentMutation.isPending}
-            className="mt-3 px-4 py-2 bg-x-accent text-white font-bold rounded-full hover:opacity-90 disabled:opacity-50 disabled:cursor-not-allowed"
+            className="mt-3 px-4 py-2 bg-x-accent text-foreground font-bold rounded-full hover:opacity-90 disabled:opacity-50 disabled:cursor-not-allowed"
           >
             {createCommentMutation.isPending ? (
               <Loader2 className="w-5 h-5 animate-spin inline" />
@@ -208,7 +208,7 @@ export default function NewsDetail() {
                     className="w-10 h-10 rounded-full object-cover flex-shrink-0"
                   />
                 ) : (
-                  <div className="w-10 h-10 rounded-full bg-x-accent flex items-center justify-center text-white text-sm font-bold flex-shrink-0">
+                  <div className="w-10 h-10 rounded-full bg-x-accent flex items-center justify-center text-foreground text-sm font-bold flex-shrink-0">
                     {(c.author.name || "?").slice(0, 2).toUpperCase()}
                   </div>
                 )}

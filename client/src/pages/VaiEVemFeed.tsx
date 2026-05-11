@@ -38,7 +38,7 @@ function formatFee(item: TransferRumorItem): string {
 function TransferCard({ item }: { item: TransferRumorItem }) {
   const initial = item.player.name.charAt(0).toUpperCase();
   return (
-    <div className="px-4 py-4 border-b border-x-border hover:bg-[rgba(231,233,234,0.03)] transition-colors">
+    <div className="px-4 py-4 border-b border-x-border hover:bg-x-hover transition-colors">
       <div className="flex items-start gap-3">
         {/* Avatar do jogador */}
         {item.player.photoUrl ? (
@@ -128,7 +128,7 @@ export default function VaiEVemFeed() {
           {isJournalist ? (
             <button
               onClick={() => setDialogOpen(true)}
-              className="flex items-center gap-1.5 bg-x-accent hover:bg-x-accent-hover text-white text-[13px] font-bold px-3 py-1.5 rounded-full transition-colors flex-shrink-0"
+              className="flex items-center gap-1.5 bg-x-accent hover:bg-x-accent-hover text-foreground text-[13px] font-bold px-3 py-1.5 rounded-full transition-colors flex-shrink-0"
             >
               <Plus className="w-4 h-4" />
               Nova negociação
@@ -150,7 +150,7 @@ export default function VaiEVemFeed() {
             <button
               key={tab.status}
               onClick={() => setActiveFilter(tab.status)}
-              className="flex-1 py-3 text-center hover:bg-[rgba(231,233,234,0.03)] transition-colors relative text-[14px] font-medium"
+              className="flex-1 py-3 text-center hover:bg-x-hover transition-colors relative text-[14px] font-medium"
             >
               <span className={activeFilter === tab.status ? "font-bold" : "text-x-text-secondary"}>
                 {tab.label}

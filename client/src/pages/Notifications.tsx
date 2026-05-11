@@ -66,8 +66,8 @@ function FollowBackButton({ handle }: { handle: string }) {
       disabled={toggleFollow.isPending}
       className={`mt-2 px-4 py-1.5 rounded-full text-[13px] font-bold transition-colors ${
         isFollowing
-          ? "border border-x-border text-white hover:border-red-500 hover:text-red-500"
-          : "bg-white text-black hover:bg-[rgba(231,233,234,0.9)]"
+          ? "border border-x-border text-foreground hover:border-red-500 hover:text-red-500"
+          : "bg-foreground text-background hover:bg-foreground/90"
       }`}
     >
       {isFollowing ? "Seguindo" : "Seguir de volta"}
@@ -105,7 +105,7 @@ function NotificationCard({
     <div
       onClick={handleNotificationClick}
       className={`flex items-start gap-3 px-4 py-4 border-b border-x-border cursor-pointer transition-colors
-        hover:bg-[rgba(231,233,234,0.03)]
+        hover:bg-x-hover
         ${!n.isRead ? "bg-[rgba(0,230,118,0.03)]" : ""}`}
     >
       <div className="relative flex-shrink-0 mt-1">
@@ -228,7 +228,7 @@ export default function Notifications() {
             <button
               key={tab}
               onClick={() => setActiveTab(tab)}
-              className="flex-1 py-4 text-center hover:bg-[rgba(231,233,234,0.03)] transition-colors relative text-[15px]"
+              className="flex-1 py-4 text-center hover:bg-x-hover transition-colors relative text-[15px]"
             >
               <span
                 className={

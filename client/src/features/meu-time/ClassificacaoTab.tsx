@@ -43,7 +43,7 @@ function FormPill({ result }: { result: string }) {
   const bg = isW ? 'bg-success/90' : isD ? 'bg-muted-foreground/70' : isL ? 'bg-danger/90' : 'bg-muted/50';
   return (
     <span
-      className={`inline-flex w-[18px] h-[18px] rounded-[4px] items-center justify-center text-[10px] font-bold text-white ${bg}`}
+      className={`inline-flex w-[18px] h-[18px] rounded-[4px] items-center justify-center text-[10px] font-bold text-foreground ${bg}`}
       aria-label={isW ? 'Vitória' : isD ? 'Empate' : 'Derrota'}
     >
       {result}

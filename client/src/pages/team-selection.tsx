@@ -125,7 +125,7 @@ export default function TeamSelectionPage() {
             >
               <div
                 className={`relative w-full aspect-square rounded-full overflow-hidden flex items-center justify-center p-2 transition-all duration-200 border-2 ${
-                  selectedTeam === t.id ? 'ring-2 ring-offset-2 ring-offset-black' : 'border-transparent'
+                  selectedTeam === t.id ? 'ring-2 ring-offset-2 ring-offset-background' : 'border-transparent'
                 }`}
                 style={
                   selectedTeam === t.id

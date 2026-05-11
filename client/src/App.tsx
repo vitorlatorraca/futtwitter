@@ -75,23 +75,23 @@ class ErrorBoundary extends React.Component<
   render() {
     if (this.state.hasError) {
       return (
-        <div className="min-h-screen flex items-center justify-center bg-black px-6">
+        <div className="min-h-screen flex items-center justify-center bg-background px-6">
           <div className="max-w-md text-center space-y-4">
             <div className="text-5xl">⚠️</div>
-            <h1 className="text-2xl font-extrabold text-white">Algo deu errado</h1>
-            <p className="text-gray-400 text-[15px] leading-relaxed">
+            <h1 className="text-2xl font-extrabold text-foreground">Algo deu errado</h1>
+            <p className="text-foreground-muted text-[15px] leading-relaxed">
               Ocorreu um erro inesperado. Tente recarregar a página.
             </p>
             <button
               onClick={() => window.location.reload()}
-              className="mt-4 px-6 py-2 rounded-full bg-x-accent text-black font-semibold text-sm hover:opacity-90 transition-opacity"
+              className="mt-4 px-6 py-2 rounded-full bg-x-accent text-primary-foreground font-semibold text-sm hover:opacity-90 transition-opacity"
             >
               Recarregar página
             </button>
             {/* Detalhes do erro somente em desenvolvimento */}
             {import.meta.env.DEV && this.state.error && (
-              <details className="mt-4 text-left text-xs text-gray-500 bg-gray-900 rounded-xl p-4 border border-gray-800">
-                <summary className="cursor-pointer font-semibold mb-2 text-gray-300">
+              <details className="mt-4 text-left text-xs text-foreground-muted bg-surface-card rounded-xl p-4 border border-card-border">
+                <summary className="cursor-pointer font-semibold mb-2 text-foreground-secondary">
                   Detalhes do erro (dev only)
                 </summary>
                 <pre className="whitespace-pre-wrap break-all text-red-400">

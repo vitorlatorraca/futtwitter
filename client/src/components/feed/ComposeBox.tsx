@@ -235,7 +235,7 @@ export default function ComposeBox({
               className="absolute top-2 right-2 p-1.5 rounded-full bg-black/60 hover:bg-black/80 transition-colors"
               aria-label="Remover imagem"
             >
-              <X className="w-4 h-4 text-white" />
+              <X className="w-4 h-4 text-foreground" />
             </button>
           </div>
         )}
@@ -301,7 +301,7 @@ export default function ComposeBox({
               onClick={handleSubmit}
               disabled={(!text.trim() && !imageUrl) || overLimit || isSubmitting}
               title="Postar (Ctrl+Enter)"
-              className="brand-gradient hover:opacity-90 disabled:opacity-50 disabled:cursor-not-allowed text-white font-bold text-[15px] rounded-full px-4 py-1.5 transition-opacity"
+              className="brand-gradient hover:opacity-90 disabled:opacity-50 disabled:cursor-not-allowed text-foreground font-bold text-[15px] rounded-full px-4 py-1.5 transition-opacity"
             >
               {isSubmitting ? "Postando…" : "Postar"}
             </button>

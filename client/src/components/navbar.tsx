@@ -31,18 +31,18 @@ export function Navbar() {
   const isActive = (path: string) => location.pathname === path || location.pathname.startsWith(path + '/');
 
   return (
-    <nav className="sticky top-0 z-50 w-full border-b border-x-border backdrop-blur-md" style={{ background: 'rgba(8,12,20,0.95)' }}>
+    <nav className="sticky top-0 z-50 w-full border-b border-card-border backdrop-blur-md bg-background/95">
       <div className="container flex h-14 items-center justify-between gap-4">
         {/* Logo */}
         <Link to="/dashboard" data-testid="link-logo">
-          <div className="flex items-center gap-2 cursor-pointer px-2 py-1.5 rounded-full hover:bg-white/5 transition-colors">
+          <div className="flex items-center gap-2 cursor-pointer px-2 py-1.5 rounded-full hover:bg-foreground/5 transition-colors">
             <span className="text-xl">⚽</span>
             <div className="hidden sm:flex flex-col leading-none">
-              <span className="font-bold text-[15px] text-foreground tracking-tight">
+              <span className="font-brand text-[18px] text-foreground tracking-wider">
                 FUTTWITTER
               </span>
-              <span className="text-[10px] text-foreground-secondary">
-                Premium Futebol Editorial
+              <span className="text-[10px] text-foreground-muted italic font-serif-body">
+                Coluna esportiva diária
               </span>
             </div>
           </div>
@@ -59,7 +59,7 @@ export function Navbar() {
                 data-testid={link.testId}
                 className={cn(
                   "relative flex items-center justify-center px-4 h-14 text-sm font-bold transition-colors whitespace-nowrap",
-                  "hover:bg-white/5",
+                  "hover:bg-foreground/5",
                   active ? "text-foreground" : "text-x-text-secondary"
                 )}
               >
@@ -82,7 +82,7 @@ export function Navbar() {
               <button
                 className={cn(
                   "hidden md:flex items-center gap-2 rounded-full px-3 py-1.5",
-                  "hover:bg-white/5 transition-colors"
+                  "hover:bg-foreground/5 transition-colors"
                 )}
                 aria-label="Abrir menu do usuário"
               >
@@ -132,7 +132,7 @@ export function Navbar() {
               <div className="flex flex-col gap-4 mt-8">
                 <div className="flex items-center gap-3 pb-4 border-b border-x-border">
                   <Avatar className="h-10 w-10 ring-2 ring-x-accent/20">
-                    <AvatarFallback className="bg-x-accent text-white font-bold">
+                    <AvatarFallback className="bg-x-accent text-foreground font-bold">
                       {user.name.slice(0, 2).toUpperCase()}
                     </AvatarFallback>
                   </Avatar>
@@ -146,7 +146,7 @@ export function Navbar() {
                     <Link key={link.href} to={link.href} data-testid={link.testId}>
                       <Button
                         variant={isActive(link.href) ? 'default' : 'ghost'}
-                        className={`w-full justify-start font-semibold ${isActive(link.href) ? 'bg-x-accent hover:bg-x-accent-hover' : 'hover:bg-white/5'}`}
+                        className={`w-full justify-start font-semibold ${isActive(link.href) ? 'bg-x-accent hover:bg-x-accent-hover' : 'hover:bg-foreground/5'}`}
                         onClick={() => setIsOpen(false)}
                       >
                         {link.label}

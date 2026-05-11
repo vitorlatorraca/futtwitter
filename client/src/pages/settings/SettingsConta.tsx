@@ -33,7 +33,7 @@ function ApplicationForm({
       animate={{ opacity: 1, height: "auto" }}
       exit={{ opacity: 0, height: 0 }}
       onSubmit={onSubmit}
-      className="space-y-3 rounded-xl border border-x-border p-4 bg-[rgba(231,233,234,0.03)]"
+      className="space-y-3 rounded-xl border border-x-border p-4 bg-x-hover"
     >
       <input
         name="org"
@@ -61,7 +61,7 @@ function ApplicationForm({
         <button
           type="submit"
           disabled={isPending}
-          className="px-4 py-2 rounded-full bg-x-accent text-black text-[15px] font-semibold hover:bg-x-accent-hover disabled:opacity-60 disabled:cursor-not-allowed flex items-center gap-2"
+          className="px-4 py-2 rounded-full bg-x-accent text-primary-foreground text-[15px] font-semibold hover:bg-x-accent-hover disabled:opacity-60 disabled:cursor-not-allowed flex items-center gap-2"
         >
           {isPending ? (
             <>
@@ -334,9 +334,9 @@ export default function SettingsConta() {
                   title="Alterar imagem de capa"
                 >
                   {uploadingCover ? (
-                    <Loader2 className="w-5 h-5 text-white animate-spin" />
+                    <Loader2 className="w-5 h-5 text-foreground animate-spin" />
                   ) : (
-                    <Camera className="w-5 h-5 text-white" />
+                    <Camera className="w-5 h-5 text-foreground" />
                   )}
                 </button>
                 {authUser?.coverPhotoUrl && (
@@ -347,7 +347,7 @@ export default function SettingsConta() {
                     className="p-2.5 rounded-full bg-black/60 hover:bg-black/80 transition-colors disabled:opacity-50"
                     title="Remover imagem de capa"
                   >
-                    <X className="w-5 h-5 text-white" />
+                    <X className="w-5 h-5 text-foreground" />
                   </button>
                 )}
               </div>
@@ -378,9 +378,9 @@ export default function SettingsConta() {
                   title="Alterar foto de perfil"
                 >
                   {uploadingAvatar ? (
-                    <Loader2 className="w-5 h-5 text-white animate-spin" />
+                    <Loader2 className="w-5 h-5 text-foreground animate-spin" />
                   ) : (
-                    <Camera className="w-5 h-5 text-white" />
+                    <Camera className="w-5 h-5 text-foreground" />
                   )}
                 </button>
               </div>
@@ -469,7 +469,7 @@ export default function SettingsConta() {
                 <button
                   onClick={handleSaveProfile}
                   disabled={saving}
-                  className="px-4 py-2 rounded-full bg-x-accent text-black text-[15px] font-semibold hover:bg-x-accent-hover disabled:opacity-60 disabled:cursor-not-allowed flex items-center gap-2"
+                  className="px-4 py-2 rounded-full bg-x-accent text-primary-foreground text-[15px] font-semibold hover:bg-x-accent-hover disabled:opacity-60 disabled:cursor-not-allowed flex items-center gap-2"
                 >
                   {saving ? (
                     <>
@@ -521,7 +521,7 @@ export default function SettingsConta() {
                           animate={{ opacity: 1 }}
                           exit={{ opacity: 0 }}
                           onClick={() => setShowForm(true)}
-                          className="px-4 py-2 rounded-full bg-x-accent text-black text-[15px] font-semibold hover:bg-x-accent-hover transition-colors"
+                          className="px-4 py-2 rounded-full bg-x-accent text-primary-foreground text-[15px] font-semibold hover:bg-x-accent-hover transition-colors"
                         >
                           Solicitar verificação
                         </motion.button>
@@ -591,7 +591,7 @@ export default function SettingsConta() {
                           animate={{ opacity: 1 }}
                           exit={{ opacity: 0 }}
                           onClick={() => setShowForm(true)}
-                          className="px-4 py-2 rounded-full bg-x-accent text-black text-[15px] font-semibold hover:bg-x-accent-hover transition-colors"
+                          className="px-4 py-2 rounded-full bg-x-accent text-primary-foreground text-[15px] font-semibold hover:bg-x-accent-hover transition-colors"
                         >
                           Enviar nova solicitação
                         </motion.button>

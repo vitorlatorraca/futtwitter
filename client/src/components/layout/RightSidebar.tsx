@@ -62,7 +62,7 @@ export default function RightSidebar() {
   return (
     <aside className="w-[350px] min-h-screen pl-7 py-1">
       {/* Search */}
-      <div className="sticky top-0 pt-1 pb-3 bg-black z-10">
+      <div className="sticky top-0 pt-1 pb-3 bg-background z-10">
         <SearchBar className="w-full" />
       </div>
 
@@ -72,7 +72,7 @@ export default function RightSidebar() {
         <p className="text-[15px] text-x-text-primary mb-3">
           Sem anúncios, estatísticas avançadas, alertas de gols em tempo real.
         </p>
-        <button className="brand-gradient hover:opacity-90 text-white font-bold text-[15px] rounded-full px-4 py-2 transition-opacity">
+        <button className="brand-gradient hover:opacity-90 text-foreground font-bold text-[15px] rounded-full px-4 py-2 transition-opacity">
           Assinar
         </button>
       </div>
@@ -84,7 +84,7 @@ export default function RightSidebar() {
           trendingItems.map((item, i) => (
             <button
               key={i}
-              className="w-full px-4 py-3 hover:bg-[rgba(231,233,234,0.03)] transition-colors text-left flex justify-between items-start"
+              className="w-full px-4 py-3 hover:bg-x-hover transition-colors text-left flex justify-between items-start"
             >
               <div>
                 <p className="text-[13px] text-x-text-secondary leading-4">{item.category}</p>
@@ -106,7 +106,7 @@ export default function RightSidebar() {
           {upcomingMatches.map((match) => (
             <div
               key={match.id}
-              className="px-4 py-3 hover:bg-[rgba(231,233,234,0.03)] transition-colors"
+              className="px-4 py-3 hover:bg-x-hover transition-colors"
             >
               <p className="text-[15px] font-bold leading-5">
                 {match.homeTeamName} vs {match.awayTeamName}
@@ -118,7 +118,7 @@ export default function RightSidebar() {
           ))}
           <Link
             to="/jogos"
-            className="block w-full px-4 py-3 text-x-accent text-[15px] hover:bg-[rgba(231,233,234,0.03)] transition-colors text-left"
+            className="block w-full px-4 py-3 text-x-accent text-[15px] hover:bg-x-hover transition-colors text-left"
           >
             Ver detalhes
           </Link>
@@ -142,7 +142,7 @@ export default function RightSidebar() {
             return (
               <div
                 key={u.id}
-                className="px-4 py-3 hover:bg-[rgba(231,233,234,0.03)] transition-colors flex items-center gap-3"
+                className="px-4 py-3 hover:bg-x-hover transition-colors flex items-center gap-3"
               >
                 <img src={u.avatar} alt={u.displayName} className="w-10 h-10 rounded-full object-cover flex-shrink-0" />
                 <div className="flex-1 min-w-0">
@@ -158,7 +158,7 @@ export default function RightSidebar() {
                 </div>
                 <button
                   onClick={() => toggleFollowLocal(u.id)}
-                  className="rounded-full font-bold text-[14px] px-4 py-1.5 transition-colors flex-shrink-0 bg-x-accent text-white hover:bg-x-accent-hover"
+                  className="rounded-full font-bold text-[14px] px-4 py-1.5 transition-colors flex-shrink-0 bg-x-accent text-foreground hover:bg-x-accent-hover"
                 >
                   {isFollowing ? "Seguindo" : "Seguir"}
                 </button>
@@ -167,7 +167,7 @@ export default function RightSidebar() {
           })}
           <button
             onClick={() => navigate("/explore")}
-            className="w-full px-4 py-3 text-x-accent text-[15px] hover:bg-[rgba(231,233,234,0.03)] transition-colors text-left"
+            className="w-full px-4 py-3 text-x-accent text-[15px] hover:bg-x-hover transition-colors text-left"
           >
             Ver mais
           </button>
@@ -190,7 +190,7 @@ export default function RightSidebar() {
               {suggestedUsers.map((targetUser) => (
                 <div
                   key={targetUser.id}
-                  className="px-4 py-3 flex items-center gap-3 hover:bg-[rgba(231,233,234,0.03)] transition-colors"
+                  className="px-4 py-3 flex items-center gap-3 hover:bg-x-hover transition-colors"
                 >
                   <div
                     className="w-10 h-10 rounded-full bg-x-border flex-shrink-0 overflow-hidden cursor-pointer"
@@ -221,8 +221,8 @@ export default function RightSidebar() {
                     disabled={toggleFollowMutation.isPending && toggleFollowMutation.variables?.handle === targetUser.handle}
                     className={`flex-shrink-0 px-4 py-1.5 rounded-full text-[13px] font-bold transition-colors ${
                       targetUser.isFollowing
-                        ? "border border-x-border text-white hover:border-red-500 hover:text-red-500"
-                        : "bg-white text-black hover:bg-[rgba(231,233,234,0.9)]"
+                        ? "border border-x-border text-foreground hover:border-red-500 hover:text-red-500"
+                        : "bg-foreground text-background hover:bg-foreground/90"
                     }`}
                   >
                     {targetUser.isFollowing ? "Seguindo" : "Seguir"}

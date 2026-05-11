@@ -111,7 +111,7 @@ export default function Sidebar() {
           {item.badge && (
             <span
               className={`absolute -top-1.5 -right-1.5 text-[11px] font-bold rounded-full min-w-[18px] h-[18px] flex items-center justify-center px-1 ${
-                item.badgeColor || "bg-x-accent text-white"
+                item.badgeColor || "bg-x-accent text-foreground"
               }`}
             >
               {typeof item.badge === "number" && item.badge > 99 ? "99+" : item.badge}
@@ -146,7 +146,7 @@ export default function Sidebar() {
         >
           <FuteAppLogo />
           {!isCompact && (
-            <span className="font-brand text-2xl text-white tracking-wider">
+            <span className="font-brand text-2xl text-foreground tracking-wider">
               FuteApp
             </span>
           )}
@@ -185,7 +185,7 @@ export default function Sidebar() {
 
         <button
           onClick={() => setComposeModalOpen(true)}
-          className={`mt-4 brand-gradient text-white font-bold rounded-full hover:opacity-90 transition-opacity ${
+          className={`mt-4 brand-gradient text-foreground font-bold rounded-full hover:opacity-90 transition-opacity ${
             isCompact
               ? "w-[50px] h-[50px] flex items-center justify-center"
               : "w-[90%] py-3 text-[17px]"
@@ -231,11 +231,11 @@ export default function Sidebar() {
                 initial={{ opacity: 0, y: 10 }}
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0, y: 10 }}
-                className="absolute bottom-full left-0 mb-2 w-[300px] bg-black rounded-2xl shadow-[0_0_15px_rgba(255,255,255,0.2)] border border-x-border z-50 py-3 overflow-hidden"
+                className="absolute bottom-full left-0 mb-2 w-[300px] bg-background rounded-2xl shadow-lg border border-x-border z-50 py-3 overflow-hidden"
               >
                 <button
                   onClick={() => logout().catch(() => {})}
-                  className="w-full text-left px-4 py-3 hover:bg-[rgba(231,233,234,0.03)] text-[15px] flex items-center gap-3"
+                  className="w-full text-left px-4 py-3 hover:bg-x-hover text-[15px] flex items-center gap-3"
                   data-testid="button-logout"
                 >
                   <LogOut className="w-5 h-5" />

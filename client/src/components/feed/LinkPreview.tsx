@@ -15,7 +15,7 @@ export default function LinkPreview({ url, title, description, image, domain }: 
       target="_blank"
       rel="noopener noreferrer"
       onClick={(e) => e.stopPropagation()}
-      className="mt-3 block border border-x-border rounded-2xl overflow-hidden hover:bg-[rgba(255,255,255,0.03)] transition-colors"
+      className="mt-3 block border border-x-border rounded-2xl overflow-hidden hover:bg-x-hover transition-colors"
     >
       {image && (
         <img

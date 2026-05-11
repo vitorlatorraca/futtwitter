@@ -114,7 +114,7 @@ function MaisBombadoCard({ topic, teamId }: { topic: ForumTopicWithAuthor; teamI
 
       {/* Body */}
       <Link to={`/meu-time/comunidade/${topic.id}`}>
-        <div className="px-4 py-3 cursor-pointer hover:bg-white/5 transition-colors">
+        <div className="px-4 py-3 cursor-pointer hover:bg-foreground/5 transition-colors">
           <div className="flex items-center gap-2 mb-2.5">
             {topic.author.avatarUrl ? (
               <img src={topic.author.avatarUrl} alt="" className="h-6 w-6 rounded-full object-cover ring-1 ring-white/10" />

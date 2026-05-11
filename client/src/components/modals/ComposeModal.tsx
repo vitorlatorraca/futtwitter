@@ -36,7 +36,7 @@ export default function ComposeModal() {
             initial={{ opacity: 0, scale: 0.95, y: -20 }}
             animate={{ opacity: 1, scale: 1, y: 0 }}
             exit={{ opacity: 0, scale: 0.95, y: -20 }}
-            className="relative bg-black rounded-2xl w-full max-w-[600px] min-h-[260px] z-10 shadow-[0_0_15px_rgba(255,255,255,0.2)]"
+            className="relative bg-background rounded-2xl w-full max-w-[600px] min-h-[260px] z-10 shadow-lg"
           >
             <div className="flex items-center justify-between px-4 py-3">
               <button

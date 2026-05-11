@@ -38,9 +38,9 @@ function getResult(m: RecentFormMatch): FormResult {
 }
 
 function resultStyle(result: FormResult): string {
-  if (result === 'W') return 'bg-green-500/90 text-white';
+  if (result === 'W') return 'bg-green-500/90 text-foreground';
   if (result === 'D') return 'bg-muted text-muted-foreground';
-  return 'bg-red-500/90 text-white';
+  return 'bg-red-500/90 text-foreground';
 }
 
 function resultLabel(result: FormResult): string {

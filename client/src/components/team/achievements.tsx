@@ -47,7 +47,7 @@ export function Achievements({ achievements }: AchievementsProps) {
       case 'award':
         return <Award className="h-6 w-6 text-blue-500" />;
       case 'medal':
-        return <Medal className="h-6 w-6 text-gray-400" />;
+        return <Medal className="h-6 w-6 text-foreground-muted" />;
       default:
         return <Trophy className="h-6 w-6 text-yellow-500" />;
     }

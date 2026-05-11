@@ -161,7 +161,7 @@ export function NewsCard({ news, canInteract, onInteract }: NewsCardProps) {
 
   return (
     <div
-      className="border-b border-border hover:bg-white/[0.02] transition-colors cursor-pointer"
+      className="border-b border-border hover:bg-foreground/[0.02] transition-colors cursor-pointer"
       data-testid={`news-card-${news.id}`}
     >
       {/* Header */}
@@ -176,7 +176,7 @@ export function NewsCard({ news, canInteract, onInteract }: NewsCardProps) {
               </div>
             )}
             <div className="absolute -bottom-0.5 -right-0.5 w-4 h-4 rounded-full bg-primary border-2 border-black flex items-center justify-center">
-              <span className="text-[8px] text-black font-bold">✓</span>
+              <span className="text-[8px] text-primary-foreground font-bold">✓</span>
             </div>
           </div>
 

@@ -253,7 +253,7 @@ export function FormationView({
                     {player ? (
                       isCompact ? (
                         <div className="relative w-full h-full flex items-center justify-center gap-0.5 rounded-full overflow-hidden">
-                          <span className={`font-bold text-white leading-none ${compactMode ? 'text-xs' : 'text-lg sm:text-xl'}`}>
+                          <span className={`font-bold text-foreground leading-none ${compactMode ? 'text-xs' : 'text-lg sm:text-xl'}`}>
                             {player.shirtNumber ?? '—'}
                           </span>
                           {escudo && !compactMode && (
@@ -319,7 +319,7 @@ export function FormationView({
                                 (e.target as HTMLImageElement).src = '/assets/players/placeholder.png';
                               }}
                             />
-                            <span className="text-[10px] font-bold truncate w-full text-center leading-tight text-white">
+                            <span className="text-[10px] font-bold truncate w-full text-center leading-tight text-foreground">
                               {player.shirtNumber ?? '—'}
                             </span>
                           </div>

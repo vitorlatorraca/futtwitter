@@ -109,7 +109,7 @@ export default function Feed() {
           <p className="text-[15px] text-red-400">Erro ao carregar notícias. Tente novamente.</p>
           <button
             onClick={() => query.refetch()}
-            className="mt-4 px-4 py-2 bg-x-accent text-white rounded-full font-medium hover:opacity-90"
+            className="mt-4 px-4 py-2 bg-x-accent text-foreground rounded-full font-medium hover:opacity-90"
           >
             Tentar novamente
           </button>
@@ -156,13 +156,13 @@ export default function Feed() {
 
   return (
     <div>
-      <div className="sticky top-14 z-20 bg-black/80 backdrop-blur-md border-b border-x-border">
+      <div className="sticky top-14 z-20 bg-background/80 backdrop-blur-md border-b border-x-border">
         <div className="flex">
           {(["posts", "torcida", "influencers"] as const).map((tab) => (
             <button
               key={tab}
               onClick={() => setActiveTab(tab)}
-              className="flex-1 py-4 text-center hover:bg-[rgba(231,233,234,0.03)] transition-colors relative text-[15px] font-medium"
+              className="flex-1 py-4 text-center hover:bg-x-hover transition-colors relative text-[15px] font-medium"
             >
               <span className={activeTab === tab ? "font-bold" : "text-x-text-secondary"}>
                 {tab === "posts" ? "Posts" : tab === "torcida" ? "Torcida" : "Influencers"}
@@ -176,13 +176,13 @@ export default function Feed() {
       </div>
 
       {activeTab === "influencers" && (
-        <div className="flex items-center gap-2 px-4 py-2 border-b border-x-border bg-black/60">
+        <div className="flex items-center gap-2 px-4 py-2 border-b border-x-border bg-background/60">
           <span className="text-xs text-x-text-secondary font-medium mr-1">Mostrar:</span>
           <button
             onClick={() => setInfluencerFilter("all")}
             className={`px-4 py-1.5 rounded-full text-xs font-semibold transition-colors border ${
               influencerFilter === "all"
-                ? "bg-x-accent text-black border-x-accent"
+                ? "bg-x-accent text-primary-foreground border-x-accent"
                 : "bg-transparent text-x-text-secondary border-x-border hover:border-x-text-secondary"
             }`}
           >
@@ -192,7 +192,7 @@ export default function Feed() {
             onClick={() => setInfluencerFilter("mine")}
             className={`px-4 py-1.5 rounded-full text-xs font-semibold transition-colors border ${
               influencerFilter === "mine"
-                ? "bg-x-accent text-black border-x-accent"
+                ? "bg-x-accent text-primary-foreground border-x-accent"
                 : "bg-transparent text-x-text-secondary border-x-border hover:border-x-text-secondary"
             }`}
           >

@@ -32,7 +32,7 @@ function UserAvatar({ user }: { user: SearchUser }) {
   }
   return (
     <div className={`w-full h-full flex items-center justify-center ${getAvatarColor(user.name)}`}>
-      <span className="text-white text-sm font-bold">
+      <span className="text-foreground text-sm font-bold">
         {user.name.charAt(0).toUpperCase()}
       </span>
     </div>
@@ -132,7 +132,7 @@ export function SearchBar({
       <div
         className={`flex items-center gap-3 rounded-full px-4 py-2.5 transition-all duration-150 ${
           focused
-            ? "bg-black border border-x-accent"
+            ? "bg-background border border-x-accent"
             : "bg-x-search-bg border border-transparent hover:border-[#555]"
         }`}
       >
@@ -161,7 +161,7 @@ export function SearchBar({
             aria-label="Limpar busca"
             className="w-5 h-5 rounded-full bg-x-accent hover:bg-x-accent-hover transition-colors flex items-center justify-center flex-shrink-0"
           >
-            <X className="w-3 h-3 text-white" />
+            <X className="w-3 h-3 text-foreground" />
           </button>
         )}
       </div>
@@ -186,8 +186,8 @@ export function SearchBar({
               onClick={() => handleUserClick(user)}
               className={`w-full flex items-center gap-3 px-4 py-3 text-left transition-colors ${
                 idx === selectedIndex
-                  ? "bg-white/[0.06]"
-                  : "hover:bg-white/[0.04]"
+                  ? "bg-foreground/[0.06]"
+                  : "hover:bg-foreground/[0.04]"
               }`}
             >
               <div className="w-10 h-10 rounded-full flex-shrink-0 overflow-hidden ring-1 ring-x-border">
@@ -224,7 +224,7 @@ export function SearchBar({
           {!loading && query.trim().length > 0 && (
             <button
               onClick={() => handleSubmit(query)}
-              className={`w-full flex items-center gap-3 px-4 py-3 hover:bg-white/[0.04] transition-colors ${
+              className={`w-full flex items-center gap-3 px-4 py-3 hover:bg-foreground/[0.04] transition-colors ${
                 suggestions.length > 0 ? "border-t border-x-border" : ""
               }`}
             >

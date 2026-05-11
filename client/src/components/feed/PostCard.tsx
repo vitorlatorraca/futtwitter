@@ -84,7 +84,7 @@ const PostCard = React.memo(function PostCard({ post, isQuoted = false, navigate
     return (
       <div
         onClick={handleProfileClick}
-        className="w-10 h-10 rounded-full flex-shrink-0 cursor-pointer flex items-center justify-center text-white font-bold text-sm"
+        className="w-10 h-10 rounded-full flex-shrink-0 cursor-pointer flex items-center justify-center text-foreground font-bold text-sm"
         style={{ backgroundColor: hashToColor(post.author.id || "0") }}
       >
         {getInitials(displayName)}
@@ -98,7 +98,7 @@ const PostCard = React.memo(function PostCard({ post, isQuoted = false, navigate
     }
     return (
       <div
-        className="w-5 h-5 rounded-full flex items-center justify-center text-white font-bold text-[10px]"
+        className="w-5 h-5 rounded-full flex items-center justify-center text-foreground font-bold text-[10px]"
         style={{ backgroundColor: hashToColor(post.author.id || "0") }}
       >
         {getInitials(displayName)}
@@ -144,7 +144,7 @@ const PostCard = React.memo(function PostCard({ post, isQuoted = false, navigate
   if (isQuoted) {
     return (
       <div
-        className="mt-3 border border-x-border rounded-2xl p-3 hover:bg-[rgba(255,255,255,0.03)] transition-colors cursor-pointer"
+        className="mt-3 border border-x-border rounded-2xl p-3 hover:bg-x-hover transition-colors cursor-pointer"
         onClick={(e) => { e.stopPropagation(); navigate(`/post/${post.id}`); }}
       >
         <div className="flex items-center gap-1.5">
@@ -167,7 +167,7 @@ const PostCard = React.memo(function PostCard({ post, isQuoted = false, navigate
 
   return (
     <article
-      className="px-4 py-3 border-b border-x-border hover:bg-[rgba(255,255,255,0.03)] transition-colors cursor-pointer"
+      className="px-4 py-3 border-b border-x-border hover:bg-x-hover transition-colors cursor-pointer"
       onClick={handleCardClick}
     >
       {post.isAd && (
@@ -217,7 +217,7 @@ const PostCard = React.memo(function PostCard({ post, isQuoted = false, navigate
                       initial={{ opacity: 0, scale: 0.95 }}
                       animate={{ opacity: 1, scale: 1 }}
                       exit={{ opacity: 0, scale: 0.95 }}
-                      className="absolute right-0 top-0 bg-black border border-x-border rounded-xl shadow-[0_0_15px_rgba(255,255,255,0.2)] z-50 overflow-hidden w-[260px]"
+                      className="absolute right-0 top-0 bg-background border border-x-border rounded-xl shadow-lg z-50 overflow-hidden w-[260px]"
                     >
                       {[
                         { icon: EyeOff, text: "Não tenho interesse neste post" },
@@ -230,7 +230,7 @@ const PostCard = React.memo(function PostCard({ post, isQuoted = false, navigate
                         <button
                           key={text}
                           onClick={(e) => { e.stopPropagation(); setMenuOpen(false); }}
-                          className="w-full px-4 py-3 flex items-center gap-3 text-[15px] hover:bg-[rgba(231,233,234,0.03)] transition-colors"
+                          className="w-full px-4 py-3 flex items-center gap-3 text-[15px] hover:bg-x-hover transition-colors"
                         >
                           <Icon className="w-5 h-5 text-x-text-secondary" />
                           {text}

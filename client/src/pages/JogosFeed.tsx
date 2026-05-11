@@ -65,7 +65,7 @@ export default function JogosFeed() {
             <button
               key={tab}
               onClick={() => setActiveTimeTab(tab)}
-              className="flex-1 py-3 text-center hover:bg-[rgba(231,233,234,0.03)] transition-colors relative text-[15px] font-medium"
+              className="flex-1 py-3 text-center hover:bg-x-hover transition-colors relative text-[15px] font-medium"
             >
               <span className={activeTimeTab === tab ? "font-bold" : "text-x-text-secondary"}>
                 {tab}
@@ -87,7 +87,7 @@ export default function JogosFeed() {
               onClick={() => setActiveComp(comp)}
               className={`px-3 py-1.5 rounded-full text-[13px] font-bold whitespace-nowrap transition-colors ${
                 activeComp === comp
-                  ? "bg-x-accent text-white"
+                  ? "bg-x-accent text-foreground"
                   : "bg-x-surface text-x-text-secondary hover:bg-x-search-bg"
               }`}
             >
@@ -132,7 +132,7 @@ function MatchCard({ match }: { match: MatchData }) {
   const status = statusConfig[match.status];
 
   return (
-    <div className="border border-x-border rounded-2xl p-4 mb-3 hover:bg-[rgba(231,233,234,0.03)] transition-colors cursor-pointer">
+    <div className="border border-x-border rounded-2xl p-4 mb-3 hover:bg-x-hover transition-colors cursor-pointer">
       {/* Status */}
       <div className="flex items-center justify-between mb-3">
         <div className="flex items-center gap-2">

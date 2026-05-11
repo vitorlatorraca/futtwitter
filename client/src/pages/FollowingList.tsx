@@ -17,7 +17,7 @@ function UserCard({
   isLoading: boolean;
 }) {
   return (
-    <div className="flex items-start gap-3 px-4 py-3 hover:bg-[rgba(231,233,234,0.03)] border-b border-x-border transition-colors">
+    <div className="flex items-start gap-3 px-4 py-3 hover:bg-x-hover border-b border-x-border transition-colors">
       <div
         className="w-10 h-10 rounded-full bg-x-border flex-shrink-0 overflow-hidden cursor-pointer mt-0.5"
         onClick={onNavigate}
@@ -40,8 +40,8 @@ function UserCard({
             disabled={isLoading}
             className={`flex-shrink-0 px-4 py-1.5 rounded-full text-[13px] font-bold transition-colors disabled:opacity-60 ${
               item.isFollowing
-                ? "border border-x-border text-white hover:border-red-500 hover:text-red-500"
-                : "bg-white text-black hover:bg-[rgba(231,233,234,0.9)]"
+                ? "border border-x-border text-foreground hover:border-red-500 hover:text-red-500"
+                : "bg-foreground text-background hover:bg-foreground/90"
             }`}
           >
             {isLoading ? "..." : item.isFollowing ? "Seguindo" : "Seguir"}
@@ -110,13 +110,13 @@ export default function FollowingList() {
       <div className="flex border-b border-x-border">
         <button
           onClick={() => handle && navigate(`/profile/${handle}/followers`)}
-          className="flex-1 py-4 text-[15px] text-x-text-secondary hover:bg-[rgba(231,233,234,0.03)]"
+          className="flex-1 py-4 text-[15px] text-x-text-secondary hover:bg-x-hover"
         >
           Seguidores
         </button>
         <button
           onClick={() => handle && navigate(`/profile/${handle}/following`)}
-          className="flex-1 py-4 text-[15px] font-semibold border-b-2 border-x-accent text-white"
+          className="flex-1 py-4 text-[15px] font-semibold border-b-2 border-x-accent text-foreground"
         >
           Seguindo
         </button>

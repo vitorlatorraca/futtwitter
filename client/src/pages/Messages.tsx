@@ -50,8 +50,8 @@ function ConversationList({
           <button
             key={conv.id}
             onClick={() => onSelect(conv.id)}
-            className={`w-full px-4 py-3 flex items-center gap-3 hover:bg-[rgba(231,233,234,0.03)] transition-colors text-left ${
-              selectedId === conv.id ? "bg-[rgba(231,233,234,0.03)]" : ""
+            className={`w-full px-4 py-3 flex items-center gap-3 hover:bg-x-hover transition-colors text-left ${
+              selectedId === conv.id ? "bg-x-hover" : ""
             }`}
           >
             <img
@@ -102,7 +102,7 @@ function ChatView({ conversation, onBack }: { conversation: Conversation | null;
           <p className="text-x-text-secondary text-[15px]">
             Escolha uma conversa existente ou inicie uma nova.
           </p>
-          <button className="mt-6 brand-gradient hover:opacity-90 text-white font-bold text-[15px] rounded-full px-8 py-3 transition-opacity">
+          <button className="mt-6 brand-gradient hover:opacity-90 text-foreground font-bold text-[15px] rounded-full px-8 py-3 transition-opacity">
             Nova mensagem
           </button>
         </div>
@@ -162,7 +162,7 @@ function ChatView({ conversation, onBack }: { conversation: Conversation | null;
                 <div
                   className={`max-w-[75%] px-4 py-3 rounded-2xl text-[15px] leading-5 ${
                     isSent
-                      ? "bg-x-accent text-white rounded-br-sm"
+                      ? "bg-x-accent text-foreground rounded-br-sm"
                       : "bg-x-surface text-x-text-primary rounded-bl-sm"
                   }`}
                 >

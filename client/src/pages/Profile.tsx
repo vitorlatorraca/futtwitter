@@ -121,8 +121,8 @@ export default function Profile() {
                 disabled={toggleFollowMutation.isPending}
                 className={`rounded-full font-bold text-[15px] px-5 py-2 transition-colors ${
                   isFollowing
-                    ? "bg-transparent border border-x-border text-white hover:border-red-500 hover:text-red-500"
-                    : "brand-gradient text-white hover:opacity-90"
+                    ? "bg-transparent border border-x-border text-foreground hover:border-red-500 hover:text-red-500"
+                    : "brand-gradient text-foreground hover:opacity-90"
                 }`}
               >
                 {toggleFollowMutation.isPending ? "..." : isFollowing ? "Seguindo" : "Seguir"}
@@ -202,7 +202,7 @@ export default function Profile() {
           <button
             key={tab}
             onClick={() => setActiveTab(tab)}
-            className="flex-1 py-4 text-center hover:bg-[rgba(231,233,234,0.03)] transition-colors relative text-[15px]"
+            className="flex-1 py-4 text-center hover:bg-x-hover transition-colors relative text-[15px]"
           >
             <span className={activeTab === tab ? "font-bold" : "text-x-text-secondary"}>
               {tab}

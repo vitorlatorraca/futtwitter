@@ -49,7 +49,7 @@ export function StadiumCard({
             className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/30 to-transparent"
             aria-hidden
           />
-          <div className="absolute bottom-0 left-0 right-0 p-4 text-white">
+          <div className="absolute bottom-0 left-0 right-0 p-4 text-foreground">
             <h2 className="text-xl sm:text-2xl font-bold">{stadiumName}</h2>
           </div>
         </div>

@@ -167,7 +167,7 @@ export function TacticalBoard({
                 style={{ left: `${pos.x}%`, top: `${pos.y}%` }}
               >
                 <div className="flex flex-col items-center justify-center w-11 h-11 sm:w-12 sm:h-12 rounded-full bg-black/80 border-2 border-white/40 shadow-md">
-                  <span className="text-lg font-bold text-white leading-none">
+                  <span className="text-lg font-bold text-foreground leading-none">
                     {player?.shirtNumber ?? '–'}
                   </span>
                 </div>

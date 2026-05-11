@@ -54,7 +54,7 @@ export default function Settings() {
           <button
             key={item.path}
             onClick={() => navigate(item.path)}
-            className="w-full px-4 py-4 flex items-center gap-4 hover:bg-[rgba(231,233,234,0.03)] transition-colors text-left border-b border-x-border"
+            className="w-full px-4 py-4 flex items-center gap-4 hover:bg-x-hover transition-colors text-left border-b border-x-border"
           >
             <item.icon className="w-5 h-5 text-x-text-secondary flex-shrink-0" />
             <div className="flex-1">

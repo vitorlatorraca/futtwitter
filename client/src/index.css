@@ -17,32 +17,32 @@
 
   /* Legacy x-* tokens remapped onto the new palette so existing
      bg-x-* / text-x-* / border-x-* utilities flip without edits. */
-  --x-bg:             #ede4d3; /* cream paper */
-  --x-surface:        #f5ecd9; /* highlighted card */
-  --x-border:         #c8b89e; /* faded paper line */
+  --x-bg:             #ece2cb; /* cream paper — warmer */
+  --x-surface:        #f9f1de; /* highlighted card */
+  --x-border:         #b6a380; /* darker faded paper line */
   --x-text-primary:   #1c1815; /* smoke ink */
-  --x-text-secondary: #4a4138; /* sepia mid */
+  --x-text-secondary: #443a30; /* sepia mid — readable */
   --x-accent:         #0a4d3a; /* forest green */
   --x-accent-hover:   #093e2f;
   --x-hover:          rgba(10, 77, 58, 0.06);
   --x-like:           #c43d2e; /* wine */
   --x-repost:         #0a4d3a; /* forest */
-  --x-search-bg:      #f0e8d4;
+  --x-search-bg:      #f4ecda;
   --brand-gradient:   linear-gradient(135deg, #0a4d3a 0%, #1a5a45 100%);
 
   /* ── Shadcn/UI tokens (HSL components) ──────────────────────── */
-  --background:             38 38% 88%;   /* #ede4d3 */
-  --foreground:             30 13% 9%;    /* #1c1815 */
-  --foreground-secondary:   28 14% 25%;   /* sepia mid */
-  --foreground-muted:       28 9% 45%;    /* warm gray */
+  --background:             40 32% 89%;   /* #ece2cb warmer cream — slightly more saturated */
+  --foreground:             30 13% 9%;    /* #1c1815 smoke ink — high-contrast body text */
+  --foreground-secondary:   28 16% 22%;   /* sepia mid — readable secondary text */
+  --foreground-muted:       28 14% 34%;   /* warm gray — bumped up for legibility on cream */
 
-  --surface-elevated:       40 47% 91%;   /* #f5ecd9 */
-  --surface-card:           40 38% 89%;   /* #f0e8d4 */
+  --surface-elevated:       42 50% 94%;   /* #f9f1de — distinctly lighter card */
+  --surface-card:           42 45% 92%;   /* #f4ecda — between bg and elevated */
 
-  --card-border:            35 27% 70%;   /* #c8b89e faded paper */
-  --border:                 35 27% 70%;
-  --border-subtle:          35 22% 80%;
-  --border-strong:          30 20% 50%;
+  --card-border:            35 24% 62%;   /* #b6a380 — darker border so cards pop */
+  --border:                 35 24% 62%;
+  --border-subtle:          35 24% 74%;
+  --border-strong:          30 22% 42%;
 
   --primary:                160 77% 17%;  /* #0a4d3a forest */
   --primary-foreground:     38 38% 92%;
