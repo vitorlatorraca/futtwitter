@@ -198,7 +198,7 @@ export default function SignupPage() {
   };
 
   return (
-    <div className="min-h-screen bg-black flex flex-col items-center justify-center p-4 sm:p-6">
+    <div className="min-h-screen bg-background flex flex-col items-center justify-center p-4 sm:p-6">
       <div className="w-full max-w-[480px] mx-auto">
         {/* Progress indicator */}
         <div className="flex items-center gap-2 mb-8">
@@ -227,8 +227,8 @@ export default function SignupPage() {
                 className="space-y-5"
               >
                 <div>
-                  <h1 className="text-2xl font-bold text-foreground">Criar conta</h1>
-                  <p className="text-sm text-foreground-secondary mt-1">
+                  <h1 className="font-serif-display text-3xl text-foreground">Criar conta</h1>
+                  <p className="text-sm text-foreground-secondary mt-1 font-serif-body">
                     Etapa 1 de 2 — preencha seus dados pessoais. Na próxima etapa
                     você escolhe seu @ (identificador único) e depois seu time do coração.
                   </p>
@@ -380,11 +380,11 @@ export default function SignupPage() {
                 className="space-y-5"
               >
                 <div>
-                  <h1 className="text-2xl font-bold text-foreground">Escolha seu @</h1>
-                  <p className="text-sm text-foreground-secondary mt-1">
+                  <h1 className="font-serif-display text-3xl text-foreground">Escolha seu @</h1>
+                  <p className="text-sm text-foreground-secondary mt-1 font-serif-body">
                     Etapa 2 de 2 — esse é seu identificador único na plataforma. É como
                     outros torcedores vão te marcar, te seguir e ver seu perfil
-                    (ex: <span className="text-primary font-mono">@joao_corinthiano</span>).
+                    (ex: <span className="text-primary font-handle">@joao_corinthiano</span>).
                     <strong className="text-foreground"> Escolha com calma — pode mudar depois nas configurações,
                     mas é seu carimbo público.</strong>
                   </p>

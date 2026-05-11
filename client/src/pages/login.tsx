@@ -47,51 +47,51 @@ export default function LoginPage() {
   );
 
   return (
-    <div className="min-h-screen bg-black flex flex-col lg:flex-row">
-      {/* Brand panel — desktop only */}
-      <div className="hidden lg:flex lg:w-1/2 flex-col justify-between p-12 xl:p-16 bg-gradient-to-br from-[#0a1628] via-[#0d1b2a] to-black">
+    <div className="min-h-screen bg-background flex flex-col lg:flex-row">
+      {/* Brand panel — desktop only. Forest-green wash like a vintage program cover. */}
+      <div className="hidden lg:flex lg:w-1/2 flex-col justify-between p-12 xl:p-16 paper-texture relative bg-primary text-primary-foreground">
         <div className="space-y-12">
           <div className="flex items-center gap-3">
-            <div className="h-12 w-12 rounded-full bg-primary/20 flex items-center justify-center border border-primary/30">
+            <div className="h-12 w-12 rounded-full bg-primary-foreground/15 flex items-center justify-center border border-primary-foreground/30">
               <span className="text-2xl">⚽</span>
             </div>
             <div>
-              <h1 className="font-extrabold text-2xl tracking-tight text-foreground">FUTTWITTER</h1>
-              <p className="text-sm text-foreground-muted">Futebol com inteligência.</p>
+              <h1 className="font-brand text-3xl tracking-wider text-primary-foreground">FUTTWITTER</h1>
+              <p className="text-sm text-primary-foreground/70 italic font-serif-body">Futebol com inteligência.</p>
             </div>
           </div>
 
           <div className="space-y-6">
             <ul className="space-y-4">
               <li className="flex items-start gap-3">
-                <div className="mt-0.5 rounded-full p-1.5 bg-primary/20">
-                  <Rss className="h-4 w-4 text-primary" />
+                <div className="mt-0.5 rounded-full p-1.5 bg-primary-foreground/15">
+                  <Rss className="h-4 w-4 text-primary-foreground" />
                 </div>
-                <span className="text-foreground-secondary">Feed editorial em tempo real</span>
+                <span className="text-primary-foreground/90 font-serif-body">Feed editorial em tempo real</span>
               </li>
               <li className="flex items-start gap-3">
-                <div className="mt-0.5 rounded-full p-1.5 bg-primary/20">
-                  <Users className="h-4 w-4 text-primary" />
+                <div className="mt-0.5 rounded-full p-1.5 bg-primary-foreground/15">
+                  <Users className="h-4 w-4 text-primary-foreground" />
                 </div>
-                <span className="text-foreground-secondary">Torcida conectada</span>
+                <span className="text-primary-foreground/90 font-serif-body">Torcida conectada</span>
               </li>
               <li className="flex items-start gap-3">
-                <div className="mt-0.5 rounded-full p-1.5 bg-primary/20">
-                  <Shield className="h-4 w-4 text-primary" />
+                <div className="mt-0.5 rounded-full p-1.5 bg-primary-foreground/15">
+                  <Shield className="h-4 w-4 text-primary-foreground" />
                 </div>
-                <span className="text-foreground-secondary">Seu time, seu espaço</span>
+                <span className="text-primary-foreground/90 font-serif-body">Seu time, seu espaço</span>
               </li>
             </ul>
           </div>
         </div>
 
-        <footer className="text-xs text-foreground-muted">
-          © 2025 FUTTWITTER · Todos os direitos reservados
+        <footer className="text-xs text-primary-foreground/60 font-handle">
+          © 2026 FUTTWITTER · Todos os direitos reservados
         </footer>
       </div>
 
       {/* Form panel */}
-      <div className="flex-1 flex items-center justify-center p-6 sm:p-10 bg-black">
+      <div className="flex-1 flex items-center justify-center p-6 sm:p-10 bg-background">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
@@ -101,13 +101,14 @@ export default function LoginPage() {
           {/* Mobile logo */}
           <div className="flex items-center gap-2 mb-8 lg:hidden">
             <span className="text-2xl">⚽</span>
-            <span className="font-extrabold text-xl tracking-tight text-foreground">FUTTWITTER</span>
+            <span className="font-brand text-2xl tracking-wider text-foreground">FUTTWITTER</span>
           </div>
 
-          <h2 className="text-2xl sm:text-3xl font-bold text-foreground mb-1">
+          <div className="newsprint-divider mb-6" />
+          <h2 className="font-serif-display text-3xl sm:text-4xl text-foreground mb-1">
             Bem-vindo de volta
           </h2>
-          <p className="text-foreground-secondary mb-8">Entre na sua conta</p>
+          <p className="text-foreground-secondary mb-8 italic font-serif-body">Entre na sua conta</p>
 
           <form onSubmit={handleSubmit} className="space-y-5">
             <div className="space-y-2">

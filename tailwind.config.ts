@@ -64,8 +64,14 @@ const config: Config = {
         fast: "150ms",
       },
       fontFamily: {
-        sans: ["Inter", "-apple-system", "BlinkMacSystemFont", '"Segoe UI"', "Roboto", "Helvetica", "Arial", "sans-serif"],
-        brand: ['"Bebas Neue"', "cursive"],
+        // Default body face — serif, sports-column readable
+        sans: ['Lora', 'Georgia', '"Times New Roman"', 'serif'],
+        // Headlines / masthead — newspaper-style
+        serif: ['"Playfair Display"', 'Georgia', 'serif'],
+        // Display / brand wordmark — condensed grotesque for SCREAMING headlines
+        brand: ['Oswald', '"Arial Narrow"', 'sans-serif'],
+        // @handles, code, and tabular numeric data
+        mono: ['"IBM Plex Mono"', '"Courier New"', 'monospace'],
       },
       maxWidth: {
         "feed": "600px",

@@ -82,11 +82,11 @@ export default function TeamSelectionPage() {
   const team = TEAMS_DATA.find((t) => t.id === selectedTeam);
 
   return (
-    <div className="min-h-screen bg-black flex flex-col">
+    <div className="min-h-screen bg-background flex flex-col">
       <header className="flex items-center justify-between p-4 sm:p-6 border-b border-border">
         <div className="flex items-center gap-2">
           <span className="text-xl">⚽</span>
-          <span className="font-extrabold text-lg tracking-tight text-foreground">FUTTWITTER</span>
+          <span className="font-brand text-2xl tracking-wider text-foreground">FUTTWITTER</span>
         </div>
         <div className="flex items-center gap-2">
           <span className="text-sm font-medium text-foreground-secondary">Passo final</span>
@@ -95,8 +95,8 @@ export default function TeamSelectionPage() {
       </header>
 
       <main className="flex-1 p-4 sm:p-6 max-w-6xl mx-auto w-full">
-        <h1 className="text-2xl sm:text-3xl font-bold text-foreground mb-2">
-          Escolha seu time ❤️
+        <h1 className="font-serif-display text-3xl sm:text-4xl text-foreground mb-2">
+          Escolha seu time
         </h1>
         <div className="mb-8 space-y-2 max-w-2xl">
           <p className="text-foreground-secondary">
@@ -139,7 +139,7 @@ export default function TeamSelectionPage() {
                     className="absolute bottom-0 right-0 w-6 h-6 rounded-full flex items-center justify-center"
                     style={{ backgroundColor: t.primaryColor }}
                   >
-                    <Check className="h-3 w-3 text-white" />
+                    <Check className="h-3 w-3 text-primary-foreground" />
                   </div>
                 )}
               </div>

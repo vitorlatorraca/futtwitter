@@ -1,63 +1,74 @@
-@import url('https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Inter:wght@400;500;600;700&display=swap');
+/* ────────────────────────────────────────────────────────────────
+   FUTTWITTER — Polaroid esportiva + newsprint vintage
+   Palette: cream paper / smoke ink / forest green / wine red
+   Fonts: Playfair Display (headings) + Lora (body) + Oswald (display) + IBM Plex Mono (handles/code)
+   ──────────────────────────────────────────────────────────────── */
+
+@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@500;600;700;800;900&family=Lora:wght@400;500;600;700&family=Oswald:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap');
 
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
 :root {
-  /* ── FuteApp (x-*) ───────────────────────────────── */
-  --x-bg: #080C14;
-  --x-surface: #0F1520;
-  --x-border: #1C2333;
-  --x-text-primary: #E8ECF0;
-  --x-text-secondary: #6B7A8D;
-  --x-accent: #00E676;
-  --x-accent-hover: #00C853;
-  --x-hover: rgba(0, 230, 118, 0.04);
-  --x-like: #f91880;
-  --x-repost: #00ba7c;
-  --x-search-bg: #111827;
-  --brand-gradient: linear-gradient(135deg, #00E676, #00897B);
+  /* ── Polaroid palette (HSL) ─────────────────────────────────────
+     #ede4d3 cream / #1c1815 ink / #0a4d3a forest / #c43d2e wine
+     Derived secondaries: sepia mid, warm gray, faded paper line. */
 
-  /* ── Shadcn/UI tokens (dark theme) ──────────────── */
-  --background:             222 30% 5%;
-  --foreground:             210 20% 92%;
-  --foreground-secondary:   215 16% 55%;
-  --foreground-muted:       215 12% 40%;
+  /* Legacy x-* tokens remapped onto the new palette so existing
+     bg-x-* / text-x-* / border-x-* utilities flip without edits. */
+  --x-bg:             #ede4d3; /* cream paper */
+  --x-surface:        #f5ecd9; /* highlighted card */
+  --x-border:         #c8b89e; /* faded paper line */
+  --x-text-primary:   #1c1815; /* smoke ink */
+  --x-text-secondary: #4a4138; /* sepia mid */
+  --x-accent:         #0a4d3a; /* forest green */
+  --x-accent-hover:   #093e2f;
+  --x-hover:          rgba(10, 77, 58, 0.06);
+  --x-like:           #c43d2e; /* wine */
+  --x-repost:         #0a4d3a; /* forest */
+  --x-search-bg:      #f0e8d4;
+  --brand-gradient:   linear-gradient(135deg, #0a4d3a 0%, #1a5a45 100%);
 
-  --surface-elevated:       222 24% 10%;
-  --surface-card:           222 24% 8%;
+  /* ── Shadcn/UI tokens (HSL components) ──────────────────────── */
+  --background:             38 38% 88%;   /* #ede4d3 */
+  --foreground:             30 13% 9%;    /* #1c1815 */
+  --foreground-secondary:   28 14% 25%;   /* sepia mid */
+  --foreground-muted:       28 9% 45%;    /* warm gray */
 
-  --card-border:            220 20% 13%;
-  --border:                 220 20% 11%;
-  --border-subtle:          220 20% 8%;
-  --border-strong:          220 20% 18%;
+  --surface-elevated:       40 47% 91%;   /* #f5ecd9 */
+  --surface-card:           40 38% 89%;   /* #f0e8d4 */
 
-  --primary:                150 100% 45%; /* #00E676 neon green */
-  --primary-foreground:     0 0% 5%;
+  --card-border:            35 27% 70%;   /* #c8b89e faded paper */
+  --border:                 35 27% 70%;
+  --border-subtle:          35 22% 80%;
+  --border-strong:          30 20% 50%;
 
-  --secondary:              222 20% 14%;
-  --secondary-foreground:   0 0% 90%;
+  --primary:                160 77% 17%;  /* #0a4d3a forest */
+  --primary-foreground:     38 38% 92%;
 
-  --muted:                  222 20% 12%;
-  --muted-foreground:       215 14% 50%;
+  --secondary:              35 22% 80%;
+  --secondary-foreground:   30 13% 12%;
 
-  --popover:                222 28% 7%;
-  --popover-foreground:     210 20% 92%;
+  --muted:                  35 30% 84%;
+  --muted-foreground:       28 9% 45%;
 
-  --accent:                 222 20% 13%;
-  --accent-foreground:      210 20% 92%;
+  --popover:                40 47% 91%;
+  --popover-foreground:     30 13% 9%;
 
-  --input:                  220 20% 13%;
-  --ring:                   150 100% 45%;
+  --accent:                 35 27% 80%;
+  --accent-foreground:      30 13% 9%;
 
-  --destructive:            0 72% 51%;
-  --destructive-foreground: 0 0% 100%;
+  --input:                  35 27% 70%;
+  --ring:                   160 77% 17%;
 
-  /* ── Border radius tokens ────────────────────────── */
-  --radius-medium:          0.625rem;
-  --radius-soft:            1rem;
-  --radius-sharp:           0.375rem;
+  --destructive:            6 62% 47%;    /* #c43d2e wine */
+  --destructive-foreground: 38 38% 92%;
+
+  /* ── Border radius ─ vintage prefers tighter corners ─────────── */
+  --radius-medium:          0.375rem;
+  --radius-soft:            0.5rem;
+  --radius-sharp:           0.125rem;
 }
 
 @layer base {
@@ -68,45 +79,47 @@
   body {
     background-color: var(--x-bg);
     color: var(--x-text-primary);
-    font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    /* Lora is the serif body face — reads like a sports column */
+    font-family: 'Lora', Georgia, 'Times New Roman', serif;
+    /* Subtle paper grain via SVG noise; barely visible but kills the flatness. */
+    background-image:
+      radial-gradient(circle at 25% 30%, rgba(10, 77, 58, 0.025) 0, transparent 50%),
+      radial-gradient(circle at 75% 70%, rgba(196, 61, 46, 0.02) 0, transparent 50%);
     margin: 0;
     padding: 0;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
   }
 
+  /* All headings get Playfair Display — newspaper masthead energy */
+  h1, h2, h3, h4, h5, h6 {
+    font-family: 'Playfair Display', 'Times New Roman', serif;
+    font-weight: 700;
+    letter-spacing: -0.01em;
+  }
+
   html {
     scrollbar-width: thin;
-    scrollbar-color: #1C2333 transparent;
+    scrollbar-color: var(--x-border) transparent;
   }
 
   ::-webkit-scrollbar {
-    width: 4px;
+    width: 6px;
   }
-
   ::-webkit-scrollbar-track {
     background: transparent;
   }
-
   ::-webkit-scrollbar-thumb {
-    background: #1C2333;
-    border-radius: 4px;
+    background: var(--x-border);
+    border-radius: 3px;
   }
 }
 
 @layer utilities {
-  .x-border-b {
-    border-bottom: 1px solid var(--x-border);
-  }
-  .x-border-t {
-    border-top: 1px solid var(--x-border);
-  }
-  .x-border-r {
-    border-right: 1px solid var(--x-border);
-  }
-  .x-border-l {
-    border-left: 1px solid var(--x-border);
-  }
+  .x-border-b { border-bottom: 1px solid var(--x-border); }
+  .x-border-t { border-top: 1px solid var(--x-border); }
+  .x-border-r { border-right: 1px solid var(--x-border); }
+  .x-border-l { border-left: 1px solid var(--x-border); }
 
   .x-hover {
     transition: background-color 0.2s ease;
@@ -125,10 +138,51 @@
 
   .brand-gradient {
     background: var(--brand-gradient);
+    color: #f5ecd9;
   }
 
+  /* Old utility, kept for compat. Now points at Oswald (newspaper headline). */
   .font-brand {
-    font-family: 'Bebas Neue', cursive;
+    font-family: 'Oswald', 'Arial Narrow', sans-serif;
+    font-weight: 600;
+    letter-spacing: 0.02em;
+    text-transform: uppercase;
+  }
+
+  /* New utilities for the vintage system */
+  .font-serif-display {
+    font-family: 'Playfair Display', 'Times New Roman', serif;
+  }
+  .font-serif-body {
+    font-family: 'Lora', Georgia, serif;
+  }
+  .font-newspaper {
+    font-family: 'Oswald', 'Arial Narrow', sans-serif;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+  }
+  .font-handle {
+    font-family: 'IBM Plex Mono', 'Courier New', monospace;
+  }
+
+  /* A subtle paper-grain background you can opt into on hero panels */
+  .paper-texture {
+    background-color: var(--x-surface);
+    background-image:
+      repeating-linear-gradient(
+        135deg,
+        rgba(28, 24, 21, 0.015) 0px,
+        rgba(28, 24, 21, 0.015) 1px,
+        transparent 1px,
+        transparent 3px
+      );
+  }
+
+  /* Newspaper-style hairline divider with double-line, used between sections */
+  .newsprint-divider {
+    border-top: 1px solid var(--x-border);
+    border-bottom: 1px solid var(--x-border);
+    height: 4px;
   }
 }
 
@@ -138,34 +192,22 @@
   50% { transform: scale(0.95); }
   100% { transform: scale(1); }
 }
-
-.heart-animation {
-  animation: heart-pop 0.35s ease-in-out;
-}
+.heart-animation { animation: heart-pop 0.35s ease-in-out; }
 
 @keyframes fadeIn {
   from { opacity: 0; transform: translateY(4px); }
   to { opacity: 1; transform: translateY(0); }
 }
-
-.fade-in {
-  animation: fadeIn 0.2s ease-out;
-}
+.fade-in { animation: fadeIn 0.2s ease-out; }
 
 @keyframes toast-slide {
   from { transform: translateY(100%); opacity: 0; }
   to { transform: translateY(0); opacity: 1; }
 }
-
-.toast-animation {
-  animation: toast-slide 0.3s ease-out;
-}
+.toast-animation { animation: toast-slide 0.3s ease-out; }
 
 @keyframes pulse-live {
   0%, 100% { opacity: 1; }
   50% { opacity: 0.4; }
 }
-
-.pulse-live {
-  animation: pulse-live 1.5s ease-in-out infinite;
-}
+.pulse-live { animation: pulse-live 1.5s ease-in-out infinite; }
