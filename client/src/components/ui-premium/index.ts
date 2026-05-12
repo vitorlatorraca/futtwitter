@@ -9,3 +9,5 @@ export type { CompactRowProps } from "./CompactRow";
 export { Crest } from "./Crest";
 export { EmptyState } from "./EmptyState";
 export { LoadingSkeleton } from "./LoadingSkeleton";
+export { TeamChip, getClubColors } from "./TeamChip";
+export type { TeamChipProps } from "./TeamChip";
