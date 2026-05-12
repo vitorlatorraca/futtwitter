@@ -1,106 +1,161 @@
-/* ────────────────────────────────────────────────────────────────
-   FUTTWITTER — Polaroid esportiva + newsprint vintage
-   Palette: cream paper / smoke ink / forest green / wine red
-   Fonts: Playfair Display (headings) + Lora (body) + Oswald (display) + IBM Plex Mono (handles/code)
+/* ──────────────────────────────────────────────────────────────────
+   TRIBUNA — design tokens
+   Source of truth: design_handoff_tribuna_rebrand/README.md (table 'Color palette')
    ──────────────────────────────────────────────────────────────── */
 
-@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@500;600;700;800;900&family=Lora:wght@400;500;600;700&family=Oswald:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400;12..96,500;12..96,600;12..96,700;12..96,800&family=Geist:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap');
 
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
 :root {
-  /* ── Polaroid palette (HSL) ─────────────────────────────────────
-     #ede4d3 cream / #1c1815 ink / #0a4d3a forest / #c43d2e wine
-     Derived secondaries: sepia mid, warm gray, faded paper line. */
+  /* ── Core palette (Tribuna) ────────────────────────────────────── */
+  --ink:           #0F1115;
+  --ink-2:         #1C1F25;
+  --ink-3:         #353941;
+  --slate:         #6A6F7A;
+  --slate-2:       #9CA0AB;
 
-  /* Legacy x-* tokens remapped onto the new palette so existing
-     bg-x-* / text-x-* / border-x-* utilities flip without edits. */
-  --x-bg:             #ece2cb; /* cream paper — warmer */
-  --x-surface:        #f9f1de; /* highlighted card */
-  --x-border:         #b6a380; /* darker faded paper line */
-  --x-text-primary:   #1c1815; /* smoke ink */
-  --x-text-secondary: #443a30; /* sepia mid — readable */
-  --x-accent:         #0a4d3a; /* forest green */
-  --x-accent-hover:   #093e2f;
-  --x-hover:          rgba(10, 77, 58, 0.06);
-  --x-like:           #c43d2e; /* wine */
-  --x-repost:         #0a4d3a; /* forest */
-  --x-search-bg:      #f4ecda;
-  --brand-gradient:   linear-gradient(135deg, #0a4d3a 0%, #1a5a45 100%);
+  --paper:         #F2ECDE;
+  --paper-2:       #ECE5D3;
+  --card:          #FBF7EC;
+  --line:          #E2D9C3;
+  --line-2:        #D4C8AB;
 
-  /* ── Shadcn/UI tokens (HSL components) ──────────────────────── */
-  --background:             40 32% 89%;   /* #ece2cb warmer cream — slightly more saturated */
-  --foreground:             30 13% 9%;    /* #1c1815 smoke ink — high-contrast body text */
-  --foreground-secondary:   28 16% 22%;   /* sepia mid — readable secondary text */
-  --foreground-muted:       28 14% 34%;   /* warm gray — bumped up for legibility on cream */
+  --floodlight:    #FF4B1F;
+  --floodlight-d:  #E03A10;
+  --chalk:         #F5C518;
 
-  --surface-elevated:       42 50% 94%;   /* #f9f1de — distinctly lighter card */
-  --surface-card:           42 45% 92%;   /* #f4ecda — between bg and elevated */
+  --success:       #1F8E5C;
+  --error:         #C4321A;
+  --warning:       #D89412;
+  --info:          #2E5BD4;
 
-  --card-border:            35 24% 62%;   /* #b6a380 — darker border so cards pop */
-  --border:                 35 24% 62%;
-  --border-subtle:          35 24% 74%;
-  --border-strong:          30 22% 42%;
+  /* ── Club colors (badge contour + crest only, never fill) ───── */
+  --club-cor:      #0F0F0F;
+  --club-pal:      #006437;
+  --club-fla-a:    #C4321A;
+  --club-fla-b:    #0F0F0F;
+  --club-sao-a:    #C4321A;
+  --club-sao-b:    #FFFFFF;
+  --club-sao-c:    #0F0F0F;
+  --club-san:      #FFFFFF;
+  --club-cru:      #2E5BD4;
+  --club-gre-a:    #0B377C;
+  --club-gre-b:    #0F0F0F;
 
-  --primary:                160 77% 17%;  /* #0a4d3a forest */
-  --primary-foreground:     38 38% 92%;
+  /* ── Radii ─────────────────────────────────────────────────── */
+  --r-1:           4px;   /* chips, badges, tags */
+  --r-2:           8px;   /* buttons, inputs */
+  --r-3:           12px;  /* cards, posts */
+  --r-4:           20px;  /* hero, modals */
+  --r-full:        999px; /* avatars, pill CTAs */
 
-  --secondary:              35 22% 80%;
-  --secondary-foreground:   30 13% 12%;
+  /* ── Spacing scale (4pt) ────────────────────────────────────── */
+  --s-1:           4px;
+  --s-2:           8px;
+  --s-3:           12px;
+  --s-4:           16px;
+  --s-5:           20px;
+  --s-6:           24px;
+  --s-7:           32px;
+  --s-8:           40px;
+  --s-9:           56px;
+  --s-10:          72px;
 
-  --muted:                  35 30% 84%;
-  --muted-foreground:       28 9% 45%;
+  /* ── Elevation (warm ink tint, never pure black) ────────────── */
+  --shadow-0:      0 1px 0 rgba(15, 17, 21, 0.04);
+  --shadow-1:      0 1px 2px rgba(15, 17, 21, 0.05), 0 0 0 1px rgba(15, 17, 21, 0.04);
+  --shadow-2:      0 8px 24px -12px rgba(15, 17, 21, 0.18), 0 0 0 1px rgba(15, 17, 21, 0.05);
+  --shadow-3:      0 24px 60px -28px rgba(15, 17, 21, 0.35), 0 0 0 1px rgba(15, 17, 21, 0.06);
 
-  --popover:                40 47% 91%;
-  --popover-foreground:     30 13% 9%;
+  /* ── Typography stack ──────────────────────────────────────── */
+  --font-display:  'Bricolage Grotesque', system-ui, sans-serif;
+  --font-body:     'Geist', system-ui, sans-serif;
+  --font-mono:     'JetBrains Mono', ui-monospace, monospace;
 
-  --accent:                 35 27% 80%;
-  --accent-foreground:      30 13% 9%;
+  /* ────────────────────────────────────────────────────────────
+     Compatibility layer — keep legacy variable names alive so the
+     ~60 components that still reference them pick up Tribuna values
+     without a big-bang rewrite. Will be removed as Steps 3–6 retire
+     the old utility names.
+     ──────────────────────────────────────────────────────────── */
 
-  --input:                  35 27% 70%;
-  --ring:                   160 77% 17%;
+  /* ── Legacy x-* tokens → Tribuna ───────────────────────────── */
+  --x-bg:             var(--paper);
+  --x-surface:        var(--card);
+  --x-border:         var(--line);
+  --x-text-primary:   var(--ink);
+  --x-text-secondary: var(--ink-3);
+  --x-accent:         var(--ink);            /* primary CTA = ink, not orange (orange = floodlight = action) */
+  --x-accent-hover:   var(--ink-2);
+  --x-hover:          rgba(15, 17, 21, 0.04);
+  --x-like:           var(--floodlight);     /* likes go floodlight per spec */
+  --x-repost:         var(--success);
+  --x-search-bg:      var(--paper-2);
+  --brand-gradient:   linear-gradient(135deg, var(--ink) 0%, var(--ink-2) 100%);
 
-  --destructive:            6 62% 47%;    /* #c43d2e wine */
-  --destructive-foreground: 38 38% 92%;
+  /* ── Shadcn/UI tokens (HSL) → Tribuna ──────────────────────── */
+  --background:             40 30% 91%;   /* #F2ECDE paper */
+  --foreground:             225 15% 8%;   /* #0F1115 ink */
+  --foreground-secondary:   222 9% 22%;   /* #353941 ink-3 */
+  --foreground-muted:       220 6% 45%;   /* #6A6F7A slate */
 
-  /* ── Border radius ─ vintage prefers tighter corners ─────────── */
-  --radius-medium:          0.375rem;
-  --radius-soft:            0.5rem;
-  --radius-sharp:           0.125rem;
+  --surface-elevated:       42 71% 95%;   /* #FBF7EC card */
+  --surface-card:           42 71% 95%;   /* #FBF7EC card */
+
+  --card-border:            39 38% 83%;   /* #E2D9C3 line */
+  --border:                 39 38% 83%;
+  --border-subtle:          39 38% 88%;
+  --border-strong:          37 31% 75%;   /* #D4C8AB line-2 */
+
+  --primary:                225 15% 8%;   /* ink — primary CTA */
+  --primary-foreground:     40 30% 91%;   /* paper */
+
+  --secondary:              37 31% 75%;   /* line-2 */
+  --secondary-foreground:   225 15% 8%;
+
+  --muted:                  39 38% 83%;
+  --muted-foreground:       220 6% 45%;
+
+  --popover:                42 71% 95%;
+  --popover-foreground:     225 15% 8%;
+
+  --accent:                 14 100% 56%;  /* #FF4B1F floodlight — for action accents */
+  --accent-foreground:      40 30% 91%;
+
+  --input:                  39 38% 83%;
+  --ring:                   14 100% 56%;  /* focus ring uses floodlight */
+
+  --destructive:            9 76% 43%;    /* #C4321A error */
+  --destructive-foreground: 40 30% 91%;
+
+  /* Border radius tokens used by shadcn (kept as old names; pointed to Tribuna r-*) */
+  --radius-medium:          var(--r-2);
+  --radius-soft:            var(--r-3);
+  --radius-sharp:           var(--r-1);
 }
 
 @layer base {
   * {
-    border-color: var(--x-border);
-  }
-
-  body {
-    background-color: var(--x-bg);
-    color: var(--x-text-primary);
-    /* Lora is the serif body face — reads like a sports column */
-    font-family: 'Lora', Georgia, 'Times New Roman', serif;
-    /* Subtle paper grain via SVG noise; barely visible but kills the flatness. */
-    background-image:
-      radial-gradient(circle at 25% 30%, rgba(10, 77, 58, 0.025) 0, transparent 50%),
-      radial-gradient(circle at 75% 70%, rgba(196, 61, 46, 0.02) 0, transparent 50%);
-    margin: 0;
-    padding: 0;
-    -webkit-font-smoothing: antialiased;
-    -moz-osx-font-smoothing: grayscale;
-  }
-
-  /* All headings get Playfair Display — newspaper masthead energy */
-  h1, h2, h3, h4, h5, h6 {
-    font-family: 'Playfair Display', 'Times New Roman', serif;
-    font-weight: 700;
-    letter-spacing: -0.01em;
+    border-color: var(--line);
   }
 
   html {
     scrollbar-width: thin;
-    scrollbar-color: var(--x-border) transparent;
+    scrollbar-color: var(--line-2) transparent;
+  }
+
+  body {
+    background: var(--paper);
+    color: var(--ink);
+    font-family: var(--font-body);
+    margin: 0;
+    padding: 0;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    text-rendering: optimizeLegibility;
   }
 
   ::-webkit-scrollbar {
@@ -110,16 +165,54 @@
     background: transparent;
   }
   ::-webkit-scrollbar-thumb {
-    background: var(--x-border);
+    background: var(--line-2);
     border-radius: 3px;
   }
 }
 
 @layer utilities {
-  .x-border-b { border-bottom: 1px solid var(--x-border); }
-  .x-border-t { border-top: 1px solid var(--x-border); }
-  .x-border-r { border-right: 1px solid var(--x-border); }
-  .x-border-l { border-left: 1px solid var(--x-border); }
+  /* ── Type scale ────────────────────────────────────────────── */
+  .t-display {
+    font-family: var(--font-display);
+    font-variation-settings: 'opsz' 96, 'wght' 800;
+    font-size: 132px; line-height: 0.9; letter-spacing: -0.045em;
+  }
+  .t-h1 {
+    font-family: var(--font-display);
+    font-variation-settings: 'opsz' 48, 'wght' 700;
+    font-size: 56px; line-height: 1.02; letter-spacing: -0.03em;
+  }
+  .t-h2 {
+    font-family: var(--font-display);
+    font-variation-settings: 'opsz' 32, 'wght' 700;
+    font-size: 36px; line-height: 1.05; letter-spacing: -0.022em;
+  }
+  .t-h3 {
+    font-family: var(--font-display);
+    font-variation-settings: 'opsz' 24, 'wght' 600;
+    font-size: 22px; line-height: 1.15; letter-spacing: -0.012em;
+  }
+  .t-body-lg { font-family: var(--font-body); font-size: 17px; line-height: 1.55; }
+  .t-body    { font-family: var(--font-body); font-size: 15px; line-height: 1.50; }
+  .t-caption { font-family: var(--font-body); font-size: 13px; line-height: 1.45; color: var(--slate); }
+  .t-label {
+    font-family: var(--font-mono);
+    font-size: 11px; line-height: 1; font-weight: 500;
+    letter-spacing: 0.14em; text-transform: uppercase;
+    color: var(--slate);
+  }
+  .t-mono { font-family: var(--font-mono); }
+
+  /* ── Elevation utilities ──────────────────────────────────── */
+  .elev-1 { box-shadow: var(--shadow-1); }
+  .elev-2 { box-shadow: var(--shadow-2); }
+  .elev-3 { box-shadow: var(--shadow-3); }
+
+  /* ── Legacy x-* utilities (kept for compat with existing code) */
+  .x-border-b { border-bottom: 1px solid var(--line); }
+  .x-border-t { border-top: 1px solid var(--line); }
+  .x-border-r { border-right: 1px solid var(--line); }
+  .x-border-l { border-left: 1px solid var(--line); }
 
   .x-hover {
     transition: background-color 0.2s ease;
@@ -138,50 +231,46 @@
 
   .brand-gradient {
     background: var(--brand-gradient);
-    color: #f5ecd9;
+    color: var(--paper);
   }
 
-  /* Old utility, kept for compat. Now points at Oswald (newspaper headline). */
+  /* Old utility names retired into the Tribuna stack:
+     - .font-brand (was Bebas Neue) → Bricolage display
+     - .font-serif-display → Bricolage display
+     - .font-serif-body → Geist body
+     - .font-newspaper → Bricolage uppercase
+     - .font-handle → JetBrains Mono */
   .font-brand {
-    font-family: 'Oswald', 'Arial Narrow', sans-serif;
-    font-weight: 600;
-    letter-spacing: 0.02em;
-    text-transform: uppercase;
+    font-family: var(--font-display);
+    font-weight: 700;
+    letter-spacing: -0.025em;
   }
-
-  /* New utilities for the vintage system */
   .font-serif-display {
-    font-family: 'Playfair Display', 'Times New Roman', serif;
+    font-family: var(--font-display);
+    font-weight: 700;
+    letter-spacing: -0.022em;
   }
   .font-serif-body {
-    font-family: 'Lora', Georgia, serif;
+    font-family: var(--font-body);
   }
   .font-newspaper {
-    font-family: 'Oswald', 'Arial Narrow', sans-serif;
+    font-family: var(--font-display);
     text-transform: uppercase;
     letter-spacing: 0.04em;
+    font-weight: 700;
   }
   .font-handle {
-    font-family: 'IBM Plex Mono', 'Courier New', monospace;
+    font-family: var(--font-mono);
   }
 
-  /* A subtle paper-grain background you can opt into on hero panels */
+  /* Paper grain helper still useful for hero panels */
   .paper-texture {
-    background-color: var(--x-surface);
-    background-image:
-      repeating-linear-gradient(
-        135deg,
-        rgba(28, 24, 21, 0.015) 0px,
-        rgba(28, 24, 21, 0.015) 1px,
-        transparent 1px,
-        transparent 3px
-      );
+    background-color: var(--card);
   }
 
-  /* Newspaper-style hairline divider with double-line, used between sections */
   .newsprint-divider {
-    border-top: 1px solid var(--x-border);
-    border-bottom: 1px solid var(--x-border);
+    border-top: 1px solid var(--line);
+    border-bottom: 1px solid var(--line);
     height: 4px;
   }
 }
