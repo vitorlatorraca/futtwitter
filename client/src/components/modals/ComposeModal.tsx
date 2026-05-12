@@ -29,34 +29,39 @@ export default function ComposeModal() {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="absolute inset-0 bg-[rgba(91,112,131,0.4)]"
+            className="absolute inset-0 bg-ink/40"
             onClick={() => setComposeModalOpen(false)}
           />
           <motion.div
             initial={{ opacity: 0, scale: 0.95, y: -20 }}
             animate={{ opacity: 1, scale: 1, y: 0 }}
             exit={{ opacity: 0, scale: 0.95, y: -20 }}
-            className="relative bg-background rounded-2xl w-full max-w-[600px] min-h-[260px] z-10 shadow-lg"
+            className="relative bg-card rounded-r-4 w-full max-w-[600px] min-h-[260px] z-10 shadow-elev-3 border border-line"
           >
-            <div className="flex items-center justify-between px-4 py-3">
+            <div className="flex items-center justify-between px-4 py-3 border-b border-line">
               <button
                 onClick={() => setComposeModalOpen(false)}
-                className="p-1.5 -m-1.5 rounded-full hover:bg-[rgba(231,233,234,0.1)] transition-colors"
-                aria-label="Close"
+                className="p-1.5 -m-1.5 rounded-full hover:bg-paper-2 transition-colors text-ink-3"
+                aria-label="Fechar"
               >
-                <X className="w-5 h-5" />
+                <X className="w-5 h-5 stroke-[1.75]" />
               </button>
-              <button className="text-x-accent font-bold text-[14px]">Rascunhos</button>
+              <button
+                className="text-ink text-[13px] font-semibold hover:text-floodlight transition-colors"
+                title="Rascunhos (em breve)"
+              >
+                Rascunhos
+              </button>
             </div>
 
-            <ComposeBox
-              onPost={() => setComposeModalOpen(false)}
-              autoFocus
-            />
+            <ComposeBox onPost={() => setComposeModalOpen(false)} autoFocus />
 
-            <div className="px-4 pb-3 ml-[52px]">
-              <button className="flex items-center gap-1.5 text-x-accent text-[14px] font-bold p-1.5 -m-1.5 rounded-full hover:bg-[rgba(0,230,118,0.08)] transition-colors">
-                <Globe className="w-4 h-4" />
+            <div className="px-5 pb-4 ml-[64px]">
+              <button
+                className="inline-flex items-center gap-1.5 text-floodlight text-[13px] font-medium rounded-full hover:bg-floodlight/10 px-2 py-1 -ml-2 transition-colors"
+                title="Privacidade (em breve)"
+              >
+                <Globe className="w-4 h-4 stroke-[1.75]" />
                 Todos podem responder
               </button>
             </div>
