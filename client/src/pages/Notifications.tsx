@@ -27,8 +27,8 @@ const typeConfig: Record<
   { icon: React.ElementType; color: string; bg: string }
 > = {
   LIKE: { icon: Heart, color: "text-pink-500", bg: "bg-pink-500/10" },
-  FOLLOW: { icon: UserPlus, color: "text-x-accent", bg: "bg-x-accent/10" },
-  REPLY: { icon: MessageCircle, color: "text-x-accent", bg: "bg-x-accent/10" },
+  FOLLOW: { icon: UserPlus, color: "text-floodlight", bg: "bg-floodlight/10" },
+  REPLY: { icon: MessageCircle, color: "text-floodlight", bg: "bg-floodlight/10" },
   REPOST: { icon: Repeat2, color: "text-green-400", bg: "bg-green-400/10" },
   NEW_NEWS: { icon: Newspaper, color: "text-amber-400", bg: "bg-amber-400/10" },
   BADGE_EARNED: { icon: Award, color: "text-yellow-400", bg: "bg-yellow-400/10" },
@@ -115,7 +115,7 @@ function NotificationCard({
           <ConfigIcon className={`w-5 h-5 ${config.color}`} />
         </div>
         {!n.isRead && (
-          <span className="absolute -top-0.5 -right-0.5 w-2.5 h-2.5 bg-x-accent rounded-full border-2 border-black" />
+          <span className="absolute -top-0.5 -right-0.5 w-2.5 h-2.5 bg-ink rounded-full border-2 border-black" />
         )}
       </div>
 
@@ -238,7 +238,7 @@ export default function Notifications() {
                 {tab}
               </span>
               {activeTab === tab && (
-                <div className="absolute bottom-0 left-1/2 -translate-x-1/2 w-[56px] h-1 bg-x-accent rounded-full" />
+                <div className="absolute bottom-0 left-1/2 -translate-x-1/2 w-[56px] h-1 bg-ink rounded-full" />
               )}
             </button>
           ))}

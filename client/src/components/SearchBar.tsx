@@ -132,13 +132,13 @@ export function SearchBar({
       <div
         className={`flex items-center gap-3 rounded-full px-4 py-2.5 transition-all duration-150 ${
           focused
-            ? "bg-background border border-x-accent"
+            ? "bg-background border border-ink"
             : "bg-x-search-bg border border-transparent hover:border-[#555]"
         }`}
       >
         <Search
           className={`w-[18px] h-[18px] flex-shrink-0 transition-colors ${
-            focused ? "text-x-accent" : "text-x-text-secondary"
+            focused ? "text-floodlight" : "text-x-text-secondary"
           }`}
         />
         <input
@@ -159,7 +159,7 @@ export function SearchBar({
           <button
             onClick={clearSearch}
             aria-label="Limpar busca"
-            className="w-5 h-5 rounded-full bg-x-accent hover:bg-x-accent-hover transition-colors flex items-center justify-center flex-shrink-0"
+            className="w-5 h-5 rounded-full bg-ink hover:bg-ink-2 transition-colors flex items-center justify-center flex-shrink-0"
           >
             <X className="w-3 h-3 text-foreground" />
           </button>
@@ -199,7 +199,7 @@ export function SearchBar({
                     {user.name}
                   </span>
                   {user.userType === "JOURNALIST" && (
-                    <svg className="w-4 h-4 text-x-accent flex-shrink-0" viewBox="0 0 24 24" fill="currentColor">
+                    <svg className="w-4 h-4 text-floodlight flex-shrink-0" viewBox="0 0 24 24" fill="currentColor">
                       <path d="M22.25 12c0-1.43-.88-2.67-2.19-3.34.46-1.39.2-2.9-.81-3.91s-2.52-1.27-3.91-.81c-.66-1.31-1.91-2.19-3.34-2.19s-2.67.88-3.33 2.19c-1.4-.46-2.91-.2-3.92.81s-1.26 2.52-.8 3.91c-1.31.67-2.2 1.91-2.2 3.34s.89 2.67 2.2 3.34c-.46 1.39-.21 2.9.8 3.91s2.52 1.26 3.91.81c.67 1.31 1.91 2.19 3.34 2.19s2.68-.88 3.34-2.19c1.39.45 2.9.2 3.91-.81s1.27-2.52.81-3.91c1.31-.67 2.19-1.91 2.19-3.34zm-11.71 4.2L6.8 12.46l1.41-1.42 2.26 2.26 4.8-5.23 1.47 1.36-6.2 6.77z" />
                     </svg>
                   )}
@@ -228,12 +228,12 @@ export function SearchBar({
                 suggestions.length > 0 ? "border-t border-x-border" : ""
               }`}
             >
-              <div className="w-10 h-10 rounded-full bg-x-accent/10 border border-x-accent/20 flex items-center justify-center flex-shrink-0">
-                <Search className="w-4 h-4 text-x-accent" />
+              <div className="w-10 h-10 rounded-full bg-floodlight/10 border border-ink/20 flex items-center justify-center flex-shrink-0">
+                <Search className="w-4 h-4 text-floodlight" />
               </div>
               <span className="text-x-text-primary text-[15px]">
                 Buscar por{" "}
-                <span className="text-x-accent font-semibold">"{query}"</span>
+                <span className="text-floodlight font-semibold">"{query}"</span>
               </span>
             </button>
           )}

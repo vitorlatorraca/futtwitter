@@ -110,7 +110,7 @@ export default function FollowersList() {
       <div className="flex border-b border-x-border">
         <button
           onClick={() => handle && navigate(`/profile/${handle}/followers`)}
-          className="flex-1 py-4 text-[15px] font-semibold border-b-2 border-x-accent text-foreground"
+          className="flex-1 py-4 text-[15px] font-semibold border-b-2 border-ink text-foreground"
         >
           Seguidores
         </button>
@@ -144,7 +144,7 @@ export default function FollowersList() {
             <button
               onClick={() => fetchNextPage()}
               disabled={isFetchingNextPage}
-              className="w-full py-4 text-x-accent text-[15px] hover:bg-[rgba(0,230,118,0.08)] transition-colors"
+              className="w-full py-4 text-floodlight text-[15px] hover:bg-[rgba(0,230,118,0.08)] transition-colors"
             >
               {isFetchingNextPage ? "Carregando..." : "Carregar mais"}
             </button>

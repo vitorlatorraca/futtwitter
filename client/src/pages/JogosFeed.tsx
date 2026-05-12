@@ -35,7 +35,7 @@ const matches: MatchData[] = [
 const statusConfig: Record<MatchStatus, { label: string; className: string }> = {
   live: { label: "AO VIVO", className: "text-red-500" },
   finished: { label: "Encerrado", className: "text-x-text-secondary" },
-  upcoming: { label: "Em Breve", className: "text-x-accent" },
+  upcoming: { label: "Em Breve", className: "text-floodlight" },
 };
 
 export default function JogosFeed() {
@@ -57,7 +57,7 @@ export default function JogosFeed() {
       {/* Header with tabs */}
       <div className="sticky top-0 z-20 bg-black/80 backdrop-blur-md border-b border-x-border">
         <div className="px-4 py-3 flex items-center gap-3">
-          <Calendar className="w-6 h-6 text-x-accent" />
+          <Calendar className="w-6 h-6 text-floodlight" />
           <h1 className="text-xl font-extrabold">Jogos</h1>
         </div>
         <div className="flex">
@@ -71,7 +71,7 @@ export default function JogosFeed() {
                 {tab}
               </span>
               {activeTimeTab === tab && (
-                <div className="absolute bottom-0 left-1/2 -translate-x-1/2 w-14 h-1 bg-x-accent rounded-full" />
+                <div className="absolute bottom-0 left-1/2 -translate-x-1/2 w-14 h-1 bg-ink rounded-full" />
               )}
             </button>
           ))}
@@ -87,7 +87,7 @@ export default function JogosFeed() {
               onClick={() => setActiveComp(comp)}
               className={`px-3 py-1.5 rounded-full text-[13px] font-bold whitespace-nowrap transition-colors ${
                 activeComp === comp
-                  ? "bg-x-accent text-foreground"
+                  ? "bg-ink text-foreground"
                   : "bg-x-surface text-x-text-secondary hover:bg-x-search-bg"
               }`}
             >

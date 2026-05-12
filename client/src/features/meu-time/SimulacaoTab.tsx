@@ -87,7 +87,7 @@ function ScoreInput({
         const n = parseInt(v, 10);
         if (!isNaN(n) && n >= 0 && n <= 99) onChange(n);
       }}
-      className="w-10 h-9 text-center text-base font-bold bg-surface-elevated border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/50 text-foreground tabular-nums [appearance:textfield] [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none"
+      className="w-10 h-9 text-center text-base font-bold bg-surface-elevated border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-floodlight/50 text-foreground tabular-nums [appearance:textfield] [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none"
     />
   );
 }
@@ -542,7 +542,7 @@ export function SimulacaoTab({ userTeamId }: SimulacaoTabProps) {
               Libertadores
             </span>
             <span className="flex items-center gap-1.5">
-              <span className="w-2 h-2 rounded-full bg-x-accent" />
+              <span className="w-2 h-2 rounded-full bg-ink" />
               Pré-Libertadores
             </span>
             <span className="flex items-center gap-1.5">

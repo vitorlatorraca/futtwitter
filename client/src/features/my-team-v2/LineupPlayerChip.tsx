@@ -30,7 +30,7 @@ export function LineupPlayerChip({
       onClick={onClick}
       className={cn(
         'w-full flex items-center gap-3 p-2.5 rounded-lg border text-left transition-all duration-200 ease-out',
-        'focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 focus:ring-offset-transparent',
+        'focus:outline-none focus:ring-2 focus:ring-floodlight focus:ring-offset-2 focus:ring-offset-transparent',
         isSelected
           ? 'border-primary bg-primary/10 ring-2 ring-primary/40 shadow-[0_0_0_1px_hsl(var(--primary)/0.2)]'
           : isLineup

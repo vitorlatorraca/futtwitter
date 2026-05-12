@@ -140,7 +140,7 @@ export default function LoginPage() {
                   onChange={(e) => { setFormData((p) => ({ ...p, email: e.target.value })); setErrorMsg(null); }}
                   disabled={isLoading}
                   data-testid="input-email"
-                  className="pl-9 border-border focus-visible:ring-primary focus-visible:border-primary"
+                  className="pl-9 border-border focus-visible:ring-floodlight focus-visible:border-floodlight"
                   autoComplete="email"
                 />
               </div>
@@ -169,7 +169,7 @@ export default function LoginPage() {
                   onChange={(e) => { setFormData((p) => ({ ...p, password: e.target.value })); setErrorMsg(null); }}
                   disabled={isLoading}
                   data-testid="input-password"
-                  className="pl-9 pr-10 border-border focus-visible:ring-primary focus-visible:border-primary"
+                  className="pl-9 pr-10 border-border focus-visible:ring-floodlight focus-visible:border-floodlight"
                   autoComplete="current-password"
                 />
                 <button

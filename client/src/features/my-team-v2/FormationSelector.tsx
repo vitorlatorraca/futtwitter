@@ -24,7 +24,7 @@ export function FormationSelector({ value, onChange, className }: FormationSelec
           onClick={() => onChange(f)}
           className={cn(
             chipBase,
-            'focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 focus:ring-offset-transparent',
+            'focus:outline-none focus:ring-2 focus:ring-floodlight focus:ring-offset-2 focus:ring-offset-transparent',
             value === f ? chipActive : chipInactive
           )}
         >

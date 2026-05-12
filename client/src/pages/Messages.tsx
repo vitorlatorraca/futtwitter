@@ -72,7 +72,7 @@ function ConversationList({
               <div className="flex items-center justify-between mt-0.5">
                 <p className="text-[15px] text-x-text-secondary truncate">{conv.lastMessage}</p>
                 {conv.unreadCount > 0 && (
-                  <span className="w-5 h-5 bg-x-accent rounded-full text-[11px] font-bold flex items-center justify-center flex-shrink-0 ml-2">
+                  <span className="w-5 h-5 bg-ink rounded-full text-[11px] font-bold flex items-center justify-center flex-shrink-0 ml-2">
                     {conv.unreadCount}
                   </span>
                 )}
@@ -162,7 +162,7 @@ function ChatView({ conversation, onBack }: { conversation: Conversation | null;
                 <div
                   className={`max-w-[75%] px-4 py-3 rounded-2xl text-[15px] leading-5 ${
                     isSent
-                      ? "bg-x-accent text-foreground rounded-br-sm"
+                      ? "bg-ink text-foreground rounded-br-sm"
                       : "bg-x-surface text-x-text-primary rounded-bl-sm"
                   }`}
                 >
@@ -179,10 +179,10 @@ function ChatView({ conversation, onBack }: { conversation: Conversation | null;
       <div className="px-4 py-3 border-t border-x-border">
         <div className="flex items-center gap-2 bg-x-surface rounded-2xl px-3 py-2">
           <button className="p-1.5 rounded-full hover:bg-[rgba(0,230,118,0.08)]" aria-label="Add image">
-            <Image className="w-5 h-5 text-x-accent" />
+            <Image className="w-5 h-5 text-floodlight" />
           </button>
           <button className="p-1.5 rounded-full hover:bg-[rgba(0,230,118,0.08)]" aria-label="Add emoji">
-            <Smile className="w-5 h-5 text-x-accent" />
+            <Smile className="w-5 h-5 text-floodlight" />
           </button>
           <input
             type="text"
@@ -198,7 +198,7 @@ function ChatView({ conversation, onBack }: { conversation: Conversation | null;
             className="p-1.5 rounded-full hover:bg-[rgba(0,230,118,0.08)] disabled:opacity-40"
             aria-label="Send"
           >
-            <Send className="w-5 h-5 text-x-accent" />
+            <Send className="w-5 h-5 text-floodlight" />
           </button>
         </div>
       </div>

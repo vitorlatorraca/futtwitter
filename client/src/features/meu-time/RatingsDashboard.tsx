@@ -52,9 +52,10 @@ interface AnalyticsData {
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
 function ratingColor(r: number): string {
-  if (r >= 7.5) return '#22c55e';
-  if (r >= 6.5) return '#f59e0b';
-  return '#f43f5e';
+  // Tribuna status palette: --success / --warning / --error
+  if (r >= 7.5) return 'var(--success)';
+  if (r >= 6.5) return 'var(--warning)';
+  return 'var(--error)';
 }
 
 function formatMonth(m: string): string {

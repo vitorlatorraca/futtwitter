@@ -66,14 +66,14 @@ function TransferCard({ item }: { item: TransferRumorItem }) {
           {/* De → Para */}
           <div className="flex items-center gap-2 mt-1.5 text-[14px]">
             <span className="text-x-text-secondary truncate">{item.fromTeam?.name ?? "—"}</span>
-            <ArrowRight className="w-4 h-4 text-x-accent flex-shrink-0" />
+            <ArrowRight className="w-4 h-4 text-floodlight flex-shrink-0" />
             <span className="font-medium truncate">{item.toTeam?.name ?? "—"}</span>
           </div>
 
           {/* Valor */}
           <div className="flex items-center gap-2 mt-1.5">
             <span className="text-[13px] text-x-text-secondary">Valor:</span>
-            <span className="text-[13px] font-bold text-x-accent">{formatFee(item)}</span>
+            <span className="text-[13px] font-bold text-floodlight">{formatFee(item)}</span>
           </div>
 
           {/* Fonte (opcional) */}
@@ -117,7 +117,7 @@ export default function VaiEVemFeed() {
       <div className="sticky top-0 z-20 bg-black/80 backdrop-blur-md border-b border-x-border">
         <div className="px-4 py-3 flex items-center justify-between gap-3">
           <div className="flex items-center gap-3">
-            <ArrowLeftRight className="w-6 h-6 text-x-accent" />
+            <ArrowLeftRight className="w-6 h-6 text-floodlight" />
             <div>
               <h1 className="text-xl font-extrabold">Vai e Vem</h1>
               <p className="text-[13px] text-x-text-secondary">Transferências e rumores</p>
@@ -128,7 +128,7 @@ export default function VaiEVemFeed() {
           {isJournalist ? (
             <button
               onClick={() => setDialogOpen(true)}
-              className="flex items-center gap-1.5 bg-x-accent hover:bg-x-accent-hover text-foreground text-[13px] font-bold px-3 py-1.5 rounded-full transition-colors flex-shrink-0"
+              className="flex items-center gap-1.5 bg-ink hover:bg-ink-2 text-foreground text-[13px] font-bold px-3 py-1.5 rounded-full transition-colors flex-shrink-0"
             >
               <Plus className="w-4 h-4" />
               Nova negociação
@@ -156,7 +156,7 @@ export default function VaiEVemFeed() {
                 {tab.label}
               </span>
               {activeFilter === tab.status && (
-                <div className="absolute bottom-0 left-1/2 -translate-x-1/2 w-12 h-1 bg-x-accent rounded-full" />
+                <div className="absolute bottom-0 left-1/2 -translate-x-1/2 w-12 h-1 bg-ink rounded-full" />
               )}
             </button>
           ))}

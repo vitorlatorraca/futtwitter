@@ -84,7 +84,7 @@ class ErrorBoundary extends React.Component<
             </p>
             <button
               onClick={() => window.location.reload()}
-              className="mt-4 px-6 py-2 rounded-full bg-x-accent text-primary-foreground font-semibold text-sm hover:opacity-90 transition-opacity"
+              className="mt-4 px-6 py-2 rounded-full bg-ink text-primary-foreground font-semibold text-sm hover:opacity-90 transition-opacity"
             >
               Recarregar página
             </button>
@@ -115,7 +115,7 @@ class ErrorBoundary extends React.Component<
 function LoadingFallback() {
   return (
     <div className="flex items-center justify-center py-16">
-      <div className="w-8 h-8 border-2 border-x-accent border-t-transparent rounded-full animate-spin" />
+      <div className="w-8 h-8 border-2 border-ink border-t-transparent rounded-full animate-spin" />
     </div>
   );
 }

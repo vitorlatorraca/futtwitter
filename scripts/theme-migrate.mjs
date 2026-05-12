@@ -7,7 +7,7 @@ import { globSync } from "node:fs";
 import { execSync } from "node:child_process";
 
 const files = execSync(
-  `grep -rln "bg-black\\|text-white\\|bg-zinc-9\\|bg-zinc-8\\|text-zinc-\\|bg-gray-9\\|bg-gray-8\\|text-gray-\\|bg-neutral-9\\|bg-neutral-8\\|text-neutral-\\|border-zinc-\\|border-gray-\\|border-neutral-\\|ring-offset-black\\|from-black\\|to-black\\|from-zinc-\\|to-zinc-\\|bg-\\[#080C14\\]\\|bg-\\[#0F1520\\]\\|rgba(231,233,234\\|rgba(255,255,255\\|text-black\\|bg-white" client/src --include="*.tsx" --include="*.ts"`,
+  `grep -rln "bg-black\\|text-white\\|bg-zinc-9\\|bg-zinc-8\\|text-zinc-\\|bg-gray-9\\|bg-gray-8\\|text-gray-\\|bg-neutral-9\\|bg-neutral-8\\|text-neutral-\\|border-zinc-\\|border-gray-\\|border-neutral-\\|ring-offset-black\\|from-black\\|to-black\\|from-zinc-\\|to-zinc-\\|bg-\\[#080C14\\]\\|bg-\\[#0F1520\\]\\|rgba(231,233,234\\|rgba(255,255,255\\|text-black\\|bg-white\\|x-accent\\|focus-visible:ring-primary\\|focus:ring-primary\\|focus-visible:border-primary" client/src --include="*.tsx" --include="*.ts"`,
   { encoding: "utf8" }
 ).trim().split("\n").filter(Boolean);
 
@@ -102,6 +102,39 @@ const swaps = [
   // (these are inside `bg-x-accent text-black` already caught above, but
   // some have a different bg). Replace cautiously with primary-foreground.
   [/(?<![\w-])text-black font-bold(?![\w-])/g, "text-primary-foreground font-bold"],
+
+  // ── Step 8: retire legacy x-accent into Tribuna tokens ──────────────────
+  // Mapping:
+  //   bg-x-accent      → bg-ink         (primary CTA bg per spec)
+  //   text-x-accent    → text-floodlight (action / link color per spec)
+  //   border-x-accent  → border-ink     (selected / active borders)
+  //   fill-x-accent    → fill-floodlight (icon active state)
+  //   hover:bg-x-accent → hover:bg-ink-2
+  //   hover:text-x-accent → hover:text-floodlight-d
+  //   bg-x-accent-hover → bg-ink-2
+  //   hover:bg-x-accent-hover → hover:bg-ink-2
+  [/(?<![\w-])hover:bg-x-accent-hover(?![\w-])/g, "hover:bg-ink-2"],
+  [/(?<![\w-])bg-x-accent-hover(?![\w-])/g, "bg-ink-2"],
+  [/(?<![\w-])hover:text-x-accent-hover(?![\w-])/g, "hover:text-floodlight-d"],
+  [/(?<![\w-])text-x-accent-hover(?![\w-])/g, "text-floodlight-d"],
+  [/(?<![\w-])hover:bg-x-accent\/\d+(?![\w-])/g, (m) => m.replace("x-accent", "floodlight")],
+  [/(?<![\w-])bg-x-accent\/\d+(?![\w-])/g, (m) => m.replace("x-accent", "floodlight")],
+  [/(?<![\w-])hover:bg-x-accent(?![\w-])/g, "hover:bg-ink-2"],
+  [/(?<![\w-])hover:text-x-accent(?![\w-])/g, "hover:text-floodlight-d"],
+  [/(?<![\w-])bg-x-accent(?![\w/-])/g, "bg-ink"],
+  [/(?<![\w-])text-x-accent(?![\w-])/g, "text-floodlight"],
+  [/(?<![\w-])border-x-accent\/\d+(?![\w-])/g, (m) => m.replace("x-accent", "ink")],
+  [/(?<![\w-])border-x-accent(?![\w-])/g, "border-ink"],
+  [/(?<![\w-])fill-x-accent(?![\w-])/g, "fill-floodlight"],
+  [/(?<![\w-])ring-x-accent\/\d+(?![\w-])/g, (m) => m.replace("x-accent", "floodlight")],
+  [/(?<![\w-])ring-x-accent(?![\w-])/g, "ring-floodlight"],
+
+  // Focus rings — spec rule: action color = floodlight, so focus indicator
+  // should pop against the paper page in --floodlight, not --primary (ink).
+  [/(?<![\w-])focus-visible:ring-primary(?![\w-])/g, "focus-visible:ring-floodlight"],
+  [/(?<![\w-])focus:ring-primary\/(\d+)(?![\w-])/g, "focus:ring-floodlight/$1"],
+  [/(?<![\w-])focus:ring-primary(?![\w/-])/g, "focus:ring-floodlight"],
+  [/(?<![\w-])focus-visible:border-primary(?![\w-])/g, "focus-visible:border-floodlight"],
 ];
 
 let totalReplacements = 0;

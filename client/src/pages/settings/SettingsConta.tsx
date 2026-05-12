@@ -39,7 +39,7 @@ function ApplicationForm({
         name="org"
         type="text"
         placeholder="Veículo/Organização* (Ex: TV Globo, UOL Esporte)"
-        className="w-full px-3 py-2 rounded-lg bg-transparent border border-x-border text-[15px] outline-none focus:border-x-accent"
+        className="w-full px-3 py-2 rounded-lg bg-transparent border border-x-border text-[15px] outline-none focus:border-ink"
         required
         minLength={2}
       />
@@ -47,7 +47,7 @@ function ApplicationForm({
         name="profId"
         type="text"
         placeholder="ID Profissional (DRT ou similar)*"
-        className="w-full px-3 py-2 rounded-lg bg-transparent border border-x-border text-[15px] outline-none focus:border-x-accent"
+        className="w-full px-3 py-2 rounded-lg bg-transparent border border-x-border text-[15px] outline-none focus:border-ink"
         required
         minLength={2}
       />
@@ -55,13 +55,13 @@ function ApplicationForm({
         name="portfolioUrl"
         type="url"
         placeholder="URL do portfólio (opcional)"
-        className="w-full px-3 py-2 rounded-lg bg-transparent border border-x-border text-[15px] outline-none focus:border-x-accent"
+        className="w-full px-3 py-2 rounded-lg bg-transparent border border-x-border text-[15px] outline-none focus:border-ink"
       />
       <div className="flex gap-2">
         <button
           type="submit"
           disabled={isPending}
-          className="px-4 py-2 rounded-full bg-x-accent text-primary-foreground text-[15px] font-semibold hover:bg-x-accent-hover disabled:opacity-60 disabled:cursor-not-allowed flex items-center gap-2"
+          className="px-4 py-2 rounded-full bg-ink text-primary-foreground text-[15px] font-semibold hover:bg-ink-2 disabled:opacity-60 disabled:cursor-not-allowed flex items-center gap-2"
         >
           {isPending ? (
             <>
@@ -428,7 +428,7 @@ export default function SettingsConta() {
                   type="text"
                   value={name}
                   onChange={(e) => setName(e.target.value)}
-                  className="w-full px-3 py-2 rounded-lg bg-transparent border border-x-border text-[15px] outline-none focus:border-x-accent"
+                  className="w-full px-3 py-2 rounded-lg bg-transparent border border-x-border text-[15px] outline-none focus:border-ink"
                   maxLength={50}
                 />
               </div>
@@ -437,7 +437,7 @@ export default function SettingsConta() {
                 <textarea
                   value={bio}
                   onChange={(e) => setBio(e.target.value)}
-                  className="w-full px-3 py-2 rounded-lg bg-transparent border border-x-border text-[15px] outline-none focus:border-x-accent resize-none"
+                  className="w-full px-3 py-2 rounded-lg bg-transparent border border-x-border text-[15px] outline-none focus:border-ink resize-none"
                   rows={3}
                   maxLength={160}
                   placeholder="Conte um pouco sobre você..."
@@ -450,7 +450,7 @@ export default function SettingsConta() {
                   type="text"
                   value={location}
                   onChange={(e) => setLocation(e.target.value)}
-                  className="w-full px-3 py-2 rounded-lg bg-transparent border border-x-border text-[15px] outline-none focus:border-x-accent"
+                  className="w-full px-3 py-2 rounded-lg bg-transparent border border-x-border text-[15px] outline-none focus:border-ink"
                   maxLength={30}
                   placeholder="São Paulo, SP"
                 />
@@ -461,7 +461,7 @@ export default function SettingsConta() {
                   type="url"
                   value={website}
                   onChange={(e) => setWebsite(e.target.value)}
-                  className="w-full px-3 py-2 rounded-lg bg-transparent border border-x-border text-[15px] outline-none focus:border-x-accent"
+                  className="w-full px-3 py-2 rounded-lg bg-transparent border border-x-border text-[15px] outline-none focus:border-ink"
                   placeholder="https://meusite.com"
                 />
               </div>
@@ -469,7 +469,7 @@ export default function SettingsConta() {
                 <button
                   onClick={handleSaveProfile}
                   disabled={saving}
-                  className="px-4 py-2 rounded-full bg-x-accent text-primary-foreground text-[15px] font-semibold hover:bg-x-accent-hover disabled:opacity-60 disabled:cursor-not-allowed flex items-center gap-2"
+                  className="px-4 py-2 rounded-full bg-ink text-primary-foreground text-[15px] font-semibold hover:bg-ink-2 disabled:opacity-60 disabled:cursor-not-allowed flex items-center gap-2"
                 >
                   {saving ? (
                     <>
@@ -501,7 +501,7 @@ export default function SettingsConta() {
 
             {isLoading ? (
               <div className="py-4 flex justify-center">
-                <div className="w-6 h-6 border-2 border-x-accent border-t-transparent rounded-full animate-spin" />
+                <div className="w-6 h-6 border-2 border-ink border-t-transparent rounded-full animate-spin" />
               </div>
             ) : (
               <>
@@ -521,7 +521,7 @@ export default function SettingsConta() {
                           animate={{ opacity: 1 }}
                           exit={{ opacity: 0 }}
                           onClick={() => setShowForm(true)}
-                          className="px-4 py-2 rounded-full bg-x-accent text-primary-foreground text-[15px] font-semibold hover:bg-x-accent-hover transition-colors"
+                          className="px-4 py-2 rounded-full bg-ink text-primary-foreground text-[15px] font-semibold hover:bg-ink-2 transition-colors"
                         >
                           Solicitar verificação
                         </motion.button>
@@ -591,7 +591,7 @@ export default function SettingsConta() {
                           animate={{ opacity: 1 }}
                           exit={{ opacity: 0 }}
                           onClick={() => setShowForm(true)}
-                          className="px-4 py-2 rounded-full bg-x-accent text-primary-foreground text-[15px] font-semibold hover:bg-x-accent-hover transition-colors"
+                          className="px-4 py-2 rounded-full bg-ink text-primary-foreground text-[15px] font-semibold hover:bg-ink-2 transition-colors"
                         >
                           Enviar nova solicitação
                         </motion.button>

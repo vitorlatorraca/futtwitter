@@ -295,7 +295,7 @@ export default function Explore() {
                   }`}
                 >
                   {labels[key]}
-                  {active && <span className="absolute bottom-0 left-1/2 -translate-x-1/2 w-14 h-1 bg-x-accent rounded-full" />}
+                  {active && <span className="absolute bottom-0 left-1/2 -translate-x-1/2 w-14 h-1 bg-ink rounded-full" />}
                 </button>
               );
             })}
@@ -398,7 +398,7 @@ export default function Explore() {
                     <h3 className="text-[23px] font-extrabold text-x-text-primary mb-2 leading-tight">
                       Nenhum resultado para
                       <br />
-                      <span className="text-x-accent">&ldquo;{query}&rdquo;</span>
+                      <span className="text-floodlight">&ldquo;{query}&rdquo;</span>
                     </h3>
                     <p className="text-x-text-secondary text-[15px] max-w-[260px] mx-auto">
                       Tente palavras diferentes ou verifique a ortografia.
@@ -453,7 +453,7 @@ export default function Explore() {
                 key={pill.key}
                 onClick={() => setCategoryFilter(pill.key)}
                 className={`min-w-[80px] py-4 px-4 text-[15px] font-medium transition-colors whitespace-nowrap ${
-                  categoryFilter === pill.key ? "text-x-text-primary border-b-2 border-x-accent" : "text-x-text-secondary hover:text-x-text-primary"
+                  categoryFilter === pill.key ? "text-x-text-primary border-b-2 border-ink" : "text-x-text-secondary hover:text-x-text-primary"
                 }`}
               >
                 {pill.label}

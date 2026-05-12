@@ -183,7 +183,7 @@ export default function ResetPasswordPage() {
                         onChange={(e) => { setPassword(e.target.value); setErrorMsg(null); }}
                         disabled={isLoading}
                         autoComplete="new-password"
-                        className="pl-9 pr-10 border-border focus-visible:ring-primary focus-visible:border-primary"
+                        className="pl-9 pr-10 border-border focus-visible:ring-floodlight focus-visible:border-floodlight"
                       />
                       <button
                         type="button"
@@ -247,7 +247,7 @@ export default function ResetPasswordPage() {
                         onChange={(e) => { setConfirmPassword(e.target.value); setErrorMsg(null); }}
                         disabled={isLoading}
                         autoComplete="new-password"
-                        className="pl-9 pr-10 border-border focus-visible:ring-primary focus-visible:border-primary"
+                        className="pl-9 pr-10 border-border focus-visible:ring-floodlight focus-visible:border-floodlight"
                       />
                       <button
                         type="button"

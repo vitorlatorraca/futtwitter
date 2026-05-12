@@ -102,27 +102,28 @@ export default function Sidebar() {
         to={item.path}
         className={`group flex items-center rounded-full transition-colors py-3 px-3 relative ${
           isActive
-            ? "hover:bg-[rgba(26,86,219,0.15)]"
-            : "hover:bg-[rgba(26,86,219,0.1)]"
+            ? "hover:bg-paper-2"
+            : "hover:bg-paper-2"
         }`}
         aria-label={item.label}
       >
         {isActive && (
-          <div className="absolute left-0 top-1/2 -translate-y-1/2 w-[3px] h-6 bg-x-accent rounded-r-full" />
+          <div className="absolute left-0 top-1/2 -translate-y-1/2 w-[3px] h-6 bg-ink rounded-r-full" />
         )}
         <div className="relative">
           <Icon
             className={`w-[26px] h-[26px] transition-colors ${
               isActive
-                ? "text-x-accent stroke-[2.5]"
+                ? "text-floodlight stroke-[2.5]"
                 : "stroke-[1.75] text-x-text-primary"
             }`}
-            fill={isActive ? "rgba(26,86,219,0.2)" : "none"}
+            fill={isActive ? "var(--floodlight)" : "none"}
+            fillOpacity={isActive ? 0.15 : 1}
           />
           {item.badge && (
             <span
               className={`absolute -top-1.5 -right-1.5 text-[11px] font-bold rounded-full min-w-[18px] h-[18px] flex items-center justify-center px-1 ${
-                item.badgeColor || "bg-x-accent text-foreground"
+                item.badgeColor || "bg-ink text-foreground"
               }`}
             >
               {typeof item.badge === "number" && item.badge > 99 ? "99+" : item.badge}
@@ -132,7 +133,7 @@ export default function Sidebar() {
         {!isCompact && (
           <div className="ml-5 flex flex-col">
             <span className={`text-xl leading-6 ${
-              isActive ? "font-bold text-x-accent" : "font-normal text-x-text-primary"
+              isActive ? "font-bold text-floodlight" : "font-normal text-x-text-primary"
             }`}>
               {item.label}
             </span>
@@ -189,7 +190,7 @@ export default function Sidebar() {
 
           {/* <button
             onClick={() => setMoreMenuOpen(!moreMenuOpen)}
-            className="group flex items-center rounded-full hover:bg-[rgba(26,86,219,0.1)] transition-colors py-3 px-3 w-full"
+            className="group flex items-center rounded-full hover:bg-paper-2 transition-colors py-3 px-3 w-full"
             aria-label="Mais"
           >
             <MoreHorizontal className="w-[26px] h-[26px] stroke-[1.75]" />
@@ -199,7 +200,7 @@ export default function Sidebar() {
 
         <button
           onClick={() => setComposeModalOpen(true)}
-          className={`mt-4 brand-gradient text-foreground font-bold rounded-full hover:opacity-90 transition-opacity ${
+          className={`mt-4 bg-ink text-paper font-semibold rounded-full hover:bg-ink-2 transition-colors ${
             isCompact
               ? "w-[50px] h-[50px] flex items-center justify-center"
               : "w-[90%] py-3 text-[17px]"
@@ -216,7 +217,7 @@ export default function Sidebar() {
           <>
         <button
           onClick={() => setUserMenuOpen(!userMenuOpen)}
-          className={`flex items-center rounded-full hover:bg-[rgba(26,86,219,0.1)] transition-colors p-3 w-full ${
+          className={`flex items-center rounded-full hover:bg-paper-2 transition-colors p-3 w-full ${
             isCompact ? "justify-center" : ""
           }`}
           aria-label="Menu da conta"

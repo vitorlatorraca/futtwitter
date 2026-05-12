@@ -103,7 +103,7 @@ export function NewTopicModal({ open, onOpenChange, teamId }: NewTopicModalProps
               id="topic-category"
               value={category}
               onChange={(e) => setCategory(e.target.value as ForumTopicCategory)}
-              className="flex h-9 w-full rounded-medium border border-card-border bg-surface-elevated px-3 py-2 text-sm font-medium text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+              className="flex h-9 w-full rounded-medium border border-card-border bg-surface-elevated px-3 py-2 text-sm font-medium text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-floodlight"
             >
               {FORUM_CATEGORIES.filter((c) => c.value !== 'base').map((c) => (
                 <option key={c.value} value={c.value}>

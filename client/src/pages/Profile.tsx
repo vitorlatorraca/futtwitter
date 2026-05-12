@@ -11,7 +11,7 @@ import PostSkeleton from "../components/feed/PostSkeleton";
 const profileTabs = ["Posts", "Respostas", "Destaques", "Mídia", "Curtidas"];
 
 const VerifiedBadge = () => (
-  <svg viewBox="0 0 22 22" className="w-5 h-5 fill-x-accent inline-block flex-shrink-0">
+  <svg viewBox="0 0 22 22" className="w-5 h-5 fill-floodlight inline-block flex-shrink-0">
     <path d="M20.396 11c-.018-.646-.215-1.275-.57-1.816-.354-.54-.852-.972-1.438-1.246.223-.607.27-1.264.14-1.897-.131-.634-.437-1.218-.882-1.687-.47-.445-1.053-.75-1.687-.882-.633-.13-1.29-.083-1.897.14-.273-.587-.704-1.086-1.245-1.44S11.647 1.62 11 1.604c-.646.017-1.273.213-1.813.568s-.969.855-1.245-1.44c-.608.223-1.267.272-1.902.14-.635-.13-1.22-.436-1.69-.882-.445-.47-.751-1.054-.882-1.69-.13-.633-.08-1.29.144-1.896-.586-.274-1.084-.705-1.438-1.246-.354-.54-.551-1.17-.569-1.816zM9.662 14.85l-3.429-3.428 1.293-1.302 2.072 2.072 4.4-4.794 1.347 1.246z" />
   </svg>
 );
@@ -39,7 +39,7 @@ export default function Profile() {
   if (profileQuery.isLoading || !handle) {
     return (
       <div className="flex items-center justify-center py-16">
-        <Loader2 className="w-10 h-10 text-x-accent animate-spin" />
+        <Loader2 className="w-10 h-10 text-floodlight animate-spin" />
       </div>
     );
   }
@@ -50,7 +50,7 @@ export default function Profile() {
         <p className="text-[15px] text-red-400">Perfil não encontrado.</p>
         <button
           onClick={() => navigate(-1)}
-          className="mt-4 text-x-accent hover:underline"
+          className="mt-4 text-floodlight hover:underline"
         >
           Voltar
         </button>
@@ -135,7 +135,7 @@ export default function Profile() {
           <div className="flex items-center gap-2 flex-wrap">
             <h2 className="text-xl font-extrabold">{user.name}</h2>
             {user.isVerifiedJournalist ? (
-              <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-x-accent/15 text-x-accent text-[13px] font-medium border border-x-accent/30">
+              <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-floodlight/15 text-floodlight text-[13px] font-medium border border-ink/30">
                 📰 Journalist
               </span>
             ) : (
@@ -159,7 +159,7 @@ export default function Profile() {
           {user.website && (
             <a
               href={user.website.startsWith("http") ? user.website : `https://${user.website}`}
-              className="flex items-center gap-1 text-x-accent hover:underline"
+              className="flex items-center gap-1 text-floodlight hover:underline"
               target="_blank"
               rel="noopener noreferrer"
             >
@@ -208,7 +208,7 @@ export default function Profile() {
               {tab}
             </span>
             {activeTab === tab && (
-              <div className="absolute bottom-0 left-1/2 -translate-x-1/2 w-[56px] h-1 bg-x-accent rounded-full" />
+              <div className="absolute bottom-0 left-1/2 -translate-x-1/2 w-[56px] h-1 bg-ink rounded-full" />
             )}
           </button>
         ))}

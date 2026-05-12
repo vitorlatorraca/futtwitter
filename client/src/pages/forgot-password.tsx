@@ -100,7 +100,7 @@ export default function ForgotPasswordPage() {
                       onChange={(e) => { setEmail(e.target.value); setErrorMsg(null); }}
                       disabled={isLoading}
                       autoComplete="email"
-                      className="pl-9 border-border focus-visible:ring-primary focus-visible:border-primary"
+                      className="pl-9 border-border focus-visible:ring-floodlight focus-visible:border-floodlight"
                     />
                   </div>
                 </div>

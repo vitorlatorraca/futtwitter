@@ -242,7 +242,7 @@ export function FormationView({
                   <button
                     type="button"
                     onClick={() => handleSlotClick(index)}
-                    className={`flex flex-col items-center justify-center ${slotSize} rounded-full border transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 focus:ring-offset-transparent ${
+                    className={`flex flex-col items-center justify-center ${slotSize} rounded-full border transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-floodlight focus:ring-offset-2 focus:ring-offset-transparent ${
                       player && isCompact
                         ? 'bg-emerald-500/10 border-emerald-400 border-2 shadow-[0_0_10px_rgba(16,185,129,0.15)] hover:scale-105'
                         : player

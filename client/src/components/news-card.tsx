@@ -290,7 +290,7 @@ export function NewsCard({ news, canInteract, onInteract }: NewsCardProps) {
                 value={newCommentText}
                 onChange={(e) => setNewCommentText(e.target.value)}
                 placeholder="Escreva um comentário..."
-                className="min-h-[80px] w-full rounded-2xl border border-border bg-background px-3 py-2 text-sm placeholder:text-foreground-secondary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:ring-offset-background disabled:cursor-not-allowed disabled:opacity-50"
+                className="min-h-[80px] w-full rounded-2xl border border-border bg-background px-3 py-2 text-sm placeholder:text-foreground-secondary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-floodlight focus-visible:ring-offset-2 focus-visible:ring-offset-background disabled:cursor-not-allowed disabled:opacity-50"
                 maxLength={2000}
                 disabled={createCommentMutation.isPending}
               />

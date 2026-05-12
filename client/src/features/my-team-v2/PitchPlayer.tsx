@@ -56,7 +56,7 @@ export function PitchPlayer({
       {...attributes}
       className={cn(
         'flex flex-col items-center justify-center transition-all duration-200 ease-out cursor-grab active:cursor-grabbing',
-        'focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 focus:ring-offset-transparent rounded-lg',
+        'focus:outline-none focus:ring-2 focus:ring-floodlight focus:ring-offset-2 focus:ring-offset-transparent rounded-lg',
         isSelected && 'ring-2 ring-primary/80 ring-offset-2 ring-offset-transparent scale-[1.03]',
         !isOverlay && isDragging && 'opacity-0 pointer-events-none'
       )}

@@ -109,7 +109,7 @@ export default function Feed() {
           <p className="text-[15px] text-red-400">Erro ao carregar notícias. Tente novamente.</p>
           <button
             onClick={() => query.refetch()}
-            className="mt-4 px-4 py-2 bg-x-accent text-foreground rounded-full font-medium hover:opacity-90"
+            className="mt-4 px-4 py-2 bg-ink text-foreground rounded-full font-medium hover:opacity-90"
           >
             Tentar novamente
           </button>
@@ -210,7 +210,7 @@ export default function Feed() {
       <div>{renderContent()}</div>
 
       <div ref={sentinelRef} className="py-8 flex items-center justify-center min-h-[48px]">
-        {isFetchingNextPage && <Loader2 className="w-8 h-8 text-x-accent animate-spin" />}
+        {isFetchingNextPage && <Loader2 className="w-8 h-8 text-floodlight animate-spin" />}
       </div>
     </div>
   );

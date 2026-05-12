@@ -273,7 +273,7 @@ function VotePopover({
               type="button"
               disabled={disabled}
               onClick={() => onVote(star, () => setOpen(false))}
-              className="p-1 rounded transition-all duration-150 hover:scale-110 focus:outline-none focus:ring-2 focus:ring-primary text-foreground-secondary/60 hover:text-primary disabled:opacity-50 disabled:pointer-events-none"
+              className="p-1 rounded transition-all duration-150 hover:scale-110 focus:outline-none focus:ring-2 focus:ring-floodlight text-foreground-secondary/60 hover:text-primary disabled:opacity-50 disabled:pointer-events-none"
               aria-label={`${star} ${star === 1 ? 'estrela' : 'estrelas'}`}
             >
               <Star className="h-5 w-5 fill-current" />

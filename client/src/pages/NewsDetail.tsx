@@ -68,7 +68,7 @@ export default function NewsDetail() {
   if (isLoading || !id) {
     return (
       <div className="flex items-center justify-center min-h-[400px]">
-        <Loader2 className="w-10 h-10 text-x-accent animate-spin" />
+        <Loader2 className="w-10 h-10 text-floodlight animate-spin" />
       </div>
     );
   }
@@ -79,7 +79,7 @@ export default function NewsDetail() {
         <p className="text-red-400 mb-4">{error?.message ?? "Notícia não encontrada."}</p>
         <button
           onClick={() => navigate("/")}
-          className="text-x-accent hover:underline"
+          className="text-floodlight hover:underline"
         >
           Voltar ao feed
         </button>
@@ -171,14 +171,14 @@ export default function NewsDetail() {
             value={newCommentText}
             onChange={(e) => setNewCommentText(e.target.value)}
             placeholder="Escreva um comentário..."
-            className="w-full px-4 py-3 bg-transparent border border-x-border rounded-2xl text-[15px] placeholder-x-text-secondary resize-none focus:outline-none focus:border-x-accent"
+            className="w-full px-4 py-3 bg-transparent border border-x-border rounded-2xl text-[15px] placeholder-x-text-secondary resize-none focus:outline-none focus:border-ink"
             rows={3}
             maxLength={2000}
           />
           <button
             type="submit"
             disabled={!newCommentText.trim() || createCommentMutation.isPending}
-            className="mt-3 px-4 py-2 bg-x-accent text-foreground font-bold rounded-full hover:opacity-90 disabled:opacity-50 disabled:cursor-not-allowed"
+            className="mt-3 px-4 py-2 bg-ink text-foreground font-bold rounded-full hover:opacity-90 disabled:opacity-50 disabled:cursor-not-allowed"
           >
             {createCommentMutation.isPending ? (
               <Loader2 className="w-5 h-5 animate-spin inline" />
@@ -208,7 +208,7 @@ export default function NewsDetail() {
                     className="w-10 h-10 rounded-full object-cover flex-shrink-0"
                   />
                 ) : (
-                  <div className="w-10 h-10 rounded-full bg-x-accent flex items-center justify-center text-foreground text-sm font-bold flex-shrink-0">
+                  <div className="w-10 h-10 rounded-full bg-ink flex items-center justify-center text-foreground text-sm font-bold flex-shrink-0">
                     {(c.author.name || "?").slice(0, 2).toUpperCase()}
                   </div>
                 )}

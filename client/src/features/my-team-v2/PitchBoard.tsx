@@ -265,7 +265,7 @@ export function PitchBoard({
                 className={cn(
                   'rounded-full transition-all duration-150',
                   'hover:shadow-glow-primary',
-                  'focus:outline-none focus:ring-2 focus:ring-primary/50 focus:ring-offset-2 focus:ring-offset-transparent'
+                  'focus:outline-none focus:ring-2 focus:ring-floodlight/50 focus:ring-offset-2 focus:ring-offset-transparent'
                 )}
               >
                 {player ? (

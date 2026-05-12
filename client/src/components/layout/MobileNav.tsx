@@ -32,12 +32,13 @@ export default function MobileNav() {
           >
             <Icon
               className={`w-6 h-6 transition-colors ${
-                isActive ? "text-x-accent stroke-[2.5]" : "stroke-[1.75] text-x-text-primary"
+                isActive ? "text-floodlight stroke-[2.5]" : "stroke-[1.75] text-x-text-primary"
               }`}
-              fill={isActive ? "rgba(26,86,219,0.2)" : "none"}
+              fill={isActive ? "var(--floodlight)" : "none"}
+              fillOpacity={isActive ? 0.15 : 1}
             />
             <span className={`text-[10px] mt-0.5 ${
-              isActive ? "text-x-accent font-bold" : "text-x-text-secondary"
+              isActive ? "text-floodlight font-bold" : "text-x-text-secondary"
             }`}>
               {item.label}
             </span>

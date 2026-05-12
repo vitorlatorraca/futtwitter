@@ -249,7 +249,7 @@ export default function SignupPage() {
                       onChange={(e) => { setFormData((prev) => ({ ...prev, name: e.target.value })); clearError('name'); }}
                       data-testid="input-name"
                       aria-invalid={errors.name ? true : undefined}
-                      className={`pl-9 focus-visible:ring-primary ${errors.name ? 'border-red-500 focus-visible:ring-red-500' : ''}`}
+                      className={`pl-9 focus-visible:ring-floodlight ${errors.name ? 'border-red-500 focus-visible:ring-red-500' : ''}`}
                       autoComplete="name"
                     />
                   </div>
@@ -276,7 +276,7 @@ export default function SignupPage() {
                       onChange={(e) => { setFormData((prev) => ({ ...prev, email: e.target.value })); clearError('email'); }}
                       data-testid="input-email"
                       aria-invalid={errors.email ? true : undefined}
-                      className={`pl-9 focus-visible:ring-primary ${errors.email ? 'border-red-500 focus-visible:ring-red-500' : ''}`}
+                      className={`pl-9 focus-visible:ring-floodlight ${errors.email ? 'border-red-500 focus-visible:ring-red-500' : ''}`}
                       autoComplete="email"
                     />
                   </div>
@@ -304,7 +304,7 @@ export default function SignupPage() {
                       onChange={(e) => { setFormData((prev) => ({ ...prev, password: e.target.value })); clearError('password'); }}
                       data-testid="input-password"
                       aria-invalid={errors.password ? true : undefined}
-                      className={`pl-9 pr-9 focus-visible:ring-primary ${errors.password ? 'border-red-500 focus-visible:ring-red-500' : ''}`}
+                      className={`pl-9 pr-9 focus-visible:ring-floodlight ${errors.password ? 'border-red-500 focus-visible:ring-red-500' : ''}`}
                       autoComplete="new-password"
                     />
                     <button
