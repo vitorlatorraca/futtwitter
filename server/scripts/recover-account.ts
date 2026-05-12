@@ -65,7 +65,7 @@ async function main() {
       'JOURNALIST',
       'corinthians',
       'vitorlatorraca',
-      'Jornalista e fundador do FuteApp 🦅',
+      'Jornalista e fundador da Tribuna',
       0,
       0,
       NOW(),

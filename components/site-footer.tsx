@@ -39,10 +39,10 @@ export function SiteFooter() {
           {/* Left Column */}
           <div className="lg:col-span-2 space-y-4">
             <Link href="/" className="inline-block">
-              <div className="text-xl font-bold text-foreground mb-2">Brasileirão</div>
+              <div className="font-display text-xl font-bold text-ink mb-2">tribuna</div>
             </Link>
             <p className="text-sm text-foreground-secondary max-w-md">
-              Sua paixão pelo Brasileirão em uma só plataforma. Avalie jogadores, leia notícias e conecte-se com torcedores.
+              A arquibancada digital do futebol brasileiro. Notícias, avaliações e a torcida no mesmo lugar.
             </p>
             <div className="flex flex-wrap gap-2 pt-2">
               {footerChips.map((chip, index) => (
@@ -135,7 +135,7 @@ export function SiteFooter() {
         {/* Copyright */}
         <div className="pt-8 border-t border-white/10">
           <p className="text-sm text-foreground-secondary text-center">
-            © {new Date().getFullYear()} Brasileirão. Todos os direitos reservados.
+            © {new Date().getFullYear()} Tribuna. Todos os direitos reservados.
           </p>
         </div>
       </div>

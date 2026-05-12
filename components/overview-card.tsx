@@ -25,9 +25,9 @@ const categories = [
 ]
 
 const chips = [
-  "20 Times do Brasileirão",
+  "Série A e seleção",
   "Avaliações em tempo real",
-  "Notícias exclusivas",
+  "Notícias e análise",
   "Estatísticas detalhadas",
   "Comunidade ativa",
   "Plano gratuito disponível",

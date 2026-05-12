@@ -63,7 +63,7 @@ const NEWS_ITEMS = [
   {
     title: "Bastidores: Ramón Díaz revela mudança tática que transformou o Corinthians",
     content:
-      "Em entrevista exclusiva ao FuteApp, o técnico Ramón Díaz detalhou as mudanças táticas implementadas desde a sua chegada ao Corinthians. O argentino adotou um 4-3-3 com pressão alta e saída de bola pelo goleiro, o que melhorou consideravelmente a posse de bola do time — de 48% para 56% de média. Díaz também revelou que as sessões de vídeo com os jogadores são realizadas três vezes por semana e incluem análise dos adversários. 'O Corinthians tem qualidade para brigar por todos os títulos em 2026', afirmou o treinador.",
+      "Em entrevista exclusiva à Tribuna, o técnico Ramón Díaz detalhou as mudanças táticas implementadas desde a sua chegada ao Corinthians. O argentino adotou um 4-3-3 com pressão alta e saída de bola pelo goleiro, o que melhorou consideravelmente a posse de bola do time — de 48% para 56% de média. Díaz também revelou que as sessões de vídeo com os jogadores são realizadas três vezes por semana e incluem análise dos adversários. 'O Corinthians tem qualidade para brigar por todos os títulos em 2026', afirmou o treinador.",
     imageUrl:
       "https://images.unsplash.com/photo-1589487391730-58f20eb2c308?w=800&q=80",
     category: "BACKSTAGE",

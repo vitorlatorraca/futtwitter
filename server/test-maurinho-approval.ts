@@ -59,7 +59,7 @@ async function runSeed() {
       const hashedPassword = await bcrypt.hash("Admin@123", 10);
       
       await db.insert(users).values({
-        name: "FUTTWITTER Admin",
+        name: "Tribuna Admin",
         email: "admin@futtwitter.dev",
         password: hashedPassword,
         userType: "ADMIN",

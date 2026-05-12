@@ -49,7 +49,7 @@ const VerifiedBadge = () => (
     <path
       d="M8.5 12 L10.8 14.3 L15.8 8.8"
       fill="none"
-      stroke="#FFFFFF"
+      stroke="var(--paper)"
       strokeWidth="2"
       strokeLinecap="round"
       strokeLinejoin="round"

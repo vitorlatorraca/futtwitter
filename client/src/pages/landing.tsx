@@ -14,9 +14,9 @@ export default function LandingPage() {
   ];
 
   const chips = [
-    "20 Times do Brasileirão",
+    "Série A e seleção",
     "Avaliações em tempo real",
-    "Notícias exclusivas",
+    "Notícias e análise",
     "Estatísticas detalhadas",
     "Comunidade ativa",
     "Plano gratuito disponível",
@@ -43,17 +43,17 @@ export default function LandingPage() {
               <div className="w-fit bg-primary/5 backdrop-blur-md border border-primary/20 rounded-full px-3 py-1.5">
                 <div className="flex items-center gap-2">
                   <div className="h-1.5 w-1.5 rounded-full bg-primary animate-pulse"></div>
-                  <span className="text-xs font-medium text-foreground">All-in-one Brasileirão</span>
+                  <span className="text-xs font-medium text-foreground">A arquibancada digital</span>
                 </div>
               </div>
 
               {/* H1 — Barlow Condensed bold, editorial */}
               <h1 className="font-bold text-5xl md:text-6xl lg:text-7xl leading-tight text-foreground tracking-tight">
-                Sua paixão pelo Brasileirão em uma só plataforma
+                O jornal que conversa com a sua torcida
               </h1>
 
               <p className="text-lg md:text-xl text-foreground-secondary max-w-xl leading-relaxed">
-                Avalie jogadores, leia notícias exclusivas e conecte-se com milhares de torcedores apaixonados — tudo em um lugar, tudo no seu controle.
+                Notícias com credibilidade editorial, debate de arquibancada e ferramentas para acompanhar o seu clube — numa experiência pensada para o futebol brasileiro.
               </p>
 
               <div className="flex flex-col sm:flex-row gap-4">

@@ -6,10 +6,10 @@ import { OverviewCard } from "@/components/overview-card"
 import { Trophy, Star, Users, Shield } from "lucide-react"
 
 const features = [
-  { icon: Trophy, label: "20 Times", color: "text-blue-400" },
-  { icon: Star, label: "500+ Jogadores", color: "text-[#6D5EF0]" },
-  { icon: Users, label: "Milhares de Torcedores", color: "text-[#2FE6A6]" },
-  { icon: Shield, label: "Notícias Exclusivas", color: "text-foreground-secondary" },
+  { icon: Trophy, label: "20 Times", color: "text-floodlight" },
+  { icon: Star, label: "500+ Jogadores", color: "text-ink-3" },
+  { icon: Users, label: "Milhares de Torcedores", color: "text-slate" },
+  { icon: Shield, label: "Notícias e análise", color: "text-foreground-secondary" },
 ]
 
 export function Hero() {
@@ -21,17 +21,17 @@ export function Hero() {
           <div className="space-y-8">
             <div className="w-fit glass-card border border-white/10 rounded-full px-3 py-1.5">
               <div className="flex items-center gap-2">
-                <div className="h-1.5 w-1.5 rounded-full bg-[#2FE6A6]"></div>
-                <span className="text-xs font-medium text-foreground">All-in-one Brasileirão</span>
+                <div className="h-1.5 w-1.5 rounded-full bg-floodlight"></div>
+                <span className="text-xs font-medium text-foreground">A arquibancada digital</span>
               </div>
             </div>
             
             <h1 className="text-5xl md:text-6xl lg:text-7xl font-bold leading-[1.1] tracking-[-0.02em] text-foreground">
-              Sua paixão pelo Brasileirão em uma só plataforma
+              O jornal que conversa com a sua torcida
             </h1>
             
             <p className="text-lg md:text-xl text-foreground-secondary max-w-xl leading-relaxed">
-              Avalie jogadores, leia notícias exclusivas e conecte-se com milhares de torcedores apaixonados — tudo em um lugar, tudo no seu controle.
+              Notícias com credibilidade editorial, debate de arquibancada e ferramentas para acompanhar o seu clube — numa experiência pensada para o futebol brasileiro.
             </p>
             
             <div className="flex flex-col sm:flex-row gap-4">

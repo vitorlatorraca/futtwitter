@@ -237,6 +237,9 @@ function Section({ title, icon, action, children }: {
 
 // ─── HowToCard ─────────────────────────────────────────────────────────────────
 
+const HOWTO_DISMISS_KEY = "tribuna_howto_dismissed";
+const HOWTO_DISMISS_KEY_LEGACY = "futeapp_howto_dismissed";
+
 const HOW_TO_ITEMS = [
   { icon: '📋', tab: 'Resumo', desc: 'Notícias, debate do dia e tópicos da torcida.' },
   { icon: '⚽', tab: 'Escalação', desc: 'Veja e arraste jogadores para montar a formação.' },
@@ -249,7 +252,14 @@ const HOW_TO_ITEMS = [
 
 function HowToCard() {
   const [dismissed, setDismissed] = useState(() => {
-    try { return localStorage.getItem('futeapp_howto_dismissed') === '1'; } catch { return false; }
+    try {
+      return (
+        localStorage.getItem(HOWTO_DISMISS_KEY) === "1" ||
+        localStorage.getItem(HOWTO_DISMISS_KEY_LEGACY) === "1"
+      );
+    } catch {
+      return false;
+    }
   });
 
   if (dismissed) return null;
@@ -262,7 +272,12 @@ function HowToCard() {
         <button
           type="button"
           onClick={() => {
-            try { localStorage.setItem('futeapp_howto_dismissed', '1'); } catch {}
+            try {
+              localStorage.setItem(HOWTO_DISMISS_KEY, "1");
+              localStorage.removeItem(HOWTO_DISMISS_KEY_LEGACY);
+            } catch {
+              /* ignore */
+            }
             setDismissed(true);
           }}
           className="text-foreground/30 hover:text-foreground/70 transition-colors p-0.5 rounded"
