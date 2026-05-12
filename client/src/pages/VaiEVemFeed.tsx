@@ -38,17 +38,17 @@ function formatFee(item: TransferRumorItem): string {
 function TransferCard({ item }: { item: TransferRumorItem }) {
   const initial = item.player.name.charAt(0).toUpperCase();
   return (
-    <div className="px-4 py-4 border-b border-x-border hover:bg-x-hover transition-colors">
+    <div className="px-4 py-4 border-b border-card-border hover:bg-foreground/[0.04] transition-colors">
       <div className="flex items-start gap-3">
         {/* Avatar do jogador */}
         {item.player.photoUrl ? (
           <img
             src={item.player.photoUrl}
             alt={item.player.name}
-            className="w-12 h-12 rounded-full object-cover flex-shrink-0 bg-x-surface"
+            className="w-12 h-12 rounded-full object-cover flex-shrink-0 bg-surface-card"
           />
         ) : (
-          <div className="w-12 h-12 rounded-full bg-x-surface flex items-center justify-center text-lg font-bold text-x-text-secondary flex-shrink-0">
+          <div className="w-12 h-12 rounded-full bg-surface-card flex items-center justify-center text-lg font-bold text-foreground-secondary flex-shrink-0">
             {initial}
           </div>
         )}
@@ -65,20 +65,20 @@ function TransferCard({ item }: { item: TransferRumorItem }) {
 
           {/* De → Para */}
           <div className="flex items-center gap-2 mt-1.5 text-[14px]">
-            <span className="text-x-text-secondary truncate">{item.fromTeam?.name ?? "—"}</span>
+            <span className="text-foreground-secondary truncate">{item.fromTeam?.name ?? "—"}</span>
             <ArrowRight className="w-4 h-4 text-floodlight flex-shrink-0" />
             <span className="font-medium truncate">{item.toTeam?.name ?? "—"}</span>
           </div>
 
           {/* Valor */}
           <div className="flex items-center gap-2 mt-1.5">
-            <span className="text-[13px] text-x-text-secondary">Valor:</span>
+            <span className="text-[13px] text-foreground-secondary">Valor:</span>
             <span className="text-[13px] font-bold text-floodlight">{formatFee(item)}</span>
           </div>
 
           {/* Fonte (opcional) */}
           {item.sourceName && (
-            <p className="text-[12px] text-x-text-secondary mt-1">Fonte: {item.sourceName}</p>
+            <p className="text-[12px] text-foreground-secondary mt-1">Fonte: {item.sourceName}</p>
           )}
         </div>
       </div>
@@ -89,13 +89,13 @@ function TransferCard({ item }: { item: TransferRumorItem }) {
 // Skeleton para carregamento
 function SkeletonCard() {
   return (
-    <div className="px-4 py-4 border-b border-x-border">
+    <div className="px-4 py-4 border-b border-card-border">
       <div className="flex items-start gap-3">
-        <div className="w-12 h-12 rounded-full bg-x-surface animate-pulse flex-shrink-0" />
+        <div className="w-12 h-12 rounded-full bg-surface-card animate-pulse flex-shrink-0" />
         <div className="flex-1 space-y-2">
-          <div className="h-4 bg-x-surface animate-pulse rounded w-2/3" />
-          <div className="h-3 bg-x-surface animate-pulse rounded w-1/2" />
-          <div className="h-3 bg-x-surface animate-pulse rounded w-1/3" />
+          <div className="h-4 bg-surface-card animate-pulse rounded w-2/3" />
+          <div className="h-3 bg-surface-card animate-pulse rounded w-1/2" />
+          <div className="h-3 bg-surface-card animate-pulse rounded w-1/3" />
         </div>
       </div>
     </div>
@@ -114,13 +114,13 @@ export default function VaiEVemFeed() {
   return (
     <div>
       {/* Header com tabs */}
-      <div className="sticky top-0 z-20 bg-black/80 backdrop-blur-md border-b border-x-border">
+      <div className="sticky top-0 z-20 bg-background/80 backdrop-blur-md border-b border-card-border">
         <div className="px-4 py-3 flex items-center justify-between gap-3">
           <div className="flex items-center gap-3">
             <ArrowLeftRight className="w-6 h-6 text-floodlight" />
             <div>
               <h1 className="text-xl font-extrabold">Vai e Vem</h1>
-              <p className="text-[13px] text-x-text-secondary">Transferências e rumores</p>
+              <p className="text-[13px] text-foreground-secondary">Transferências e rumores</p>
             </div>
           </div>
 
@@ -128,14 +128,14 @@ export default function VaiEVemFeed() {
           {isJournalist ? (
             <button
               onClick={() => setDialogOpen(true)}
-              className="flex items-center gap-1.5 bg-ink hover:bg-ink-2 text-foreground text-[13px] font-bold px-3 py-1.5 rounded-full transition-colors flex-shrink-0"
+              className="flex items-center gap-1.5 bg-ink hover:bg-ink-2 text-primary-foreground text-[13px] font-bold px-3 py-1.5 rounded-full transition-colors flex-shrink-0"
             >
               <Plus className="w-4 h-4" />
               Nova negociação
             </button>
           ) : user ? (
             <div
-              className="flex items-center gap-1.5 text-x-text-secondary text-[12px] flex-shrink-0"
+              className="flex items-center gap-1.5 text-foreground-secondary text-[12px] flex-shrink-0"
               title="Apenas jornalistas verificados podem publicar negociações"
             >
               <Lock className="w-3.5 h-3.5" />
@@ -150,9 +150,9 @@ export default function VaiEVemFeed() {
             <button
               key={tab.status}
               onClick={() => setActiveFilter(tab.status)}
-              className="flex-1 py-3 text-center hover:bg-x-hover transition-colors relative text-[14px] font-medium"
+              className="flex-1 py-3 text-center hover:bg-foreground/[0.04] transition-colors relative text-[14px] font-medium"
             >
-              <span className={activeFilter === tab.status ? "font-bold" : "text-x-text-secondary"}>
+              <span className={activeFilter === tab.status ? "font-bold" : "text-foreground-secondary"}>
                 {tab.label}
               </span>
               {activeFilter === tab.status && (
@@ -167,17 +167,17 @@ export default function VaiEVemFeed() {
       {isLoading ? (
         Array.from({ length: 5 }).map((_, i) => <SkeletonCard key={i} />)
       ) : isError ? (
-        <div className="px-4 py-12 text-center text-x-text-secondary">
+        <div className="px-4 py-12 text-center text-foreground-secondary">
           <p className="text-[15px]">Erro ao carregar negociações.</p>
           <p className="text-[13px] mt-1">Tente novamente mais tarde.</p>
         </div>
       ) : !rumors || rumors.length === 0 ? (
         <div className="px-4 py-16 text-center">
-          <ArrowLeftRight className="w-10 h-10 text-x-text-secondary mx-auto mb-3 opacity-50" />
-          <p className="text-[15px] font-semibold text-x-text-secondary">
+          <ArrowLeftRight className="w-10 h-10 text-foreground-secondary mx-auto mb-3 opacity-50" />
+          <p className="text-[15px] font-semibold text-foreground-secondary">
             Nenhuma negociação ainda
           </p>
-          <p className="text-[13px] text-x-text-secondary mt-1">
+          <p className="text-[13px] text-foreground-secondary mt-1">
             {isJournalist
               ? "Seja o primeiro a publicar uma negociação!"
               : "Em breve jornalistas vão publicar negociações aqui."}

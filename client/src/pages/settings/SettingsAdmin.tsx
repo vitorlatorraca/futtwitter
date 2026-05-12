@@ -31,25 +31,25 @@ function ApplicationCard({
   const loading = loadingUserId === app.userId;
 
   return (
-    <div className="border border-x-border rounded-2xl p-4 mb-3">
+    <div className="border border-card-border rounded-2xl p-4 mb-3">
       <div className="flex items-start gap-3">
         <div
-          className={`w-10 h-10 rounded-full flex-shrink-0 overflow-hidden ${app.userAvatarUrl ? "bg-cover bg-center" : "bg-x-border"}`}
+          className={`w-10 h-10 rounded-full flex-shrink-0 overflow-hidden ${app.userAvatarUrl ? "bg-cover bg-center" : "bg-muted"}`}
           style={app.userAvatarUrl ? { backgroundImage: `url(${app.userAvatarUrl})` } : undefined}
         >
           {!app.userAvatarUrl && (
-            <div className="w-full h-full flex items-center justify-center text-x-text-secondary text-sm font-medium">
+            <div className="w-full h-full flex items-center justify-center text-foreground-secondary text-sm font-medium">
               {app.userName.charAt(0).toUpperCase()}
             </div>
           )}
         </div>
         <div className="flex-1 min-w-0">
           <p className="text-[15px] font-semibold">{app.userName}</p>
-          <p className="text-[13px] text-x-text-secondary">@{app.userHandle}</p>
+          <p className="text-[13px] text-foreground-secondary">@{app.userHandle}</p>
         </div>
       </div>
 
-      <div className="mt-4 space-y-2 text-[14px] text-x-text-secondary">
+      <div className="mt-4 space-y-2 text-[14px] text-foreground-secondary">
         <div className="flex items-center gap-2">
           <Building2 className="w-4 h-4 flex-shrink-0" />
           <span>Organização: {app.organization}</span>
@@ -162,27 +162,27 @@ export default function SettingsAdmin() {
 
   return (
     <div>
-      <div className="sticky top-0 z-20 bg-black/80 backdrop-blur-md flex items-center gap-6 px-4 h-[53px] border-b border-x-border">
+      <div className="sticky top-0 z-20 bg-background/80 backdrop-blur-md flex items-center gap-6 px-4 h-[53px] border-b border-card-border">
         <button
           onClick={() => navigate(-1)}
-          className="p-2 -m-2 rounded-full hover:bg-[rgba(231,233,234,0.1)] transition-colors"
+          className="p-2 -m-2 rounded-full hover:bg-foreground/[0.08] transition-colors"
           aria-label="Voltar"
         >
           <ArrowLeft className="w-5 h-5" />
         </button>
         <div>
           <h1 className="text-xl font-bold">Painel Admin</h1>
-          <p className="text-[13px] text-x-text-secondary">Solicitações de jornalistas</p>
+          <p className="text-[13px] text-foreground-secondary">Solicitações de jornalistas</p>
         </div>
       </div>
 
       <div className="p-4">
         {isLoading ? (
           <div className="flex justify-center py-12">
-            <Loader2 className="w-8 h-8 animate-spin text-x-text-secondary" />
+            <Loader2 className="w-8 h-8 animate-spin text-foreground-secondary" />
           </div>
         ) : !applications || applications.length === 0 ? (
-          <div className="flex flex-col items-center justify-center py-16 gap-4 text-x-text-secondary">
+          <div className="flex flex-col items-center justify-center py-16 gap-4 text-foreground-secondary">
             <Inbox className="w-12 h-12 opacity-50" />
             <p className="text-[15px]">Nenhuma solicitação pendente.</p>
           </div>

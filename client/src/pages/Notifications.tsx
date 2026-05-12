@@ -66,7 +66,7 @@ function FollowBackButton({ handle }: { handle: string }) {
       disabled={toggleFollow.isPending}
       className={`mt-2 px-4 py-1.5 rounded-full text-[13px] font-bold transition-colors ${
         isFollowing
-          ? "border border-x-border text-foreground hover:border-red-500 hover:text-red-500"
+          ? "border border-card-border text-foreground hover:border-destructive hover:text-destructive"
           : "bg-foreground text-background hover:bg-foreground/90"
       }`}
     >
@@ -104,8 +104,8 @@ function NotificationCard({
   return (
     <div
       onClick={handleNotificationClick}
-      className={`flex items-start gap-3 px-4 py-4 border-b border-x-border cursor-pointer transition-colors
-        hover:bg-x-hover
+      className={`flex items-start gap-3 px-4 py-4 border-b border-card-border cursor-pointer transition-colors
+        hover:bg-foreground/[0.04]
         ${!n.isRead ? "bg-[rgba(0,230,118,0.03)]" : ""}`}
     >
       <div className="relative flex-shrink-0 mt-1">
@@ -122,7 +122,7 @@ function NotificationCard({
       <div className="flex-1 min-w-0">
         {n.actor && (
           <div
-            className="w-8 h-8 rounded-full bg-x-border overflow-hidden mb-2 float-right ml-2 cursor-pointer"
+            className="w-8 h-8 rounded-full bg-muted overflow-hidden mb-2 float-right ml-2 cursor-pointer"
             onClick={(e) => {
               e.stopPropagation();
               onNavigate(`/profile/${n.actor!.handle}`);
@@ -135,7 +135,7 @@ function NotificationCard({
                 className="w-full h-full object-cover"
               />
             ) : (
-              <div className="w-full h-full flex items-center justify-center text-xs font-bold text-x-text-secondary">
+              <div className="w-full h-full flex items-center justify-center text-xs font-bold text-foreground-secondary">
                 {n.actor.name.charAt(0).toUpperCase()}
               </div>
             )}
@@ -154,11 +154,11 @@ function NotificationCard({
               {n.actor.name}
             </span>
           )}{" "}
-          <span className="text-x-text-primary">{titleSuffix}</span>
+          <span className="text-foreground">{titleSuffix}</span>
         </p>
 
         {n.message && (
-          <p className="text-[14px] text-x-text-secondary mt-0.5 line-clamp-2">
+          <p className="text-[14px] text-foreground-secondary mt-0.5 line-clamp-2">
             {n.message}
           </p>
         )}
@@ -167,7 +167,7 @@ function NotificationCard({
           <FollowBackButton handle={n.actor.handle} />
         )}
 
-        <p className="text-[13px] text-x-text-secondary mt-1">
+        <p className="text-[13px] text-foreground-secondary mt-1">
           {formatRelativeTime(n.createdAt)}
         </p>
       </div>
@@ -177,12 +177,12 @@ function NotificationCard({
 
 function NotificationSkeleton() {
   return (
-    <div className="flex items-start gap-3 px-4 py-4 border-b border-x-border animate-pulse">
-      <div className="w-10 h-10 rounded-full bg-x-border flex-shrink-0" />
+    <div className="flex items-start gap-3 px-4 py-4 border-b border-card-border animate-pulse">
+      <div className="w-10 h-10 rounded-full bg-muted flex-shrink-0" />
       <div className="flex-1 space-y-2">
-        <div className="h-4 bg-x-border rounded w-3/4" />
-        <div className="h-3 bg-x-border rounded w-1/2" />
-        <div className="h-3 bg-x-border rounded w-1/4" />
+        <div className="h-4 bg-muted rounded w-3/4" />
+        <div className="h-3 bg-muted rounded w-1/2" />
+        <div className="h-3 bg-muted rounded w-1/4" />
       </div>
     </div>
   );
@@ -213,26 +213,26 @@ export default function Notifications() {
 
   return (
     <div>
-      <div className="sticky top-0 z-20 bg-black/80 backdrop-blur-md">
+      <div className="sticky top-0 z-20 bg-background/80 backdrop-blur-md">
         <div className="flex items-center justify-between px-4 py-3">
           <h1 className="text-xl font-bold">Notificações</h1>
           <button
-            className="p-2 -m-2 rounded-full hover:bg-[rgba(231,233,234,0.1)] transition-colors"
+            className="p-2 -m-2 rounded-full hover:bg-foreground/[0.08] transition-colors"
             aria-label="Configurações"
           >
             <Settings className="w-5 h-5" />
           </button>
         </div>
-        <div className="flex border-b border-x-border">
+        <div className="flex border-b border-card-border">
           {tabs.map((tab) => (
             <button
               key={tab}
               onClick={() => setActiveTab(tab)}
-              className="flex-1 py-4 text-center hover:bg-x-hover transition-colors relative text-[15px]"
+              className="flex-1 py-4 text-center hover:bg-foreground/[0.04] transition-colors relative text-[15px]"
             >
               <span
                 className={
-                  activeTab === tab ? "font-bold" : "text-x-text-secondary"
+                  activeTab === tab ? "font-bold" : "text-foreground-secondary"
                 }
               >
                 {tab}
@@ -256,9 +256,9 @@ export default function Notifications() {
 
         {!isLoading && filtered.length === 0 && (
           <div className="px-8 py-16 text-center">
-            <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-x-border flex items-center justify-center">
+            <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-muted flex items-center justify-center">
               <svg
-                className="w-8 h-8 text-x-text-secondary"
+                className="w-8 h-8 text-foreground-secondary"
                 fill="none"
                 stroke="currentColor"
                 viewBox="0 0 24 24"
@@ -272,7 +272,7 @@ export default function Notifications() {
               </svg>
             </div>
             <h2 className="text-3xl font-extrabold mb-2">Nenhuma notificação ainda</h2>
-            <p className="text-x-text-secondary text-[15px]">
+            <p className="text-foreground-secondary text-[15px]">
               {activeTab === "Menções"
                 ? "Quando alguém mencionar você, aparecerá aqui."
                 : "Quando alguém interagir com seus posts, aparecerá aqui."}

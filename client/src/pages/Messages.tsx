@@ -23,24 +23,24 @@ function ConversationList({
       <div className="flex items-center justify-between px-4 py-3">
         <h1 className="text-xl font-bold">Mensagens</h1>
         <div className="flex items-center gap-2">
-          <button className="p-2 -m-2 rounded-full hover:bg-[rgba(231,233,234,0.1)]" aria-label="Settings">
+          <button className="p-2 -m-2 rounded-full hover:bg-foreground/[0.08]" aria-label="Settings">
             <Settings className="w-5 h-5" />
           </button>
-          <button className="p-2 -m-2 rounded-full hover:bg-[rgba(231,233,234,0.1)]" aria-label="New message">
+          <button className="p-2 -m-2 rounded-full hover:bg-foreground/[0.08]" aria-label="New message">
             <Mail className="w-5 h-5" />
           </button>
         </div>
       </div>
 
       <div className="px-4 pb-3">
-        <div className="flex items-center bg-x-search-bg rounded-full px-4 py-2.5">
-          <Search className="w-[18px] h-[18px] text-x-text-secondary" />
+        <div className="flex items-center bg-paper-2 rounded-full px-4 py-2.5">
+          <Search className="w-[18px] h-[18px] text-foreground-secondary" />
           <input
             type="text"
             placeholder="Buscar mensagens"
             value={searchValue}
             onChange={(e) => setSearchValue(e.target.value)}
-            className="ml-3 bg-transparent text-[15px] text-x-text-primary placeholder-x-text-secondary outline-none flex-1"
+            className="ml-3 bg-transparent text-[15px] text-foreground placeholder:text-foreground-secondary outline-none flex-1"
           />
         </div>
       </div>
@@ -50,8 +50,8 @@ function ConversationList({
           <button
             key={conv.id}
             onClick={() => onSelect(conv.id)}
-            className={`w-full px-4 py-3 flex items-center gap-3 hover:bg-x-hover transition-colors text-left ${
-              selectedId === conv.id ? "bg-x-hover" : ""
+            className={`w-full px-4 py-3 flex items-center gap-3 hover:bg-foreground/[0.04] transition-colors text-left ${
+              selectedId === conv.id ? "bg-foreground/[0.04]" : ""
             }`}
           >
             <img
@@ -63,14 +63,14 @@ function ConversationList({
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-1 min-w-0">
                   <span className="text-[15px] font-bold truncate">{conv.participant.displayName}</span>
-                  <span className="text-[15px] text-x-text-secondary truncate">@{conv.participant.handle}</span>
+                  <span className="text-[15px] text-foreground-secondary truncate">@{conv.participant.handle}</span>
                 </div>
-                <span className="text-[13px] text-x-text-secondary flex-shrink-0 ml-2">
+                <span className="text-[13px] text-foreground-secondary flex-shrink-0 ml-2">
                   {formatTimestamp(conv.lastTimestamp)}
                 </span>
               </div>
               <div className="flex items-center justify-between mt-0.5">
-                <p className="text-[15px] text-x-text-secondary truncate">{conv.lastMessage}</p>
+                <p className="text-[15px] text-foreground-secondary truncate">{conv.lastMessage}</p>
                 {conv.unreadCount > 0 && (
                   <span className="w-5 h-5 bg-ink rounded-full text-[11px] font-bold flex items-center justify-center flex-shrink-0 ml-2">
                     {conv.unreadCount}
@@ -99,7 +99,7 @@ function ChatView({ conversation, onBack }: { conversation: Conversation | null;
       <div className="flex-1 flex items-center justify-center">
         <div className="text-center max-w-[360px]">
           <h2 className="text-3xl font-extrabold mb-2">Selecione uma mensagem</h2>
-          <p className="text-x-text-secondary text-[15px]">
+          <p className="text-foreground-secondary text-[15px]">
             Escolha uma conversa existente ou inicie uma nova.
           </p>
           <button className="mt-6 brand-gradient hover:opacity-90 text-foreground font-bold text-[15px] rounded-full px-8 py-3 transition-opacity">
@@ -126,9 +126,9 @@ function ChatView({ conversation, onBack }: { conversation: Conversation | null;
   return (
     <div className="flex-1 flex flex-col h-screen">
       {/* Header */}
-      <div className="flex items-center gap-3 px-4 py-2 border-b border-x-border">
+      <div className="flex items-center gap-3 px-4 py-2 border-b border-card-border">
         {onBack && (
-          <button onClick={onBack} className="p-2 -m-2 rounded-full hover:bg-[rgba(231,233,234,0.1)]" aria-label="Back">
+          <button onClick={onBack} className="p-2 -m-2 rounded-full hover:bg-foreground/[0.08]" aria-label="Back">
             <ArrowLeft className="w-5 h-5" />
           </button>
         )}
@@ -136,10 +136,10 @@ function ChatView({ conversation, onBack }: { conversation: Conversation | null;
         <div className="flex-1">
           <p className="text-[15px] font-bold">{conversation.participant.displayName}</p>
         </div>
-        <button className="p-2 rounded-full hover:bg-[rgba(231,233,234,0.1)]" aria-label="Video call">
+        <button className="p-2 rounded-full hover:bg-foreground/[0.08]" aria-label="Video call">
           <Video className="w-5 h-5" />
         </button>
-        <button className="p-2 rounded-full hover:bg-[rgba(231,233,234,0.1)]" aria-label="Info">
+        <button className="p-2 rounded-full hover:bg-foreground/[0.08]" aria-label="Info">
           <Info className="w-5 h-5" />
         </button>
       </div>
@@ -155,7 +155,7 @@ function ChatView({ conversation, onBack }: { conversation: Conversation | null;
             <React.Fragment key={msg.id}>
               {showTime && (
                 <div className="text-center py-3">
-                  <span className="text-[13px] text-x-text-secondary">{formatMessageTime(msg.timestamp)}</span>
+                  <span className="text-[13px] text-foreground-secondary">{formatMessageTime(msg.timestamp)}</span>
                 </div>
               )}
               <div className={`flex ${isSent ? "justify-end" : "justify-start"}`}>
@@ -163,7 +163,7 @@ function ChatView({ conversation, onBack }: { conversation: Conversation | null;
                   className={`max-w-[75%] px-4 py-3 rounded-2xl text-[15px] leading-5 ${
                     isSent
                       ? "bg-ink text-foreground rounded-br-sm"
-                      : "bg-x-surface text-x-text-primary rounded-bl-sm"
+                      : "bg-surface-card text-foreground rounded-bl-sm"
                   }`}
                 >
                   {msg.text}
@@ -176,8 +176,8 @@ function ChatView({ conversation, onBack }: { conversation: Conversation | null;
       </div>
 
       {/* Input */}
-      <div className="px-4 py-3 border-t border-x-border">
-        <div className="flex items-center gap-2 bg-x-surface rounded-2xl px-3 py-2">
+      <div className="px-4 py-3 border-t border-card-border">
+        <div className="flex items-center gap-2 bg-surface-card rounded-2xl px-3 py-2">
           <button className="p-1.5 rounded-full hover:bg-[rgba(0,230,118,0.08)]" aria-label="Add image">
             <Image className="w-5 h-5 text-floodlight" />
           </button>
@@ -190,7 +190,7 @@ function ChatView({ conversation, onBack }: { conversation: Conversation | null;
             onChange={(e) => setText(e.target.value)}
             onKeyDown={(e) => e.key === "Enter" && handleSend()}
             placeholder="Escreva uma mensagem"
-            className="flex-1 bg-transparent text-[15px] text-x-text-primary placeholder-x-text-secondary outline-none"
+            className="flex-1 bg-transparent text-[15px] text-foreground placeholder:text-foreground-secondary outline-none"
           />
           <button
             onClick={handleSend}
@@ -234,7 +234,7 @@ export default function Messages() {
 
   return (
     <div className="flex h-screen">
-      <div className="w-[380px] border-r border-x-border flex-shrink-0 overflow-hidden">
+      <div className="w-[380px] border-r border-card-border flex-shrink-0 overflow-hidden">
         <ConversationList
           conversations={conversations}
           selectedId={selectedId}

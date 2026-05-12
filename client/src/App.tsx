@@ -123,8 +123,8 @@ function LoadingFallback() {
 function PlaceholderPage({ title }: { title: string }) {
   return (
     <div className="py-16 px-8 text-center">
-      <h2 className="text-3xl font-extrabold mb-2">{title}</h2>
-      <p className="text-x-text-secondary text-[15px]">Esta página estará disponível em breve.</p>
+      <h2 className="text-3xl font-extrabold mb-2 text-foreground">{title}</h2>
+      <p className="text-foreground-secondary text-[15px]">Esta página estará disponível em breve.</p>
     </div>
   );
 }

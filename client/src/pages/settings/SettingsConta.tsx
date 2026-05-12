@@ -33,13 +33,13 @@ function ApplicationForm({
       animate={{ opacity: 1, height: "auto" }}
       exit={{ opacity: 0, height: 0 }}
       onSubmit={onSubmit}
-      className="space-y-3 rounded-xl border border-x-border p-4 bg-x-hover"
+      className="space-y-3 rounded-xl border border-card-border p-4 bg-foreground/[0.04]"
     >
       <input
         name="org"
         type="text"
         placeholder="Veículo/Organização* (Ex: TV Globo, UOL Esporte)"
-        className="w-full px-3 py-2 rounded-lg bg-transparent border border-x-border text-[15px] outline-none focus:border-ink"
+        className="w-full px-3 py-2 rounded-lg bg-transparent border border-card-border text-[15px] outline-none focus:border-ink"
         required
         minLength={2}
       />
@@ -47,7 +47,7 @@ function ApplicationForm({
         name="profId"
         type="text"
         placeholder="ID Profissional (DRT ou similar)*"
-        className="w-full px-3 py-2 rounded-lg bg-transparent border border-x-border text-[15px] outline-none focus:border-ink"
+        className="w-full px-3 py-2 rounded-lg bg-transparent border border-card-border text-[15px] outline-none focus:border-ink"
         required
         minLength={2}
       />
@@ -55,7 +55,7 @@ function ApplicationForm({
         name="portfolioUrl"
         type="url"
         placeholder="URL do portfólio (opcional)"
-        className="w-full px-3 py-2 rounded-lg bg-transparent border border-x-border text-[15px] outline-none focus:border-ink"
+        className="w-full px-3 py-2 rounded-lg bg-transparent border border-card-border text-[15px] outline-none focus:border-ink"
       />
       <div className="flex gap-2">
         <button
@@ -75,7 +75,7 @@ function ApplicationForm({
         <button
           type="button"
           onClick={onCancel}
-          className="px-4 py-2 rounded-full border border-x-border text-[15px] hover:bg-[rgba(231,233,234,0.1)] transition-colors"
+          className="px-4 py-2 rounded-full border border-card-border text-[15px] hover:bg-foreground/[0.08] transition-colors"
         >
           Cancelar
         </button>
@@ -285,10 +285,10 @@ export default function SettingsConta() {
   return (
     <div>
       {/* Header */}
-      <div className="sticky top-0 z-20 bg-black/80 backdrop-blur-md flex items-center gap-6 px-4 h-[53px] border-b border-x-border">
+      <div className="sticky top-0 z-20 bg-background/80 backdrop-blur-md flex items-center gap-6 px-4 h-[53px] border-b border-card-border">
         <button
           onClick={() => navigate(-1)}
-          className="p-2 -m-2 rounded-full hover:bg-[rgba(231,233,234,0.1)] transition-colors"
+          className="p-2 -m-2 rounded-full hover:bg-foreground/[0.08] transition-colors"
           aria-label="Voltar"
         >
           <ArrowLeft className="w-5 h-5" />
@@ -405,17 +405,17 @@ export default function SettingsConta() {
           {/* Profile fields */}
           {!editing ? (
             <div className="space-y-2 text-[15px]">
-              <p><span className="text-x-text-secondary">Nome:</span> {authUser?.name ?? "—"}</p>
-              <p><span className="text-x-text-secondary">@handle:</span> @{authUser?.handle ?? "—"}</p>
-              <p><span className="text-x-text-secondary">Email:</span> {authUser?.email ?? "—"}</p>
-              <p><span className="text-x-text-secondary">Bio:</span> {authUser?.bio || "—"}</p>
-              <p><span className="text-x-text-secondary">Local:</span> {authUser?.location || "—"}</p>
-              <p><span className="text-x-text-secondary">Website:</span> {authUser?.website || "—"}</p>
-              <p><span className="text-x-text-secondary">Tipo de conta:</span> {accountTypeLabel}</p>
-              <p><span className="text-x-text-secondary">Time:</span> {teamName}</p>
+              <p><span className="text-foreground-secondary">Nome:</span> {authUser?.name ?? "—"}</p>
+              <p><span className="text-foreground-secondary">@handle:</span> @{authUser?.handle ?? "—"}</p>
+              <p><span className="text-foreground-secondary">Email:</span> {authUser?.email ?? "—"}</p>
+              <p><span className="text-foreground-secondary">Bio:</span> {authUser?.bio || "—"}</p>
+              <p><span className="text-foreground-secondary">Local:</span> {authUser?.location || "—"}</p>
+              <p><span className="text-foreground-secondary">Website:</span> {authUser?.website || "—"}</p>
+              <p><span className="text-foreground-secondary">Tipo de conta:</span> {accountTypeLabel}</p>
+              <p><span className="text-foreground-secondary">Time:</span> {teamName}</p>
               <button
                 onClick={startEditing}
-                className="mt-3 px-4 py-2 rounded-full border border-x-border text-[15px] font-semibold hover:bg-[rgba(231,233,234,0.1)] transition-colors"
+                className="mt-3 px-4 py-2 rounded-full border border-card-border text-[15px] font-semibold hover:bg-foreground/[0.08] transition-colors"
               >
                 Editar informações
               </button>
@@ -423,45 +423,45 @@ export default function SettingsConta() {
           ) : (
             <div className="space-y-3">
               <div>
-                <label className="block text-[13px] text-x-text-secondary mb-1">Nome</label>
+                <label className="block text-[13px] text-foreground-secondary mb-1">Nome</label>
                 <input
                   type="text"
                   value={name}
                   onChange={(e) => setName(e.target.value)}
-                  className="w-full px-3 py-2 rounded-lg bg-transparent border border-x-border text-[15px] outline-none focus:border-ink"
+                  className="w-full px-3 py-2 rounded-lg bg-transparent border border-card-border text-[15px] outline-none focus:border-ink"
                   maxLength={50}
                 />
               </div>
               <div>
-                <label className="block text-[13px] text-x-text-secondary mb-1">Bio</label>
+                <label className="block text-[13px] text-foreground-secondary mb-1">Bio</label>
                 <textarea
                   value={bio}
                   onChange={(e) => setBio(e.target.value)}
-                  className="w-full px-3 py-2 rounded-lg bg-transparent border border-x-border text-[15px] outline-none focus:border-ink resize-none"
+                  className="w-full px-3 py-2 rounded-lg bg-transparent border border-card-border text-[15px] outline-none focus:border-ink resize-none"
                   rows={3}
                   maxLength={160}
                   placeholder="Conte um pouco sobre você..."
                 />
-                <p className="text-[12px] text-x-text-secondary text-right">{bio.length}/160</p>
+                <p className="text-[12px] text-foreground-secondary text-right">{bio.length}/160</p>
               </div>
               <div>
-                <label className="block text-[13px] text-x-text-secondary mb-1">Localização</label>
+                <label className="block text-[13px] text-foreground-secondary mb-1">Localização</label>
                 <input
                   type="text"
                   value={location}
                   onChange={(e) => setLocation(e.target.value)}
-                  className="w-full px-3 py-2 rounded-lg bg-transparent border border-x-border text-[15px] outline-none focus:border-ink"
+                  className="w-full px-3 py-2 rounded-lg bg-transparent border border-card-border text-[15px] outline-none focus:border-ink"
                   maxLength={30}
                   placeholder="São Paulo, SP"
                 />
               </div>
               <div>
-                <label className="block text-[13px] text-x-text-secondary mb-1">Website</label>
+                <label className="block text-[13px] text-foreground-secondary mb-1">Website</label>
                 <input
                   type="url"
                   value={website}
                   onChange={(e) => setWebsite(e.target.value)}
-                  className="w-full px-3 py-2 rounded-lg bg-transparent border border-x-border text-[15px] outline-none focus:border-ink"
+                  className="w-full px-3 py-2 rounded-lg bg-transparent border border-card-border text-[15px] outline-none focus:border-ink"
                   placeholder="https://meusite.com"
                 />
               </div>
@@ -483,7 +483,7 @@ export default function SettingsConta() {
                 <button
                   onClick={() => setEditing(false)}
                   disabled={saving}
-                  className="px-4 py-2 rounded-full border border-x-border text-[15px] hover:bg-[rgba(231,233,234,0.1)] transition-colors"
+                  className="px-4 py-2 rounded-full border border-card-border text-[15px] hover:bg-foreground/[0.08] transition-colors"
                 >
                   Cancelar
                 </button>
@@ -492,7 +492,7 @@ export default function SettingsConta() {
           )}
         </section>
 
-        <div className="h-px bg-x-border" />
+        <div className="h-px bg-muted" />
 
         {/* Verificação como Jornalista — só para FANs */}
         {showJournalistSection && (
@@ -509,7 +509,7 @@ export default function SettingsConta() {
                 {statusData?.status == null && (
                   <div className="space-y-3">
                     <p className="text-[15px] font-medium">Torne-se Jornalista na Tribuna</p>
-                    <p className="text-[14px] text-x-text-secondary">
+                    <p className="text-[14px] text-foreground-secondary">
                       Jornalistas podem publicar notícias, entrevistas e análises para todos os torcedores.
                       Envie sua solicitação para o administrador revisar.
                     </p>
@@ -542,18 +542,18 @@ export default function SettingsConta() {
                     <span className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-amber-500/20 text-amber-400 text-[14px] font-medium animate-pulse">
                       ⏳ Solicitação em análise
                     </span>
-                    <p className="text-[14px] text-x-text-secondary">
+                    <p className="text-[14px] text-foreground-secondary">
                       Sua solicitação foi enviada e está aguardando revisão do administrador.
                       Você será notificado quando houver uma resposta.
                     </p>
                     {statusData.organization && (
                       <p className="text-[14px]">
-                        <span className="text-x-text-secondary">Organização:</span> {statusData.organization}
+                        <span className="text-foreground-secondary">Organização:</span> {statusData.organization}
                       </p>
                     )}
                     {statusData.createdAt && (
                       <p className="text-[14px]">
-                        <span className="text-x-text-secondary">Enviado em:</span>{" "}
+                        <span className="text-foreground-secondary">Enviado em:</span>{" "}
                         {new Date(statusData.createdAt).toLocaleDateString("pt-BR", {
                           day: "numeric", month: "short", year: "numeric",
                         })}
@@ -568,7 +568,7 @@ export default function SettingsConta() {
                     <span className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-green-500/20 text-green-400 text-[14px] font-medium">
                       ✅ Jornalista verificado
                     </span>
-                    <p className="text-[14px] text-x-text-secondary">
+                    <p className="text-[14px] text-foreground-secondary">
                       Parabéns! Sua conta tem acesso a publicar notícias e conteúdo verificado.
                     </p>
                   </div>
@@ -580,7 +580,7 @@ export default function SettingsConta() {
                     <span className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-red-500/20 text-red-400 text-[14px] font-medium">
                       ❌ Solicitação recusada
                     </span>
-                    <p className="text-[14px] text-x-text-secondary">
+                    <p className="text-[14px] text-foreground-secondary">
                       Sua solicitação foi recusada. Você pode enviar uma nova solicitação com informações atualizadas.
                     </p>
                     <AnimatePresence mode="wait">
@@ -617,7 +617,7 @@ export default function SettingsConta() {
             <span className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-green-500/20 text-green-400 text-[14px] font-medium">
               Jornalista verificado na Tribuna
             </span>
-            <p className="text-[14px] text-x-text-secondary mt-2">
+            <p className="text-[14px] text-foreground-secondary mt-2">
               Sua conta tem acesso completo para publicar notícias.
             </p>
           </section>

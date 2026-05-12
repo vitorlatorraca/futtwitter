@@ -6,7 +6,7 @@ export default function DashboardPage() {
     <div className="min-h-screen bg-background text-foreground">
       <Navbar />
       <div className="flex justify-center">
-        <div className="w-full max-w-[600px] border-x border-x-border min-h-screen">
+        <div className="w-full max-w-[600px] border-x border-card-border min-h-screen">
           <Feed />
         </div>
       </div>

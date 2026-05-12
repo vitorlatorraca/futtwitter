@@ -35,17 +35,17 @@ export default function Settings() {
 
   return (
     <div>
-      <div className="sticky top-0 z-20 bg-black/80 backdrop-blur-md flex items-center gap-6 px-4 h-[53px] border-b border-x-border">
+      <div className="sticky top-0 z-20 bg-background/80 backdrop-blur-md flex items-center gap-6 px-4 h-[53px] border-b border-card-border">
         <button
           onClick={() => navigate(-1)}
-          className="p-2 -m-2 rounded-full hover:bg-[rgba(231,233,234,0.1)] transition-colors"
+          className="p-2 -m-2 rounded-full hover:bg-foreground/[0.08] transition-colors"
           aria-label="Voltar"
         >
           <ArrowLeft className="w-5 h-5" />
         </button>
         <div>
           <h1 className="text-xl font-bold">Configurações</h1>
-          <p className="text-[13px] text-x-text-secondary">@{authUser?.handle}</p>
+          <p className="text-[13px] text-foreground-secondary">@{authUser?.handle}</p>
         </div>
       </div>
 
@@ -54,14 +54,14 @@ export default function Settings() {
           <button
             key={item.path}
             onClick={() => navigate(item.path)}
-            className="w-full px-4 py-4 flex items-center gap-4 hover:bg-x-hover transition-colors text-left border-b border-x-border"
+            className="w-full px-4 py-4 flex items-center gap-4 hover:bg-foreground/[0.04] transition-colors text-left border-b border-card-border"
           >
-            <item.icon className="w-5 h-5 text-x-text-secondary flex-shrink-0" />
+            <item.icon className="w-5 h-5 text-foreground-secondary flex-shrink-0" />
             <div className="flex-1">
               <p className="text-[15px] font-medium">{item.label}</p>
-              <p className="text-[13px] text-x-text-secondary mt-0.5 leading-4">{item.description}</p>
+              <p className="text-[13px] text-foreground-secondary mt-0.5 leading-4">{item.description}</p>
             </div>
-            <ChevronRight className="w-5 h-5 text-x-text-secondary flex-shrink-0" />
+            <ChevronRight className="w-5 h-5 text-foreground-secondary flex-shrink-0" />
           </button>
         ))}
       </div>

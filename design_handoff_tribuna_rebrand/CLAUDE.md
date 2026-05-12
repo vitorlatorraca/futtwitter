@@ -6,7 +6,7 @@ You are implementing the Tribuna rebrand in this codebase (formerly FuttWitter).
 
 ## Working agreement
 
-- One PR per step (see "Implementation Order" in README, steps 1–8).
+- One PR per step (see "Implementation Order" in README, steps 1–9).
 - Before each step: list files you intend to change and wait for confirmation.
 - Lift exact values from the README tables (hex, px, font weights). Do not approximate.
 - Do not copy the HTML markup verbatim into the codebase — recreate using existing framework patterns (React components, etc.).

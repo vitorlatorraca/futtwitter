@@ -115,7 +115,7 @@ export default function Sidebar() {
             className={`w-[26px] h-[26px] transition-colors ${
               isActive
                 ? "text-floodlight stroke-[2.5]"
-                : "stroke-[1.75] text-x-text-primary"
+                : "stroke-[1.75] text-foreground"
             }`}
             fill={isActive ? "var(--floodlight)" : "none"}
             fillOpacity={isActive ? 0.15 : 1}
@@ -123,7 +123,7 @@ export default function Sidebar() {
           {item.badge && (
             <span
               className={`absolute -top-1.5 -right-1.5 text-[11px] font-bold rounded-full min-w-[18px] h-[18px] flex items-center justify-center px-1 ${
-                item.badgeColor || "bg-ink text-foreground"
+                item.badgeColor || "bg-ink text-primary-foreground"
               }`}
             >
               {typeof item.badge === "number" && item.badge > 99 ? "99+" : item.badge}
@@ -133,12 +133,12 @@ export default function Sidebar() {
         {!isCompact && (
           <div className="ml-5 flex flex-col">
             <span className={`text-xl leading-6 ${
-              isActive ? "font-bold text-floodlight" : "font-normal text-x-text-primary"
+              isActive ? "font-bold text-floodlight" : "font-normal text-foreground"
             }`}>
               {item.label}
             </span>
             {item.subtitle && (
-              <span className="text-[11px] text-x-text-secondary leading-4 mt-0.5">
+              <span className="text-[11px] text-foreground-secondary leading-4 mt-0.5">
                 {item.subtitle}
               </span>
             )}
@@ -171,19 +171,19 @@ export default function Sidebar() {
           {topNav.map(renderNavItem)}
 
           {!isCompact && (
-            <div className="mx-3 my-2 h-px bg-x-border" />
+            <div className="mx-3 my-2 h-px bg-muted" />
           )}
           {isCompact && (
-            <div className="mx-auto my-2 w-8 h-px bg-x-border" />
+            <div className="mx-auto my-2 w-8 h-px bg-muted" />
           )}
 
           {tribunaNav.map(renderNavItem)}
 
           {!isCompact && (
-            <div className="mx-3 my-2 h-px bg-x-border" />
+            <div className="mx-3 my-2 h-px bg-muted" />
           )}
           {isCompact && (
-            <div className="mx-auto my-2 w-8 h-px bg-x-border" />
+            <div className="mx-auto my-2 w-8 h-px bg-muted" />
           )}
 
           {bottomNav.map(renderNavItem)}
@@ -233,7 +233,7 @@ export default function Sidebar() {
                 <p className="text-[15px] font-semibold text-ink leading-5 truncate">{displayUser.displayName}</p>
                 <p className="text-[12px] font-mono text-slate leading-5 truncate">@{displayUser.handle}</p>
               </div>
-              <MoreHorizontal className="w-5 h-5 text-x-text-secondary ml-2 flex-shrink-0" />
+              <MoreHorizontal className="w-5 h-5 text-foreground-secondary ml-2 flex-shrink-0" />
             </>
           )}
         </button>
@@ -246,11 +246,11 @@ export default function Sidebar() {
                 initial={{ opacity: 0, y: 10 }}
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0, y: 10 }}
-                className="absolute bottom-full left-0 mb-2 w-[300px] bg-background rounded-2xl shadow-lg border border-x-border z-50 py-3 overflow-hidden"
+                className="absolute bottom-full left-0 mb-2 w-[300px] bg-background rounded-2xl shadow-lg border border-card-border z-50 py-3 overflow-hidden"
               >
                 <button
                   onClick={() => logout().catch(() => {})}
-                  className="w-full text-left px-4 py-3 hover:bg-x-hover text-[15px] flex items-center gap-3"
+                  className="w-full text-left px-4 py-3 hover:bg-foreground/[0.04] text-[15px] flex items-center gap-3"
                   data-testid="button-logout"
                 >
                   <LogOut className="w-5 h-5" />

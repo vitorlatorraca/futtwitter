@@ -10,16 +10,6 @@ interface SearchBarProps {
   className?: string;
 }
 
-const AVATAR_COLORS = [
-  "bg-blue-600", "bg-purple-600", "bg-green-600",
-  "bg-orange-500", "bg-pink-600", "bg-teal-600",
-];
-
-function getAvatarColor(name: string) {
-  const idx = name.charCodeAt(0) % AVATAR_COLORS.length;
-  return AVATAR_COLORS[idx];
-}
-
 function UserAvatar({ user }: { user: SearchUser }) {
   if (user.avatarUrl) {
     return (
@@ -31,8 +21,8 @@ function UserAvatar({ user }: { user: SearchUser }) {
     );
   }
   return (
-    <div className={`w-full h-full flex items-center justify-center ${getAvatarColor(user.name)}`}>
-      <span className="text-foreground text-sm font-bold">
+    <div className="w-full h-full flex items-center justify-center bg-muted">
+      <span className="text-foreground font-bold text-sm">
         {user.name.charAt(0).toUpperCase()}
       </span>
     </div>
@@ -42,10 +32,10 @@ function UserAvatar({ user }: { user: SearchUser }) {
 function SkeletonRow() {
   return (
     <div className="flex items-center gap-3 px-4 py-3 animate-pulse">
-      <div className="w-10 h-10 rounded-full bg-x-border flex-shrink-0" />
+      <div className="w-10 h-10 rounded-full bg-muted flex-shrink-0" />
       <div className="flex flex-col gap-1.5 flex-1 min-w-0">
-        <div className="h-3.5 bg-x-border rounded-full w-2/5" />
-        <div className="h-3 bg-x-border rounded-full w-1/4 opacity-60" />
+        <div className="h-3.5 bg-muted rounded-full w-2/5" />
+        <div className="h-3 bg-muted rounded-full w-1/4 opacity-60" />
       </div>
     </div>
   );
@@ -133,12 +123,12 @@ export function SearchBar({
         className={`flex items-center gap-3 rounded-full px-4 py-2.5 transition-all duration-150 ${
           focused
             ? "bg-background border border-ink"
-            : "bg-x-search-bg border border-transparent hover:border-[#555]"
+            : "bg-paper-2 border border-transparent hover:border-ink/25"
         }`}
       >
         <Search
           className={`w-[18px] h-[18px] flex-shrink-0 transition-colors ${
-            focused ? "text-floodlight" : "text-x-text-secondary"
+            focused ? "text-floodlight" : "text-foreground-secondary"
           }`}
         />
         <input
@@ -153,7 +143,7 @@ export function SearchBar({
           }}
           onFocus={() => setFocused(true)}
           onKeyDown={handleKeyDown}
-          className="bg-transparent text-[15px] text-x-text-primary placeholder-x-text-secondary outline-none flex-1"
+          className="bg-transparent text-[15px] text-foreground placeholder:text-foreground-secondary outline-none flex-1"
         />
         {query.length > 0 && (
           <button
@@ -161,14 +151,14 @@ export function SearchBar({
             aria-label="Limpar busca"
             className="w-5 h-5 rounded-full bg-ink hover:bg-ink-2 transition-colors flex items-center justify-center flex-shrink-0"
           >
-            <X className="w-3 h-3 text-foreground" />
+            <X className="w-3 h-3 text-primary-foreground" />
           </button>
         )}
       </div>
 
       {/* Dropdown */}
       {showDropdown && (
-        <div className="absolute top-full left-0 right-0 mt-2 bg-[#16181c] border border-x-border rounded-2xl shadow-[0_8px_32px_rgba(0,0,0,0.6)] overflow-hidden z-50">
+        <div className="absolute top-full left-0 right-0 mt-2 bg-popover text-popover-foreground border border-card-border rounded-2xl shadow-elev-2 overflow-hidden z-50">
 
           {/* Skeleton loading */}
           {loading && (
@@ -190,12 +180,12 @@ export function SearchBar({
                   : "hover:bg-foreground/[0.04]"
               }`}
             >
-              <div className="w-10 h-10 rounded-full flex-shrink-0 overflow-hidden ring-1 ring-x-border">
+              <div className="w-10 h-10 rounded-full flex-shrink-0 overflow-hidden ring-1 ring-card-border">
                 <UserAvatar user={user} />
               </div>
               <div className="flex flex-col min-w-0 flex-1">
                 <div className="flex items-center gap-1.5">
-                  <span className="text-x-text-primary font-bold text-[15px] truncate leading-tight">
+                  <span className="text-foreground font-bold text-[15px] truncate leading-tight">
                     {user.name}
                   </span>
                   {user.userType === "JOURNALIST" && (
@@ -205,12 +195,12 @@ export function SearchBar({
                   )}
                 </div>
                 {user.handle && (
-                  <span className="text-x-text-secondary text-[13px] leading-tight">@{user.handle}</span>
+                  <span className="text-foreground-secondary text-[13px] leading-tight">@{user.handle}</span>
                 )}
               </div>
               {/* Followers count hint */}
               {user.followersCount > 0 && (
-                <span className="text-x-text-secondary text-xs flex-shrink-0">
+                <span className="text-foreground-secondary text-xs flex-shrink-0">
                   {user.followersCount > 999
                     ? `${(user.followersCount / 1000).toFixed(1)}K`
                     : user.followersCount}{" "}
@@ -225,13 +215,13 @@ export function SearchBar({
             <button
               onClick={() => handleSubmit(query)}
               className={`w-full flex items-center gap-3 px-4 py-3 hover:bg-foreground/[0.04] transition-colors ${
-                suggestions.length > 0 ? "border-t border-x-border" : ""
+                suggestions.length > 0 ? "border-t border-card-border" : ""
               }`}
             >
               <div className="w-10 h-10 rounded-full bg-floodlight/10 border border-ink/20 flex items-center justify-center flex-shrink-0">
                 <Search className="w-4 h-4 text-floodlight" />
               </div>
-              <span className="text-x-text-primary text-[15px]">
+              <span className="text-foreground text-[15px]">
                 Buscar por{" "}
                 <span className="text-floodlight font-semibold">"{query}"</span>
               </span>

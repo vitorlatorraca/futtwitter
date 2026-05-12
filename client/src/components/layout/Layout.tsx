@@ -11,7 +11,7 @@ export default function Layout() {
   return (
     <div className="flex justify-center max-w-[1265px] mx-auto min-h-screen">
       <Sidebar />
-      <main className="flex-1 max-w-[600px] min-h-screen border-x border-x-border">
+      <main className="flex-1 max-w-[600px] min-h-screen border-x border-card-border">
         <Outlet />
       </main>
       <RightSidebar />

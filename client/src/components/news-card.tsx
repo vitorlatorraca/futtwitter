@@ -175,7 +175,7 @@ export function NewsCard({ news, canInteract, onInteract }: NewsCardProps) {
                 <Globe className="h-5 w-5 text-foreground-secondary" />
               </div>
             )}
-            <div className="absolute -bottom-0.5 -right-0.5 w-4 h-4 rounded-full bg-primary border-2 border-black flex items-center justify-center">
+            <div className="absolute -bottom-0.5 -right-0.5 w-4 h-4 rounded-full bg-primary border-2 border-background flex items-center justify-center">
               <span className="text-[8px] text-primary-foreground font-bold">✓</span>
             </div>
           </div>
@@ -252,8 +252,8 @@ export function NewsCard({ news, canInteract, onInteract }: NewsCardProps) {
           className={cn(
             "flex items-center gap-1.5 px-3 py-2 rounded-full text-sm transition-colors",
             news.userInteraction === 'DISLIKE'
-              ? "text-danger"
-              : "text-foreground-secondary hover:text-danger hover:bg-danger/10"
+              ? "text-destructive"
+              : "text-foreground-secondary hover:text-destructive hover:bg-destructive/10"
           )}
           data-testid={`button-dislike-${news.id}`}
         >
@@ -337,8 +337,8 @@ export function NewsCard({ news, canInteract, onInteract }: NewsCardProps) {
                         className={cn(
                           "mt-1 flex items-center gap-1.5 px-2 py-1 rounded-full text-sm transition-colors",
                           c.viewerHasLiked
-                            ? "text-danger"
-                            : "text-foreground-secondary hover:text-danger hover:bg-danger/10"
+                            ? "text-destructive"
+                            : "text-foreground-secondary hover:text-destructive hover:bg-destructive/10"
                         )}
                         onClick={() => {
                           if (c.viewerHasLiked) unlikeCommentMutation.mutate(c.id);

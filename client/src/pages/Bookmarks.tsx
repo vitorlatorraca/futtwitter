@@ -24,30 +24,30 @@ export default function Bookmarks() {
 
   return (
     <div>
-      <div className="sticky top-0 z-20 bg-black/80 backdrop-blur-md flex items-center gap-6 px-4 h-[53px]">
+      <div className="sticky top-0 z-20 bg-background/80 backdrop-blur-md flex items-center gap-6 px-4 h-[53px]">
         <button
           onClick={() => navigate(-1)}
-          className="p-2 -m-2 rounded-full hover:bg-[rgba(231,233,234,0.1)] transition-colors"
+          className="p-2 -m-2 rounded-full hover:bg-foreground/[0.08] transition-colors"
           aria-label="Back"
         >
           <ArrowLeft className="w-5 h-5" />
         </button>
         <div>
           <h1 className="text-xl font-bold">Salvos</h1>
-          <p className="text-[13px] text-x-text-secondary">@{authUser?.handle ?? "user"}</p>
+          <p className="text-[13px] text-foreground-secondary">@{authUser?.handle ?? "user"}</p>
         </div>
       </div>
 
       {isLoading ? (
         <div className="py-16 flex justify-center">
-          <Loader2 className="w-6 h-6 animate-spin text-x-text-secondary" />
+          <Loader2 className="w-6 h-6 animate-spin text-foreground-secondary" />
         </div>
       ) : bookmarked.length > 0 ? (
         bookmarked.map((post) => <PostCard key={post.id} post={post} />)
       ) : (
         <div className="py-16 px-8 text-center">
           <h2 className="text-3xl font-extrabold mb-2">Salve posts para depois</h2>
-          <p className="text-x-text-secondary text-[15px] max-w-[360px] mx-auto">
+          <p className="text-foreground-secondary text-[15px] max-w-[360px] mx-auto">
             Salve posts para encontrar facilmente no futuro.
           </p>
         </div>

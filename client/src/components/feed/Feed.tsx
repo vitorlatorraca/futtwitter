@@ -202,7 +202,7 @@ export default function Feed() {
       )}
 
       {activeTab !== "influencers" && (
-        <div className="border-b border-x-border">
+        <div className="border-b border-card-border">
           <ComposeBox placeholder={composePlaceholder} />
         </div>
       )}

@@ -15,7 +15,7 @@ export default function LinkPreview({ url, title, description, image, domain }: 
       target="_blank"
       rel="noopener noreferrer"
       onClick={(e) => e.stopPropagation()}
-      className="mt-3 block border border-x-border rounded-2xl overflow-hidden hover:bg-x-hover transition-colors"
+      className="mt-3 block border border-card-border rounded-2xl overflow-hidden hover:bg-foreground/[0.04] transition-colors"
     >
       {image && (
         <img
@@ -26,9 +26,9 @@ export default function LinkPreview({ url, title, description, image, domain }: 
         />
       )}
       <div className="p-3">
-        <p className="text-[13px] text-x-text-secondary leading-4">{domain}</p>
-        <p className="text-[15px] text-x-text-primary leading-5 mt-0.5">{title}</p>
-        <p className="text-[13px] text-x-text-secondary leading-4 mt-0.5 line-clamp-2">{description}</p>
+        <p className="text-[13px] text-foreground-secondary leading-4">{domain}</p>
+        <p className="text-[15px] text-foreground leading-5 mt-0.5">{title}</p>
+        <p className="text-[13px] text-foreground-secondary leading-4 mt-0.5 line-clamp-2">{description}</p>
       </div>
     </a>
   );

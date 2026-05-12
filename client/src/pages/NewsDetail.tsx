@@ -88,11 +88,11 @@ export default function NewsDetail() {
   }
 
   return (
-    <div className="max-w-[680px] mx-auto border-x border-x-border min-h-screen">
-      <header className="sticky top-0 z-10 bg-black/90 backdrop-blur border-b border-x-border px-4 py-3 flex items-center gap-4">
+    <div className="max-w-[680px] mx-auto border-x border-card-border min-h-screen">
+      <header className="sticky top-0 z-10 bg-background/90 backdrop-blur border-b border-card-border px-4 py-3 flex items-center gap-4">
         <button
           onClick={() => navigate(-1)}
-          className="p-2 -ml-2 rounded-full hover:bg-[rgba(231,233,234,0.1)] transition-colors"
+          className="p-2 -ml-2 rounded-full hover:bg-foreground/[0.08] transition-colors"
           aria-label="Voltar"
         >
           <ArrowLeft className="w-5 h-5" />
@@ -111,7 +111,7 @@ export default function NewsDetail() {
           ) : (
             <div
               className="w-12 h-12 rounded-full flex items-center justify-center text-foreground font-bold"
-              style={{ backgroundColor: "var(--x-accent)" }}
+              style={{ backgroundColor: "var(--ink)" }}
             >
               {(news.journalist.name || "A")
                 .split(" ")
@@ -123,7 +123,7 @@ export default function NewsDetail() {
           )}
           <div>
             <p className="font-bold text-[15px]">{news.journalist.name}</p>
-            <p className="text-[14px] text-x-text-secondary">
+            <p className="text-[14px] text-foreground-secondary">
               @{news.journalist.handle} ·{" "}
               {format(new Date(news.publishedAt), "d MMM yyyy", { locale: ptBR })}
             </p>
@@ -155,7 +155,7 @@ export default function NewsDetail() {
                 className="w-8 h-8 object-contain"
               />
             )}
-            <span className="text-[14px] text-x-text-secondary">
+            <span className="text-[14px] text-foreground-secondary">
               {news.team.name}
             </span>
           </div>
@@ -163,7 +163,7 @@ export default function NewsDetail() {
       </article>
 
       {/* Comments */}
-      <section className="border-t border-x-border px-4 py-6">
+      <section className="border-t border-card-border px-4 py-6">
         <h2 className="text-[17px] font-bold mb-4">Comentários</h2>
 
         <form onSubmit={handleSubmitComment} className="mb-6">
@@ -171,7 +171,7 @@ export default function NewsDetail() {
             value={newCommentText}
             onChange={(e) => setNewCommentText(e.target.value)}
             placeholder="Escreva um comentário..."
-            className="w-full px-4 py-3 bg-transparent border border-x-border rounded-2xl text-[15px] placeholder-x-text-secondary resize-none focus:outline-none focus:border-ink"
+            className="w-full px-4 py-3 bg-transparent border border-card-border rounded-2xl text-[15px] placeholder:text-foreground-secondary resize-none focus:outline-none focus:border-ink"
             rows={3}
             maxLength={2000}
           />
@@ -190,16 +190,16 @@ export default function NewsDetail() {
 
         <div className="space-y-4">
           {commentsQuery.isLoading ? (
-            <p className="text-x-text-secondary text-[14px]">Carregando comentários...</p>
+            <p className="text-foreground-secondary text-[14px]">Carregando comentários...</p>
           ) : (commentsQuery.data ?? []).length === 0 ? (
-            <p className="text-x-text-secondary text-[14px]">
+            <p className="text-foreground-secondary text-[14px]">
               Nenhum comentário ainda. Seja o primeiro!
             </p>
           ) : (
             (commentsQuery.data ?? []).map((c) => (
               <div
                 key={c.id}
-                className="flex gap-3 py-3 border-b border-x-border last:border-0"
+                className="flex gap-3 py-3 border-b border-card-border last:border-0"
               >
                 {c.author.avatarUrl ? (
                   <img
@@ -215,7 +215,7 @@ export default function NewsDetail() {
                 <div className="flex-1 min-w-0">
                   <p className="font-bold text-[15px]">{c.author.name}</p>
                   <p className="text-[15px] whitespace-pre-wrap">{c.content}</p>
-                  <p className="text-[13px] text-x-text-secondary mt-1">
+                  <p className="text-[13px] text-foreground-secondary mt-1">
                     {c.likeCount > 0 && `${c.likeCount} curtida${c.likeCount !== 1 ? "s" : ""} · `}
                     {format(new Date(c.createdAt), "d MMM", { locale: ptBR })}
                   </p>

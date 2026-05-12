@@ -19,7 +19,7 @@ export default function MobileNav() {
   ];
 
   return (
-    <nav className="fixed bottom-0 left-0 right-0 bg-background border-t border-x-border z-50 flex items-center justify-around px-4 py-2 md:hidden">
+    <nav className="fixed bottom-0 left-0 right-0 bg-background border-t border-card-border z-50 flex items-center justify-around px-4 py-2 md:hidden">
       {items.map((item) => {
         const isActive = location.pathname === item.path;
         const Icon = item.icon;
@@ -32,13 +32,13 @@ export default function MobileNav() {
           >
             <Icon
               className={`w-6 h-6 transition-colors ${
-                isActive ? "text-floodlight stroke-[2.5]" : "stroke-[1.75] text-x-text-primary"
+                isActive ? "text-floodlight stroke-[2.5]" : "stroke-[1.75] text-foreground"
               }`}
               fill={isActive ? "var(--floodlight)" : "none"}
               fillOpacity={isActive ? 0.15 : 1}
             />
             <span className={`text-[10px] mt-0.5 ${
-              isActive ? "text-floodlight font-bold" : "text-x-text-secondary"
+              isActive ? "text-floodlight font-bold" : "text-foreground-secondary"
             }`}>
               {item.label}
             </span>

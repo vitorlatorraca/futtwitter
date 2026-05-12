@@ -67,58 +67,58 @@ export default function RightSidebar() {
       </div>
 
       {/* Tribuna+ subscription card */}
-      <div className="border border-x-border rounded-2xl p-4 mb-4">
+      <div className="border border-card-border rounded-2xl p-4 mb-4">
         <h2 className="t-h3 text-ink mb-1">Tribuna+</h2>
-        <p className="text-[15px] text-x-text-primary mb-3">
+        <p className="text-[15px] text-foreground mb-3">
           Sem anúncios, estatísticas avançadas, alertas de gols em tempo real.
         </p>
-        <button className="brand-gradient hover:opacity-90 text-foreground font-bold text-[15px] rounded-full px-4 py-2 transition-opacity">
+        <button className="brand-gradient hover:opacity-90 text-primary-foreground font-bold text-[15px] rounded-full px-4 py-2 transition-opacity">
           Assinar
         </button>
       </div>
 
       {/* Trending Futebol */}
-      <div className="border border-x-border rounded-2xl mb-4 overflow-hidden">
+      <div className="border border-card-border rounded-2xl mb-4 overflow-hidden">
         <h2 className="t-h3 text-ink px-4 py-3">Trending Futebol</h2>
         {trendingItems.length > 0 ? (
           trendingItems.map((item, i) => (
             <button
               key={i}
-              className="w-full px-4 py-3 hover:bg-x-hover transition-colors text-left flex justify-between items-start"
+              className="w-full px-4 py-3 hover:bg-foreground/[0.04] transition-colors text-left flex justify-between items-start"
             >
               <div>
-                <p className="text-[13px] text-x-text-secondary leading-4">{item.category}</p>
-                <p className="text-[15px] font-bold leading-5 mt-0.5">{item.topic}</p>
-                <p className="text-[13px] text-x-text-secondary leading-4 mt-0.5">{item.posts} notícias</p>
+                <p className="text-[13px] text-foreground-secondary leading-4">{item.category}</p>
+                <p className="text-[15px] font-bold leading-5 mt-0.5 text-foreground">{item.topic}</p>
+                <p className="text-[13px] text-foreground-secondary leading-4 mt-0.5">{item.posts} notícias</p>
               </div>
-              <MoreHorizontal className="w-[18px] h-[18px] text-x-text-secondary mt-0.5 flex-shrink-0" />
+              <MoreHorizontal className="w-[18px] h-[18px] text-foreground-secondary mt-0.5 flex-shrink-0" />
             </button>
           ))
         ) : (
-          <p className="px-4 py-6 text-[14px] text-x-text-secondary text-center">Em breve</p>
+          <p className="px-4 py-6 text-[14px] text-foreground-secondary text-center">Em breve</p>
         )}
       </div>
 
       {/* Próximos Jogos (on football pages) - hide if no fixtures */}
       {isFootballPage && upcomingMatches.length > 0 ? (
-        <div className="border border-x-border rounded-2xl mb-4 overflow-hidden">
+        <div className="border border-card-border rounded-2xl mb-4 overflow-hidden">
           <h2 className="t-h3 text-ink px-4 py-3">Próximos Jogos</h2>
           {upcomingMatches.map((match) => (
             <div
               key={match.id}
-              className="px-4 py-3 hover:bg-x-hover transition-colors"
+              className="px-4 py-3 hover:bg-foreground/[0.04] transition-colors"
             >
-              <p className="text-[15px] font-bold leading-5">
+              <p className="text-[15px] font-bold leading-5 text-foreground">
                 {match.homeTeamName} vs {match.awayTeamName}
               </p>
-              <p className="text-[13px] text-x-text-secondary leading-4 mt-0.5">
+              <p className="text-[13px] text-foreground-secondary leading-4 mt-0.5">
                 {formatMatchDate(match.kickoffAt)} · {match.competitionName}
               </p>
             </div>
           ))}
           <Link
             to="/jogos"
-            className="block w-full px-4 py-3 text-floodlight text-[15px] hover:bg-x-hover transition-colors text-left"
+            className="block w-full px-4 py-3 text-floodlight text-[15px] hover:bg-foreground/[0.04] transition-colors text-left"
           >
             Ver detalhes
           </Link>
@@ -127,26 +127,26 @@ export default function RightSidebar() {
 
       {/* Torcida: O que a torcida diz - "Em breve" until we have hashtag aggregation */}
       {!isFootballPage && activeTab === "torcida" && (
-        <div className="border border-x-border rounded-2xl mb-4 overflow-hidden">
+        <div className="border border-card-border rounded-2xl mb-4 overflow-hidden">
           <h2 className="t-h3 text-ink px-4 py-3">O que a torcida diz</h2>
-          <p className="px-4 py-6 text-[14px] text-x-text-secondary text-center">Em breve</p>
+          <p className="px-4 py-6 text-[14px] text-foreground-secondary text-center">Em breve</p>
         </div>
       )}
 
       {/* Quem Seguir / Top Influencers */}
       {!isFootballPage && activeTab === "influencers" ? (
-        <div className="border border-x-border rounded-2xl mb-4 overflow-hidden">
+        <div className="border border-card-border rounded-2xl mb-4 overflow-hidden">
           <h2 className="t-h3 text-ink px-4 py-3">Top Influencers</h2>
           {influencerSuggestedUsers.map((u) => {
             const isFollowing = followedUsers.has(u.id);
             return (
               <div
                 key={u.id}
-                className="px-4 py-3 hover:bg-x-hover transition-colors flex items-center gap-3"
+                className="px-4 py-3 hover:bg-foreground/[0.04] transition-colors flex items-center gap-3"
               >
                 <img src={u.avatar} alt={u.displayName} className="w-10 h-10 rounded-full object-cover flex-shrink-0" />
                 <div className="flex-1 min-w-0">
-                  <p className="text-[15px] font-bold leading-5 truncate flex items-center gap-1">
+                  <p className="text-[15px] font-bold leading-5 truncate flex items-center gap-1 text-foreground">
                     {u.displayName}
                     {u.verified && (
                       <svg viewBox="0 0 22 22" className="w-[18px] h-[18px] fill-floodlight inline-block flex-shrink-0">
@@ -154,11 +154,11 @@ export default function RightSidebar() {
                       </svg>
                     )}
                   </p>
-                  <p className="text-[13px] text-x-text-secondary leading-4 truncate">@{u.handle}</p>
+                  <p className="text-[13px] text-foreground-secondary leading-4 truncate">@{u.handle}</p>
                 </div>
                 <button
                   onClick={() => toggleFollowLocal(u.id)}
-                  className="rounded-full font-bold text-[14px] px-4 py-1.5 transition-colors flex-shrink-0 bg-ink text-foreground hover:bg-ink-2"
+                  className="rounded-full font-bold text-[14px] px-4 py-1.5 transition-colors flex-shrink-0 bg-ink text-primary-foreground hover:bg-ink-2"
                 >
                   {isFollowing ? "Seguindo" : "Seguir"}
                 </button>
@@ -167,21 +167,21 @@ export default function RightSidebar() {
           })}
           <button
             onClick={() => navigate("/explore")}
-            className="w-full px-4 py-3 text-floodlight text-[15px] hover:bg-x-hover transition-colors text-left"
+            className="w-full px-4 py-3 text-floodlight text-[15px] hover:bg-foreground/[0.04] transition-colors text-left"
           >
             Ver mais
           </button>
         </div>
       ) : suggestedUsers.length > 0 || loadingSuggested ? (
-        <div className="border border-x-border rounded-2xl mb-4 overflow-hidden">
+        <div className="border border-card-border rounded-2xl mb-4 overflow-hidden">
           <h2 className="t-h3 text-ink px-4 py-3">Quem Seguir</h2>
           {loadingSuggested ? (
             Array.from({ length: 3 }).map((_, i) => (
               <div key={i} className="flex items-center gap-3 px-4 py-3">
-                <div className="w-10 h-10 rounded-full bg-x-border animate-pulse flex-shrink-0" />
+                <div className="w-10 h-10 rounded-full bg-muted animate-pulse flex-shrink-0" />
                 <div className="flex-1 space-y-2">
-                  <div className="h-4 bg-x-border rounded animate-pulse w-32" />
-                  <div className="h-3 bg-x-border rounded animate-pulse w-20" />
+                  <div className="h-4 bg-muted rounded animate-pulse w-32" />
+                  <div className="h-3 bg-muted rounded animate-pulse w-20" />
                 </div>
               </div>
             ))
@@ -190,16 +190,16 @@ export default function RightSidebar() {
               {suggestedUsers.map((targetUser) => (
                 <div
                   key={targetUser.id}
-                  className="px-4 py-3 flex items-center gap-3 hover:bg-x-hover transition-colors"
+                  className="px-4 py-3 flex items-center gap-3 hover:bg-foreground/[0.04] transition-colors"
                 >
                   <div
-                    className="w-10 h-10 rounded-full bg-x-border flex-shrink-0 overflow-hidden cursor-pointer"
+                    className="w-10 h-10 rounded-full bg-muted flex-shrink-0 overflow-hidden cursor-pointer"
                     onClick={() => navigate(`/profile/${targetUser.handle}`)}
                   >
                     {targetUser.avatarUrl ? (
                       <img src={targetUser.avatarUrl} alt={targetUser.name} className="w-full h-full object-cover" />
                     ) : (
-                      <div className="w-full h-full flex items-center justify-center text-sm font-bold text-x-text-secondary">
+                      <div className="w-full h-full flex items-center justify-center text-sm font-bold text-foreground-secondary">
                         {targetUser.name.charAt(0).toUpperCase()}
                       </div>
                     )}
@@ -209,19 +209,19 @@ export default function RightSidebar() {
                     onClick={() => navigate(`/profile/${targetUser.handle}`)}
                   >
                     <div className="flex items-center gap-1">
-                      <p className="text-[15px] font-bold truncate">{targetUser.name}</p>
+                      <p className="text-[15px] font-bold truncate text-foreground">{targetUser.name}</p>
                       {targetUser.userType === "JOURNALIST" && (
                         <span className="text-floodlight text-xs">✓</span>
                       )}
                     </div>
-                    <p className="text-[13px] text-x-text-secondary truncate">@{targetUser.handle}</p>
+                    <p className="text-[13px] text-foreground-secondary truncate">@{targetUser.handle}</p>
                   </div>
                   <button
                     onClick={() => handleFollowToggle(targetUser)}
                     disabled={toggleFollowMutation.isPending && toggleFollowMutation.variables?.handle === targetUser.handle}
                     className={`flex-shrink-0 px-4 py-1.5 rounded-full text-[13px] font-bold transition-colors ${
                       targetUser.isFollowing
-                        ? "border border-x-border text-foreground hover:border-red-500 hover:text-red-500"
+                        ? "border border-card-border text-foreground hover:border-destructive hover:text-destructive"
                         : "bg-foreground text-background hover:bg-foreground/90"
                     }`}
                   >
@@ -231,7 +231,7 @@ export default function RightSidebar() {
               ))}
               <button
                 onClick={() => navigate("/explore")}
-                className="w-full px-4 py-3 text-[15px] text-floodlight hover:bg-[rgba(0,230,118,0.08)] transition-colors text-left"
+                className="w-full px-4 py-3 text-[15px] text-floodlight hover:bg-floodlight/10 transition-colors text-left"
               >
                 Ver mais
               </button>
@@ -242,12 +242,12 @@ export default function RightSidebar() {
 
       {/* Footer */}
       <nav className="px-4 pb-4">
-        <div className="flex flex-wrap gap-x-3 gap-y-0.5 text-[13px] text-x-text-secondary">
+        <div className="flex flex-wrap gap-x-3 gap-y-0.5 text-[13px] text-foreground-secondary">
           {["Termos de Uso", "Política de Privacidade", "Cookies", "Acessibilidade", "Sobre"].map((link) => (
             <a key={link} href="#" className="hover:underline">{link}</a>
           ))}
         </div>
-        <p className="text-[13px] text-x-text-secondary mt-1">&copy; 2026 Tribuna.</p>
+        <p className="text-[13px] text-foreground-secondary mt-1">&copy; 2026 Tribuna.</p>
       </nav>
     </aside>
   );

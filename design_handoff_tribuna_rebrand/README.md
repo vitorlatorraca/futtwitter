@@ -214,6 +214,7 @@ Create one PR per step:
 6. **Team Badge** — new component, replace any existing club chip with this. Map club codes → color set.
 7. **Naming pass** — copy, logo, meta tags, manifest. Do not touch package/DB identifiers.
 8. **Light/dark sweep** — verify scoreboard, modals, focus states on the new palette.
+9. **Legacy utility retirement** — replace remaining `x-*` Tailwind classes (`border-x-border`, `text-x-text-*`, `bg-x-hover`, etc.) with semantic tokens (`border-card-border`, `text-foreground-secondary`, `hover:bg-foreground/[0.04]`, …) so the UI tracks one token layer. Remove Twitter-era hex/rgba (e.g. dark search dropdowns, green link hovers). Optional: keep `index.css` legacy CSS vars until all imports are gone.
 
 For safety, do this behind a feature flag or on a `rebrand/tribuna` branch. Don't big-bang the production CSS.
 

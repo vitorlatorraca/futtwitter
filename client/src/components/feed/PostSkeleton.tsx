@@ -2,7 +2,7 @@ import React from "react";
 
 export default function PostSkeleton() {
   return (
-    <article className="px-4 py-3 border-b border-x-border">
+    <article className="px-4 py-3 border-b border-card-border">
       <div className="flex">
         <div className="w-10 h-10 rounded-full bg-[rgba(101,119,134,0.2)] animate-pulse flex-shrink-0" />
         <div className="flex-1 ml-3 min-w-0 space-y-3">

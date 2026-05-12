@@ -69,10 +69,10 @@ export default function Profile() {
 
   return (
     <div>
-      <div className="sticky top-0 z-20 bg-black/80 backdrop-blur-md flex items-center gap-6 px-4 py-1 h-[53px]">
+      <div className="sticky top-0 z-20 bg-background/80 backdrop-blur-md flex items-center gap-6 px-4 py-1 h-[53px]">
         <button
           onClick={() => navigate(-1)}
-          className="p-2 -m-2 rounded-full hover:bg-[rgba(231,233,234,0.1)] transition-colors"
+          className="p-2 -m-2 rounded-full hover:bg-foreground/[0.08] transition-colors"
           aria-label="Back"
         >
           <ArrowLeft className="w-5 h-5" />
@@ -81,13 +81,13 @@ export default function Profile() {
           <h1 className="text-xl font-bold leading-6 flex items-center gap-1">
             {user.name}
           </h1>
-          <p className="text-[13px] text-x-text-secondary">
+          <p className="text-[13px] text-foreground-secondary">
             {userPosts.length} posts
           </p>
         </div>
       </div>
 
-      <div className="h-[200px] bg-x-surface overflow-hidden">
+      <div className="h-[200px] bg-surface-card overflow-hidden">
         {user.coverPhotoUrl ? (
           <img
             src={user.coverPhotoUrl}
@@ -111,7 +111,7 @@ export default function Profile() {
             {isOwnProfile ? (
               <button
                 onClick={() => navigate("/settings")}
-                className="rounded-full border border-x-border font-bold text-[15px] px-4 py-1.5 hover:bg-[rgba(231,233,234,0.1)] transition-colors"
+                className="rounded-full border border-card-border font-bold text-[15px] px-4 py-1.5 hover:bg-foreground/[0.08] transition-colors"
               >
                 Editar perfil
               </button>
@@ -121,7 +121,7 @@ export default function Profile() {
                 disabled={toggleFollowMutation.isPending}
                 className={`rounded-full font-bold text-[15px] px-5 py-2 transition-colors ${
                   isFollowing
-                    ? "bg-transparent border border-x-border text-foreground hover:border-red-500 hover:text-red-500"
+                    ? "bg-transparent border border-card-border text-foreground hover:border-destructive hover:text-destructive"
                     : "brand-gradient text-foreground hover:opacity-90"
                 }`}
               >
@@ -139,17 +139,17 @@ export default function Profile() {
                 📰 Journalist
               </span>
             ) : (
-              <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-x-surface text-x-text-secondary text-[13px]">
+              <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-surface-card text-foreground-secondary text-[13px]">
                 ⚽ Fan
               </span>
             )}
           </div>
-          <p className="text-[15px] text-x-text-secondary">@{user.handle}</p>
+          <p className="text-[15px] text-foreground-secondary">@{user.handle}</p>
         </div>
 
         {user.bio && <p className="text-[15px] mt-3 leading-5">{user.bio}</p>}
 
-        <div className="flex flex-wrap gap-x-3 gap-y-1 mt-3 text-[15px] text-x-text-secondary">
+        <div className="flex flex-wrap gap-x-3 gap-y-1 mt-3 text-[15px] text-foreground-secondary">
           {user.location && (
             <span className="flex items-center gap-1">
               <MapPin className="w-[18px] h-[18px]" />
@@ -180,31 +180,31 @@ export default function Profile() {
             onClick={() => navigate(`/profile/${handle}/following`)}
             className="hover:underline"
           >
-            <span className="font-bold text-x-text-primary">
+            <span className="font-bold text-foreground">
               {user.followingCount.toLocaleString()}
             </span>{" "}
-            <span className="text-x-text-secondary ml-1">Seguindo</span>
+            <span className="text-foreground-secondary ml-1">Seguindo</span>
           </button>
           <button
             onClick={() => navigate(`/profile/${handle}/followers`)}
             className="hover:underline"
           >
-            <span className="font-bold text-x-text-primary">
+            <span className="font-bold text-foreground">
               {user.followersCount.toLocaleString()}
             </span>{" "}
-            <span className="text-x-text-secondary ml-1">Seguidores</span>
+            <span className="text-foreground-secondary ml-1">Seguidores</span>
           </button>
         </div>
       </div>
 
-      <div className="flex border-b border-x-border">
+      <div className="flex border-b border-card-border">
         {profileTabs.map((tab) => (
           <button
             key={tab}
             onClick={() => setActiveTab(tab)}
-            className="flex-1 py-4 text-center hover:bg-x-hover transition-colors relative text-[15px]"
+            className="flex-1 py-4 text-center hover:bg-foreground/[0.04] transition-colors relative text-[15px]"
           >
-            <span className={activeTab === tab ? "font-bold" : "text-x-text-secondary"}>
+            <span className={activeTab === tab ? "font-bold" : "text-foreground-secondary"}>
               {tab}
             </span>
             {activeTab === tab && (
@@ -228,7 +228,7 @@ export default function Profile() {
           ))
         ) : (
           <div className="py-16 text-center">
-            <p className="text-x-text-secondary text-[15px]">Nenhum post para exibir.</p>
+            <p className="text-foreground-secondary text-[15px]">Nenhum post para exibir.</p>
           </div>
         )}
       </div>

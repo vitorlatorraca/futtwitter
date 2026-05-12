@@ -27,6 +27,9 @@ const config: Config = {
         error:         "#C4321A",
         warning:       "#D89412",
         info:          "#2E5BD4",
+        /** Alias for `error` — used by several UI components (`text-danger`, `bg-danger/10`) */
+        danger:        "#C4321A",
+        "danger-foreground": "hsl(var(--primary-foreground))",
 
         // ── Legacy x-* (kept until step 5 retires them) ──────────
         // Values point into the Tribuna palette via CSS vars above
@@ -54,6 +57,7 @@ const config: Config = {
         "surface-card":          "hsl(var(--surface-card))",
 
         "card-border":           "hsl(var(--card-border))",
+        border:                  "hsl(var(--border))",
         "border-strong":         "hsl(var(--border-strong))",
         "border-subtle":         "hsl(var(--border-subtle))",
 

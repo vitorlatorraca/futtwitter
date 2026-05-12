@@ -34,7 +34,7 @@ const matches: MatchData[] = [
 
 const statusConfig: Record<MatchStatus, { label: string; className: string }> = {
   live: { label: "AO VIVO", className: "text-red-500" },
-  finished: { label: "Encerrado", className: "text-x-text-secondary" },
+  finished: { label: "Encerrado", className: "text-foreground-secondary" },
   upcoming: { label: "Em Breve", className: "text-floodlight" },
 };
 
@@ -55,7 +55,7 @@ export default function JogosFeed() {
   return (
     <div>
       {/* Header with tabs */}
-      <div className="sticky top-0 z-20 bg-black/80 backdrop-blur-md border-b border-x-border">
+      <div className="sticky top-0 z-20 bg-background/80 backdrop-blur-md border-b border-card-border">
         <div className="px-4 py-3 flex items-center gap-3">
           <Calendar className="w-6 h-6 text-floodlight" />
           <h1 className="text-xl font-extrabold">Jogos</h1>
@@ -65,9 +65,9 @@ export default function JogosFeed() {
             <button
               key={tab}
               onClick={() => setActiveTimeTab(tab)}
-              className="flex-1 py-3 text-center hover:bg-x-hover transition-colors relative text-[15px] font-medium"
+              className="flex-1 py-3 text-center hover:bg-foreground/[0.04] transition-colors relative text-[15px] font-medium"
             >
-              <span className={activeTimeTab === tab ? "font-bold" : "text-x-text-secondary"}>
+              <span className={activeTimeTab === tab ? "font-bold" : "text-foreground-secondary"}>
                 {tab}
               </span>
               {activeTimeTab === tab && (
@@ -79,7 +79,7 @@ export default function JogosFeed() {
       </div>
 
       {/* Competition filters */}
-      <div className="px-4 py-3 border-b border-x-border overflow-x-auto hide-scrollbar">
+      <div className="px-4 py-3 border-b border-card-border overflow-x-auto hide-scrollbar">
         <div className="flex gap-2">
           {compTabs.map((comp) => (
             <button
@@ -88,7 +88,7 @@ export default function JogosFeed() {
               className={`px-3 py-1.5 rounded-full text-[13px] font-bold whitespace-nowrap transition-colors ${
                 activeComp === comp
                   ? "bg-ink text-foreground"
-                  : "bg-x-surface text-x-text-secondary hover:bg-x-search-bg"
+                  : "bg-surface-card text-foreground-secondary hover:bg-paper-2"
               }`}
             >
               {comp}
@@ -120,7 +120,7 @@ export default function JogosFeed() {
           </div>
         ) : (
           <div className="py-12 text-center">
-            <p className="text-x-text-secondary text-[15px]">Nenhum jogo encontrado para este filtro.</p>
+            <p className="text-foreground-secondary text-[15px]">Nenhum jogo encontrado para este filtro.</p>
           </div>
         )}
       </div>
@@ -132,7 +132,7 @@ function MatchCard({ match }: { match: MatchData }) {
   const status = statusConfig[match.status];
 
   return (
-    <div className="border border-x-border rounded-2xl p-4 mb-3 hover:bg-x-hover transition-colors cursor-pointer">
+    <div className="border border-card-border rounded-2xl p-4 mb-3 hover:bg-foreground/[0.04] transition-colors cursor-pointer">
       {/* Status */}
       <div className="flex items-center justify-between mb-3">
         <div className="flex items-center gap-2">
@@ -143,7 +143,7 @@ function MatchCard({ match }: { match: MatchData }) {
             {match.status === "live" ? `${status.label} · ${match.minute}` : status.label}
           </span>
         </div>
-        <span className="text-[12px] text-x-text-secondary">{match.competition}</span>
+        <span className="text-[12px] text-foreground-secondary">{match.competition}</span>
       </div>
 
       {/* Teams and Score */}
@@ -154,10 +154,10 @@ function MatchCard({ match }: { match: MatchData }) {
         <div className="px-4 text-center min-w-[80px]">
           {match.homeScore !== null && match.awayScore !== null ? (
             <p className="text-xl font-extrabold">
-              {match.homeScore} <span className="text-x-text-secondary mx-1">-</span> {match.awayScore}
+              {match.homeScore} <span className="text-foreground-secondary mx-1">-</span> {match.awayScore}
             </p>
           ) : (
-            <p className="text-lg font-bold text-x-text-secondary">{match.time}</p>
+            <p className="text-lg font-bold text-foreground-secondary">{match.time}</p>
           )}
         </div>
         <div className="flex-1 text-right">
@@ -166,7 +166,7 @@ function MatchCard({ match }: { match: MatchData }) {
       </div>
 
       {/* Details */}
-      <div className="mt-3 flex items-center justify-between text-[12px] text-x-text-secondary">
+      <div className="mt-3 flex items-center justify-between text-[12px] text-foreground-secondary">
         <span>{match.round}</span>
         <span>{match.stadium}</span>
       </div>

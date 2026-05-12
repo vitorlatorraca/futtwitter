@@ -31,8 +31,8 @@ export default function PostDetail() {
   if (isLoading) {
     return (
       <div>
-        <div className="sticky top-0 z-20 bg-black/80 backdrop-blur-md flex items-center gap-6 px-4 h-[53px]">
-          <button onClick={() => navigate(-1)} className="p-2 -m-2 rounded-full hover:bg-[rgba(231,233,234,0.1)] transition-colors">
+        <div className="sticky top-0 z-20 bg-background/80 backdrop-blur-md flex items-center gap-6 px-4 h-[53px]">
+          <button onClick={() => navigate(-1)} className="p-2 -m-2 rounded-full hover:bg-foreground/[0.08] transition-colors">
             <ArrowLeft className="w-5 h-5" />
           </button>
           <h1 className="text-xl font-bold">Post</h1>
@@ -52,15 +52,15 @@ export default function PostDetail() {
     const msg = error instanceof Error ? error.message : "Post não encontrado";
     return (
       <div>
-        <div className="sticky top-0 z-20 bg-black/80 backdrop-blur-md flex items-center gap-6 px-4 h-[53px]">
-          <button onClick={() => navigate(-1)} className="p-2 -m-2 rounded-full hover:bg-[rgba(231,233,234,0.1)] transition-colors">
+        <div className="sticky top-0 z-20 bg-background/80 backdrop-blur-md flex items-center gap-6 px-4 h-[53px]">
+          <button onClick={() => navigate(-1)} className="p-2 -m-2 rounded-full hover:bg-foreground/[0.08] transition-colors">
             <ArrowLeft className="w-5 h-5" />
           </button>
           <h1 className="text-xl font-bold">Post</h1>
         </div>
         <div className="py-16 text-center px-4">
           <h2 className="text-xl font-bold">Post não encontrado</h2>
-          <p className="text-x-text-secondary mt-2 text-sm">{msg}</p>
+          <p className="text-foreground-secondary mt-2 text-sm">{msg}</p>
           <button onClick={() => navigate("/")} className="mt-4 text-floodlight hover:underline text-sm">
             Voltar para o início
           </button>
@@ -75,10 +75,10 @@ export default function PostDetail() {
   return (
     <div>
       {/* Header */}
-      <div className="sticky top-0 z-20 bg-black/80 backdrop-blur-md flex items-center gap-6 px-4 h-[53px]">
+      <div className="sticky top-0 z-20 bg-background/80 backdrop-blur-md flex items-center gap-6 px-4 h-[53px]">
         <button
           onClick={() => navigate(-1)}
-          className="p-2 -m-2 rounded-full hover:bg-[rgba(231,233,234,0.1)] transition-colors"
+          className="p-2 -m-2 rounded-full hover:bg-foreground/[0.08] transition-colors"
           aria-label="Voltar"
         >
           <ArrowLeft className="w-5 h-5" />
@@ -106,7 +106,7 @@ export default function PostDetail() {
               </span>
               {post.author.verified && <VerifiedBadge />}
             </div>
-            <p className="text-[15px] text-x-text-secondary">@{post.author.handle}</p>
+            <p className="text-[15px] text-foreground-secondary">@{post.author.handle}</p>
           </div>
         </div>
 
@@ -146,41 +146,41 @@ export default function PostDetail() {
 
         {post.quotedPost && <PostCard post={post.quotedPost} isQuoted />}
 
-        <div className="py-4 border-b border-x-border">
-          <time className="text-[15px] text-x-text-secondary">{formatFullDate(post.timestamp)}</time>
+        <div className="py-4 border-b border-card-border">
+          <time className="text-[15px] text-foreground-secondary">{formatFullDate(post.timestamp)}</time>
         </div>
 
         {/* Counters */}
         {(post.reposts > 0 || post.likes > 0 || post.views > 0) && (
-          <div className="py-3 flex gap-5 border-b border-x-border text-[14px]">
+          <div className="py-3 flex gap-5 border-b border-card-border text-[14px]">
             {post.reposts > 0 && (
               <span>
                 <strong>{formatNumber(post.reposts)}</strong>{" "}
-                <span className="text-x-text-secondary">Reposts</span>
+                <span className="text-foreground-secondary">Reposts</span>
               </span>
             )}
             {post.likes > 0 && (
               <span>
                 <strong>{formatNumber(post.likes)}</strong>{" "}
-                <span className="text-x-text-secondary">Curtidas</span>
+                <span className="text-foreground-secondary">Curtidas</span>
               </span>
             )}
             {post.views > 0 && (
               <span>
                 <strong>{formatNumber(post.views)}</strong>{" "}
-                <span className="text-x-text-secondary">Visualizações</span>
+                <span className="text-foreground-secondary">Visualizações</span>
               </span>
             )}
           </div>
         )}
 
-        <div className="border-b border-x-border py-1">
+        <div className="border-b border-card-border py-1">
           <TweetActions post={post} />
         </div>
       </article>
 
       {/* Compose reply */}
-      <div className="border-b border-x-border">
+      <div className="border-b border-card-border">
         <ComposeBox
           placeholder={`Responder para @${post.author.handle}`}
           replyTo={post.id}
@@ -191,7 +191,7 @@ export default function PostDetail() {
       {replies.length > 0 ? (
         replies.map((reply) => <PostCard key={reply.id} post={reply} />)
       ) : (
-        <div className="py-10 text-center text-x-text-secondary text-sm">
+        <div className="py-10 text-center text-foreground-secondary text-sm">
           Nenhuma resposta ainda. Seja o primeiro!
         </div>
       )}
