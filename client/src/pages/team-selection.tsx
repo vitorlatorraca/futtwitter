@@ -47,7 +47,7 @@ export default function TeamSelectionPage() {
         title: 'Conta criada com sucesso!',
         description: 'Bem-vindo à Tribuna',
       });
-      navigate('/', { replace: true });
+      navigate('/dashboard', { replace: true });
     } catch (error: unknown) {
       const rawMsg = error instanceof Error ? error.message : 'Tente novamente mais tarde';
       // queryClient already extracts the human message from Zod payloads.

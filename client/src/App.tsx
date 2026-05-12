@@ -11,6 +11,7 @@ import ImageLightbox from "./components/modals/ImageLightbox";
 import Toast from "./components/modals/Toast";
 import { ProtectedRoute } from "./components/auth/ProtectedRoute";
 import { GuestRoute } from "./components/auth/GuestRoute";
+import { LandingOrRedirect } from "./components/auth/LandingOrRedirect";
 import { ProfileRedirect } from "./components/auth/ProfileRedirect";
 import { TooltipProvider } from "./components/ui/tooltip";
 
@@ -42,6 +43,7 @@ const JogosPage = lazy(() => import("./pages/jogos"));
 const PerfilPage = lazy(() => import("./pages/perfil"));
 const MeuTimeComunidade = lazy(() => import("./pages/meu-time-comunidade"));
 const MeuTimeElenco = lazy(() => import("./pages/meu-time-elenco"));
+const JornalistaPage = lazy(() => import("./pages/jornalista"));
 
 // ============================================
 // REACT ERROR BOUNDARY
@@ -138,6 +140,9 @@ export default function App() {
             <BrowserRouter>
             <Suspense fallback={<LoadingFallback />}>
               <Routes>
+                {/* Public marketing + portal entry */}
+                <Route path="/" element={<LandingOrRedirect />} />
+
                 {/* Public auth routes */}
                 <Route path="/login" element={<GuestRoute><LoginPage /></GuestRoute>} />
                 <Route path="/cadastro" element={<GuestRoute><SignupPage /></GuestRoute>} />
@@ -154,10 +159,10 @@ export default function App() {
                 <Route path="/jogos" element={<ProtectedRoute><JogosPage /></ProtectedRoute>} />
                 <Route path="/meu-time/jogos" element={<ProtectedRoute><JogosPage /></ProtectedRoute>} />
                 <Route path="/perfil" element={<ProtectedRoute><PerfilPage /></ProtectedRoute>} />
+                <Route path="/jornalista" element={<ProtectedRoute><JornalistaPage /></ProtectedRoute>} />
 
                 {/* ── Legacy Twitter-style pages (left sidebar layout) ─────────── */}
                 <Route element={<ProtectedRoute><Layout /></ProtectedRoute>}>
-                  <Route path="/" element={<Navigate to="/dashboard" replace />} />
                   <Route path="/feed" element={<Navigate to="/dashboard" replace />} />
                   <Route path="/profile" element={<ProfileRedirect />} />
                   <Route path="/profile/:handle" element={<Profile />} />

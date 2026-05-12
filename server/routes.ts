@@ -2146,7 +2146,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     });
   });
 
-  app.post("/api/uploads/news-image", requireJournalist, (req, res) => {
+  app.post("/api/uploads/news-image", requireAuth, requireJournalist, (req, res) => {
     uploadNewsImage.single("image")(req as any, res as any, async (err: any) => {
       if (err) {
         const isTooLarge = err?.code === "LIMIT_FILE_SIZE";

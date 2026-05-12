@@ -61,7 +61,7 @@ export default function PostDetail() {
         <div className="py-16 text-center px-4">
           <h2 className="text-xl font-bold">Post não encontrado</h2>
           <p className="text-foreground-secondary mt-2 text-sm">{msg}</p>
-          <button onClick={() => navigate("/")} className="mt-4 text-floodlight hover:underline text-sm">
+          <button onClick={() => navigate("/dashboard")} className="mt-4 text-floodlight hover:underline text-sm">
             Voltar para o início
           </button>
         </div>

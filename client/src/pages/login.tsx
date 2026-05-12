@@ -35,7 +35,7 @@ export default function LoginPage() {
       try {
         await login(formData.email, formData.password);
         toast({ title: 'Login realizado!', description: 'Bem-vindo de volta' });
-        navigate('/', { replace: true });
+        navigate('/dashboard', { replace: true });
       } catch (err: unknown) {
         const msg = err instanceof Error ? err.message : 'Verifique suas credenciais e tente novamente';
         setErrorMsg(msg);

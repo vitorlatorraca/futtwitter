@@ -571,31 +571,47 @@ export const matchPlayers = pgTable("match_players", {
   createdAt: timestamp("created_at").notNull().defaultNow(),
 });
 
-export const news = pgTable("news", {
-  id: varchar("id", { length: 36 }).primaryKey().default(sql`gen_random_uuid()`),
-  journalistId: varchar("journalist_id", { length: 36 }).notNull(),
-  teamId: varchar("team_id", { length: 36 }),
-  scope: postScopeEnum("scope").notNull().default("ALL"),
-  title: varchar("title", { length: 200 }).notNull(),
-  content: text("content").notNull(),
-  imageUrl: text("image_url"),
-  category: newsCategoryEnum("category").notNull().default("NEWS"),
-  likesCount: integer("likes_count").notNull().default(0),
-  dislikesCount: integer("dislikes_count").notNull().default(0),
-  isPublished: boolean("is_published").notNull().default(true),
-  publishedAt: timestamp("published_at").notNull().defaultNow(),
-  createdAt: timestamp("created_at").notNull().defaultNow(),
-  updatedAt: timestamp("updated_at").notNull().defaultNow(),
-});
+export const news = pgTable(
+  "news",
+  {
+    id: varchar("id", { length: 36 }).primaryKey().default(sql`gen_random_uuid()`),
+    journalistId: varchar("journalist_id", { length: 36 }).notNull(),
+    teamId: varchar("team_id", { length: 36 }),
+    scope: postScopeEnum("scope").notNull().default("ALL"),
+    title: varchar("title", { length: 200 }).notNull(),
+    content: text("content").notNull(),
+    imageUrl: text("image_url"),
+    category: newsCategoryEnum("category").notNull().default("NEWS"),
+    likesCount: integer("likes_count").notNull().default(0),
+    dislikesCount: integer("dislikes_count").notNull().default(0),
+    isPublished: boolean("is_published").notNull().default(true),
+    publishedAt: timestamp("published_at").notNull().defaultNow(),
+    createdAt: timestamp("created_at").notNull().defaultNow(),
+    updatedAt: timestamp("updated_at").notNull().defaultNow(),
+  },
+  (t) => ({
+    newsQueryIdx: index("news_query_idx").on(t.teamId, t.isPublished, t.publishedAt),
+  }),
+);
 
-export const newsInteractions = pgTable("news_interactions", {
-  id: varchar("id", { length: 36 }).primaryKey().default(sql`gen_random_uuid()`),
-  userId: varchar("user_id", { length: 36 }).notNull(),
-  newsId: varchar("news_id", { length: 36 }).notNull(),
-  interactionType: interactionTypeEnum("interaction_type").notNull(),
-  createdAt: timestamp("created_at").notNull().defaultNow(),
-  updatedAt: timestamp("updated_at").notNull().defaultNow(),
-});
+export const newsInteractions = pgTable(
+  "news_interactions",
+  {
+    id: varchar("id", { length: 36 }).primaryKey().default(sql`gen_random_uuid()`),
+    userId: varchar("user_id", { length: 36 }).notNull(),
+    newsId: varchar("news_id", { length: 36 }).notNull(),
+    interactionType: interactionTypeEnum("interaction_type").notNull(),
+    createdAt: timestamp("created_at").notNull().defaultNow(),
+    updatedAt: timestamp("updated_at").notNull().defaultNow(),
+  },
+  (t) => ({
+    userNewsTypeUnique: uniqueIndex("news_interactions_user_news_type_unique").on(
+      t.userId,
+      t.newsId,
+      t.interactionType,
+    ),
+  }),
+);
 
 export const playerRatings = pgTable(
   "player_ratings",
@@ -664,17 +680,23 @@ export const userBadges = pgTable("user_badges", {
   earnedAt: timestamp("earned_at").notNull().defaultNow(),
 });
 
-export const notifications = pgTable("notifications", {
-  id: varchar("id", { length: 36 }).primaryKey().default(sql`gen_random_uuid()`),
-  userId: varchar("user_id", { length: 36 }).notNull(),
-  actorId: varchar("actor_id", { length: 36 }),
-  type: notificationTypeEnum("type").notNull(),
-  title: varchar("title", { length: 200 }).notNull(),
-  message: text("message").notNull(),
-  referenceId: varchar("reference_id", { length: 36 }),
-  isRead: boolean("is_read").notNull().default(false),
-  createdAt: timestamp("created_at").notNull().defaultNow(),
-});
+export const notifications = pgTable(
+  "notifications",
+  {
+    id: varchar("id", { length: 36 }).primaryKey().default(sql`gen_random_uuid()`),
+    userId: varchar("user_id", { length: 36 }).notNull(),
+    actorId: varchar("actor_id", { length: 36 }),
+    type: notificationTypeEnum("type").notNull(),
+    title: varchar("title", { length: 200 }).notNull(),
+    message: text("message").notNull(),
+    referenceId: varchar("reference_id", { length: 36 }),
+    isRead: boolean("is_read").notNull().default(false),
+    createdAt: timestamp("created_at").notNull().defaultNow(),
+  },
+  (t) => ({
+    notificationsUserUnreadIdx: index("notifications_user_unread_idx").on(t.userId, t.isRead),
+  }),
+);
 
 export const userLineups = pgTable(
   "user_lineups",
@@ -889,24 +911,30 @@ export const teamsForumReplies = pgTable(
   })
 );
 
-export const posts = pgTable("posts", {
-  id: varchar("id", { length: 36 }).primaryKey().default(sql`gen_random_uuid()`),
-  userId: varchar("user_id", { length: 36 })
-    .notNull()
-    .references(() => users.id, { onDelete: "cascade" }),
-  content: text("content").notNull(),
-  imageUrl: text("image_url"),
-  parentPostId: varchar("parent_post_id", { length: 36 }),
-  replyCount: integer("reply_count").notNull().default(0),
-  likeCount: integer("like_count").notNull().default(0),
-  repostCount: integer("repost_count").notNull().default(0),
-  bookmarkCount: integer("bookmark_count").notNull().default(0),
-  viewCount: integer("view_count").notNull().default(0),
-  relatedNewsId: varchar("related_news_id", { length: 36 }),
-  hashtags: text("hashtags").array(),
-  createdAt: timestamp("created_at").notNull().defaultNow(),
-  updatedAt: timestamp("updated_at").notNull().defaultNow(),
-});
+export const posts = pgTable(
+  "posts",
+  {
+    id: varchar("id", { length: 36 }).primaryKey().default(sql`gen_random_uuid()`),
+    userId: varchar("user_id", { length: 36 })
+      .notNull()
+      .references(() => users.id, { onDelete: "cascade" }),
+    content: text("content").notNull(),
+    imageUrl: text("image_url"),
+    parentPostId: varchar("parent_post_id", { length: 36 }),
+    replyCount: integer("reply_count").notNull().default(0),
+    likeCount: integer("like_count").notNull().default(0),
+    repostCount: integer("repost_count").notNull().default(0),
+    bookmarkCount: integer("bookmark_count").notNull().default(0),
+    viewCount: integer("view_count").notNull().default(0),
+    relatedNewsId: varchar("related_news_id", { length: 36 }),
+    hashtags: text("hashtags").array(),
+    createdAt: timestamp("created_at").notNull().defaultNow(),
+    updatedAt: timestamp("updated_at").notNull().defaultNow(),
+  },
+  (t) => ({
+    postsFeedIdx: index("posts_feed_idx").on(t.createdAt.desc()),
+  }),
+);
 
 export const hashtags = pgTable(
   "hashtags",

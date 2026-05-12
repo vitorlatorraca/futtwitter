@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { Navigate } from 'react-router-dom';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useAuth } from '@/lib/auth-context';
 import { Button } from '@/components/ui/button';
@@ -16,7 +17,7 @@ import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, D
 import { useToast } from '@/hooks/use-toast';
 import { apiRequest, getApiUrl } from '@/lib/queryClient';
 import { TEAMS_DATA } from '@/lib/team-data';
-import { ArrowLeftRight, Edit, Eye, FileImage, Plus, ShieldCheck, Trash2, UploadCloud } from 'lucide-react';
+import { ArrowLeftRight, Edit, Eye, FileImage, Plus, Trash2, UploadCloud } from 'lucide-react';
 import type { News } from '@shared/schema';
 import { AvatarUploader } from '@/components/AvatarUploader';
 import {
@@ -193,15 +194,7 @@ export default function JornalistaPage() {
   };
 
   if (user?.userType !== 'JOURNALIST') {
-    return (
-      <AppShell>
-        <EmptyState
-          icon={ShieldCheck}
-          title="Acesso restrito"
-          description="Você precisa ser jornalista (e estar aprovado) para acessar este painel."
-        />
-      </AppShell>
-    );
+    return <Navigate to="/dashboard" replace />;
   }
 
   return (

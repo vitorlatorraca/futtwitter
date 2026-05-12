@@ -78,7 +78,7 @@ export default function NewsDetail() {
       <div className="py-16 px-4 text-center">
         <p className="text-red-400 mb-4">{error?.message ?? "Notícia não encontrada."}</p>
         <button
-          onClick={() => navigate("/")}
+          onClick={() => navigate("/dashboard")}
           className="text-floodlight hover:underline"
         >
           Voltar ao feed

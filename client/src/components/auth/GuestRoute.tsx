@@ -7,8 +7,7 @@ interface GuestRouteProps {
 
 /**
  * For login/signup pages. Redirects to /dashboard (home) when user is already
- * authenticated — consistent with login.tsx and team-selection.tsx, which both
- * navigate to "/" (which itself redirects to /dashboard).
+ * authenticated — consistent with post-login flows that land on `/dashboard`.
  */
 export function GuestRoute({ children }: GuestRouteProps) {
   const { user, isLoading } = useAuth();

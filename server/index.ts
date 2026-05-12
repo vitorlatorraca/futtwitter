@@ -10,8 +10,18 @@ const app = express();
 
 // Uploads are handled by Cloudinary — no local disk storage needed
 
-// Railway/Neon: trust proxy in production for secure cookies
-if (process.env.NODE_ENV === "production") {
+// Trust reverse proxies (Railway, Vercel, etc.) so req.ip and secure cookies behave.
+// Opt out with TRUST_PROXY=false when running with no proxy.
+const trustProxyDisabled =
+  process.env.TRUST_PROXY === "false" || process.env.TRUST_PROXY === "0";
+const trustProxyEnabled =
+  !trustProxyDisabled &&
+  (process.env.NODE_ENV === "production" ||
+    process.env.TRUST_PROXY === "true" ||
+    process.env.TRUST_PROXY === "1" ||
+    Boolean(process.env.RAILWAY_ENVIRONMENT) ||
+    Boolean(process.env.VERCEL));
+if (trustProxyEnabled) {
   app.set("trust proxy", 1);
 }
 

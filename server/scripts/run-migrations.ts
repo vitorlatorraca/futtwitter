@@ -25,6 +25,7 @@ const MIGRATION_FILES = [
   "0012_transfer_rumors_note.sql",
   "0013_game_daily_player.sql",
   "0014_explore_hashtags_trending.sql",
+  "0015_feed_news_notifications_indexes.sql",
 ];
 
 async function runMigrations() {
