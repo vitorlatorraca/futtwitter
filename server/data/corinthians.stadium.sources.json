@@ -1,0 +1,15 @@
+{
+  "stadium": "Neo Química Arena",
+  "team": "Corinthians",
+  "images": [
+    {
+      "file": "neo-quimica-arena.jpg",
+      "source": "Wikimedia Commons",
+      "sourceUrl": "https://commons.wikimedia.org/wiki/File:Arena_Corinthians_2.jpg",
+      "license": "CC0 1.0 (Public Domain)",
+      "author": "Jorge Morales Piderit",
+      "description": "Arena Corinthians interior nighttime, February 2018"
+    }
+  ],
+  "lastUpdated": "2025-02-04"
+}

@@ -16,8 +16,26 @@ export function initNotificationGateway(httpServer: HTTPServer, sessionStore: an
     const { pathname } = parse(request.url || '');
     
     if (pathname !== '/ws/notifications') {
+      if (process.env.NODE_ENV === "development") {
+        return;
+      }
       socket.destroy();
       return;
+    }
+
+    // WebSockets are NOT supported on Vercel serverless; this code only runs in
+    // local dev (server/index.ts). Origin allowlist is the same as the HTTP CORS.
+    const origin = request.headers.origin;
+    if (process.env.NODE_ENV === "production" && origin) {
+      const allowedOrigins = [
+        "https://futtwitter.vercel.app",
+        ...(process.env.CORS_ORIGIN ?? "").split(",").map((o) => o.trim()).filter(Boolean),
+      ];
+      if (!allowedOrigins.includes(origin)) {
+        socket.write("HTTP/1.1 403 Forbidden\r\n\r\n");
+        socket.destroy();
+        return;
+      }
     }
 
     // Parse cookies
@@ -31,7 +49,13 @@ export function initNotificationGateway(httpServer: HTTPServer, sessionStore: an
     }
 
     // Verify and extract session ID from signed cookie
-    const secret = process.env.SESSION_SECRET || 'brasileirao-secret-key-change-in-production';
+    const secret = process.env.SESSION_SECRET;
+    if (!secret) {
+      console.error("SESSION_SECRET is not set (WebSocket auth cannot verify sessions)");
+      socket.write("HTTP/1.1 500 Internal Server Error\r\n\r\n");
+      socket.destroy();
+      return;
+    }
     const unsignedValue = signature.unsign(sessionCookie.slice(2), secret); // Remove 's:' prefix
 
     if (unsignedValue === false) {

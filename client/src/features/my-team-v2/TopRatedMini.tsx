@@ -1,0 +1,98 @@
+'use client';
+
+import { useMemo } from 'react';
+import { PositionBadge } from '@/components/ui/position-badge';
+import { RatingPill } from '@/components/ui/rating-pill';
+
+interface TopRatedPlayer {
+  playerId: string;
+  name: string;
+  position?: string | null;
+  photoUrl?: string | null;
+  averageRating: number;
+  matchesPlayed?: number;
+}
+
+interface TopRatedMiniProps {
+  players: TopRatedPlayer[];
+  maxItems?: number;
+  /** Últimos N jogos usados para a média (ex: 5) */
+  lastNMatches?: number;
+  getPhotoUrl?: (playerId: string) => string;
+  /** Quando true, renderiza só o conteúdo sem panel — para uso dentro de MyTeamCard */
+  embed?: boolean;
+}
+
+const panelClass =
+  'rounded-xl border border-border bg-surface-card p-4 shadow-card transition-colors hover:border-border-strong';
+
+export function TopRatedMini({ players, maxItems = 5, lastNMatches = 5, getPhotoUrl, embed }: TopRatedMiniProps) {
+  const top = useMemo(() => {
+    return [...players]
+      .sort((a, b) => (b.averageRating ?? 0) - (a.averageRating ?? 0))
+      .slice(0, maxItems);
+  }, [players, maxItems]);
+
+  const title = `Top avaliados (últimos ${lastNMatches} jogos)`;
+
+  const listContent = (
+    <div className="space-y-1">
+      {top.map((p, i) => (
+        <div
+          key={p.playerId}
+          className="flex items-center gap-2.5 py-2 px-2.5 rounded-lg hover:bg-surface-elevated/70 transition-all duration-200 group"
+        >
+          <span className="w-6 h-6 rounded-full bg-primary/15 text-primary flex items-center justify-center text-[10px] font-bold tabular-nums shrink-0">
+            {i + 1}
+          </span>
+          <div className="shrink-0">
+            {p.photoUrl || getPhotoUrl?.(p.playerId) ? (
+              <img
+                src={p.photoUrl ?? getPhotoUrl?.(p.playerId) ?? '/assets/players/placeholder.png'}
+                alt=""
+                className="h-8 w-8 rounded-full object-cover border border-border-subtle"
+                onError={(e) => {
+                  (e.target as HTMLImageElement).src = '/assets/players/placeholder.png';
+                }}
+              />
+            ) : (
+              <div className="h-8 w-8 rounded-full bg-muted/80 flex items-center justify-center text-[10px] font-semibold text-foreground-secondary">
+                {p.name.slice(0, 2).toUpperCase()}
+              </div>
+            )}
+          </div>
+          <div className="flex-1 min-w-0">
+            <p className="text-xs font-medium text-foreground truncate">{p.name}</p>
+            {p.position && (
+              <PositionBadge position={p.position} size="xs" className="mt-0.5" />
+            )}
+          </div>
+          <RatingPill rating={p.averageRating} size="sm" />
+        </div>
+      ))}
+    </div>
+  );
+
+  if (embed) {
+    return (
+      <div className="px-4 sm:px-5 py-3 flex-1 min-h-0 overflow-auto flex flex-col">
+        {top.length === 0 ? (
+          <p className="text-xs text-foreground-secondary text-center py-4 m-auto">
+            Média das notas nos últimos jogos. Dados disponíveis quando houver partidas com estatísticas.
+          </p>
+        ) : (
+          listContent
+        )}
+      </div>
+    );
+  }
+
+  if (top.length === 0) return null;
+
+  return (
+    <div className={panelClass}>
+      <h3 className="text-sm font-semibold text-foreground tracking-tight mb-3">{title}</h3>
+      {listContent}
+    </div>
+  );
+}

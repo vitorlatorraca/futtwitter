@@ -1,0 +1,114 @@
+/* Tribuna — design tokens
+ * Drop into your global stylesheet or convert to your theme system (Tailwind config, CSS-in-JS theme, etc.)
+ * See README.md for usage rules.
+ */
+
+:root {
+  /* ---- Core palette ---- */
+  --ink:         #0F1115;
+  --ink-2:       #1C1F25;
+  --ink-3:       #353941;
+  --slate:       #6A6F7A;
+  --slate-2:     #9CA0AB;
+
+  --paper:       #F2ECDE;
+  --paper-2:     #ECE5D3;
+  --card:        #FBF7EC;
+  --line:        #E2D9C3;
+  --line-2:      #D4C8AB;
+
+  --floodlight:  #FF4B1F;
+  --floodlight-d:#E03A10;
+  --chalk:       #F5C518;
+
+  /* ---- Status ---- */
+  --success:     #1F8E5C;
+  --error:       #C4321A;
+  --warning:     #D89412;
+  --info:        #2E5BD4;
+
+  /* ---- Club colors (use as outline/crest only, never fill) ---- */
+  --club-cor:    #0F0F0F;
+  --club-pal:    #006437;
+  --club-fla-a:  #C4321A;
+  --club-fla-b:  #0F0F0F;
+  --club-sao-a:  #C4321A;
+  --club-sao-b:  #FFFFFF;
+  --club-sao-c:  #0F0F0F;
+  --club-san:    #FFFFFF;
+  --club-cru:    #2E5BD4;
+  --club-gre-a:  #0B377C;
+  --club-gre-b:  #0F0F0F;
+
+  /* ---- Radii ---- */
+  --r-1:  4px;
+  --r-2:  8px;
+  --r-3:  12px;
+  --r-4:  20px;
+  --r-full: 999px;
+
+  /* ---- Spacing (4pt scale) ---- */
+  --s-1:  4px;
+  --s-2:  8px;
+  --s-3:  12px;
+  --s-4:  16px;
+  --s-5:  20px;
+  --s-6:  24px;
+  --s-7:  32px;
+  --s-8:  40px;
+  --s-9:  56px;
+  --s-10: 72px;
+
+  /* ---- Elevation (warm ink tint, never pure black) ---- */
+  --shadow-0: 0 1px 0 rgba(15,17,21,0.04);
+  --shadow-1: 0 1px 2px rgba(15,17,21,0.05), 0 0 0 1px rgba(15,17,21,0.04);
+  --shadow-2: 0 8px 24px -12px rgba(15,17,21,0.18), 0 0 0 1px rgba(15,17,21,0.05);
+  --shadow-3: 0 24px 60px -28px rgba(15,17,21,0.35), 0 0 0 1px rgba(15,17,21,0.06);
+
+  /* ---- Typography ---- */
+  --font-display: 'Bricolage Grotesque', serif;
+  --font-body:    'Geist', system-ui, sans-serif;
+  --font-mono:    'JetBrains Mono', ui-monospace, monospace;
+}
+
+/* ---- Type scale (apply as utility classes or map to your component system) ---- */
+
+.t-display {
+  font-family: var(--font-display);
+  font-variation-settings: 'opsz' 96, 'wght' 800;
+  font-size: 132px; line-height: 0.9; letter-spacing: -0.045em;
+}
+.t-h1 {
+  font-family: var(--font-display);
+  font-variation-settings: 'opsz' 48, 'wght' 700;
+  font-size: 56px; line-height: 1.02; letter-spacing: -0.03em;
+}
+.t-h2 {
+  font-family: var(--font-display);
+  font-variation-settings: 'opsz' 32, 'wght' 700;
+  font-size: 36px; line-height: 1.05; letter-spacing: -0.022em;
+}
+.t-h3 {
+  font-family: var(--font-display);
+  font-variation-settings: 'opsz' 24, 'wght' 600;
+  font-size: 22px; line-height: 1.15; letter-spacing: -0.012em;
+}
+.t-body-lg { font-family: var(--font-body); font-size: 17px; line-height: 1.55; }
+.t-body    { font-family: var(--font-body); font-size: 15px; line-height: 1.50; }
+.t-caption { font-family: var(--font-body); font-size: 13px; line-height: 1.45; color: var(--slate); }
+.t-label {
+  font-family: var(--font-mono);
+  font-size: 11px; line-height: 1; font-weight: 500;
+  letter-spacing: 0.14em; text-transform: uppercase;
+  color: var(--slate);
+}
+.t-mono { font-family: var(--font-mono); }
+
+/* ---- Base ---- */
+body {
+  background: var(--paper);
+  color: var(--ink);
+  font-family: var(--font-body);
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}

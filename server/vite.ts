@@ -20,9 +20,21 @@ export function log(message: string, source = "express") {
 }
 
 export async function setupVite(app: Express, server: Server) {
+  const hmrHost = process.env.HMR_HOST ?? "127.0.0.1";
+  const hmrPort = Number(process.env.PORT ?? 5000);
+  const disableHmr = process.env.DISABLE_HMR === "1";
+
   const serverOptions = {
     middlewareMode: true,
-    hmr: { server },
+    hmr: disableHmr
+      ? false
+      : {
+          server,
+          protocol: "ws",
+          host: hmrHost,
+          clientPort: hmrPort,
+          port: hmrPort,
+        },
     allowedHosts: true as const,
   };
 
@@ -68,12 +80,12 @@ export async function setupVite(app: Express, server: Server) {
 }
 
 export function serveStatic(app: Express) {
-  const distPath = path.resolve(import.meta.dirname, "public");
+  // In production, the build output is in dist/public (see vite.config.ts)
+  const distPath = path.resolve(import.meta.dirname, "..", "dist", "public");
 
   if (!fs.existsSync(distPath)) {
-    throw new Error(
-      `Could not find the build directory: ${distPath}, make sure to build the client first`,
-    );
+    log(`Static directory not found (${distPath}), skipping static file serving`);
+    return;
   }
 
   app.use(express.static(distPath));

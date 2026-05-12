@@ -1,0 +1,1679 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=1320" />
+<title>TRIBUNA — Rebrand FuttWitter</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400;12..96,500;12..96,600;12..96,700;12..96,800&family=Geist:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    /* Core palette */
+    --ink:        #0F1115;   /* primary brand / text */
+    --ink-2:      #1C1F25;   /* surfaces (dark) */
+    --ink-3:      #353941;   /* muted heavy */
+    --slate:      #6A6F7A;   /* secondary text */
+    --slate-2:    #9CA0AB;   /* tertiary text */
+
+    --paper:      #F2ECDE;   /* page background — warm cream */
+    --paper-2:    #ECE5D3;   /* alt cream */
+    --card:       #FBF7EC;   /* card surface */
+    --line:       #E2D9C3;   /* hairline on cream */
+    --line-2:     #D4C8AB;   /* heavier hairline */
+
+    --floodlight: #FF4B1F;   /* primary action — warm orange */
+    --floodlight-d:#E03A10;  /* hover */
+    --chalk:      #F5C518;   /* highlight / scoreboard yellow */
+    --pitch:      #16623C;   /* deep pitch green — used sparingly for "live" only */
+
+    --success:    #1F8E5C;
+    --error:      #C4321A;
+    --warning:    #D89412;
+    --info:       #2E5BD4;
+
+    /* Radii */
+    --r-1: 4px;     /* chips, small inputs */
+    --r-2: 8px;     /* buttons */
+    --r-3: 12px;    /* cards */
+    --r-4: 20px;    /* hero cards */
+    --r-full: 999px;
+
+    /* Spacing — 4pt scale */
+    --s-1: 4px; --s-2: 8px; --s-3: 12px; --s-4: 16px; --s-5: 20px;
+    --s-6: 24px; --s-7: 32px; --s-8: 40px; --s-9: 56px; --s-10: 72px;
+
+    /* Shadow — soft, paper-on-paper */
+    --shadow-0: 0 1px 0 rgba(15,17,21,0.04);
+    --shadow-1: 0 1px 2px rgba(15,17,21,0.05), 0 0 0 1px rgba(15,17,21,0.04);
+    --shadow-2: 0 8px 24px -12px rgba(15,17,21,0.18), 0 0 0 1px rgba(15,17,21,0.05);
+    --shadow-3: 0 24px 60px -28px rgba(15,17,21,0.35), 0 0 0 1px rgba(15,17,21,0.06);
+  }
+
+  *, *::before, *::after { box-sizing: border-box; }
+  html, body { margin: 0; padding: 0; }
+  body {
+    background: var(--paper);
+    color: var(--ink);
+    font-family: 'Geist', system-ui, sans-serif;
+    font-size: 15px;
+    line-height: 1.5;
+    -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
+  }
+  .page {
+    max-width: 1240px;
+    margin: 0 auto;
+    padding: 56px 48px 120px;
+  }
+
+  /* Typography */
+  .h-display {
+    font-family: 'Bricolage Grotesque', serif;
+    font-variation-settings: 'opsz' 96, 'wght' 800;
+    font-size: 132px;
+    line-height: 0.9;
+    letter-spacing: -0.045em;
+    margin: 0;
+  }
+  .h1 {
+    font-family: 'Bricolage Grotesque', serif;
+    font-variation-settings: 'opsz' 48, 'wght' 700;
+    font-size: 56px;
+    line-height: 1.02;
+    letter-spacing: -0.03em;
+    margin: 0;
+  }
+  .h2 {
+    font-family: 'Bricolage Grotesque', serif;
+    font-variation-settings: 'opsz' 32, 'wght' 700;
+    font-size: 36px;
+    line-height: 1.05;
+    letter-spacing: -0.022em;
+    margin: 0;
+  }
+  .h3 {
+    font-family: 'Bricolage Grotesque', serif;
+    font-variation-settings: 'opsz' 24, 'wght' 600;
+    font-size: 22px;
+    line-height: 1.15;
+    letter-spacing: -0.012em;
+    margin: 0;
+  }
+  .body-lg { font-size: 17px; line-height: 1.55; color: var(--ink-3); }
+  .body    { font-size: 15px; line-height: 1.55; color: var(--ink-3); }
+  .caption { font-size: 13px; line-height: 1.45; color: var(--slate); }
+  .label {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px; line-height: 1;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--slate);
+    font-weight: 500;
+  }
+  .mono { font-family: 'JetBrains Mono', monospace; }
+
+  /* Section scaffolding */
+  .section { margin-top: 96px; }
+  .section-head {
+    display: grid;
+    grid-template-columns: 96px 1fr;
+    gap: 24px;
+    align-items: end;
+    padding-bottom: 20px;
+    border-bottom: 1px solid var(--line-2);
+    margin-bottom: 32px;
+  }
+  .section-head .num {
+    font-family: 'Bricolage Grotesque', serif;
+    font-variation-settings: 'opsz' 48, 'wght' 600;
+    font-size: 64px;
+    line-height: 0.9;
+    color: var(--ink);
+    letter-spacing: -0.02em;
+  }
+  .section-head .meta { display: flex; align-items: baseline; justify-content: space-between; flex-wrap: wrap; gap: 16px; }
+
+  /* ============ COVER ============ */
+  .cover {
+    position: relative;
+    border-radius: var(--r-4);
+    background: var(--ink);
+    color: var(--paper);
+    padding: 48px 48px 40px;
+    overflow: hidden;
+    box-shadow: var(--shadow-3);
+    isolation: isolate;
+  }
+  .cover::before {
+    /* subtle grid lines — like a pitch chalk diagram */
+    content:"";
+    position: absolute; inset: 0;
+    background-image:
+      linear-gradient(to right, rgba(245,197,24,0.08) 1px, transparent 1px),
+      linear-gradient(to bottom, rgba(245,197,24,0.06) 1px, transparent 1px);
+    background-size: 64px 64px;
+    z-index: 0;
+    mask-image: radial-gradient(ellipse at 80% 30%, black 0%, transparent 70%);
+  }
+  .cover > * { position: relative; z-index: 1; }
+  .cover-top {
+    display: flex; justify-content: space-between; align-items: flex-start;
+    margin-bottom: 96px;
+  }
+  .cover-mark { display: flex; align-items: center; gap: 12px; }
+  .cover-mark .dot {
+    width: 14px; height: 14px; border-radius: 50%;
+    background: var(--floodlight);
+    box-shadow: 0 0 0 4px rgba(255,75,31,0.18);
+  }
+  .cover-mark .label-mono {
+    font-family:'JetBrains Mono', monospace; font-size: 12px; letter-spacing: 0.18em;
+    text-transform: uppercase; color: var(--slate-2);
+  }
+  .cover-id {
+    text-align: right;
+    font-family:'JetBrains Mono', monospace;
+    font-size: 11px; letter-spacing: 0.16em; text-transform: uppercase;
+    color: var(--slate-2);
+    line-height: 1.7;
+  }
+  .cover-id strong { color: var(--paper); font-weight: 500; }
+  .cover-wordmark {
+    font-family: 'Bricolage Grotesque', serif;
+    font-variation-settings: 'opsz' 96, 'wght' 800;
+    font-size: 196px;
+    line-height: 0.86;
+    letter-spacing: -0.05em;
+    margin: 0;
+  }
+  .cover-wordmark .accent { color: var(--floodlight); }
+  .cover-foot {
+    display: grid;
+    grid-template-columns: 1.4fr 1fr 1fr 1fr;
+    gap: 32px;
+    margin-top: 56px;
+    padding-top: 28px;
+    border-top: 1px solid rgba(245,239,224,0.14);
+  }
+  .cover-foot .tag {
+    font-family:'JetBrains Mono', monospace; font-size: 11px; letter-spacing: 0.16em;
+    text-transform: uppercase; color: var(--slate-2); margin-bottom: 8px;
+  }
+  .cover-foot .val {
+    font-family:'Bricolage Grotesque', serif;
+    font-variation-settings: 'opsz' 24, 'wght' 500;
+    font-size: 18px; color: var(--paper); line-height: 1.3;
+  }
+  .cover-foot .val em { color: var(--chalk); font-style: normal; }
+
+  /* ============ CONCEPT ============ */
+  .concept {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 48px;
+    align-items: start;
+  }
+  .concept .stmt {
+    font-family: 'Bricolage Grotesque', serif;
+    font-variation-settings: 'opsz' 48, 'wght' 500;
+    font-size: 40px;
+    line-height: 1.08;
+    letter-spacing: -0.022em;
+    color: var(--ink);
+  }
+  .concept .stmt em {
+    font-style: normal;
+    color: var(--floodlight);
+    font-variation-settings: 'opsz' 48, 'wght' 700;
+  }
+  .concept .stmt s {
+    text-decoration: line-through;
+    text-decoration-color: var(--line-2);
+    text-decoration-thickness: 2px;
+    color: var(--slate-2);
+  }
+  .concept .body-lg { max-width: 56ch; }
+  .concept .body-lg + .body-lg { margin-top: 16px; }
+
+  .pillars { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; margin-top: 48px; }
+  .pillar {
+    background: var(--card);
+    border: 1px solid var(--line);
+    border-radius: var(--r-3);
+    padding: 24px 22px;
+  }
+  .pillar .label { margin-bottom: 12px; color: var(--floodlight); }
+  .pillar h4 {
+    font-family:'Bricolage Grotesque', serif;
+    font-variation-settings: 'opsz' 24, 'wght' 600;
+    font-size: 22px; letter-spacing: -0.012em; margin: 0 0 6px;
+  }
+  .pillar p { margin: 0; color: var(--ink-3); }
+
+  /* ============ COLOR ============ */
+  .palette-primary {
+    display: grid;
+    grid-template-columns: 2fr 1fr 1fr 1fr 1fr;
+    gap: 12px;
+  }
+  .swatch {
+    border-radius: var(--r-3);
+    overflow: hidden;
+    border: 1px solid var(--line);
+    background: var(--card);
+    display: flex; flex-direction: column;
+  }
+  .swatch .chip { height: 188px; position: relative; }
+  .swatch .chip .pin {
+    position: absolute; top: 14px; left: 14px;
+    font-family:'JetBrains Mono', monospace; font-size: 10px;
+    letter-spacing: 0.16em; text-transform: uppercase;
+    background: rgba(255,255,255,0.18); color: white;
+    backdrop-filter: blur(6px);
+    padding: 5px 8px; border-radius: var(--r-1);
+  }
+  .swatch .chip .pin.dark { background: rgba(0,0,0,0.15); color: rgba(255,255,255,0.92); }
+  .swatch .chip .pin.light { background: rgba(0,0,0,0.06); color: rgba(15,17,21,0.85); }
+  .swatch .meta { padding: 14px 16px 16px; border-top: 1px solid var(--line); background: var(--card); }
+  .swatch .meta .name {
+    font-family:'Bricolage Grotesque', serif;
+    font-variation-settings: 'opsz' 18, 'wght' 600;
+    font-size: 16px; letter-spacing: -0.01em; margin: 0 0 2px;
+  }
+  .swatch .meta .hex {
+    font-family:'JetBrains Mono', monospace; font-size: 12px;
+    color: var(--ink-3); letter-spacing: 0.04em;
+  }
+  .swatch .meta .use {
+    font-size: 12px; color: var(--slate); margin-top: 8px; line-height: 1.4;
+  }
+
+  .palette-support {
+    display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin-top: 16px;
+  }
+  .swatch.compact .chip { height: 92px; }
+
+  .palette-clubs {
+    margin-top: 32px;
+    background: var(--card);
+    border: 1px solid var(--line);
+    border-radius: var(--r-3);
+    padding: 24px;
+  }
+  .palette-clubs .label { margin-bottom: 12px; }
+  .palette-clubs .row {
+    display: flex; flex-wrap: wrap; gap: 8px;
+  }
+  .club-color {
+    display: inline-flex; align-items: center; gap: 8px;
+    padding: 7px 12px 7px 8px; border-radius: var(--r-full);
+    background: var(--paper); border: 1px solid var(--line);
+    font-family:'JetBrains Mono', monospace; font-size: 12px; color: var(--ink-3);
+  }
+  .club-color .dot { width: 14px; height: 14px; border-radius: 50%; border: 1px solid rgba(0,0,0,0.08); }
+
+  /* ============ TYPOGRAPHY ============ */
+  .type-grid {
+    display: grid; grid-template-columns: 1.4fr 1fr; gap: 32px;
+  }
+  .type-card {
+    background: var(--card); border: 1px solid var(--line);
+    border-radius: var(--r-3); padding: 32px;
+  }
+  .type-card .head {
+    display: flex; justify-content: space-between; align-items: baseline;
+    margin-bottom: 32px;
+  }
+  .type-card .head .name {
+    font-family:'Bricolage Grotesque', serif;
+    font-variation-settings: 'opsz' 24, 'wght' 600;
+    font-size: 24px; letter-spacing: -0.015em;
+  }
+  .type-spec { display: grid; grid-template-columns: 120px 1fr 90px; gap: 20px; padding: 18px 0; border-top: 1px solid var(--line); align-items: baseline; }
+  .type-spec:first-of-type { border-top: 1px dashed var(--line-2); }
+  .type-spec .role {
+    font-family:'JetBrains Mono', monospace; font-size: 11px;
+    letter-spacing: 0.16em; text-transform: uppercase; color: var(--slate);
+  }
+  .type-spec .specs {
+    font-family:'JetBrains Mono', monospace; font-size: 11px;
+    color: var(--slate); text-align: right;
+  }
+  .type-spec .sample.h1 { font-size: 44px; }
+  .type-spec .sample.h2 { font-size: 30px; }
+  .type-spec .sample.h3 { font-size: 20px; }
+  .type-spec .sample.b1 {
+    font-family:'Geist',sans-serif; font-size: 15px; font-weight: 400; color: var(--ink);
+  }
+  .type-spec .sample.b2 {
+    font-family:'Geist',sans-serif; font-size: 13px; font-weight: 400; color: var(--ink);
+  }
+  .type-spec .sample.b3 {
+    font-family:'Geist',sans-serif; font-size: 11px; font-weight: 500; letter-spacing: 0.08em; text-transform: uppercase; color: var(--ink);
+  }
+
+  /* ============ TOKENS ============ */
+  .tokens { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; }
+  .token-card {
+    background: var(--card); border: 1px solid var(--line);
+    border-radius: var(--r-3); padding: 28px;
+  }
+  .token-card h3 { margin-bottom: 20px; }
+  .token-row {
+    display: grid; grid-template-columns: 84px 1fr 90px; gap: 16px;
+    padding: 12px 0; border-top: 1px solid var(--line); align-items: center;
+  }
+  .token-row:first-of-type { border-top: 1px dashed var(--line-2); }
+  .token-row .key {
+    font-family:'JetBrains Mono', monospace; font-size: 12px; color: var(--ink);
+  }
+  .token-row .val { font-family:'JetBrains Mono', monospace; font-size: 12px; color: var(--slate); text-align: right; }
+  .demo-box { background: var(--paper-2); border: 1px solid var(--line); height: 36px; }
+  .demo-shadow-1 { background: var(--paper); border-radius: var(--r-2); box-shadow: var(--shadow-1); height: 36px; }
+  .demo-shadow-2 { background: var(--paper); border-radius: var(--r-2); box-shadow: var(--shadow-2); height: 36px; }
+  .demo-shadow-3 { background: var(--paper); border-radius: var(--r-2); box-shadow: var(--shadow-3); height: 36px; }
+  .demo-spacing { display: flex; align-items: center; gap: 8px; }
+  .demo-spacing .bar { background: var(--floodlight); height: 12px; border-radius: 2px; }
+
+  .icons-row {
+    display: flex; gap: 12px; margin-top: 16px; flex-wrap: wrap;
+  }
+  .icon-cell {
+    width: 48px; height: 48px; border-radius: var(--r-2);
+    background: var(--paper); border: 1px solid var(--line);
+    display: flex; align-items: center; justify-content: center;
+    color: var(--ink);
+  }
+
+  /* ============ COMPONENTS ============ */
+  .comp-grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 24px;
+  }
+  .comp-frame {
+    background: var(--card);
+    border: 1px solid var(--line);
+    border-radius: var(--r-3);
+    padding: 32px;
+  }
+  .comp-frame .head {
+    display: flex; justify-content: space-between; align-items: baseline;
+    margin-bottom: 24px; padding-bottom: 16px; border-bottom: 1px dashed var(--line-2);
+  }
+  .comp-frame .head h3 { letter-spacing: -0.01em; }
+
+  /* --- Top Nav --- */
+  .nav {
+    display: grid;
+    grid-template-columns: auto 1fr auto;
+    align-items: center;
+    gap: 32px;
+    background: var(--paper);
+    border: 1px solid var(--line);
+    border-radius: var(--r-3);
+    padding: 14px 20px;
+    box-shadow: var(--shadow-1);
+  }
+  .logo {
+    display: flex; align-items: center; gap: 10px;
+    text-decoration: none; color: var(--ink);
+  }
+  .logo-mark {
+    width: 36px; height: 36px; border-radius: 8px;
+    background: var(--ink); color: var(--paper);
+    display: grid; place-items: center;
+    font-family:'Bricolage Grotesque', serif;
+    font-variation-settings: 'opsz' 24, 'wght' 800;
+    font-size: 22px;
+    letter-spacing: -0.02em;
+    position: relative;
+  }
+  .logo-mark::after {
+    content:""; position: absolute; right: -3px; bottom: -3px;
+    width: 10px; height: 10px; border-radius: 50%;
+    background: var(--floodlight);
+    border: 2px solid var(--paper);
+  }
+  .logo-word {
+    font-family:'Bricolage Grotesque', serif;
+    font-variation-settings: 'opsz' 24, 'wght' 700;
+    font-size: 22px; letter-spacing: -0.025em;
+    line-height: 1;
+  }
+  .logo-sub {
+    font-family:'JetBrains Mono', monospace;
+    font-size: 9px; letter-spacing: 0.22em;
+    text-transform: uppercase; color: var(--slate);
+    line-height: 1; margin-top: 4px;
+  }
+
+  .nav-tabs { display: flex; gap: 2px; justify-content: center; }
+  .nav-tab {
+    position: relative;
+    padding: 10px 16px 12px;
+    font-family:'Geist',sans-serif;
+    font-size: 14px; font-weight: 500;
+    color: var(--ink-3);
+    text-decoration: none;
+    border-radius: var(--r-2);
+    display: flex; align-items: center; gap: 8px;
+    cursor: pointer;
+    transition: all 0.15s;
+  }
+  .nav-tab:hover { background: var(--paper-2); color: var(--ink); }
+  .nav-tab.active { color: var(--ink); font-weight: 600; }
+  .nav-tab.active::after {
+    content:""; position: absolute;
+    left: 14px; right: 14px; bottom: 2px;
+    height: 3px; background: var(--floodlight); border-radius: 2px;
+  }
+  .nav-tab .badge-num {
+    background: var(--floodlight); color: white;
+    font-family:'JetBrains Mono', monospace;
+    font-size: 10px; font-weight: 600;
+    padding: 2px 6px; border-radius: var(--r-full);
+    line-height: 1;
+  }
+  .nav-right { display: flex; align-items: center; gap: 12px; }
+  .nav-search {
+    display: flex; align-items: center; gap: 8px;
+    background: var(--paper-2);
+    border: 1px solid var(--line);
+    border-radius: var(--r-full);
+    padding: 8px 14px 8px 12px;
+    color: var(--slate);
+    font-size: 13px;
+    width: 200px;
+  }
+  .nav-search .kbd {
+    margin-left: auto;
+    font-family:'JetBrains Mono', monospace; font-size: 10px;
+    background: var(--paper); padding: 2px 5px; border-radius: 3px;
+    border: 1px solid var(--line); color: var(--slate);
+  }
+  .avatar {
+    width: 36px; height: 36px; border-radius: 50%;
+    display: grid; place-items: center;
+    font-family:'Bricolage Grotesque', serif;
+    font-variation-settings: 'opsz' 16, 'wght' 700;
+    font-size: 13px;
+    color: white;
+    letter-spacing: 0.02em;
+    position: relative;
+  }
+  .avatar.lu { background: linear-gradient(135deg, #FF4B1F, #E03A10); }
+  .avatar.tq { background: linear-gradient(135deg, #16623C, #0F4528); }
+  .avatar.nc { background: linear-gradient(135deg, #2E5BD4, #1B3F9C); }
+  .avatar.ra { background: linear-gradient(135deg, #2A2A2A, #0F1115); }
+  .avatar.gf { background: linear-gradient(135deg, #C4321A, #931E0C); }
+  .avatar.live::after {
+    content:""; position: absolute; bottom: -1px; right: -1px;
+    width: 11px; height: 11px; border-radius: 50%;
+    background: var(--floodlight);
+    border: 2px solid var(--paper);
+  }
+
+  /* --- Compose --- */
+  .compose {
+    background: var(--paper);
+    border: 1px solid var(--line);
+    border-radius: var(--r-3);
+    padding: 20px;
+  }
+  .compose-top { display: flex; gap: 14px; }
+  .compose-input {
+    flex: 1;
+    font-family:'Geist',sans-serif;
+    font-size: 18px;
+    color: var(--ink);
+    line-height: 1.4;
+    padding-top: 4px;
+    min-height: 60px;
+  }
+  .compose-input .placeholder { color: var(--slate); }
+  .compose-input .placeholder em {
+    font-style: normal; color: var(--floodlight); font-weight: 500;
+  }
+  .compose-toolbar {
+    display: flex; justify-content: space-between; align-items: center;
+    margin-top: 14px;
+    padding-top: 14px;
+    border-top: 1px solid var(--line);
+  }
+  .compose-tools { display: flex; gap: 4px; align-items: center; }
+  .tool-btn {
+    width: 36px; height: 36px;
+    border: 1px solid transparent;
+    background: transparent;
+    border-radius: var(--r-2);
+    color: var(--ink-3);
+    display: grid; place-items: center;
+    cursor: pointer;
+    transition: all 0.15s;
+  }
+  .tool-btn:hover { background: var(--paper-2); color: var(--floodlight); }
+  .tool-btn.team {
+    width: auto; padding: 0 12px; gap: 8px; display: inline-flex; align-items: center;
+    font-family:'Geist',sans-serif; font-size: 13px; font-weight: 500;
+    color: var(--ink-3); height: 36px;
+    border: 1px dashed var(--line-2);
+  }
+  .tool-btn.team:hover { color: var(--ink); border-style: solid; }
+
+  .compose-meta {
+    display: flex; align-items: center; gap: 14px;
+  }
+  .char-ring {
+    width: 28px; height: 28px;
+    border-radius: 50%;
+    background: conic-gradient(var(--ink) 0% 28%, var(--line) 28% 100%);
+    display: grid; place-items: center;
+    position: relative;
+  }
+  .char-ring::before {
+    content:""; position: absolute; inset: 3px;
+    border-radius: 50%; background: var(--paper);
+  }
+  .char-ring span {
+    position: relative;
+    font-family:'JetBrains Mono', monospace; font-size: 10px; color: var(--slate); font-weight: 600;
+  }
+  .btn {
+    font-family:'Geist',sans-serif;
+    font-size: 14px; font-weight: 600;
+    padding: 10px 22px;
+    border-radius: var(--r-full);
+    border: none; cursor: pointer;
+    transition: all 0.15s;
+    display: inline-flex; align-items: center; gap: 8px;
+    letter-spacing: 0.005em;
+  }
+  .btn-primary {
+    background: var(--ink); color: var(--paper);
+    box-shadow: 0 1px 0 rgba(0,0,0,0.2), inset 0 1px 0 rgba(255,255,255,0.06);
+  }
+  .btn-primary:hover { background: var(--ink-2); }
+  .btn-primary .accent { color: var(--floodlight); font-weight: 700; }
+
+  /* --- Post Card --- */
+  .post {
+    background: var(--paper);
+    border: 1px solid var(--line);
+    border-radius: var(--r-3);
+    padding: 20px 22px 16px;
+    display: grid;
+    grid-template-columns: 48px 1fr;
+    column-gap: 16px;
+    row-gap: 10px;
+    position: relative;
+    transition: all 0.15s;
+  }
+  .post:hover { border-color: var(--line-2); }
+  .post + .post { margin-top: 12px; }
+
+  .post .avatar { width: 48px; height: 48px; font-size: 16px; }
+  .post-head {
+    display: flex; align-items: baseline; gap: 6px; flex-wrap: wrap;
+  }
+  .post-head .name {
+    font-family:'Geist',sans-serif; font-weight: 600; color: var(--ink); font-size: 15px;
+  }
+  .post-head .verified {
+    color: var(--floodlight);
+    margin-left: -2px;
+  }
+  .post-head .handle, .post-head .sep, .post-head .time {
+    font-family:'JetBrains Mono', monospace; font-size: 12px; color: var(--slate);
+  }
+  .post-head .badge-team {
+    margin-left: 6px;
+  }
+  .post-head .more {
+    margin-left: auto;
+    width: 28px; height: 28px;
+    color: var(--slate);
+    display: grid; place-items: center;
+    border-radius: var(--r-full);
+    cursor: pointer;
+  }
+  .post-head .more:hover { background: var(--paper-2); color: var(--ink); }
+
+  .post-body {
+    font-size: 15px;
+    line-height: 1.5;
+    color: var(--ink);
+    grid-column: 2;
+  }
+  .post-body .tag {
+    color: var(--floodlight);
+    font-weight: 500;
+    text-decoration: none;
+  }
+  .post-body .tag:hover { text-decoration: underline; }
+  .post-body .mention { color: var(--ink); font-weight: 500; }
+
+  .post-quote {
+    grid-column: 2;
+    margin-top: 4px;
+    border: 1px solid var(--line);
+    border-radius: var(--r-3);
+    padding: 12px 14px;
+    background: var(--card);
+    display: flex; gap: 10px; align-items: center;
+  }
+  .post-quote .qmark {
+    font-family:'Bricolage Grotesque', serif;
+    font-size: 32px;
+    color: var(--line-2);
+    line-height: 1; margin-top: -6px;
+  }
+  .post-quote .qtext { font-size: 13px; color: var(--ink-3); line-height: 1.4; }
+  .post-quote .qtext strong { color: var(--ink); font-weight: 600; }
+
+  .post-score {
+    grid-column: 2;
+    margin-top: 4px;
+    background: var(--ink);
+    color: var(--paper);
+    border-radius: var(--r-3);
+    padding: 16px 18px;
+    display: grid;
+    grid-template-columns: 1fr auto 1fr;
+    align-items: center;
+    gap: 16px;
+    position: relative;
+    overflow: hidden;
+  }
+  .post-score::before {
+    content:""; position: absolute; inset: 0;
+    background-image: linear-gradient(to right, rgba(245,197,24,0.06) 1px, transparent 1px);
+    background-size: 24px 24px;
+    pointer-events: none;
+  }
+  .post-score .team-row { display: flex; align-items: center; gap: 12px; position: relative; }
+  .post-score .team-row.right { justify-content: flex-end; }
+  .post-score .team-crest {
+    width: 36px; height: 36px; border-radius: 50%;
+    display: grid; place-items: center;
+    font-family:'Bricolage Grotesque', serif;
+    font-variation-settings: 'opsz' 18, 'wght' 800;
+    font-size: 13px;
+    color: white;
+    letter-spacing: 0;
+  }
+  .post-score .team-crest.cor { background: #0F0F0F; border: 1px solid #444; }
+  .post-score .team-crest.pal { background: #006437; }
+  .post-score .team-name {
+    font-family:'Bricolage Grotesque', serif;
+    font-variation-settings: 'opsz' 18, 'wght' 600;
+    font-size: 16px; letter-spacing: -0.01em;
+  }
+  .post-score .score {
+    font-family:'Bricolage Grotesque', serif;
+    font-variation-settings: 'opsz' 48, 'wght' 700;
+    font-size: 36px; letter-spacing: -0.025em;
+    color: var(--chalk);
+    line-height: 1;
+    position: relative;
+  }
+  .post-score .live-pill {
+    position: absolute; top: 12px; left: 50%; transform: translateX(-50%);
+    display: flex; align-items: center; gap: 5px;
+    background: var(--floodlight); color: white;
+    font-family:'JetBrains Mono', monospace; font-size: 9px; letter-spacing: 0.18em;
+    text-transform: uppercase; font-weight: 600;
+    padding: 3px 7px; border-radius: var(--r-1);
+  }
+  .post-score .live-pill .live-dot {
+    width: 5px; height: 5px; border-radius: 50%; background: white;
+    animation: pulse 1.4s ease-in-out infinite;
+  }
+  @keyframes pulse { 0%,100% { opacity: 1 } 50% { opacity: 0.3 } }
+
+  .post-actions {
+    grid-column: 2;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 4px;
+    max-width: 460px;
+  }
+  .act {
+    background: none; border: none; cursor: pointer;
+    display: inline-flex; align-items: center; gap: 6px;
+    padding: 6px 8px;
+    border-radius: var(--r-full);
+    color: var(--slate);
+    font-family:'JetBrains Mono', monospace;
+    font-size: 12px;
+    font-weight: 500;
+    transition: all 0.15s;
+  }
+  .act svg { width: 18px; height: 18px; }
+  .act:hover { background: var(--paper-2); color: var(--ink); }
+  .act.reply:hover { color: var(--info); background: rgba(46,91,212,0.08); }
+  .act.repost:hover { color: var(--success); background: rgba(31,142,92,0.08); }
+  .act.like:hover { color: var(--floodlight); background: rgba(255,75,31,0.08); }
+  .act.liked { color: var(--floodlight); }
+  .act.liked svg { fill: var(--floodlight); }
+  .act.share:hover { color: var(--ink); }
+
+  /* --- Badges --- */
+  .badge-team {
+    display: inline-flex; align-items: center; gap: 6px;
+    padding: 3px 9px 3px 5px;
+    border-radius: var(--r-full);
+    font-family:'Geist',sans-serif;
+    font-size: 12px; font-weight: 600;
+    line-height: 1;
+    letter-spacing: -0.005em;
+    border: 1px solid;
+    background: var(--paper);
+  }
+  .badge-team .crest {
+    width: 16px; height: 16px; border-radius: 50%;
+    display: grid; place-items: center;
+    font-family:'JetBrains Mono', monospace;
+    font-size: 8px; font-weight: 700; color: white;
+    flex-shrink: 0;
+  }
+
+  /* Per-club color usage — accent stripe, never fills */
+  .badge-team.cor { border-color: rgba(0,0,0,0.18); color: var(--ink); }
+  .badge-team.cor .crest { background: #0F0F0F; border: 1px solid #444; }
+
+  .badge-team.pal { border-color: rgba(0,100,55,0.25); color: #00432A; }
+  .badge-team.pal .crest { background: #006437; }
+
+  .badge-team.fla { border-color: rgba(196,50,26,0.25); color: #8E2310; }
+  .badge-team.fla .crest { background: linear-gradient(180deg, #C4321A 50%, #0F0F0F 50%); }
+
+  .badge-team.sao { border-color: rgba(196,50,26,0.25); color: #8E2310; }
+  .badge-team.sao .crest { background: linear-gradient(180deg, #C4321A 33%, #FFFFFF 33% 66%, #0F0F0F 66%); border: 1px solid var(--line); }
+
+  .badge-team.san { border-color: rgba(15,17,21,0.18); color: var(--ink); }
+  .badge-team.san .crest { background: #FFFFFF; border: 1px solid #0F0F0F; color: var(--ink); }
+
+  .badge-team.cru { border-color: rgba(46,91,212,0.25); color: #1B3F9C; }
+  .badge-team.cru .crest { background: #2E5BD4; }
+
+  .badge-team.gre { border-color: rgba(11,55,124,0.25); color: #0B377C; }
+  .badge-team.gre .crest { background: linear-gradient(135deg, #0B377C 50%, #0F0F0F 50%); }
+
+  .badge-team.lg {
+    padding: 6px 14px 6px 8px;
+    font-size: 14px;
+    gap: 8px;
+  }
+  .badge-team.lg .crest { width: 22px; height: 22px; font-size: 10px; }
+
+  .badge-team .sep { color: var(--slate); font-family:'JetBrains Mono',monospace; font-size: 10px; letter-spacing: 0.08em; margin-left: 2px; }
+  .badge-team .meta { color: var(--slate); font-family:'JetBrains Mono',monospace; font-size: 10px; font-weight: 500; letter-spacing: 0.04em; }
+
+  /* --- Style Rules --- */
+  .rules { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; }
+  .rule-card {
+    border-radius: var(--r-3);
+    padding: 28px;
+  }
+  .rule-card.do {
+    background: var(--card); border: 1px solid var(--line);
+  }
+  .rule-card.dont {
+    background: var(--ink); color: var(--paper); border: 1px solid var(--ink);
+  }
+  .rule-card h3 { margin-bottom: 6px; }
+  .rule-card .label { margin-bottom: 18px; }
+  .rule-card.do .label { color: var(--success); }
+  .rule-card.dont .label { color: var(--floodlight); }
+  .rule-card.dont h3 { color: var(--paper); }
+  .rule-list { list-style: none; padding: 0; margin: 0; }
+  .rule-list li {
+    padding: 14px 0;
+    border-top: 1px solid var(--line);
+    display: grid;
+    grid-template-columns: 22px 1fr;
+    gap: 12px;
+    align-items: start;
+  }
+  .rule-card.dont .rule-list li { border-top: 1px solid rgba(245,239,224,0.12); color: var(--paper); }
+  .rule-list li:first-child { border-top: none; padding-top: 0; }
+  .rule-list .marker {
+    font-family:'JetBrains Mono', monospace; font-size: 11px; line-height: 22px;
+    color: var(--slate);
+  }
+  .rule-card.do .marker { color: var(--success); }
+  .rule-card.dont .marker { color: var(--floodlight); }
+  .rule-list strong {
+    font-family:'Geist', sans-serif;
+    font-weight: 600;
+    color: var(--ink);
+  }
+  .rule-card.dont .rule-list strong { color: var(--paper); }
+  .rule-list .desc { font-size: 14px; color: var(--ink-3); line-height: 1.5; }
+  .rule-card.dont .rule-list .desc { color: rgba(242,236,222,0.65); }
+
+  .adjectives {
+    display: flex; flex-wrap: wrap; gap: 8px; margin-top: 8px;
+  }
+  .adj {
+    font-family:'Bricolage Grotesque', serif;
+    font-variation-settings: 'opsz' 18, 'wght' 600;
+    font-size: 14px; letter-spacing: -0.005em;
+    padding: 6px 12px;
+    border-radius: var(--r-full);
+    background: var(--ink);
+    color: var(--paper);
+  }
+  .adj.alt { background: var(--floodlight); }
+  .adj.alt2 { background: transparent; border: 1px solid var(--ink); color: var(--ink); }
+
+  .diff-table {
+    margin-top: 24px;
+    background: var(--card);
+    border: 1px solid var(--line);
+    border-radius: var(--r-3);
+    overflow: hidden;
+  }
+  .diff-row {
+    display: grid; grid-template-columns: 1.2fr 1.2fr 1.2fr;
+    border-top: 1px solid var(--line);
+  }
+  .diff-row:first-child {
+    border-top: none;
+    background: var(--ink);
+    color: var(--paper);
+  }
+  .diff-row > div {
+    padding: 16px 20px;
+    border-left: 1px solid var(--line);
+    font-size: 14px;
+    color: var(--ink-3);
+  }
+  .diff-row:first-child > div {
+    border-left-color: rgba(245,239,224,0.12);
+    font-family:'JetBrains Mono', monospace;
+    font-size: 11px; letter-spacing: 0.14em; text-transform: uppercase;
+    color: var(--paper);
+  }
+  .diff-row > div:first-child { border-left: none; }
+  .diff-row .dim {
+    font-family:'Bricolage Grotesque', serif;
+    font-variation-settings: 'opsz' 18, 'wght' 600;
+    font-size: 15px; color: var(--ink);
+    letter-spacing: -0.005em;
+  }
+
+  /* Footer */
+  .footer {
+    margin-top: 96px;
+    padding-top: 32px;
+    border-top: 1px solid var(--line-2);
+    display: flex; justify-content: space-between; align-items: baseline;
+    font-family:'JetBrains Mono', monospace;
+    font-size: 11px; letter-spacing: 0.14em; text-transform: uppercase;
+    color: var(--slate);
+  }
+</style>
+</head>
+<body>
+<div class="page">
+
+  <!-- ============ COVER ============ -->
+  <section class="cover" data-screen-label="01 Cover">
+    <div class="cover-top">
+      <div class="cover-mark">
+        <span class="dot"></span>
+        <span class="label-mono">Brand System · v1.0</span>
+      </div>
+      <div class="cover-id">
+        <div><strong>Rebrand</strong> · FuttWitter → Tribuna</div>
+        <div>Doc · BR-2026.05</div>
+        <div>Edition · São Paulo / 0001</div>
+      </div>
+    </div>
+    <h1 class="cover-wordmark">TRIBU<span class="accent">N</span>A.</h1>
+    <div class="cover-foot">
+      <div>
+        <div class="tag">Posicionamento</div>
+        <div class="val">A <em>arquibancada</em> digital do futebol brasileiro. Para quem vive o jogo entre os jogos.</div>
+      </div>
+      <div>
+        <div class="tag">Categoria</div>
+        <div class="val">Rede social esportiva</div>
+      </div>
+      <div>
+        <div class="tag">Praça</div>
+        <div class="val">Brasil · Lusofonia</div>
+      </div>
+      <div>
+        <div class="tag">Tonalidade</div>
+        <div class="val">Editorial &amp; popular</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ 01 IDENTIDADE ============ -->
+  <section class="section" data-screen-label="02 Identidade">
+    <div class="section-head">
+      <div class="num">01</div>
+      <div class="meta">
+        <h2 class="h2">Identidade &amp; conceito</h2>
+        <span class="label">Naming · Posicionamento · Pilares</span>
+      </div>
+    </div>
+
+    <div class="concept">
+      <div>
+        <div class="stmt">
+          De <s>FuttWitter</s> para <em>TRIBUNA</em>. A tribuna é o lugar onde o torcedor canta, discute e mora — não onde ele só assiste.
+        </div>
+      </div>
+      <div>
+        <p class="body-lg">
+          <strong style="color:var(--ink)">Tribuna</strong> abandona a referência ao Twitter e adota um nome de raiz futebolística — "tribuna de imprensa", "tribuna de honra", "tribuna popular". É curto, sonoro, fácil de virar verbo ("postou na Tribuna"), e funciona em PT-BR e PT-PT.
+        </p>
+        <p class="body-lg">
+          O conceito posicional é <strong style="color:var(--ink)">"o jornal esportivo que conversa de volta"</strong>: a credibilidade visual da imprensa esportiva impressa, com a vivacidade de uma rede social moderna.
+        </p>
+      </div>
+    </div>
+
+    <div class="pillars">
+      <div class="pillar">
+        <div class="label">01 · Pilar</div>
+        <h4>Bancada de torcedor</h4>
+        <p>Conversa de boteco com profundidade de tática. Inteligente sem ser elitista.</p>
+      </div>
+      <div class="pillar">
+        <div class="label">02 · Pilar</div>
+        <h4>Estética de imprensa</h4>
+        <p>Crédito visual de jornal esportivo — manchete, lead, scoreboard. Sem cara de timeline.</p>
+      </div>
+      <div class="pillar">
+        <div class="label">03 · Pilar</div>
+        <h4>Cor de clube vence</h4>
+        <p>A marca abre espaço. As cores dos clubes brilham — Tribuna é o palco, não a estrela.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ 02 PALETA ============ -->
+  <section class="section" data-screen-label="03 Paleta">
+    <div class="section-head">
+      <div class="num">02</div>
+      <div class="meta">
+        <h2 class="h2">Paleta de cores</h2>
+        <span class="label">5 core · 4 estados · cores de clube</span>
+      </div>
+    </div>
+
+    <div class="palette-primary">
+      <div class="swatch">
+        <div class="chip" style="background: var(--ink)">
+          <span class="pin dark">PRIMARY · 01</span>
+        </div>
+        <div class="meta">
+          <div class="name">Tinta</div>
+          <div class="hex">#0F1115</div>
+          <div class="use">Cor primária da marca. Texto principal, CTAs, navegação, scoreboard.</div>
+        </div>
+      </div>
+      <div class="swatch">
+        <div class="chip" style="background: var(--paper)">
+          <span class="pin light">SURFACE</span>
+        </div>
+        <div class="meta">
+          <div class="name">Papel</div>
+          <div class="hex">#F2ECDE</div>
+          <div class="use">Background da página. Cream quente, evita o cinza estéril.</div>
+        </div>
+      </div>
+      <div class="swatch">
+        <div class="chip" style="background: var(--card)">
+          <span class="pin light">SURFACE 02</span>
+        </div>
+        <div class="meta">
+          <div class="name">Papel alvo</div>
+          <div class="hex">#FBF7EC</div>
+          <div class="use">Superfícies elevadas — cards, modais, posts.</div>
+        </div>
+      </div>
+      <div class="swatch">
+        <div class="chip" style="background: var(--floodlight)">
+          <span class="pin dark">ACCENT</span>
+        </div>
+        <div class="meta">
+          <div class="name">Holofote</div>
+          <div class="hex">#FF4B1F</div>
+          <div class="use">Ação principal. Curtidas, links, hashtags, "ao vivo".</div>
+        </div>
+      </div>
+      <div class="swatch">
+        <div class="chip" style="background: var(--chalk)">
+          <span class="pin dark">HIGHLIGHT</span>
+        </div>
+        <div class="meta">
+          <div class="name">Giz</div>
+          <div class="hex">#F5C518</div>
+          <div class="use">Placares, números, destaque editorial. Sempre sobre Tinta.</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="palette-support">
+      <div class="swatch compact">
+        <div class="chip" style="background: var(--success)"><span class="pin dark">SUCESSO</span></div>
+        <div class="meta"><div class="name">Gol</div><div class="hex">#1F8E5C</div></div>
+      </div>
+      <div class="swatch compact">
+        <div class="chip" style="background: var(--error)"><span class="pin dark">ERRO</span></div>
+        <div class="meta"><div class="name">Vermelho</div><div class="hex">#C4321A</div></div>
+      </div>
+      <div class="swatch compact">
+        <div class="chip" style="background: var(--warning)"><span class="pin dark">ALERTA</span></div>
+        <div class="meta"><div class="name">Amarelo</div><div class="hex">#D89412</div></div>
+      </div>
+      <div class="swatch compact">
+        <div class="chip" style="background: var(--info)"><span class="pin dark">INFO</span></div>
+        <div class="meta"><div class="name">Lateral</div><div class="hex">#2E5BD4</div></div>
+      </div>
+    </div>
+
+    <div class="palette-clubs">
+      <div class="label">Cores de clube — usar como contorno e crest, nunca como preenchimento</div>
+      <div class="row">
+        <span class="club-color"><span class="dot" style="background:#0F0F0F"></span>Corinthians</span>
+        <span class="club-color"><span class="dot" style="background:#006437"></span>Palmeiras</span>
+        <span class="club-color"><span class="dot" style="background:linear-gradient(180deg,#C4321A 50%,#0F0F0F 50%)"></span>Flamengo</span>
+        <span class="club-color"><span class="dot" style="background:linear-gradient(135deg,#C4321A 33%,#FFFFFF 33% 66%,#0F0F0F 66%)"></span>São Paulo</span>
+        <span class="club-color"><span class="dot" style="background:#FFFFFF;border:1px solid #0F0F0F"></span>Santos</span>
+        <span class="club-color"><span class="dot" style="background:#2E5BD4"></span>Cruzeiro</span>
+        <span class="club-color"><span class="dot" style="background:linear-gradient(135deg,#0B377C 50%,#0F0F0F 50%)"></span>Grêmio</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ 03 TIPOGRAFIA ============ -->
+  <section class="section" data-screen-label="04 Tipografia">
+    <div class="section-head">
+      <div class="num">03</div>
+      <div class="meta">
+        <h2 class="h2">Tipografia</h2>
+        <span class="label">Bricolage Grotesque · Geist · JetBrains Mono</span>
+      </div>
+    </div>
+
+    <div class="type-grid">
+      <div class="type-card">
+        <div class="head">
+          <div>
+            <div class="label" style="margin-bottom: 8px">Headings</div>
+            <div class="name">Bricolage Grotesque</div>
+          </div>
+          <div class="caption">Variable · 12→96 opsz · 200→800</div>
+        </div>
+        <div class="type-spec">
+          <div class="role">H1 / Display</div>
+          <div class="sample h1" style="font-family:'Bricolage Grotesque'; font-variation-settings:'opsz' 48, 'wght' 700; letter-spacing:-0.025em; line-height:1.02">Tribuna abriu o placar</div>
+          <div class="specs">44 / 47<br>700 · -2.5%</div>
+        </div>
+        <div class="type-spec">
+          <div class="role">H2 / Section</div>
+          <div class="sample h2" style="font-family:'Bricolage Grotesque'; font-variation-settings:'opsz' 32, 'wght' 700; letter-spacing:-0.02em; line-height:1.05">Vai e Vem da semana</div>
+          <div class="specs">30 / 32<br>700 · -2.0%</div>
+        </div>
+        <div class="type-spec">
+          <div class="role">H3 / Card</div>
+          <div class="sample h3" style="font-family:'Bricolage Grotesque'; font-variation-settings:'opsz' 24, 'wght' 600; letter-spacing:-0.012em">Corinthians 2 × 1 Palmeiras</div>
+          <div class="specs">20 / 23<br>600 · -1.2%</div>
+        </div>
+      </div>
+
+      <div class="type-card">
+        <div class="head">
+          <div>
+            <div class="label" style="margin-bottom: 8px">Body &amp; UI</div>
+            <div class="name">Geist + JBM</div>
+          </div>
+          <div class="caption">Sans + Mono</div>
+        </div>
+        <div class="type-spec">
+          <div class="role">Body</div>
+          <div class="sample b1">Memphis Depay chegou pro Corinthians e parece que tá jogando nas coxas ainda.</div>
+          <div class="specs">15 / 23<br>400</div>
+        </div>
+        <div class="type-spec">
+          <div class="role">Caption</div>
+          <div class="sample b2">@natcori · Mar 21 · 4 min de leitura</div>
+          <div class="specs">13 / 19<br>400</div>
+        </div>
+        <div class="type-spec">
+          <div class="role">Label</div>
+          <div class="sample b3">AO VIVO · 2º TEMPO</div>
+          <div class="specs">11 / 11<br>500 · +8%</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ 04 TOKENS ============ -->
+  <section class="section" data-screen-label="05 Tokens">
+    <div class="section-head">
+      <div class="num">04</div>
+      <div class="meta">
+        <h2 class="h2">Tokens de design</h2>
+        <span class="label">Radii · Espaçamentos · Sombras · Ícones</span>
+      </div>
+    </div>
+
+    <div class="tokens">
+      <div class="token-card">
+        <h3 class="h3">Border radius</h3>
+        <div class="token-row">
+          <div class="key">--r-1</div>
+          <div><div class="demo-box" style="border-radius: 4px"></div></div>
+          <div class="val">4px · chips, badges, tags</div>
+        </div>
+        <div class="token-row">
+          <div class="key">--r-2</div>
+          <div><div class="demo-box" style="border-radius: 8px"></div></div>
+          <div class="val">8px · botões, inputs</div>
+        </div>
+        <div class="token-row">
+          <div class="key">--r-3</div>
+          <div><div class="demo-box" style="border-radius: 12px"></div></div>
+          <div class="val">12px · cards, posts</div>
+        </div>
+        <div class="token-row">
+          <div class="key">--r-4</div>
+          <div><div class="demo-box" style="border-radius: 20px"></div></div>
+          <div class="val">20px · hero, modais</div>
+        </div>
+        <div class="token-row">
+          <div class="key">--r-full</div>
+          <div><div class="demo-box" style="border-radius: 999px"></div></div>
+          <div class="val">pill · avatars, CTAs</div>
+        </div>
+      </div>
+
+      <div class="token-card">
+        <h3 class="h3">Espaçamento · 4pt scale</h3>
+        <div class="token-row">
+          <div class="key">s-1 · 4px</div>
+          <div class="demo-spacing"><div class="bar" style="width: 4px"></div></div>
+          <div class="val">inline gap</div>
+        </div>
+        <div class="token-row">
+          <div class="key">s-2 · 8px</div>
+          <div class="demo-spacing"><div class="bar" style="width: 8px"></div></div>
+          <div class="val">tight stack</div>
+        </div>
+        <div class="token-row">
+          <div class="key">s-4 · 16px</div>
+          <div class="demo-spacing"><div class="bar" style="width: 16px"></div></div>
+          <div class="val">card padding</div>
+        </div>
+        <div class="token-row">
+          <div class="key">s-6 · 24px</div>
+          <div class="demo-spacing"><div class="bar" style="width: 24px"></div></div>
+          <div class="val">section gap</div>
+        </div>
+        <div class="token-row">
+          <div class="key">s-8 · 40px</div>
+          <div class="demo-spacing"><div class="bar" style="width: 40px"></div></div>
+          <div class="val">block separator</div>
+        </div>
+        <div class="token-row">
+          <div class="key">s-10 · 72px</div>
+          <div class="demo-spacing"><div class="bar" style="width: 72px"></div></div>
+          <div class="val">page rhythm</div>
+        </div>
+      </div>
+
+      <div class="token-card">
+        <h3 class="h3">Elevação</h3>
+        <div class="token-row">
+          <div class="key">shadow-1</div>
+          <div><div class="demo-shadow-1"></div></div>
+          <div class="val">cards, inputs</div>
+        </div>
+        <div class="token-row">
+          <div class="key">shadow-2</div>
+          <div><div class="demo-shadow-2"></div></div>
+          <div class="val">popovers</div>
+        </div>
+        <div class="token-row">
+          <div class="key">shadow-3</div>
+          <div><div class="demo-shadow-3"></div></div>
+          <div class="val">modais, hero</div>
+        </div>
+        <p class="caption" style="margin-top: 16px">Sombras são suaves, com matiz de Tinta. Nunca azuladas, nunca pretas puras.</p>
+      </div>
+
+      <div class="token-card">
+        <h3 class="h3">Ícones</h3>
+        <p class="caption" style="margin-top: -8px; margin-bottom: 0">Família <strong style="color:var(--ink)">outline 1.75px</strong>, pontas levemente arredondadas. Stroke uniforme. Nunca filled exceto no estado "ativo".</p>
+        <div class="icons-row">
+          <div class="icon-cell"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9.5L12 3l9 6.5V21H3z"/><path d="M9 21v-7h6v7"/></svg></div>
+          <div class="icon-cell"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"/></svg></div>
+          <div class="icon-cell"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><polyline points="17 1 21 5 17 9"/><path d="M3 11V9a4 4 0 0 1 4-4h14"/><polyline points="7 23 3 19 7 15"/><path d="M21 13v2a4 4 0 0 1-4 4H3"/></svg></div>
+          <div class="icon-cell"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg></div>
+          <div class="icon-cell"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/></svg></div>
+          <div class="icon-cell"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 1 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 1 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 1 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 1 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg></div>
+          <div class="icon-cell"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg></div>
+          <div class="icon-cell"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ 05 COMPONENTES ============ -->
+  <section class="section" data-screen-label="06 Componentes">
+    <div class="section-head">
+      <div class="num">05</div>
+      <div class="meta">
+        <h2 class="h2">Componentes-chave</h2>
+        <span class="label">Nav · Compose · Post · Badge</span>
+      </div>
+    </div>
+
+    <div class="comp-grid">
+
+      <!-- Top Nav -->
+      <div class="comp-frame">
+        <div class="head">
+          <h3 class="h3">a. Barra de navegação superior</h3>
+          <span class="label">component / nav.top · 1280×64</span>
+        </div>
+
+        <div class="nav">
+          <a class="logo" href="#">
+            <div class="logo-mark">T</div>
+            <div>
+              <div class="logo-word">tribuna</div>
+              <div class="logo-sub">o jornal que conversa</div>
+            </div>
+          </a>
+
+          <nav class="nav-tabs">
+            <a class="nav-tab active" href="#">Feed</a>
+            <a class="nav-tab" href="#">Vai e Vem <span class="badge-num">12</span></a>
+            <a class="nav-tab" href="#">Meu Time</a>
+            <a class="nav-tab" href="#">Jogos <span class="badge-num" style="background:var(--success)">3</span></a>
+            <a class="nav-tab" href="#">Perfil</a>
+          </nav>
+
+          <div class="nav-right">
+            <div class="nav-search">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
+              <span>Buscar na Tribuna</span>
+              <span class="kbd">⌘K</span>
+            </div>
+            <div class="avatar lu live">LU</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Compose -->
+      <div class="comp-frame">
+        <div class="head">
+          <h3 class="h3">b. Campo de criação de post</h3>
+          <span class="label">component / compose · expanded</span>
+        </div>
+
+        <div class="compose">
+          <div class="compose-top">
+            <div class="avatar lu">LU</div>
+            <div class="compose-input">
+              <span class="placeholder">Poste para sua <em>torcida</em>… o que rolou no jogo de hoje?</span>
+            </div>
+          </div>
+          <div class="compose-toolbar">
+            <div class="compose-tools">
+              <button class="tool-btn" title="Imagem">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
+              </button>
+              <button class="tool-btn" title="Enquete">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="20" x2="12" y2="10"/><line x1="18" y1="20" x2="18" y2="4"/><line x1="6" y1="20" x2="6" y2="16"/></svg>
+              </button>
+              <button class="tool-btn" title="Placar">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 3a14.5 14.5 0 0 1 0 18M12 3a14.5 14.5 0 0 0 0 18M3 12h18"/></svg>
+              </button>
+              <button class="tool-btn" title="Hashtag">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><line x1="4" y1="9" x2="20" y2="9"/><line x1="4" y1="15" x2="20" y2="15"/><line x1="10" y1="3" x2="8" y2="21"/><line x1="16" y1="3" x2="14" y2="21"/></svg>
+              </button>
+              <button class="tool-btn team" title="Marcar time">
+                <span class="crest" style="width:14px;height:14px;border-radius:50%;background:#0F0F0F;border:1px solid #444"></span>
+                Marcar Corinthians
+              </button>
+            </div>
+            <div class="compose-meta">
+              <div class="caption mono" style="font-size: 11px">208 / 280</div>
+              <div class="char-ring"><span>72</span></div>
+              <button class="btn btn-primary">Postar <span class="accent">→</span></button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Post Cards -->
+      <div class="comp-frame">
+        <div class="head">
+          <h3 class="h3">c. Card de post do feed</h3>
+          <span class="label">component / post · default · live · quote</span>
+        </div>
+
+        <!-- Post 1: default with badge -->
+        <article class="post">
+          <div class="avatar nc">NC</div>
+          <header class="post-head">
+            <span class="name">Natalia Corinthiana</span>
+            <span class="verified" title="Verificada"><svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M12 1l2.4 2.4 3.3-.3.3 3.3L20.4 8.8 19 12l1.4 3.2-2.4 2.4-.3 3.3-3.3-.3L12 23l-2.4-2.4-3.3.3-.3-3.3L3.6 15.2 5 12 3.6 8.8 6 6.4l.3-3.3 3.3.3z" fill="#FF4B1F"/><path d="m8 12 3 3 5-6" stroke="white" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
+            <span class="handle">@natcori</span>
+            <span class="sep">·</span>
+            <span class="time">21 mar</span>
+            <span class="badge-team cor">
+              <span class="crest">CO</span>
+              Corinthians
+            </span>
+            <button class="more" aria-label="Mais">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><circle cx="5" cy="12" r="1.5"/><circle cx="12" cy="12" r="1.5"/><circle cx="19" cy="12" r="1.5"/></svg>
+            </button>
+          </header>
+          <div class="post-body">
+            Memphis Depay chegou pro <span class="mention">@Corinthians</span> e parece que tá jogando nas coxas ainda. Precisa de tempo, mas o futebol tá lá. <a class="tag" href="#">#Memphis</a> <a class="tag" href="#">#VaiCorinthians</a>
+          </div>
+          <div class="post-actions">
+            <button class="act reply">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"/></svg>
+              <span>7</span>
+            </button>
+            <button class="act repost">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><polyline points="17 1 21 5 17 9"/><path d="M3 11V9a4 4 0 0 1 4-4h14"/><polyline points="7 23 3 19 7 15"/><path d="M21 13v2a4 4 0 0 1-4 4H3"/></svg>
+              <span>2</span>
+            </button>
+            <button class="act like liked">
+              <svg viewBox="0 0 24 24" fill="currentColor"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
+              <span>10</span>
+            </button>
+            <button class="act stats">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><line x1="6" y1="20" x2="6" y2="14"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="18" y1="20" x2="18" y2="10"/></svg>
+              <span>2.4k</span>
+            </button>
+            <button class="act share">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8"/><polyline points="16 6 12 2 8 6"/><line x1="12" y1="2" x2="12" y2="15"/></svg>
+            </button>
+            <button class="act share">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/></svg>
+            </button>
+          </div>
+        </article>
+
+        <!-- Post 2: with live scoreboard -->
+        <article class="post">
+          <div class="avatar ra">RA</div>
+          <header class="post-head">
+            <span class="name">Rafael Alvinegro</span>
+            <span class="handle">@rafaalvinegro</span>
+            <span class="sep">·</span>
+            <span class="time">agora</span>
+            <span class="badge-team cor">
+              <span class="crest">CO</span>
+              Corinthians
+            </span>
+            <button class="more" aria-label="Mais">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><circle cx="5" cy="12" r="1.5"/><circle cx="12" cy="12" r="1.5"/><circle cx="19" cy="12" r="1.5"/></svg>
+            </button>
+          </header>
+          <div class="post-body">
+            "Eu nunca mais vou sofrer por time de futebol", disse o homem antes de ver o Timão jogar.
+          </div>
+          <div class="post-score">
+            <div class="live-pill"><span class="live-dot"></span>Ao vivo · 78'</div>
+            <div class="team-row">
+              <div class="team-crest cor">SCC</div>
+              <div class="team-name">Corinthians</div>
+            </div>
+            <div class="score">1<span style="color:rgba(245,239,224,0.4); padding: 0 8px">×</span>2</div>
+            <div class="team-row right">
+              <div class="team-name">Palmeiras</div>
+              <div class="team-crest pal">SEP</div>
+            </div>
+          </div>
+          <div class="post-actions">
+            <button class="act reply">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"/></svg>
+              <span>184</span>
+            </button>
+            <button class="act repost">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><polyline points="17 1 21 5 17 9"/><path d="M3 11V9a4 4 0 0 1 4-4h14"/><polyline points="7 23 3 19 7 15"/><path d="M21 13v2a4 4 0 0 1-4 4H3"/></svg>
+              <span>49</span>
+            </button>
+            <button class="act like">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
+              <span>1.2k</span>
+            </button>
+            <button class="act stats">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><line x1="6" y1="20" x2="6" y2="14"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="18" y1="20" x2="18" y2="10"/></svg>
+              <span>38k</span>
+            </button>
+            <button class="act share">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8"/><polyline points="16 6 12 2 8 6"/><line x1="12" y1="2" x2="12" y2="15"/></svg>
+            </button>
+            <button class="act share">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/></svg>
+            </button>
+          </div>
+        </article>
+
+        <!-- Post 3: with quote -->
+        <article class="post">
+          <div class="avatar gf">GF</div>
+          <header class="post-head">
+            <span class="name">Gabi Fiel</span>
+            <span class="handle">@gabi_fiel</span>
+            <span class="sep">·</span>
+            <span class="time">18 mar</span>
+            <button class="more" aria-label="Mais">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><circle cx="5" cy="12" r="1.5"/><circle cx="12" cy="12" r="1.5"/><circle cx="19" cy="12" r="1.5"/></svg>
+            </button>
+          </header>
+          <div class="post-body">
+            Fiel Torcida e o maior caldeirão do Brasil. Ninguém chega perto.
+          </div>
+          <div class="post-quote">
+            <span class="qmark">"</span>
+            <div class="qtext"><strong>UOL Esporte</strong> · "Pesquisa aponta a torcida com maior média de público nos últimos 5 anos…"</div>
+          </div>
+          <div class="post-actions">
+            <button class="act reply">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"/></svg>
+              <span>1</span>
+            </button>
+            <button class="act repost">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><polyline points="17 1 21 5 17 9"/><path d="M3 11V9a4 4 0 0 1 4-4h14"/><polyline points="7 23 3 19 7 15"/><path d="M21 13v2a4 4 0 0 1-4 4H3"/></svg>
+              <span>0</span>
+            </button>
+            <button class="act like">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
+              <span>14</span>
+            </button>
+            <button class="act stats">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><line x1="6" y1="20" x2="6" y2="14"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="18" y1="20" x2="18" y2="10"/></svg>
+              <span>312</span>
+            </button>
+            <button class="act share">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8"/><polyline points="16 6 12 2 8 6"/><line x1="12" y1="2" x2="12" y2="15"/></svg>
+            </button>
+            <button class="act share">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/></svg>
+            </button>
+          </div>
+        </article>
+      </div>
+
+      <!-- Badges -->
+      <div class="comp-frame">
+        <div class="head">
+          <h3 class="h3">d. Badges de time</h3>
+          <span class="label">component / badge.team · variants × clubs</span>
+        </div>
+
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 32px; align-items: start">
+          <div>
+            <div class="label" style="margin-bottom: 12px">Default · pequeno · contornado</div>
+            <div style="display: flex; flex-wrap: wrap; gap: 8px">
+              <span class="badge-team cor"><span class="crest">CO</span>Corinthians</span>
+              <span class="badge-team pal"><span class="crest">PA</span>Palmeiras</span>
+              <span class="badge-team fla"><span class="crest">FL</span>Flamengo</span>
+              <span class="badge-team sao"><span class="crest">SP</span>São Paulo</span>
+              <span class="badge-team san"><span class="crest">SA</span>Santos</span>
+              <span class="badge-team cru"><span class="crest">CR</span>Cruzeiro</span>
+              <span class="badge-team gre"><span class="crest">GR</span>Grêmio</span>
+            </div>
+          </div>
+          <div>
+            <div class="label" style="margin-bottom: 12px">Large · com meta</div>
+            <div style="display: flex; flex-wrap: wrap; gap: 8px">
+              <span class="badge-team cor lg"><span class="crest">CO</span>Corinthians<span class="sep">·</span><span class="meta">1.2M torcedores</span></span>
+              <span class="badge-team pal lg"><span class="crest">PA</span>Palmeiras<span class="sep">·</span><span class="meta">980k</span></span>
+            </div>
+
+            <div class="label" style="margin: 24px 0 12px">Sobre fundo escuro · scoreboard</div>
+            <div style="background: var(--ink); padding: 16px; border-radius: var(--r-3); display: flex; flex-wrap: wrap; gap: 8px">
+              <span class="badge-team cor" style="background:rgba(255,255,255,0.08); border-color: rgba(255,255,255,0.18); color: var(--paper)"><span class="crest">CO</span>Corinthians</span>
+              <span class="badge-team pal" style="background:rgba(255,255,255,0.08); border-color: rgba(0,100,55,0.6); color: #4ECC8E"><span class="crest">PA</span>Palmeiras</span>
+              <span class="badge-team fla" style="background:rgba(255,255,255,0.08); border-color: rgba(196,50,26,0.6); color: #FF8B6E"><span class="crest">FL</span>Flamengo</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- ============ 06 STYLE RULES ============ -->
+  <section class="section" data-screen-label="07 Regras">
+    <div class="section-head">
+      <div class="num">06</div>
+      <div class="meta">
+        <h2 class="h2">Regras de estilo</h2>
+        <span class="label">Tom · Faça · Não faça · Diferenciação</span>
+      </div>
+    </div>
+
+    <div style="margin-bottom: 24px">
+      <div class="label" style="margin-bottom: 10px">Cinco adjetivos do tom visual</div>
+      <div class="adjectives">
+        <span class="adj">Editorial</span>
+        <span class="adj alt">Apaixonado</span>
+        <span class="adj alt2">Honesto</span>
+        <span class="adj">Tátil</span>
+        <span class="adj alt2">Brasileiro</span>
+      </div>
+    </div>
+
+    <div class="rules">
+      <div class="rule-card do">
+        <div class="label">FAÇA</div>
+        <h3 class="h3">A Tribuna sempre…</h3>
+        <ul class="rule-list">
+          <li>
+            <span class="marker">01</span>
+            <div><strong>Trata o post como manchete.</strong><div class="desc">Hierarquia tipográfica forte. Nome em peso 600, handle em mono, conteúdo em sans grande.</div></div>
+          </li>
+          <li>
+            <span class="marker">02</span>
+            <div><strong>Usa cream warm como tela.</strong><div class="desc">Background sempre Papel (#F2ECDE). Branco puro só existe dentro de scoreboards e crests.</div></div>
+          </li>
+          <li>
+            <span class="marker">03</span>
+            <div><strong>Reserva o Holofote para ação.</strong><div class="desc">Laranja só em CTA, like, hashtag, ao vivo. Nunca como fundo decorativo.</div></div>
+          </li>
+          <li>
+            <span class="marker">04</span>
+            <div><strong>Mostra a cor do clube no contorno.</strong><div class="desc">Badges são contornados na cor do clube. O preenchimento é Papel. Conteúdo do usuário fica legível.</div></div>
+          </li>
+          <li>
+            <span class="marker">05</span>
+            <div><strong>Estiliza placares como scoreboard.</strong><div class="desc">Tinta + Giz. Números em Bricolage 700. Live pill com pulso em Holofote.</div></div>
+          </li>
+        </ul>
+      </div>
+
+      <div class="rule-card dont">
+        <div class="label">NÃO FAÇA</div>
+        <h3 class="h3">A Tribuna nunca…</h3>
+        <ul class="rule-list">
+          <li>
+            <span class="marker">01</span>
+            <div><strong>Verde grama de fundo.</strong><div class="desc">Clichê de futebol. O cream é o nosso "campo" — neutro, quente, premium.</div></div>
+          </li>
+          <li>
+            <span class="marker">02</span>
+            <div><strong>Pretos puros e cinzas estéreis.</strong><div class="desc">Tudo tem matiz quente. Texto é Tinta #0F1115, não #000.</div></div>
+          </li>
+          <li>
+            <span class="marker">03</span>
+            <div><strong>Gradientes neon e glassmorphism.</strong><div class="desc">A linguagem é jornal esportivo, não dashboard cripto.</div></div>
+          </li>
+          <li>
+            <span class="marker">04</span>
+            <div><strong>Preenche badge com cor de clube.</strong><div class="desc">Vermelho do Flamengo como fundo cega o texto. Sempre contorno + crest.</div></div>
+          </li>
+          <li>
+            <span class="marker">05</span>
+            <div><strong>Emoji decorativo em UI.</strong><div class="desc">Emoji só no conteúdo do usuário, nunca em label, botão ou aba. Use ícones outline.</div></div>
+          </li>
+          <li>
+            <span class="marker">06</span>
+            <div><strong>Bordas internas tipo "card com left-border colorida".</strong><div class="desc">Estética datada. Hierarquia vem do tipo, não de adornos.</div></div>
+          </li>
+        </ul>
+      </div>
+    </div>
+
+    <div style="margin-top: 32px">
+      <div class="label" style="margin-bottom: 12px">Como a Tribuna se diferencia</div>
+      <div class="diff-table">
+        <div class="diff-row">
+          <div>Dimensão</div>
+          <div>Redes sociais genéricas</div>
+          <div>Apps de placar/estatística</div>
+        </div>
+        <div class="diff-row">
+          <div class="dim">Cor</div>
+          <div>Branco frio, azul corporativo, alta saturação.</div>
+          <div>Verde grama, vermelho de alerta, contraste hospitalar.</div>
+        </div>
+        <div class="diff-row">
+          <div class="dim">Tipografia</div>
+          <div>Sans neutra (Inter, system). Sem personalidade.</div>
+          <div>Sans condensada técnica. Pesos uniformes.</div>
+        </div>
+        <div class="diff-row">
+          <div class="dim">Tom</div>
+          <div>Universal, asséptico, "global timeline".</div>
+          <div>Dado-cru, frio, pré-jogo.</div>
+        </div>
+        <div class="diff-row">
+          <div class="dim">Tribuna</div>
+          <div colspan="2" style="grid-column: span 2; color: var(--ink); background: var(--card)">
+            <strong>Cream warm + Tinta + Holofote.</strong> Tipografia variável editorial. Tom de jornal esportivo brasileiro com voz de torcedor. Identidade da casa cede espaço para a cor de cada clube.
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <footer class="footer">
+    <div>TRIBUNA · Brand System v1.0 · 2026</div>
+    <div>Doc · BR-2026.05 · ed. 0001</div>
+  </footer>
+
+</div>
+</body>
+</html>

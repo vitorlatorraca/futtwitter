@@ -1,289 +1,314 @@
+/* ──────────────────────────────────────────────────────────────────
+   TRIBUNA — design tokens
+   Source of truth: design_handoff_tribuna_rebrand/README.md (table 'Color palette')
+   ──────────────────────────────────────────────────────────────── */
+
+@import url('https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400;12..96,500;12..96,600;12..96,700;12..96,800&family=Geist:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap');
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
-/* LIGHT MODE */
 :root {
-  --button-outline: rgba(0,0,0, .10);
-  --badge-outline: rgba(0,0,0, .05);
-  --opaque-button-border-intensity: -8;
-  --elevate-1: rgba(0,0,0, .03);
-  --elevate-2: rgba(0,0,0, .08);
-  --background: 0 0% 100%;
-  --foreground: 0 0% 9%;
-  --border: 0 0% 91%;
-  --card: 0 0% 98%;
-  --card-foreground: 0 0% 9%;
-  --card-border: 0 0% 94%;
-  --sidebar: 0 0% 96%;
-  --sidebar-foreground: 0 0% 9%;
-  --sidebar-border: 0 0% 92%;
-  --sidebar-primary: 142 76% 36%;
-  --sidebar-primary-foreground: 142 76% 98%;
-  --sidebar-accent: 0 0% 89%;
-  --sidebar-accent-foreground: 0 0% 15%;
-  --sidebar-ring: 142 76% 36%;
-  --popover: 0 0% 94%;
-  --popover-foreground: 0 0% 9%;
-  --popover-border: 0 0% 89%;
-  --primary: 142 76% 36%;
-  --primary-foreground: 142 76% 98%;
-  --secondary: 0 0% 87%;
-  --secondary-foreground: 0 0% 15%;
-  --muted: 0 2% 91%;
-  --muted-foreground: 0 2% 35%;
-  --accent: 142 15% 88%;
-  --accent-foreground: 142 15% 18%;
-  --destructive: 0 72% 41%;
-  --destructive-foreground: 0 72% 98%;
-  --input: 0 0% 75%;
-  --ring: 142 76% 36%;
-  --chart-1: 142 76% 36%;
-  --chart-2: 45 93% 47%;
-  --chart-3: 210 80% 48%;
-  --chart-4: 280 65% 60%;
-  --chart-5: 15 80% 50%;
-  --font-sans: Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-  --font-serif: Georgia, serif;
-  --font-mono: Menlo, monospace;
-  --font-display: Poppins, Inter, sans-serif;
-  --radius: .5rem;
-  --shadow-2xs: 0px 2px 0px 0px hsl(0 0% 0% / 0.00);
-  --shadow-xs: 0px 2px 0px 0px hsl(0 0% 0% / 0.00);
-  --shadow-sm: 0px 2px 0px 0px hsl(0 0% 0% / 0.00), 0px 1px 2px -1px hsl(0 0% 0% / 0.00);
-  --shadow: 0px 2px 0px 0px hsl(0 0% 0% / 0.00), 0px 1px 2px -1px hsl(0 0% 0% / 0.00);
-  --shadow-md: 0px 2px 0px 0px hsl(0 0% 0% / 0.00), 0px 2px 4px -1px hsl(0 0% 0% / 0.00);
-  --shadow-lg: 0px 2px 0px 0px hsl(0 0% 0% / 0.00), 0px 4px 6px -1px hsl(0 0% 0% / 0.00);
-  --shadow-xl: 0px 2px 0px 0px hsl(0 0% 0% / 0.00), 0px 8px 10px -1px hsl(0 0% 0% / 0.00);
-  --shadow-2xl: 0px 2px 0px 0px hsl(0 0% 0% / 0.00);
-  --tracking-normal: 0em;
-  --spacing: 0.25rem;
+  /* ── Core palette (Tribuna) ────────────────────────────────────── */
+  --ink:           #0F1115;
+  --ink-2:         #1C1F25;
+  --ink-3:         #353941;
+  --slate:         #6A6F7A;
+  --slate-2:       #9CA0AB;
 
-/* Fallback for older browsers */
-  --sidebar-primary-border: hsl(var(--sidebar-primary));
-  --sidebar-primary-border: hsl(from hsl(var(--sidebar-primary)) h s calc(l + var(--opaque-button-border-intensity)) / alpha);
+  --paper:         #F2ECDE;
+  --paper-2:       #ECE5D3;
+  --card:          #FBF7EC;
+  --line:          #E2D9C3;
+  --line-2:        #D4C8AB;
 
-  /* Fallback for older browsers */
-  --sidebar-accent-border: hsl(var(--sidebar-accent));
-  --sidebar-accent-border: hsl(from hsl(var(--sidebar-accent)) h s calc(l + var(--opaque-button-border-intensity)) / alpha);
+  --floodlight:    #FF4B1F;
+  --floodlight-d:  #E03A10;
+  --chalk:         #F5C518;
 
-  /* Fallback for older browsers */
-  --primary-border: hsl(var(--primary));
-  --primary-border: hsl(from hsl(var(--primary)) h s calc(l + var(--opaque-button-border-intensity)) / alpha);
+  --success:       #1F8E5C;
+  --error:         #C4321A;
+  --warning:       #D89412;
+  --info:          #2E5BD4;
 
-  /* Fallback for older browsers */
-  --secondary-border: hsl(var(--secondary));
-  --secondary-border: hsl(from hsl(var(--secondary)) h s calc(l + var(--opaque-button-border-intensity)) / alpha);
+  /* ── Club colors (badge contour + crest only, never fill) ───── */
+  --club-cor:      #0F0F0F;
+  --club-pal:      #006437;
+  --club-fla-a:    #C4321A;
+  --club-fla-b:    #0F0F0F;
+  --club-sao-a:    #C4321A;
+  --club-sao-b:    #FFFFFF;
+  --club-sao-c:    #0F0F0F;
+  --club-san:      #FFFFFF;
+  --club-cru:      #2E5BD4;
+  --club-gre-a:    #0B377C;
+  --club-gre-b:    #0F0F0F;
 
-  /* Fallback for older browsers */
-  --muted-border: hsl(var(--muted));
-  --muted-border: hsl(from hsl(var(--muted)) h s calc(l + var(--opaque-button-border-intensity)) / alpha);
+  /* ── Radii ─────────────────────────────────────────────────── */
+  --r-1:           4px;   /* chips, badges, tags */
+  --r-2:           8px;   /* buttons, inputs */
+  --r-3:           12px;  /* cards, posts */
+  --r-4:           20px;  /* hero, modals */
+  --r-full:        999px; /* avatars, pill CTAs */
 
-  /* Fallback for older browsers */
-  --accent-border: hsl(var(--accent));
-  --accent-border: hsl(from hsl(var(--accent)) h s calc(l + var(--opaque-button-border-intensity)) / alpha);
+  /* ── Spacing scale (4pt) ────────────────────────────────────── */
+  --s-1:           4px;
+  --s-2:           8px;
+  --s-3:           12px;
+  --s-4:           16px;
+  --s-5:           20px;
+  --s-6:           24px;
+  --s-7:           32px;
+  --s-8:           40px;
+  --s-9:           56px;
+  --s-10:          72px;
 
-  /* Fallback for older browsers */
-  --destructive-border: hsl(var(--destructive));
-  --destructive-border: hsl(from hsl(var(--destructive)) h s calc(l + var(--opaque-button-border-intensity)) / alpha);
-}
+  /* ── Elevation (warm ink tint, never pure black) ────────────── */
+  --shadow-0:      0 1px 0 rgba(15, 17, 21, 0.04);
+  --shadow-1:      0 1px 2px rgba(15, 17, 21, 0.05), 0 0 0 1px rgba(15, 17, 21, 0.04);
+  --shadow-2:      0 8px 24px -12px rgba(15, 17, 21, 0.18), 0 0 0 1px rgba(15, 17, 21, 0.05);
+  --shadow-3:      0 24px 60px -28px rgba(15, 17, 21, 0.35), 0 0 0 1px rgba(15, 17, 21, 0.06);
 
-.dark {
-  --button-outline: rgba(255,255,255, .10);
-  --badge-outline: rgba(255,255,255, .05);
-  --opaque-button-border-intensity: 9;
-  --elevate-1: rgba(255,255,255, .04);
-  --elevate-2: rgba(255,255,255, .09);
-  --background: 0 0% 7%;
-  --foreground: 0 0% 96%;
-  --border: 0 0% 16%;
-  --card: 0 0% 9%;
-  --card-foreground: 0 0% 96%;
-  --card-border: 0 0% 12%;
-  --sidebar: 0 0% 11%;
-  --sidebar-foreground: 0 0% 96%;
-  --sidebar-border: 0 0% 14%;
-  --sidebar-primary: 142 76% 36%;
-  --sidebar-primary-foreground: 142 76% 98%;
-  --sidebar-accent: 0 0% 16%;
-  --sidebar-accent-foreground: 0 0% 90%;
-  --sidebar-ring: 142 76% 36%;
-  --popover: 0 0% 13%;
-  --popover-foreground: 0 0% 96%;
-  --popover-border: 0 0% 16%;
-  --primary: 142 76% 36%;
-  --primary-foreground: 142 76% 98%;
-  --secondary: 0 0% 18%;
-  --secondary-foreground: 0 0% 90%;
-  --muted: 0 2% 15%;
-  --muted-foreground: 0 2% 70%;
-  --accent: 142 15% 17%;
-  --accent-foreground: 142 15% 85%;
-  --destructive: 0 72% 41%;
-  --destructive-foreground: 0 72% 98%;
-  --input: 0 0% 30%;
-  --ring: 142 76% 36%;
-  --chart-1: 142 76% 55%;
-  --chart-2: 45 93% 65%;
-  --chart-3: 210 80% 65%;
-  --chart-4: 280 65% 75%;
-  --chart-5: 15 80% 65%;
-  --shadow-2xs: 0px 2px 0px 0px hsl(0 0% 0% / 0.00);
-  --shadow-xs: 0px 2px 0px 0px hsl(0 0% 0% / 0.00);
-  --shadow-sm: 0px 2px 0px 0px hsl(0 0% 0% / 0.00), 0px 1px 2px -1px hsl(0 0% 0% / 0.00);
-  --shadow: 0px 2px 0px 0px hsl(0 0% 0% / 0.00), 0px 1px 2px -1px hsl(0 0% 0% / 0.00);
-  --shadow-md: 0px 2px 0px 0px hsl(0 0% 0% / 0.00), 0px 2px 4px -1px hsl(0 0% 0% / 0.00);
-  --shadow-lg: 0px 2px 0px 0px hsl(0 0% 0% / 0.00), 0px 4px 6px -1px hsl(0 0% 0% / 0.00);
-  --shadow-xl: 0px 2px 0px 0px hsl(0 0% 0% / 0.00), 0px 8px 10px -1px hsl(0 0% 0% / 0.00);
-  --shadow-2xl: 0px 2px 0px 0px hsl(0 0% 0% / 0.00);
+  /* ── Typography stack ──────────────────────────────────────── */
+  --font-display:  'Bricolage Grotesque', system-ui, sans-serif;
+  --font-body:     'Geist', system-ui, sans-serif;
+  --font-mono:     'JetBrains Mono', ui-monospace, monospace;
 
-/* Fallback for older browsers */
-  --sidebar-primary-border: hsl(var(--sidebar-primary));
-  --sidebar-primary-border: hsl(from hsl(var(--sidebar-primary)) h s calc(l + var(--opaque-button-border-intensity)) / alpha);
+  /* ────────────────────────────────────────────────────────────
+     Compatibility layer — keep legacy variable names alive so the
+     ~60 components that still reference them pick up Tribuna values
+     without a big-bang rewrite. Will be removed as Steps 3–6 retire
+     the old utility names.
+     ──────────────────────────────────────────────────────────── */
 
-  /* Fallback for older browsers */
-  --sidebar-accent-border: hsl(var(--sidebar-accent));
-  --sidebar-accent-border: hsl(from hsl(var(--sidebar-accent)) h s calc(l + var(--opaque-button-border-intensity)) / alpha);
+  /* ── Legacy x-* tokens → Tribuna ───────────────────────────── */
+  --x-bg:             var(--paper);
+  --x-surface:        var(--card);
+  --x-border:         var(--line);
+  --x-text-primary:   var(--ink);
+  --x-text-secondary: var(--ink-3);
+  --x-accent:         var(--ink);            /* primary CTA = ink, not orange (orange = floodlight = action) */
+  --x-accent-hover:   var(--ink-2);
+  --x-hover:          rgba(15, 17, 21, 0.04);
+  --x-like:           var(--floodlight);     /* likes go floodlight per spec */
+  --x-repost:         var(--success);
+  --x-search-bg:      var(--paper-2);
+  --brand-gradient:   linear-gradient(135deg, var(--ink) 0%, var(--ink-2) 100%);
 
-  /* Fallback for older browsers */
-  --primary-border: hsl(var(--primary));
-  --primary-border: hsl(from hsl(var(--primary)) h s calc(l + var(--opaque-button-border-intensity)) / alpha);
+  /* ── Shadcn/UI tokens (HSL) → Tribuna ──────────────────────── */
+  --background:             40 30% 91%;   /* #F2ECDE paper */
+  --foreground:             225 15% 8%;   /* #0F1115 ink */
+  --foreground-secondary:   222 9% 22%;   /* #353941 ink-3 */
+  --foreground-muted:       220 6% 45%;   /* #6A6F7A slate */
 
-  /* Fallback for older browsers */
-  --secondary-border: hsl(var(--secondary));
-  --secondary-border: hsl(from hsl(var(--secondary)) h s calc(l + var(--opaque-button-border-intensity)) / alpha);
+  --surface-elevated:       42 71% 95%;   /* #FBF7EC card */
+  --surface-card:           42 71% 95%;   /* #FBF7EC card */
 
-  /* Fallback for older browsers */
-  --muted-border: hsl(var(--muted));
-  --muted-border: hsl(from hsl(var(--muted)) h s calc(l + var(--opaque-button-border-intensity)) / alpha);
+  --card-border:            39 38% 83%;   /* #E2D9C3 line */
+  --border:                 39 38% 83%;
+  --border-subtle:          39 38% 88%;
+  --border-strong:          37 31% 75%;   /* #D4C8AB line-2 */
 
-  /* Fallback for older browsers */
-  --accent-border: hsl(var(--accent));
-  --accent-border: hsl(from hsl(var(--accent)) h s calc(l + var(--opaque-button-border-intensity)) / alpha);
+  --primary:                225 15% 8%;   /* ink — primary CTA */
+  --primary-foreground:     40 30% 91%;   /* paper */
 
-  /* Fallback for older browsers */
-  --destructive-border: hsl(var(--destructive));
-  --destructive-border: hsl(from hsl(var(--destructive)) h s calc(l + var(--opaque-button-border-intensity)) / alpha);
+  --secondary:              37 31% 75%;   /* line-2 */
+  --secondary-foreground:   225 15% 8%;
+
+  --muted:                  39 38% 83%;
+  --muted-foreground:       220 6% 45%;
+
+  --popover:                42 71% 95%;
+  --popover-foreground:     225 15% 8%;
+
+  --accent:                 14 100% 56%;  /* #FF4B1F floodlight — for action accents */
+  --accent-foreground:      40 30% 91%;
+
+  --input:                  39 38% 83%;
+  --ring:                   14 100% 56%;  /* focus ring uses floodlight */
+
+  --destructive:            9 76% 43%;    /* #C4321A error */
+  --destructive-foreground: 40 30% 91%;
+
+  /* Border radius tokens used by shadcn (kept as old names; pointed to Tribuna r-*) */
+  --radius-medium:          var(--r-2);
+  --radius-soft:            var(--r-3);
+  --radius-sharp:           var(--r-1);
 }
 
 @layer base {
   * {
-    @apply border-border;
+    border-color: var(--line);
+  }
+
+  html {
+    scrollbar-width: thin;
+    scrollbar-color: var(--line-2) transparent;
   }
 
   body {
-    @apply font-sans antialiased bg-background text-foreground;
+    background: var(--paper);
+    color: var(--ink);
+    font-family: var(--font-body);
+    margin: 0;
+    padding: 0;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    text-rendering: optimizeLegibility;
+  }
+
+  /* Headings default to Bricolage Grotesque per Tribuna typography table.
+     Per-element opsz / weight / tracking still get applied via .t-h1/.t-h2/.t-h3
+     utilities, but any <h1>..<h6> without explicit class still gets the
+     display family + ink color + tight leading instead of inheriting Geist. */
+  h1, h2, h3, h4, h5, h6 {
+    font-family: var(--font-display);
+    font-weight: 700;
+    color: var(--ink);
+    letter-spacing: -0.02em;
+    line-height: 1.1;
+  }
+
+  ::-webkit-scrollbar {
+    width: 6px;
+  }
+  ::-webkit-scrollbar-track {
+    background: transparent;
+  }
+  ::-webkit-scrollbar-thumb {
+    background: var(--line-2);
+    border-radius: 3px;
   }
 }
 
-/**
- * Using the elevate system.
- * Automatic contrast adjustment.
- *
- * <element className="hover-elevate" />
- * <element className="active-elevate-2" />
- *
- * // Using the tailwind utility when a data attribute is "on"
- * <element className="toggle-elevate data-[state=on]:toggle-elevated" />
- * // Or manually controlling the toggle state
- * <element className="toggle-elevate toggle-elevated" />
- *
- * Elevation systems have to handle many states.
- * - not-hovered, vs. hovered vs. active  (three mutually exclusive states)
- * - toggled or not
- * - focused or not (this is not handled with these utilities)
- *
- * Even without handling focused or not, this is six possible combinations that
- * need to be distinguished from eachother visually.
- */
 @layer utilities {
+  /* ── Type scale ────────────────────────────────────────────── */
+  .t-display {
+    font-family: var(--font-display);
+    font-variation-settings: 'opsz' 96, 'wght' 800;
+    font-size: 132px; line-height: 0.9; letter-spacing: -0.045em;
+  }
+  .t-h1 {
+    font-family: var(--font-display);
+    font-variation-settings: 'opsz' 48, 'wght' 700;
+    font-size: 56px; line-height: 1.02; letter-spacing: -0.03em;
+  }
+  .t-h2 {
+    font-family: var(--font-display);
+    font-variation-settings: 'opsz' 32, 'wght' 700;
+    font-size: 36px; line-height: 1.05; letter-spacing: -0.022em;
+  }
+  .t-h3 {
+    font-family: var(--font-display);
+    font-variation-settings: 'opsz' 24, 'wght' 600;
+    font-size: 22px; line-height: 1.15; letter-spacing: -0.012em;
+  }
+  .t-body-lg { font-family: var(--font-body); font-size: 17px; line-height: 1.55; }
+  .t-body    { font-family: var(--font-body); font-size: 15px; line-height: 1.50; }
+  .t-caption { font-family: var(--font-body); font-size: 13px; line-height: 1.45; color: var(--slate); }
+  .t-label {
+    font-family: var(--font-mono);
+    font-size: 11px; line-height: 1; font-weight: 500;
+    letter-spacing: 0.14em; text-transform: uppercase;
+    color: var(--slate);
+  }
+  .t-mono { font-family: var(--font-mono); }
 
-  /* Hide ugly search cancel button in Chrome until we can style it properly */
-  input[type="search"]::-webkit-search-cancel-button {
-    @apply hidden;
+  /* ── Elevation utilities ──────────────────────────────────── */
+  .elev-1 { box-shadow: var(--shadow-1); }
+  .elev-2 { box-shadow: var(--shadow-2); }
+  .elev-3 { box-shadow: var(--shadow-3); }
+
+  /* ── Legacy x-* utilities (kept for compat with existing code) */
+  .x-border-b { border-bottom: 1px solid var(--line); }
+  .x-border-t { border-top: 1px solid var(--line); }
+  .x-border-r { border-right: 1px solid var(--line); }
+  .x-border-l { border-left: 1px solid var(--line); }
+
+  .x-hover {
+    transition: background-color 0.2s ease;
+  }
+  .x-hover:hover {
+    background-color: var(--x-hover);
   }
 
-  /* Placeholder styling for contentEditable div */
-  [contenteditable][data-placeholder]:empty::before {
-    content: attr(data-placeholder);
-    color: hsl(var(--muted-foreground));
-    pointer-events: none;
+  .hide-scrollbar {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+  .hide-scrollbar::-webkit-scrollbar {
+    display: none;
   }
 
-  /* .no-default-hover-elevate/no-default-active-elevate is an escape hatch so consumers of
-   * buttons/badges can remove the automatic brightness adjustment on interactions
-   * and program their own. */
-  .no-default-hover-elevate {}
-
-  .no-default-active-elevate {}
-
-
-  /**
-   * Toggleable backgrounds go behind the content. Hoverable/active goes on top.
-   * This way they can stack/compound. Both will overlap the parent's borders!
-   * So borders will be automatically adjusted both on toggle, and hover/active,
-   * and they will be compounded.
-   */
-  .toggle-elevate::before,
-  .toggle-elevate-2::before {
-    content: "";
-    pointer-events: none;
-    position: absolute;
-    inset: 0px;
-    /*border-radius: inherit;   match rounded corners */
-    border-radius: inherit;
-    z-index: -1;
-    /* sits behind content but above backdrop */
+  .brand-gradient {
+    background: var(--brand-gradient);
+    color: var(--paper);
   }
 
-  .toggle-elevate.toggle-elevated::before {
-    background-color: var(--elevate-2);
+  /* Old utility names retired into the Tribuna stack:
+     - .font-brand (was Bebas Neue) → Bricolage display
+     - .font-serif-display → Bricolage display
+     - .font-serif-body → Geist body
+     - .font-newspaper → Bricolage uppercase
+     - .font-handle → JetBrains Mono */
+  .font-brand {
+    font-family: var(--font-display);
+    font-weight: 700;
+    letter-spacing: -0.025em;
+  }
+  .font-serif-display {
+    font-family: var(--font-display);
+    font-weight: 700;
+    letter-spacing: -0.022em;
+  }
+  .font-serif-body {
+    font-family: var(--font-body);
+  }
+  .font-newspaper {
+    font-family: var(--font-display);
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    font-weight: 700;
+  }
+  .font-handle {
+    font-family: var(--font-mono);
   }
 
-  /* If there's a 1px border, adjust the inset so that it covers that parent's border */
-  .border.toggle-elevate::before {
-    inset: -1px;
+  /* Paper grain helper still useful for hero panels */
+  .paper-texture {
+    background-color: var(--card);
   }
 
-  /* Does not work on elements with overflow:hidden! */
-  .hover-elevate:not(.no-default-hover-elevate),
-  .active-elevate:not(.no-default-active-elevate),
-  .hover-elevate-2:not(.no-default-hover-elevate),
-  .active-elevate-2:not(.no-default-active-elevate) {
-    position: relative;
-    z-index: 0;
-  }
-
-  .hover-elevate:not(.no-default-hover-elevate)::after,
-  .active-elevate:not(.no-default-active-elevate)::after,
-  .hover-elevate-2:not(.no-default-hover-elevate)::after,
-  .active-elevate-2:not(.no-default-active-elevate)::after {
-    content: "";
-    pointer-events: none;
-    position: absolute;
-    inset: 0px;
-    /*border-radius: inherit;   match rounded corners */
-    border-radius: inherit;
-    z-index: 999;
-    /* sits in front of content */
-  }
-
-  .hover-elevate:hover:not(.no-default-hover-elevate)::after,
-  .active-elevate:active:not(.no-default-active-elevate)::after {
-    background-color: var(--elevate-1);
-  }
-
-  .hover-elevate-2:hover:not(.no-default-hover-elevate)::after,
-  .active-elevate-2:active:not(.no-default-active-elevate)::after {
-    background-color: var(--elevate-2);
-  }
-
-  /* If there's a 1px border, adjust the inset so that it covers that parent's border */
-  .border.hover-elevate:not(.no-hover-interaction-elevate)::after,
-  .border.active-elevate:not(.no-active-interaction-elevate)::after,
-  .border.hover-elevate-2:not(.no-hover-interaction-elevate)::after,
-  .border.active-elevate-2:not(.no-active-interaction-elevate)::after,
-  .border.hover-elevate:not(.no-hover-interaction-elevate)::after {
-    inset: -1px;
+  .newsprint-divider {
+    border-top: 1px solid var(--line);
+    border-bottom: 1px solid var(--line);
+    height: 4px;
   }
 }
+
+@keyframes heart-pop {
+  0% { transform: scale(1); }
+  25% { transform: scale(1.3); }
+  50% { transform: scale(0.95); }
+  100% { transform: scale(1); }
+}
+.heart-animation { animation: heart-pop 0.35s ease-in-out; }
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(4px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+.fade-in { animation: fadeIn 0.2s ease-out; }
+
+@keyframes toast-slide {
+  from { transform: translateY(100%); opacity: 0; }
+  to { transform: translateY(0); opacity: 1; }
+}
+.toast-animation { animation: toast-slide 0.3s ease-out; }
+
+@keyframes pulse-live {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.4; }
+}
+.pulse-live { animation: pulse-live 1.5s ease-in-out infinite; }

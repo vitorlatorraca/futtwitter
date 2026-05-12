@@ -1,9 +1,61 @@
 import { QueryClient, QueryFunction } from "@tanstack/react-query";
 
+// Get API base URL from environment variable, fallback to relative path for same-origin
+const API_BASE_URL = import.meta.env.VITE_API_URL || '';
+
+export function getApiUrl(path: string): string {
+  // If path already starts with http, use it as-is
+  if (path.startsWith('http://') || path.startsWith('https://')) {
+    return path;
+  }
+  // If API_BASE_URL is set, prepend it
+  if (API_BASE_URL) {
+    // Remove trailing slash from base URL and leading slash from path
+    const base = API_BASE_URL.replace(/\/$/, '');
+    const cleanPath = path.startsWith('/') ? path : `/${path}`;
+    return `${base}${cleanPath}`;
+  }
+  // Otherwise use relative path (same origin)
+  return path;
+}
+
+// Extract a human message from the API's error response.
+// Server returns `{ message: string }`, but Zod validation errors come back
+// with `message` itself being a JSON-stringified array of issues. Drill in.
+function extractApiMessage(text: string, status: number, statusText: string): string {
+  if (!text) return statusText || `HTTP ${status}`;
+
+  try {
+    const body = JSON.parse(text);
+    const msg = typeof body?.message === "string" ? body.message : null;
+    if (!msg) return statusText || `HTTP ${status}`;
+
+    // Zod errors: msg is itself a JSON array string like `[{"message":"...","path":["password"]}]`
+    if (msg.trim().startsWith("[")) {
+      try {
+        const issues = JSON.parse(msg);
+        if (Array.isArray(issues) && issues.length > 0) {
+          const first = issues[0];
+          if (first?.message) return String(first.message);
+        }
+      } catch {
+        /* fall through */
+      }
+    }
+
+    return msg;
+  } catch {
+    return text;
+  }
+}
+
 async function throwIfResNotOk(res: Response) {
   if (!res.ok) {
-    const text = (await res.text()) || res.statusText;
-    throw new Error(`${res.status}: ${text}`);
+    const text = await res.text();
+    const message = extractApiMessage(text, res.status, res.statusText);
+    const err = new Error(message) as Error & { status?: number };
+    err.status = res.status;
+    throw err;
   }
 }
 
@@ -12,7 +64,8 @@ export async function apiRequest(
   url: string,
   data?: unknown | undefined,
 ): Promise<Response> {
-  const res = await fetch(url, {
+  const fullUrl = getApiUrl(url);
+  const res = await fetch(fullUrl, {
     method,
     headers: data ? { "Content-Type": "application/json" } : {},
     body: data ? JSON.stringify(data) : undefined,
@@ -29,7 +82,9 @@ export const getQueryFn: <T>(options: {
 }) => QueryFunction<T> =
   ({ on401: unauthorizedBehavior }) =>
   async ({ queryKey }) => {
-    const res = await fetch(queryKey.join("/") as string, {
+    const path = queryKey.join("/") as string;
+    const fullUrl = getApiUrl(path);
+    const res = await fetch(fullUrl, {
       credentials: "include",
     });
 

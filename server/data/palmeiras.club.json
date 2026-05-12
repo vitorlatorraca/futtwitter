@@ -1,0 +1,51 @@
+{
+  "id": "palmeiras",
+  "clubName": "Palmeiras",
+  "name": "Sociedade Esportiva Palmeiras",
+  "shortName": "Palmeiras",
+  "fullName": "Sociedade Esportiva Palmeiras",
+  "founded": "1914-08-26",
+  "foundedLabel": "26 de agosto de 1914",
+  "city": "São Paulo",
+  "country": "Brasil",
+  "stadium": {
+    "name": "Allianz Parque",
+    "capacity": 43713,
+    "inaugurated": 2014
+  },
+  "nicknames": [
+    "Verdão",
+    "Alviverde",
+    "Academia de Futebol"
+  ],
+  "colors": {
+    "primary": "#006437",
+    "secondary": "#FFFFFF"
+  },
+  "honours": {
+    "coroas": [
+      { "name": "Tríplice Coroa", "count": 2, "years": [2021, 2024] },
+      { "name": "Quádrupla Coroa", "count": 1, "years": [2023] },
+      { "name": "4º Lugar - Ranking Mundial de Clubes IFFHS 2023", "count": 1, "note": "Condecoração outorgada pela IFFHS em 05/11/2023" },
+      { "name": "3º Lugar - Ranking Mundial de Clubes IFFHS 2023", "count": 1, "note": "Condecoração outorgada pela IFFHS em 06/01/2024" }
+    ],
+    "continentais": [
+      { "name": "Copa Libertadores da América", "count": 6, "years": [2017, 2019, 2021, 2023, 2024, 2025] }
+    ],
+    "nacionais": [
+      { "name": "Campeonato Brasileiro", "count": 7, "years": [2018, 2020, 2021, 2022, 2023, 2024, 2025] },
+      { "name": "Supercopa do Brasil", "count": 3, "years": [2022, 2023, 2024] },
+      { "name": "Copa do Brasil", "count": 1, "yearsDisplay": "2016[a]" }
+    ],
+    "estaduais": [
+      { "name": "Campeonato Paulista", "count": 4, "years": [2019, 2020, 2021, 2023] },
+      { "name": "Copa Paulista", "count": 1, "years": [2022] }
+    ],
+    "total": {
+      "name": "Títulos Oficiais",
+      "count": 22,
+      "description": "6 Continentais, 11 Nacionais e 5 Estaduais"
+    }
+  },
+  "lastUpdated": "2025-02-04"
+}

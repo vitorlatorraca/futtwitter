@@ -1,0 +1,41 @@
+{
+  "description": "Fontes consultadas para dados do Sport Club Corinthians Paulista (contagens de títulos verificadas)",
+  "sources": [
+    {
+      "name": "Site Oficial Corinthians - Títulos",
+      "url": "https://www.corinthians.com.br/clube/titulos",
+      "consultedAt": "2025-02-04",
+      "notes": "Lista oficial de títulos do clube"
+    },
+    {
+      "name": "CBF - Campeonato Brasileiro e Copa do Brasil",
+      "url": "https://www.cbf.com.br",
+      "consultedAt": "2025-02-04",
+      "notes": "Confirmação de títulos nacionais (Brasileirão, Copa do Brasil, Supercopa, Série B)"
+    },
+    {
+      "name": "CONMEBOL - Libertadores e Recopa",
+      "url": "https://www.conmebol.com",
+      "consultedAt": "2025-02-04",
+      "notes": "Confirmação Libertadores 2012 e Recopa 2013"
+    },
+    {
+      "name": "FIFA - Mundial de Clubes",
+      "url": "https://www.fifa.com/clubworldcup",
+      "consultedAt": "2025-02-04",
+      "notes": "Mundial FIFA 2012; Copa Intercontinental 2000 (reconhecida pela FIFA como precursora)"
+    },
+    {
+      "name": "Wikipedia (PT) - Títulos do Corinthians",
+      "url": "https://pt.wikipedia.org/wiki/T%C3%ADtulos_do_Sport_Club_Corinthians_Paulista",
+      "consultedAt": "2025-02-04",
+      "notes": "Lista de títulos e anos; apoio para Campeonato Paulista (31 títulos)"
+    },
+    {
+      "name": "FPF / Mídia - Campeonato Paulista",
+      "url": "https://www.fpf.org.br",
+      "consultedAt": "2025-02-04",
+      "notes": "Corinthians como maior campeão paulista (31 títulos); anos conferidos em fontes jornalísticas (Placar, UOL, Jovem Pan)"
+    }
+  ]
+}
