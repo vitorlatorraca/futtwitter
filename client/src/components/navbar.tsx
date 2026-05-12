@@ -21,11 +21,11 @@ import { useUnreadCount } from '@/hooks/useNotifications';
  *
  * Anatomy per design_handoff_tribuna_rebrand/README.md ("Components" → a):
  *   ┌─────────────────────────────────────────────────────────────────┐
- *   │  [F·]  FUTTWITTER         Feed  Vai e Vem  Meu Time  Jogos       │
+ *   │  [T·]  tribuna           Feed  Vai e Vem  Meu Time  Jogos        │
  *   │        O JORNAL QUE CONVERSA   Perfil ●     [🔍 Buscar  ⌘K]  ⊙   │
  *   └─────────────────────────────────────────────────────────────────┘
  *
- * Logo group: 36×36 ink rounded square with paper "F" + 10px floodlight dot
+ * Logo group: 36×36 ink rounded square with paper "T" + 10px floodlight dot
  * with 2px paper ring. Wordmark Bricolage 22/700, micro-label JBM 9 caps.
  *
  * Tabs: text-ink-3/font-500 → text-ink/font-600 when active. Active tab gets
@@ -99,7 +99,7 @@ export function Navbar() {
                 className="font-display text-[22px] text-paper leading-none"
                 style={{ fontWeight: 800 }}
               >
-                F
+                T
               </span>
               <span
                 aria-hidden="true"
@@ -112,7 +112,7 @@ export function Navbar() {
                 className="font-display text-[22px] text-ink"
                 style={{ fontWeight: 700, letterSpacing: '-0.025em' }}
               >
-                FUTTWITTER
+                tribuna
               </span>
               <span
                 className="font-mono text-[9px] text-slate mt-1"

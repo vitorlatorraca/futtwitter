@@ -144,7 +144,7 @@ export function SearchBar({
         <input
           ref={inputRef}
           type="text"
-          placeholder="Buscar no FuteApp"
+          placeholder="Buscar na Tribuna"
           value={query}
           autoFocus={autoFocus}
           onChange={(e) => {

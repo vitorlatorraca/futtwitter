@@ -508,7 +508,7 @@ export default function SettingsConta() {
                 {/* Sem solicitação */}
                 {statusData?.status == null && (
                   <div className="space-y-3">
-                    <p className="text-[15px] font-medium">Torne-se Jornalista no FuteApp</p>
+                    <p className="text-[15px] font-medium">Torne-se Jornalista na Tribuna</p>
                     <p className="text-[14px] text-x-text-secondary">
                       Jornalistas podem publicar notícias, entrevistas e análises para todos os torcedores.
                       Envie sua solicitação para o administrador revisar.
@@ -615,7 +615,7 @@ export default function SettingsConta() {
           <section>
             <h2 className="text-[15px] font-semibold mb-3">Verificação como Jornalista</h2>
             <span className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-green-500/20 text-green-400 text-[14px] font-medium">
-              ✅ Jornalista verificado no FuteApp
+              Jornalista verificado na Tribuna
             </span>
             <p className="text-[14px] text-x-text-secondary mt-2">
               Sua conta tem acesso completo para publicar notícias.

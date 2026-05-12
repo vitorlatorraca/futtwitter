@@ -66,9 +66,9 @@ export default function RightSidebar() {
         <SearchBar className="w-full" />
       </div>
 
-      {/* FuteApp Pro Card */}
+      {/* Tribuna+ subscription card */}
       <div className="border border-x-border rounded-2xl p-4 mb-4">
-        <h2 className="t-h3 text-ink mb-1">FuteApp Pro</h2>
+        <h2 className="t-h3 text-ink mb-1">Tribuna+</h2>
         <p className="text-[15px] text-x-text-primary mb-3">
           Sem anúncios, estatísticas avançadas, alertas de gols em tempo real.
         </p>
@@ -247,7 +247,7 @@ export default function RightSidebar() {
             <a key={link} href="#" className="hover:underline">{link}</a>
           ))}
         </div>
-        <p className="text-[13px] text-x-text-secondary mt-1">&copy; 2026 FuteApp.</p>
+        <p className="text-[13px] text-x-text-secondary mt-1">&copy; 2026 Tribuna.</p>
       </nav>
     </aside>
   );

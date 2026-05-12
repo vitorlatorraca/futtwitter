@@ -18,7 +18,7 @@ export default function Settings() {
     {
       icon: Shield,
       label: "Privacidade e segurança",
-      description: "Gerencie quais informações você vê e compartilha no FuteApp.",
+      description: "Gerencie quais informações você vê e compartilha na Tribuna.",
       path: "/settings/privacidade",
     },
     ...(isAdmin

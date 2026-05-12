@@ -103,7 +103,12 @@ export default function ResetPasswordPage() {
         {/* Logo */}
         <div className="flex items-center gap-2 mb-8">
           <span className="text-2xl">⚽</span>
-          <span className="font-extrabold text-xl tracking-tight text-foreground">FUTTWITTER</span>
+          <span
+            className="font-display text-[22px] text-ink"
+            style={{ fontWeight: 700, letterSpacing: '-0.025em' }}
+          >
+            tribuna
+          </span>
         </div>
 
         {/* Verificando token */}

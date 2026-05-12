@@ -60,7 +60,7 @@ export default function LoginPage() {
                 className="font-display text-[28px] text-primary-foreground"
                 style={{ fontWeight: 700, letterSpacing: '-0.025em' }}
               >
-                FUTTWITTER
+                tribuna
               </h1>
               <p
                 className="font-mono text-[10px] text-primary-foreground/60 mt-1"
@@ -99,7 +99,7 @@ export default function LoginPage() {
           className="text-[10px] text-primary-foreground/55 font-mono"
           style={{ letterSpacing: '0.14em', textTransform: 'uppercase' }}
         >
-          © 2026 FUTTWITTER · Todos os direitos reservados
+          © 2026 Tribuna · Todos os direitos reservados
         </footer>
       </div>
 
@@ -118,7 +118,7 @@ export default function LoginPage() {
               className="font-display text-[22px] text-foreground"
               style={{ fontWeight: 700, letterSpacing: '-0.025em' }}
             >
-              FUTTWITTER
+              tribuna
             </span>
           </div>
 

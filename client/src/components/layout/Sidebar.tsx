@@ -19,14 +19,25 @@ import { useAuth } from "../../lib/auth-context";
 import { useMediaQuery } from "../../hooks/useMediaQuery";
 import { useUnreadCount } from "../../hooks/useNotifications";
 
-const FuteAppLogo = () => (
+/**
+ * Tribuna logo monogram for the sidebar — same anatomy as the navbar:
+ * black square with paper "T" in Bricolage 800 and a floodlight dot.
+ */
+const TribunaLogo = () => (
   <svg viewBox="0 0 32 32" aria-hidden="true" className="w-8 h-8">
-    <circle cx="16" cy="16" r="15" fill="none" stroke="white" strokeWidth="1.5" />
-    <path
-      d="M16 2C8.27 2 2 8.27 2 16s6.27 14 14 14 14-6.27 14-14S23.73 2 16 2zm0 1.5c1.8 0 3.5.3 5.1.9-1.8 1.2-3.3 1.8-5.1 1.8s-3.3-.6-5.1-1.8c1.6-.6 3.3-.9 5.1-.9zm-7.5 2.6c2 1.6 4.5 2.6 7.5 2.6s5.5-1 7.5-2.6a12.5 12.5 0 013.5 6H25c-1.2 0-2.3-.5-3.3-1.5-1.2 1.2-2.5 1.8-3.7 1.8h-4c-1.2 0-2.5-.6-3.7-1.8C9.3 12.5 8.2 13 7 13H3.5a12.5 12.5 0 013.5-6zM3 16.5h4.5c1.5 0 3-.8 4.2-2.2 1.2 1.4 2.7 2.2 4.3 2.2h4c1.6 0 3.1-.8 4.3-2.2 1.2 1.4 2.7 2.2 4.2 2.2H29a12.5 12.5 0 01-.5 4H25c-1.5 0-3 .8-4.3 2.2-1.2-1.4-2.7-2.2-4.3-2.2h-4c-1.6 0-3.1.8-4.3 2.2C6.8 21.3 5.5 20.5 4 20.5H3.5a12.5 12.5 0 01-.5-4zm1.5 6H7c1.2 0 2.3.5 3.3 1.5 1.2-1.2 2.5-1.8 3.7-1.8h4c1.2 0 2.5.6 3.7 1.8 1-1 2.1-1.5 3.3-1.5h2.5a12.5 12.5 0 01-4 5c-1.5-1.4-3.5-2.3-5.5-2.3h-4c-2 0-4 .9-5.5 2.3a12.5 12.5 0 01-4-5z"
-      fill="white"
-      opacity="0.9"
-    />
+    <rect width="32" height="32" rx="6" fill="var(--ink)" />
+    <text
+      x="16"
+      y="22"
+      textAnchor="middle"
+      fontFamily="var(--font-display)"
+      fontSize="20"
+      fontWeight="800"
+      fill="var(--paper)"
+    >
+      T
+    </text>
+    <circle cx="25" cy="25" r="3.5" fill="var(--floodlight)" stroke="var(--paper)" strokeWidth="1.5" />
   </svg>
 );
 
@@ -37,7 +48,7 @@ interface NavItem {
   path: string;
   badge?: number | string;
   badgeColor?: string;
-  isFuteApp?: boolean;
+  isTribuna?: boolean;
 }
 
 export default function Sidebar() {
@@ -69,10 +80,10 @@ export default function Sidebar() {
     { label: "Explorar", icon: Search, path: "/explore" },
   ];
 
-  const futeAppNav: NavItem[] = [
-    { label: "Meu Time", subtitle: "Seu clube do coração", icon: Shield, path: "/meu-time", isFuteApp: true },
-    { label: "Vai e Vem", subtitle: "Transferências e rumores", icon: ArrowLeftRight, path: "/vai-e-vem", isFuteApp: true },
-    // { label: "Jogos", subtitle: "Agenda e resultados", icon: Calendar, path: "/jogos", isFuteApp: true },
+  const tribunaNav: NavItem[] = [
+    { label: "Meu Time", subtitle: "Seu clube do coração", icon: Shield, path: "/meu-time", isTribuna: true },
+    { label: "Vai e Vem", subtitle: "Transferências e rumores", icon: ArrowLeftRight, path: "/vai-e-vem", isTribuna: true },
+    // { label: "Jogos", subtitle: "Agenda e resultados", icon: Calendar, path: "/jogos", isTribuna: true },
   ];
 
   const bottomNav: NavItem[] = [
@@ -141,13 +152,16 @@ export default function Sidebar() {
       <div className={`flex flex-col ${isCompact ? "items-center" : "items-start"} py-1`}>
         <NavLink
           to="/feed"
-          className="p-3 rounded-full hover:bg-[rgba(26,86,219,0.1)] transition-colors mb-0.5 flex items-center gap-2"
-          aria-label="FuteApp Home"
+          className="p-3 rounded-r-2 hover:bg-paper-2 transition-colors mb-0.5 flex items-center gap-2.5"
+          aria-label="Tribuna — início"
         >
-          <FuteAppLogo />
+          <TribunaLogo />
           {!isCompact && (
-            <span className="font-brand text-2xl text-foreground tracking-wider">
-              FuteApp
+            <span
+              className="font-display text-[22px] text-ink"
+              style={{ fontWeight: 700, letterSpacing: '-0.025em' }}
+            >
+              tribuna
             </span>
           )}
         </NavLink>
@@ -162,7 +176,7 @@ export default function Sidebar() {
             <div className="mx-auto my-2 w-8 h-px bg-x-border" />
           )}
 
-          {futeAppNav.map(renderNavItem)}
+          {tribunaNav.map(renderNavItem)}
 
           {!isCompact && (
             <div className="mx-3 my-2 h-px bg-x-border" />

@@ -214,11 +214,18 @@ export default function LandingPage() {
         <div className="container mx-auto px-4 md:px-6 py-12">
           <div className="flex flex-col md:flex-row justify-between items-center gap-4">
             <div className="flex items-center gap-2">
-              <span className="font-bold tracking-tight text-lg text-foreground">FUTTWITTER</span>
-              <span className="text-foreground-muted text-xs">· Premium Futebol Editorial</span>
+              <span
+                className="font-display text-lg text-foreground"
+                style={{ fontWeight: 700, letterSpacing: '-0.025em' }}
+              >
+                tribuna
+              </span>
+              <span className="text-foreground-muted text-xs font-mono uppercase tracking-wider">
+                · O jornal que conversa
+              </span>
             </div>
             <p className="text-sm text-foreground-muted">
-              © 2024 Brasileirão. Todos os direitos reservados.
+              © 2026 Tribuna. Todos os direitos reservados.
             </p>
             <div className="flex gap-6 text-sm text-foreground-secondary">
               <a href="#" className="hover:text-foreground transition-colors">Sobre</a>

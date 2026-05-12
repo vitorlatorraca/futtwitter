@@ -45,7 +45,7 @@ export default function TeamSelectionPage() {
       clearSignupData();
       toast({
         title: 'Conta criada com sucesso!',
-        description: 'Bem-vindo à plataforma Brasileirão',
+        description: 'Bem-vindo à Tribuna',
       });
       navigate('/', { replace: true });
     } catch (error: unknown) {
@@ -90,7 +90,7 @@ export default function TeamSelectionPage() {
             className="font-display text-[22px] text-ink"
             style={{ fontWeight: 700, letterSpacing: '-0.025em' }}
           >
-            FUTTWITTER
+            tribuna
           </span>
         </div>
         <div className="flex items-center gap-2">
