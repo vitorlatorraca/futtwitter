@@ -227,8 +227,8 @@ export default function SignupPage() {
                 className="space-y-5"
               >
                 <div>
-                  <h1 className="font-serif-display text-3xl text-foreground">Criar conta</h1>
-                  <p className="text-sm text-foreground-secondary mt-1 font-serif-body">
+                  <h1 className="t-h2 text-foreground">Criar conta</h1>
+                  <p className="t-body text-foreground-secondary mt-2">
                     Etapa 1 de 2 — preencha seus dados pessoais. Na próxima etapa
                     você escolhe seu @ (identificador único) e depois seu time do coração.
                   </p>
@@ -380,11 +380,11 @@ export default function SignupPage() {
                 className="space-y-5"
               >
                 <div>
-                  <h1 className="font-serif-display text-3xl text-foreground">Escolha seu @</h1>
-                  <p className="text-sm text-foreground-secondary mt-1 font-serif-body">
+                  <h1 className="t-h2 text-foreground">Escolha seu @</h1>
+                  <p className="t-body text-foreground-secondary mt-2">
                     Etapa 2 de 2 — esse é seu identificador único na plataforma. É como
                     outros torcedores vão te marcar, te seguir e ver seu perfil
-                    (ex: <span className="text-primary font-handle">@joao_corinthiano</span>).
+                    (ex: <span className="text-floodlight font-mono font-medium">@joao_corinthiano</span>).
                     <strong className="text-foreground"> Escolha com calma — pode mudar depois nas configurações,
                     mas é seu carimbo público.</strong>
                   </p>

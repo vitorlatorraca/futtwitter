@@ -111,7 +111,7 @@ const PostCard = React.memo(function PostCard({ post, isQuoted = false, navigate
     const parts = parsePostText(displayText);
 
     return (
-      <p className={`${isQuoted ? "text-[14px]" : "text-[15px]"} leading-5 whitespace-pre-wrap break-words`}>
+      <p className={`${isQuoted ? "text-[14px]" : "text-[15px]"} leading-[1.5] text-ink whitespace-pre-wrap break-words`}>
         {parts.map((part, i) => {
           if (part.type === "hashtag" || part.type === "mention") {
             return (
@@ -149,15 +149,15 @@ const PostCard = React.memo(function PostCard({ post, isQuoted = false, navigate
       >
         <div className="flex items-center gap-1.5">
           <AvatarElSmall />
-          <span className="text-[13px] font-bold truncate">{displayName}</span>
+          <span className="text-[13px] font-semibold text-ink truncate">{displayName}</span>
           {post.author.isVerifiedJournalist ? (
             <span className="text-[12px] text-x-accent font-medium ml-0.5">📰 Journalist</span>
           ) : post.author.verified && !post.author.isVerifiedJournalist ? (
             <VerifiedBadge />
           ) : null}
-          <span className="text-[13px] text-x-text-secondary truncate">@{post.author.handle}</span>
-          <span className="text-[13px] text-x-text-secondary">·</span>
-          <span className="text-[13px] text-x-text-secondary">{formatTimestamp(post.timestamp)}</span>
+          <span className="text-[12px] font-mono text-slate truncate">@{post.author.handle}</span>
+          <span className="text-[12px] text-slate-2">·</span>
+          <span className="text-[12px] font-mono text-slate">{formatTimestamp(post.timestamp)}</span>
         </div>
         {renderText()}
         {post.images.length > 0 && <MediaGrid images={post.images} />}
@@ -182,21 +182,21 @@ const PostCard = React.memo(function PostCard({ post, isQuoted = false, navigate
         <div className="flex-1 ml-3 min-w-0">
           {/* Header */}
           <div className="flex items-start justify-between">
-            <div className="flex items-center gap-1 min-w-0 flex-1">
+            <div className="flex items-center gap-1.5 min-w-0 flex-1">
               <span
-                className="text-[15px] font-bold truncate hover:underline cursor-pointer"
+                className="text-[15px] font-semibold text-ink truncate hover:underline cursor-pointer"
                 onClick={handleProfileClick}
               >
                 {displayName}
               </span>
               {post.author.isVerifiedJournalist ? (
-                <span className="text-[13px] text-x-accent font-medium ml-0.5">📰 Journalist</span>
+                <span className="text-[11px] font-mono text-floodlight font-medium uppercase tracking-wider ml-0.5">Journalist</span>
               ) : post.author.verified && !post.author.isVerifiedJournalist ? (
                 <VerifiedBadge />
               ) : null}
-              <span className="text-[15px] text-x-text-secondary truncate">@{handle}</span>
-              <span className="text-x-text-secondary">·</span>
-              <time className="text-[15px] text-x-text-secondary hover:underline flex-shrink-0">
+              <span className="text-[12px] font-mono text-slate truncate">@{handle}</span>
+              <span className="text-[12px] text-slate-2">·</span>
+              <time className="text-[12px] font-mono text-slate hover:underline flex-shrink-0">
                 {formatTimestamp(post.timestamp)}
               </time>
             </div>

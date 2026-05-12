@@ -215,8 +215,8 @@ export default function Sidebar() {
           {!isCompact && (
             <>
               <div className="ml-3 flex-1 text-left min-w-0">
-                <p className="text-[15px] font-bold leading-5 truncate">{displayUser.displayName}</p>
-                <p className="text-[15px] text-x-text-secondary leading-5 truncate">@{displayUser.handle}</p>
+                <p className="text-[15px] font-semibold text-ink leading-5 truncate">{displayUser.displayName}</p>
+                <p className="text-[12px] font-mono text-slate leading-5 truncate">@{displayUser.handle}</p>
               </div>
               <MoreHorizontal className="w-5 h-5 text-x-text-secondary ml-2 flex-shrink-0" />
             </>

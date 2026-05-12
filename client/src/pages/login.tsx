@@ -56,8 +56,18 @@ export default function LoginPage() {
               <span className="text-2xl">⚽</span>
             </div>
             <div>
-              <h1 className="font-brand text-3xl tracking-wider text-primary-foreground">FUTTWITTER</h1>
-              <p className="text-sm text-primary-foreground/70 italic font-serif-body">Futebol com inteligência.</p>
+              <h1
+                className="font-display text-[28px] text-primary-foreground"
+                style={{ fontWeight: 700, letterSpacing: '-0.025em' }}
+              >
+                FUTTWITTER
+              </h1>
+              <p
+                className="font-mono text-[10px] text-primary-foreground/60 mt-1"
+                style={{ fontWeight: 500, letterSpacing: '0.22em', textTransform: 'uppercase' }}
+              >
+                O jornal que conversa
+              </p>
             </div>
           </div>
 
@@ -67,25 +77,28 @@ export default function LoginPage() {
                 <div className="mt-0.5 rounded-full p-1.5 bg-primary-foreground/15">
                   <Rss className="h-4 w-4 text-primary-foreground" />
                 </div>
-                <span className="text-primary-foreground/90 font-serif-body">Feed editorial em tempo real</span>
+                <span className="text-primary-foreground/90 text-[15px]">Feed editorial em tempo real</span>
               </li>
               <li className="flex items-start gap-3">
                 <div className="mt-0.5 rounded-full p-1.5 bg-primary-foreground/15">
                   <Users className="h-4 w-4 text-primary-foreground" />
                 </div>
-                <span className="text-primary-foreground/90 font-serif-body">Torcida conectada</span>
+                <span className="text-primary-foreground/90 text-[15px]">Torcida conectada</span>
               </li>
               <li className="flex items-start gap-3">
                 <div className="mt-0.5 rounded-full p-1.5 bg-primary-foreground/15">
                   <Shield className="h-4 w-4 text-primary-foreground" />
                 </div>
-                <span className="text-primary-foreground/90 font-serif-body">Seu time, seu espaço</span>
+                <span className="text-primary-foreground/90 text-[15px]">Seu time, seu espaço</span>
               </li>
             </ul>
           </div>
         </div>
 
-        <footer className="text-xs text-primary-foreground/60 font-handle">
+        <footer
+          className="text-[10px] text-primary-foreground/55 font-mono"
+          style={{ letterSpacing: '0.14em', textTransform: 'uppercase' }}
+        >
           © 2026 FUTTWITTER · Todos os direitos reservados
         </footer>
       </div>
@@ -101,14 +114,16 @@ export default function LoginPage() {
           {/* Mobile logo */}
           <div className="flex items-center gap-2 mb-8 lg:hidden">
             <span className="text-2xl">⚽</span>
-            <span className="font-brand text-2xl tracking-wider text-foreground">FUTTWITTER</span>
+            <span
+              className="font-display text-[22px] text-foreground"
+              style={{ fontWeight: 700, letterSpacing: '-0.025em' }}
+            >
+              FUTTWITTER
+            </span>
           </div>
 
-          <div className="newsprint-divider mb-6" />
-          <h2 className="font-serif-display text-3xl sm:text-4xl text-foreground mb-1">
-            Bem-vindo de volta
-          </h2>
-          <p className="text-foreground-secondary mb-8 italic font-serif-body">Entre na sua conta</p>
+          <h2 className="t-h2 text-foreground mb-1">Bem-vindo de volta</h2>
+          <p className="t-body-lg text-foreground-secondary mb-8">Entre na sua conta</p>
 
           <form onSubmit={handleSubmit} className="space-y-5">
             <div className="space-y-2">
@@ -138,7 +153,7 @@ export default function LoginPage() {
                 </Label>
                 <Link
                   to="/esqueci-senha"
-                  className="text-xs text-primary hover:underline"
+                  className="text-xs text-floodlight hover:text-floodlight-d hover:underline font-medium"
                   tabIndex={-1}
                 >
                   Esqueci minha senha
@@ -203,9 +218,9 @@ export default function LoginPage() {
             </Button>
           </form>
 
-          <p className="mt-6 text-center text-sm text-foreground-secondary">
+          <p className="mt-6 text-center text-[13px] text-foreground-secondary">
             Não tem conta?{' '}
-            <Link to="/cadastro" className="text-primary font-semibold hover:underline" data-testid="link-signup">
+            <Link to="/cadastro" className="text-floodlight hover:text-floodlight-d font-semibold hover:underline" data-testid="link-signup">
               Criar conta
             </Link>
           </p>

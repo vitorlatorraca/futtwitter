@@ -68,7 +68,7 @@ export default function RightSidebar() {
 
       {/* FuteApp Pro Card */}
       <div className="border border-x-border rounded-2xl p-4 mb-4">
-        <h2 className="text-xl font-extrabold mb-1">FuteApp Pro</h2>
+        <h2 className="t-h3 text-ink mb-1">FuteApp Pro</h2>
         <p className="text-[15px] text-x-text-primary mb-3">
           Sem anúncios, estatísticas avançadas, alertas de gols em tempo real.
         </p>
@@ -79,7 +79,7 @@ export default function RightSidebar() {
 
       {/* Trending Futebol */}
       <div className="border border-x-border rounded-2xl mb-4 overflow-hidden">
-        <h2 className="text-xl font-extrabold px-4 py-3">🔥 Trending Futebol</h2>
+        <h2 className="t-h3 text-ink px-4 py-3">Trending Futebol</h2>
         {trendingItems.length > 0 ? (
           trendingItems.map((item, i) => (
             <button
@@ -102,7 +102,7 @@ export default function RightSidebar() {
       {/* Próximos Jogos (on football pages) - hide if no fixtures */}
       {isFootballPage && upcomingMatches.length > 0 ? (
         <div className="border border-x-border rounded-2xl mb-4 overflow-hidden">
-          <h2 className="text-xl font-extrabold px-4 py-3">📅 Próximos Jogos</h2>
+          <h2 className="t-h3 text-ink px-4 py-3">Próximos Jogos</h2>
           {upcomingMatches.map((match) => (
             <div
               key={match.id}
@@ -128,7 +128,7 @@ export default function RightSidebar() {
       {/* Torcida: O que a torcida diz - "Em breve" until we have hashtag aggregation */}
       {!isFootballPage && activeTab === "torcida" && (
         <div className="border border-x-border rounded-2xl mb-4 overflow-hidden">
-          <h2 className="text-xl font-extrabold px-4 py-3">💬 O que a torcida diz</h2>
+          <h2 className="t-h3 text-ink px-4 py-3">O que a torcida diz</h2>
           <p className="px-4 py-6 text-[14px] text-x-text-secondary text-center">Em breve</p>
         </div>
       )}
@@ -136,7 +136,7 @@ export default function RightSidebar() {
       {/* Quem Seguir / Top Influencers */}
       {!isFootballPage && activeTab === "influencers" ? (
         <div className="border border-x-border rounded-2xl mb-4 overflow-hidden">
-          <h2 className="text-xl font-extrabold px-4 py-3">🌟 Top Influencers FuteApp</h2>
+          <h2 className="t-h3 text-ink px-4 py-3">Top Influencers</h2>
           {influencerSuggestedUsers.map((u) => {
             const isFollowing = followedUsers.has(u.id);
             return (
@@ -174,7 +174,7 @@ export default function RightSidebar() {
         </div>
       ) : suggestedUsers.length > 0 || loadingSuggested ? (
         <div className="border border-x-border rounded-2xl mb-4 overflow-hidden">
-          <h2 className="text-xl font-extrabold px-4 py-3">Quem Seguir</h2>
+          <h2 className="t-h3 text-ink px-4 py-3">Quem Seguir</h2>
           {loadingSuggested ? (
             Array.from({ length: 3 }).map((_, i) => (
               <div key={i} className="flex items-center gap-3 px-4 py-3">

@@ -217,7 +217,7 @@ export default function ComposeBox({
           onKeyDown={handleKeyDown}
           placeholder={placeholder}
           autoFocus={autoFocus}
-          className="w-full bg-transparent text-xl text-x-text-primary placeholder-x-text-secondary outline-none resize-none min-h-[52px] py-3"
+          className="w-full bg-transparent text-[18px] leading-[1.5] text-ink placeholder:text-slate outline-none resize-none min-h-[52px] py-3"
           rows={1}
           aria-label="Escrever post"
         />
@@ -277,10 +277,10 @@ export default function ComposeBox({
               <div className="flex items-center gap-2">
                 <div className="relative w-[30px] h-[30px]" aria-label={`${remaining} caracteres restantes`}>
                   <svg className="w-full h-full -rotate-90" viewBox="0 0 24 24">
-                    <circle cx="12" cy="12" r="10" fill="none" stroke="#2f3336" strokeWidth="2" />
+                    <circle cx="12" cy="12" r="10" fill="none" stroke="var(--line)" strokeWidth="2" />
                     <circle
                       cx="12" cy="12" r="10" fill="none"
-                      stroke={overLimit ? "#f4212e" : remaining <= 20 ? "#ffd400" : "var(--x-accent)"}
+                      stroke={overLimit ? "var(--error)" : remaining <= 20 ? "var(--warning)" : "var(--ink)"}
                       strokeWidth="2"
                       strokeDasharray={circumference}
                       strokeDashoffset={strokeDashoffset}
@@ -288,7 +288,7 @@ export default function ComposeBox({
                     />
                   </svg>
                   {remaining <= 20 && (
-                    <span className={`absolute inset-0 flex items-center justify-center text-[11px] font-medium ${overLimit ? "text-[#f4212e]" : "text-x-text-secondary"}`}>
+                    <span className={`absolute inset-0 flex items-center justify-center text-[10px] font-mono font-medium ${overLimit ? "text-error" : "text-slate"}`}>
                       {remaining}
                     </span>
                   )}
@@ -301,9 +301,9 @@ export default function ComposeBox({
               onClick={handleSubmit}
               disabled={(!text.trim() && !imageUrl) || overLimit || isSubmitting}
               title="Postar (Ctrl+Enter)"
-              className="brand-gradient hover:opacity-90 disabled:opacity-50 disabled:cursor-not-allowed text-foreground font-bold text-[15px] rounded-full px-4 py-1.5 transition-opacity"
+              className="bg-ink hover:bg-ink-2 disabled:opacity-50 disabled:cursor-not-allowed text-paper font-semibold text-[14px] rounded-full px-5 py-2 transition-colors"
             >
-              {isSubmitting ? "Postando…" : "Postar"}
+              {isSubmitting ? "Postando…" : "Postar →"}
             </button>
           </div>
         </div>

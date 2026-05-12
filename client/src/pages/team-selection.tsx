@@ -86,25 +86,28 @@ export default function TeamSelectionPage() {
       <header className="flex items-center justify-between p-4 sm:p-6 border-b border-border">
         <div className="flex items-center gap-2">
           <span className="text-xl">⚽</span>
-          <span className="font-brand text-2xl tracking-wider text-foreground">FUTTWITTER</span>
+          <span
+            className="font-display text-[22px] text-ink"
+            style={{ fontWeight: 700, letterSpacing: '-0.025em' }}
+          >
+            FUTTWITTER
+          </span>
         </div>
         <div className="flex items-center gap-2">
-          <span className="text-sm font-medium text-foreground-secondary">Passo final</span>
-          <span className="text-sm font-bold text-primary">3/3</span>
+          <span className="t-label text-slate">Passo final</span>
+          <span className="font-mono text-[11px] font-medium text-floodlight" style={{ letterSpacing: '0.14em' }}>3 / 3</span>
         </div>
       </header>
 
       <main className="flex-1 p-4 sm:p-6 max-w-6xl mx-auto w-full">
-        <h1 className="font-serif-display text-3xl sm:text-4xl text-foreground mb-2">
-          Escolha seu time
-        </h1>
+        <h1 className="t-h1 text-ink mb-3">Escolha seu time</h1>
         <div className="mb-8 space-y-2 max-w-2xl">
-          <p className="text-foreground-secondary">
+          <p className="t-body-lg text-foreground-secondary">
             Esse é o time que vai aparecer no seu perfil, no seu feed personalizado
             de "Meu Time", nas suas escalações e nas suas avaliações de jogadores.
           </p>
-          <p className="text-sm text-foreground-muted">
-            ⚠️ <strong className="text-foreground-secondary">Esta escolha é permanente</strong> —
+          <p className="t-body text-foreground-muted">
+            <strong className="text-ink font-medium">Esta escolha é permanente</strong> —
             escolha com calma. Toque no escudo do seu time abaixo e confirme na próxima tela.
           </p>
         </div>

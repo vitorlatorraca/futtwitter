@@ -156,19 +156,19 @@ export default function Feed() {
 
   return (
     <div>
-      <div className="sticky top-14 z-20 bg-background/80 backdrop-blur-md border-b border-x-border">
+      <div className="sticky top-14 z-20 bg-background/80 backdrop-blur-md border-b border-line">
         <div className="flex">
           {(["posts", "torcida", "influencers"] as const).map((tab) => (
             <button
               key={tab}
               onClick={() => setActiveTab(tab)}
-              className="flex-1 py-4 text-center hover:bg-x-hover transition-colors relative text-[15px] font-medium"
+              className="flex-1 py-4 text-center hover:bg-paper-2 transition-colors relative"
             >
-              <span className={activeTab === tab ? "font-bold" : "text-x-text-secondary"}>
+              <span className={`text-[13px] ${activeTab === tab ? "text-ink font-semibold" : "text-ink-3 font-medium"}`}>
                 {tab === "posts" ? "Posts" : tab === "torcida" ? "Torcida" : "Influencers"}
               </span>
               {activeTab === tab && (
-                <div className="absolute bottom-0 left-1/2 -translate-x-1/2 w-[56px] h-1 rounded-full bg-x-accent" />
+                <div className="absolute bottom-0 left-[14px] right-[14px] h-[3px] rounded-sm bg-floodlight" />
               )}
             </button>
           ))}
@@ -176,24 +176,24 @@ export default function Feed() {
       </div>
 
       {activeTab === "influencers" && (
-        <div className="flex items-center gap-2 px-4 py-2 border-b border-x-border bg-background/60">
-          <span className="text-xs text-x-text-secondary font-medium mr-1">Mostrar:</span>
+        <div className="flex items-center gap-2 px-4 py-2 border-b border-line bg-paper-2/60">
+          <span className="t-label text-slate mr-1">Mostrar</span>
           <button
             onClick={() => setInfluencerFilter("all")}
-            className={`px-4 py-1.5 rounded-full text-xs font-semibold transition-colors border ${
+            className={`px-4 py-1.5 rounded-full text-[12px] font-semibold transition-colors border ${
               influencerFilter === "all"
-                ? "bg-x-accent text-primary-foreground border-x-accent"
-                : "bg-transparent text-x-text-secondary border-x-border hover:border-x-text-secondary"
+                ? "bg-ink text-paper border-ink"
+                : "bg-transparent text-ink-3 border-line hover:border-ink-3"
             }`}
           >
             Todos os Times
           </button>
           <button
             onClick={() => setInfluencerFilter("mine")}
-            className={`px-4 py-1.5 rounded-full text-xs font-semibold transition-colors border ${
+            className={`px-4 py-1.5 rounded-full text-[12px] font-semibold transition-colors border ${
               influencerFilter === "mine"
-                ? "bg-x-accent text-primary-foreground border-x-accent"
-                : "bg-transparent text-x-text-secondary border-x-border hover:border-x-text-secondary"
+                ? "bg-ink text-paper border-ink"
+                : "bg-transparent text-ink-3 border-line hover:border-ink-3"
             }`}
           >
             Meu Time

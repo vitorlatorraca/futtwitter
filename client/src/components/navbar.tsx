@@ -33,16 +33,22 @@ export function Navbar() {
   return (
     <nav className="sticky top-0 z-50 w-full border-b border-card-border backdrop-blur-md bg-background/95">
       <div className="container flex h-14 items-center justify-between gap-4">
-        {/* Logo */}
+        {/* Logo group — Tribuna spec: 36×36 ink monogram + wordmark + JBM micro-label */}
         <Link to="/dashboard" data-testid="link-logo">
-          <div className="flex items-center gap-2 cursor-pointer px-2 py-1.5 rounded-full hover:bg-foreground/5 transition-colors">
+          <div className="flex items-center gap-3 cursor-pointer px-2 py-1.5 rounded-full hover:bg-foreground/5 transition-colors">
             <span className="text-xl">⚽</span>
             <div className="hidden sm:flex flex-col leading-none">
-              <span className="font-brand text-[18px] text-foreground tracking-wider">
+              <span
+                className="font-display text-[22px] text-ink"
+                style={{ fontWeight: 700, letterSpacing: '-0.025em' }}
+              >
                 FUTTWITTER
               </span>
-              <span className="text-[10px] text-foreground-muted italic font-serif-body">
-                Coluna esportiva diária
+              <span
+                className="font-mono text-[9px] text-slate mt-0.5"
+                style={{ fontWeight: 500, letterSpacing: '0.22em', textTransform: 'uppercase' }}
+              >
+                O jornal que conversa
               </span>
             </div>
           </div>
